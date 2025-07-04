@@ -1,0 +1,151 @@
+"use client"
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { toast } from "sonner"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
+import { Alert, AlertDescription } from "../ui/alert"
+import { AlertCircle, Trash2 } from "lucide-react"
+import axios from "axios"
+
+interface SelectCustomerDialogProps {
+  isOpen: boolean
+  onClose: (open: boolean) => void
+  activeCoupons: Coupon[] | null
+  onApplyCoupon: (coupon: Coupon) => void
+  onRemoveCoupon: (coupon: Coupon) => void
+  selectedCustomer: Customer | null
+  setShowSelectCustomerDialog: (value: boolean) => void
+}
+
+export default function CouponsDialog({
+  isOpen,
+  onClose,
+  selectedCustomer,
+  onRemoveCoupon,
+  onApplyCoupon,
+  setShowSelectCustomerDialog,
+  activeCoupons,
+}: SelectCustomerDialogProps) {
+  const [loading, setLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState("apply")
+  const [couponCode, setCouponCode] = useState("")
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error("Please enter a coupon code")
+      return
+    }
+
+    if (activeCoupons?.find((c) => c.code === couponCode)) {
+      toast.error("Coupon already applied")
+      return
+    }
+
+    if (!selectedCustomer) {
+      setShowSelectCustomerDialog(true)
+      return
+    }
+
+    setLoading(true)
+
+
+    try {
+      // /api/customers/coupons/fsdfasdfds
+      const res = await axios.post(`/api/customers/coupons/${couponCode}`, {
+        customer_id: selectedCustomer.id,
+      })
+
+      if (res.data) {
+        onApplyCoupon(res.data)
+        setCouponCode("")
+        toast.success("Coupon applied successfully")
+      }
+    } catch (error) {
+      console.log(error)
+      toast.error("Failed to apply coupon")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Load Coupon</DialogTitle>
+          </DialogHeader>
+
+          <Tabs defaultValue="apply" value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="apply">Apply A Coupon</TabsTrigger>
+              <TabsTrigger value="active">Active Coupons</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="apply" className="space-y-4 py-4">
+              <div className="flex space-x-2">
+                <Input
+                  placeholder="Coupon Code"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  className="flex-1"
+                />
+                <Button type="button" disabled={loading} onClick={handleApplyCoupon}>Load</Button>
+              </div>
+
+              <Alert className="bg-muted text-primary border">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Input the coupon code that should apply to the POS. If a coupon is issued for a coupon, that
+                  coupon must be selected priory.
+                </AlertDescription>
+              </Alert>
+
+              {!selectedCustomer && <Button variant="outline" className="w-full" onClick={() => setShowSelectCustomerDialog(true)}>
+                Click here to choose a coupon.
+              </Button>}
+
+              {selectedCustomer && <div className="p-4 border rounded-lg bg-green-500/30">
+                <p className="text-sm text-center">Load coupon for {selectedCustomer.first_name} {selectedCustomer.last_name}</p>
+              </div>}
+            </TabsContent>
+
+            <TabsContent value="active" className="py-4">
+              {activeCoupons && activeCoupons?.length > 0 ? (
+                <div className="space-y-2">
+                  {activeCoupons.map((coupon) => (
+                    <div key={coupon.code} className="flex items-center justify-between rounded-md border p-3">
+                      <div>
+                        <p className="font-medium">{coupon.code}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {coupon.type === "percentage_discount"
+                            ? `${coupon.discount_value}% off`
+                            : `$${coupon.discount_value.toFixed(2)} off`}
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onRemoveCoupon(coupon)}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex h-[100px] items-center justify-center rounded-md border border-dashed">
+                  <p className="text-sm text-muted-foreground">No coupons applies to the cart.</p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
+
