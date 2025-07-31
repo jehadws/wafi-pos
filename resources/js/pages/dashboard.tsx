@@ -33,7 +33,6 @@ interface Order {
 
 export default function Dashboard() {
   const props = usePage().props;
-  console.log("props", props);
   const [cards, setCards] = useState<DashboardCard | null>(null);
   const [bestCustomers, setBestCustomers] = useState<Customer[]>([]);
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
@@ -50,11 +49,11 @@ export default function Dashboard() {
           fetch('/api/dashboard/recent-orders').then(res => res.json()),
         ]);
 
-        console.log("cardsResponse", cardsResponse);
-        console.log("customersResponse", customersResponse);
-        console.log("weeksResponse", weeksResponse);
-        console.log("cashiersResponse", cashiersResponse);
-        console.log("ordersResponse", ordersResponse);
+        // console.log("cardsResponse", cardsResponse);
+        // console.log("customersResponse", customersResponse);
+        // console.log("weeksResponse", weeksResponse);
+        // console.log("cashiersResponse", cashiersResponse);
+        // console.log("ordersResponse", ordersResponse);
 
         setCards(cardsResponse);
         setBestCustomers(customersResponse);

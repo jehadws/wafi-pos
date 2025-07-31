@@ -100,7 +100,7 @@ export default function SellingGroupCard({ form, units, index, onRemove }: Selli
 
           <FormField label="Convert Unit" description="The unit that is selected for conversion by default." error={form.errors?.["units_selling_group." + index + ".convert_unit_id"]}>
             <Select
-              value={form.data.units_selling_group[index].convert_unit_id.toString()}
+              value={form.data.units_selling_group[index].convert_unit_id?.toString()}
               onValueChange={(value) => handleGroupSelectChange("convert_unit_id", +value)}
             >
               <div className="flex flex-row items-center gap-1">
