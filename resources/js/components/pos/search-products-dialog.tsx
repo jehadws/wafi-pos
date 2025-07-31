@@ -25,7 +25,6 @@ export function SearchProductsDialog({
   const [selectProduct, setSelectProduct] = useState<Product>()
   const [quantities, setQuantities] = useState<UnitQuantity[]>()
   const [selectedUnitQuantity, setSelectedUnitQuantity] = useState<UnitQuantity>()
-  const [quantity, setQuantity] = useState("")
 
   const [searchQuery, setSearchQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
@@ -51,14 +50,11 @@ export function SearchProductsDialog({
 
   const handleSelectUnit = (quantity: string) => {
     setIsOpen(false)
-    setQuantity(quantity)
     if (selectedUnitQuantity && selectProduct) {
       if (selectedUnitQuantity?.quantity < parseInt(quantity)) {
-        console.log("quantity exceeds stock")
         return toast.warning("Quantity exceeds stock")
       }
 
-      console.log("add to cart")
       onProductSelected({
         product_id: selectedUnitQuantity.product_id,
         name: selectProduct.name,
@@ -89,10 +85,10 @@ export function SearchProductsDialog({
 
   const quantityKeypad = useNumericKeypad({
     onConfirm: handleSelectUnit,
-    initialValue: quantity,
+    initialValue: "",
     title: "Define Quantity",
     maxLength: 6,
-    allowDecimal: false,
+    allowDecimal: true,
   })
 
 
@@ -101,7 +97,6 @@ export function SearchProductsDialog({
     try {
       setLoading(true)
       const res = await axios.get(`/api/products/${product.id}/units/quantities`)
-      console.log("quantities", res.data)
       if (res.data && res.data.length > 0) {
         setQuantities(res.data)
         if (res.data.length > 1) {

@@ -10,6 +10,7 @@ interface CartTableProps {
   removeFromCart: (product: CartProduct) => void
   updateQuantity: (product: CartProduct, quantity: number) => void
   updatePrice: (product: CartProduct, price: number) => void
+  updateDiscountPercentage: (product: CartProduct, price: number) => void
   clearCart: () => void
   removeSelectedItems: () => void
   selectedItems: string[]
@@ -22,7 +23,9 @@ export default function CartTable({
   cart,
   removeFromCart,
   updateQuantity,
+  updatePrice,
   clearCart,
+  updateDiscountPercentage,
   removeSelectedItems,
   selectedItems,
   toggleItemSelection,
@@ -92,6 +95,8 @@ export default function CartTable({
                   <CartItemComponent
                     key={item.product_id}
                     item={item}
+                    updatePrice={updatePrice}
+                    updateDiscountPercentage={updateDiscountPercentage}
                     removeFromCart={removeFromCart}
                     updateQuantity={updateQuantity}
                   />

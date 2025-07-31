@@ -27,6 +27,7 @@ export default function ProductsCategoriesPanel({
       const res = await axios.get(`/api/categories/pos/${category.id}`)
       if (res.data.products && res.data.products.length > 0) {
         setCategoryProducts(res.data.products)
+        console.log("products", res.data.products)
       }
     } catch (e) {
       console.error(e)

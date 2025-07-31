@@ -5,14 +5,18 @@ import { Trash2, Plus, Minus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { formatCurrency } from "@/utils/format"
+import { useNumericKeypad } from "@/hooks/use-numeric-keypad"
+import { NumericKeypadDialog } from "../ui/numeric-keypad-dialog"
 
 interface CartItemProps {
   item: CartProduct
   removeFromCart: (product: CartProduct) => void
   updateQuantity: (product: CartProduct, quantity: number) => void
+  updatePrice: (product: CartProduct, price: number) => void
+  updateDiscountPercentage: (product: CartProduct, price: number) => void
 }
 
-export default function CartItem({ item, removeFromCart, updateQuantity }: CartItemProps) {
+export default function CartItem({ item, updateDiscountPercentage, updatePrice, removeFromCart, updateQuantity }: CartItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [quantityInput, setQuantityInput] = useState(item.quantity.toString())
 
@@ -33,6 +37,32 @@ export default function CartItem({ item, removeFromCart, updateQuantity }: CartI
     const value = e.target.value.replace(/[^0-9]/g, "")
     setQuantityInput(value)
   }
+
+  const handleChangePrice = (price: string) => {
+    updatePrice(item, Number.parseFloat(price))
+  }
+
+  const handleChangePercentage = (discount: string) => {
+    updateDiscountPercentage(item, Number.parseFloat(discount))
+
+  }
+
+  const discountKeypad = useNumericKeypad({
+    onConfirm: handleChangePercentage,
+    initialValue: "",
+    title: "Product Discount",
+    maxLength: 6,
+    allowDecimal: true,
+  });
+
+  const priceKeypad = useNumericKeypad({
+    onConfirm: handleChangePrice,
+    initialValue: "",
+    title: "Product Price",
+    maxLength: 6,
+    allowDecimal: true,
+  });
+
 
   const handleQuantityBlur = () => {
     const newQuantity = Number.parseInt(quantityInput)
@@ -60,10 +90,10 @@ export default function CartItem({ item, removeFromCart, updateQuantity }: CartI
         <div className="flex flex-col">
           <p className="font-medium text-[18px]">{item.name} -- {item.unit_name}</p>
           <div className="flex flex-row gap-4">
-            <p className=" text-muted-foreground hover:text-primary hover:decoration-primary underline decoration-dotted underline-offset-3 decoration-1">
-              Price: {formatCurrency(item.unit_price)}
+            <p onClick={() => priceKeypad.openKeypad()} className=" text-muted-foreground hover:text-primary hover:decoration-primary underline decoration-dotted underline-offset-3 decoration-1">
+              Price: {formatCurrency(item.price_without_tax)}
             </p>
-            <p className=" text-muted-foreground hover:text-primary hover:decoration-primary underline decoration-dotted underline-offset-3 decoration-1">
+            <p onClick={() => discountKeypad.openKeypad()} className=" text-muted-foreground hover:text-primary hover:decoration-primary underline decoration-dotted underline-offset-3 decoration-1">
               Discount {item.discount_percentage}%: {formatCurrency(item.discount)}
             </p>
           </div>
@@ -122,7 +152,9 @@ export default function CartItem({ item, removeFromCart, updateQuantity }: CartI
           </div>
         )}
       </div>
-      <div className="col-span-2 text-center border-l h-14 flex items-center justify-center">${(item.price_without_tax * item.quantity).toFixed(2)}</div>
+      <div className="col-span-2 text-center border-l h-14 flex items-center justify-center">${(item.total_price_without_tax).toFixed(2)}</div>
+      <NumericKeypadDialog {...discountKeypad.keypadProps} />
+      <NumericKeypadDialog {...priceKeypad.keypadProps} />
     </div>
   )
 }

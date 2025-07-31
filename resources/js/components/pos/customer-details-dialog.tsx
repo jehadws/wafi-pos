@@ -1,11 +1,12 @@
 
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatCurrency, formatDate } from "@/utils/format"
 import axios from "axios"
 import { useEffect, useState } from "react"
+import { cn } from "@/lib/utils"
 
 interface CustomerDetailsDialogProps {
   open: boolean
@@ -49,19 +50,20 @@ export function CustomerDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-hidden">
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <DialogTitle className="text-lg font-semibold">Customers</DialogTitle>
+      <DialogContent className="sm:max-w-4xl flex flex-col max-w-4xl max-h-[90vh] h-[90vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle>Customer Details</DialogTitle>
+          <DialogDescription className="sr-only">Customer Details</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 overflow-y-auto">
-          <Tabs defaultValue="customer-account" className="w-full" onValueChange={setActiveTab} value={activeTab}>
+        <div className="flex flex-col space-y-4 flex-1">
+          <Tabs defaultValue="customer-account" className={cn("flex-1")} onValueChange={setActiveTab} value={activeTab}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="new-customer">New Customer</TabsTrigger>
               <TabsTrigger value="customer-account">Customer Account</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="customer-account" className="space-y-4">
+            <TabsContent value="customer-account" className="space-y-4 flex flex-col">
               <div className="p-4 rounded-lg">
                 <h3 className="font-medium mb-4">
                   Summary For : {customer.first_name} {customer.last_name || ""}
@@ -87,7 +89,7 @@ export function CustomerDetailsDialog({
                 </div>
               </div>
 
-              <Tabs defaultValue="orders" className="w-full" onValueChange={setActiveSubTab} value={activeSubTab}>
+              <Tabs defaultValue="orders" className={cn("flex-1")} onValueChange={setActiveSubTab} value={activeSubTab}>
                 <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="orders">Orders</TabsTrigger>
                   <TabsTrigger value="wallet-history">Wallet History</TabsTrigger>
@@ -95,7 +97,7 @@ export function CustomerDetailsDialog({
                   <TabsTrigger value="rewards">Rewards</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="orders" className="space-y-4">
+                <TabsContent value="orders" className={cn("flex flex-1 flex-col space-y-4")}>
                   <h4 className="font-medium px-2 mt-4">Last Purchases</h4>
 
                   {loadingOrders ? (
@@ -104,13 +106,13 @@ export function CustomerDetailsDialog({
                       <span className="ml-2 text-gray-600">Loading orders...</span>
                     </div>
                   ) : (
-                    <div className="border rounded-lg overflow-hidden">
+                    <div className="border rounded-lg overflow-hidden flex-1">
                       <div className="grid grid-cols-2 p-3 font-medium text-gray-700 text-center">
                         <div>Order</div>
                         <div>Options</div>
                       </div>
 
-                      <div className="divide-y max-h-64 overflow-y-auto">
+                      <div className="flex-1">
                         {orders.length > 0 ? (
                           orders.map((order) => (
                             <div key={order.id} className="grid grid-cols-2 p-3 items-center">

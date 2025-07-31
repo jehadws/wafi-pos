@@ -19,12 +19,15 @@ use App\Exceptions\NotAllowedException;
 use App\Fields\OrderPaymentFields;
 use App\Http\Controllers\DashboardController;
 use App\Http\Requests\OrderPaymentRequest;
+use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderInstalment;
 use App\Models\OrderPayment;
 use App\Models\OrderRefund;
 use App\Models\PaymentType;
 use App\Models\ProductCategory;
+use App\Models\Register;
+use App\Models\User;
 use App\Services\DateService;
 use App\Services\Options;
 use App\Services\OrdersService;
@@ -107,7 +110,18 @@ class OrdersController extends DashboardController
         ->addView('pages.dashboard.orders.footer')
     );
 
-    return OrderCrud::table();
+    $customers = Customer::get([ 'id', 'first_name', 'last_name', ]);
+    $users = User::get([ 'id', 'username', ]);
+    $registers = Register::get([ 'id', 'name', ]);
+    return Inertia::render('dashboard/orders/page', [
+      'title' => __('Orders List'),
+      'description' => __('List of orders'),
+      'customers' => $customers,
+      'users' => $users,
+      'registers' => $registers,
+    ]);
+
+    // return OrderCrud::table();
   }
 
   public function getPOSOrder($order_id)
@@ -156,7 +170,9 @@ class OrdersController extends DashboardController
         ->get();
     }
 
-    return Order::with('customer')->get();
+    return Order::with(['customer'])->AddSelect([
+      'author_name' => User::select('username')->whereColumn('jgrem_users.id', 'author')->limit(1),
+    ])->get();
   }
 
   public function showPOS()

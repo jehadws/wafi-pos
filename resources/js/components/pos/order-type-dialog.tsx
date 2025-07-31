@@ -9,21 +9,6 @@ interface OrderTypeDialogProps {
   orderType: OrderTypeObj | null
 }
 
-const OrderTypes = [
-  {
-    identifier: "takeaway",
-    label: "Take Away",
-    icon: "/images/groceries.png",
-    selected: false
-  },
-  {
-    identifier: "delivery",
-    label: "Delivery",
-    icon: "/images/delivery.png",
-    selected: false
-  }
-]
-
 export function OrderTypeDialog({ open, onOpenChange, orderType, onSelectOrderType }: OrderTypeDialogProps) {
   const handleSelectType = (type: "takeaway" | "delivery") => {
     if (type === "takeaway") {

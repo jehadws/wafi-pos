@@ -398,7 +398,7 @@ type UnitQuantity = {
 type ProductSearchResult = {
   id: number,
   name: string,
-  tax_type: string,
+  tax_type: "inclusive" | "exclusive",
   tax_group_id: null | number,
   tax_value: number,
   product_type: string,
@@ -487,4 +487,96 @@ type CustomerOrder = {
   register_id: null | number,
   voidance_reason: null | string,
   updated_at: string,
+}
+
+type PaymentStatus =
+  | 'paid'
+  | 'partially_paid'
+  | 'unpaid'
+  | 'hold'
+  | 'order_void'
+  | 'refunded'
+  | 'partially_refunded'
+  | 'due'
+  | 'partially_due'
+  | 'not-available'
+
+type DeliveryStatus =
+  | 'pending'
+  | 'ongoing'
+  | 'error'
+  | 'completed'
+  | 'delivered'
+  | 'not-available'
+
+type ProcessingStatus =
+  | 'pending'
+  | 'ongoing'
+  | 'ready'
+  | 'error'
+  | 'not-available'
+
+type OrderType =
+  | 'takeaway'
+  | 'delivery'
+
+
+type Order = {
+  id: number
+  description: null | string
+  code: string
+  title: null | string
+  type: OrderType
+  payment_status: PaymentStatus
+  process_status: ProcessStatus
+  delivery_status: DeliveryStatus
+  discount: number
+  discount_type: "flat" | "percentage",
+  support_instalments: boolean
+  discount_percentage: number
+  shipping: number
+  shipping_rate: number
+  shipping_type: null | "flat",
+  total_without_tax: number
+  subtotal: number
+  total_with_tax: number
+  total_coupons: number
+  total_cogs: number
+  total: number
+  tax_value: number
+  products_tax_value: number
+  tax_group_id: null | number
+  tax_type: string
+  tendered: number
+  change: number
+  final_payment_date: null | string
+  total_instalments: number
+  customer_id: number
+  note: null | string
+  note_visibility: "hidden" | "visible"
+  author: number
+  uuid: null | string
+  register_id: null | number
+  voidance_reason: null | string,
+  created_at: string,
+  updated_at: string,
+  author_name: string,
+  customer: Customer,
+  customer_first_name: string,
+}
+
+
+interface CustomPaginationData<T> {
+  current_page: number
+  data: T[]
+  next_page_url: string | null
+  path: string
+  prev_page_url: string | null
+  first_page_url: string
+  last_page_url: string
+  last_page: number
+  per_page: number
+  from: number
+  to: number
+  total: number
 }

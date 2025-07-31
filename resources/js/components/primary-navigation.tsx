@@ -5,10 +5,11 @@ import { LayoutDashboard, ShoppingCart, Users, RotateCcw, Truck } from "lucide-r
 interface PrimaryNavigationProps {
   resetCart: () => void
   handleOpenSelectCustomerDialog: (open: boolean) => void
+  handleOpenOrderDialog: (open: boolean) => void
   handleOpenOrderTypeDialog: (open: boolean) => void
 }
 
-export default function PrimaryNavigation({ resetCart, handleOpenOrderTypeDialog, handleOpenSelectCustomerDialog }: PrimaryNavigationProps) {
+export default function PrimaryNavigation({ resetCart, handleOpenOrderTypeDialog, handleOpenSelectCustomerDialog, handleOpenOrderDialog }: PrimaryNavigationProps) {
   return (
     <div className="border-b bg-background p-2">
       <div className="flex space-x-2">
@@ -23,6 +24,7 @@ export default function PrimaryNavigation({ resetCart, handleOpenOrderTypeDialog
         <Button
           variant={"outline"}
           className="flex items-center"
+          onClick={() => handleOpenOrderDialog(true)}
         >
           <ShoppingCart className="mr-2 h-4 w-4" />
           Orders

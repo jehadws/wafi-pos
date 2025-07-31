@@ -1,7 +1,6 @@
 import axios from "axios"
 import { useState } from "react"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Loader2 } from "lucide-react"
 import { NumericKeypadDialog } from "@/components/ui/numeric-keypad-dialog"
 import { useNumericKeypad } from "@/hooks/use-numeric-keypad"
@@ -13,13 +12,18 @@ interface ProductCatalogProps {
   selectedProducts: CartProduct[]
 }
 
+type ProductWithTaxGroup = Product & {
+  tax_group: TaxGroup & {
+    taxes: Tax[]
+  }
+}
+
 export default function ProductCatalog({ products, addToCart, selectedProducts }: ProductCatalogProps) {
   const [loading, setLoading] = useState(false)
   const [quantities, setQuantities] = useState<UnitQuantity[]>()
-  const [selectProduct, setSelectProduct] = useState<Product>()
+  const [selectProduct, setSelectProduct] = useState<ProductWithTaxGroup>()
   const [selectedUnitQuantity, setSelectedUnitQuantity] = useState<UnitQuantity>()
   const [isOpen, setIsOpen] = useState(false)
-  const [quantity, setQuantity] = useState("")
 
   const handleSelectUnit = (quantity: string) => {
     if (+quantity < 1) {
@@ -27,9 +31,7 @@ export default function ProductCatalog({ products, addToCart, selectedProducts }
     }
 
     // check remaining stock
-
     setIsOpen(false)
-    setQuantity(quantity)
 
     // if quantity 0 show warning
     // if quanity - existing product quantity show warning
@@ -56,10 +58,10 @@ export default function ProductCatalog({ products, addToCart, selectedProducts }
         discount: 0,
         discount_percentage: 0,
         product_type: selectProduct.type,
-        rate: 0,
+        rate: selectProduct.tax_group.taxes.reduce((acc, tax) => acc + +tax.rate, 0),
         quantity: parseInt(quantity),
-        tax_group_id: 0,
-        tax_type: "inclusive",
+        tax_group_id: +selectProduct.tax_group_id,
+        tax_type: selectProduct.tax_type,
         tax_value: selectedUnitQuantity.sale_price_tax,
         unit_id: selectedUnitQuantity.unit.id,
         unit_price: selectedUnitQuantity.sale_price,
@@ -79,10 +81,10 @@ export default function ProductCatalog({ products, addToCart, selectedProducts }
 
   const quantityKeypad = useNumericKeypad({
     onConfirm: handleSelectUnit,
-    initialValue: quantity,
+    initialValue: "",
     title: "Define Quantity",
     maxLength: 6,
-    allowDecimal: false,
+    allowDecimal: true,
   })
 
 

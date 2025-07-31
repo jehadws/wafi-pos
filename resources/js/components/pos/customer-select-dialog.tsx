@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input"
 import { formatCurrency } from "@/utils/format"
 import axios from "axios"
+import { cn } from "@/lib/utils"
 
 interface SelectCustomerDialogProps {
   open: boolean
@@ -65,7 +66,7 @@ export function SelectCustomerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className={cn("max-w-[50vw] sm:max-w-[50vw] max-h-[90vh] w-[50vw] h-[90vh] flex flex-col")}>
         <DialogHeader>
           <DialogTitle className="text-center text-lg font-semibold">Select Customer</DialogTitle>
         </DialogHeader>

@@ -17,7 +17,26 @@ import { cn } from "@/lib/utils"
 import { SearchProductsDialog } from "./search-products-dialog"
 import { NumericKeypadDialog } from "../ui/numeric-keypad-dialog"
 import { useNumericKeypad } from "@/hooks/use-numeric-keypad"
+import { PaymentGatewayDialog } from "./payment-gateway-dialog"
+import ConfirmationDialog from "../confirmation-dialog"
+import { OrdersDialog } from "./orders-dialog"
+import { ShippingDialog } from "./shipping-dialog"
+import axios from "axios"
+import { useDebouncedEffect } from "@/hooks/use-debounced-effect"
 
+function calculateNewTaxValue(
+  oldPriceWithoutTax: number,
+  oldTaxValue: number,
+  newPriceWithoutTax: number
+) {
+  const taxRate = oldTaxValue / oldPriceWithoutTax;
+  const newTaxValue = newPriceWithoutTax * taxRate;
+
+  return {
+    taxRate: +(taxRate * 100).toFixed(2),      // percent
+    newTaxValue: +newTaxValue.toFixed(2),      // rounded tax value
+  };
+}
 
 export default function PosSystem() {
   const { categories } = usePage<{ categories: CategoryProduct[] }>().props;
@@ -29,10 +48,16 @@ export default function PosSystem() {
   const [showOrderTypeDialog, setShowOrderTypeDialog] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchProductsDialog, setShowSearchProductsDialog] = useState(false)
+  const [showOrderDialog, setShowOrderDialog] = useState(false)
+  const [showShippingDialog, setShowShippingDialog] = useState(false)
+  const [showPaymentGatewayDialog, setShowPaymentGatewayDialog] = useState(false)
+  const [isResetCartOpen, setIsResetCartOpen] = useState(false)
+  const [useBillingAddress, setUseBillingAddress] = useState(false)
+  const [useShippingAddress, setUseShippingAddress] = useState(false)
+  const [shouldValidate, setShouldValidate] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<ProductSearchBarcode>();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [discount, setDiscount] = useState(0)
-
-
+  const [discount, setDiscount] = useState("")
 
   useEffect(() => {
     if (isAutoFocusOpen && inputRef.current) {
@@ -41,11 +66,11 @@ export default function PosSystem() {
   }, [isAutoFocusOpen]);
 
 
-
   const form = useForm<OrderFormValuesType>({
-    discount_type: null,
+    id: null,
+    code: null,
+    discount_type: "flat",
     title: "",
-    created_at: "",
     discount: 0,
     discount_percentage: 0,
     subtotal: 0,
@@ -62,40 +87,59 @@ export default function PosSystem() {
     payment_status: "paid",
     customer_id: 0,
     change: 0,
+    addresses: null,
+    shipping_type: "flat",
     total_products: 0,
     shipping: 0,
     tax_value: 0,
     products_tax_value: 0,
     shipping_rate: 0,
-    type: {
-      identifier: "takeaway",
-      label: "Take Away",
-      icon: "/images/groceries.png",
-      selected: true
-    },
+    type: null,
     products: [],
     instalments: [],
     payments: [],
     customer: null,
   })
 
+  const calcCart = () => {
+    const products = form.data.products
+    const payments = form.data.payments
+    const discount = form.data.discount || 0
+    const shipping = form.data.type?.identifier === "takeaway" ? 0 : form.data.shipping
+
+    const subtotal = products.reduce((sum, item) => sum + item.total_price_with_tax, 0)
+    const productsTax = products.reduce((sum, item) => sum + item.tax_value * item.quantity, 0)
+    const tendered = payments.reduce((sum, item) => sum + item.value, 0)
+    const total = subtotal - discount + shipping
+    const change = tendered - total
+
+    const total_products = products.length
+
+    form.setData({
+      ...form.data,
+      subtotal,
+      products_tax_value: productsTax,
+      total,
+      total_products,
+      tendered,
+      change
+    })
+  }
+
   const updateDiscount = (discount: string) => {
-    setDiscount(+discount)
-    form.setData("discount", +discount)
-    form.setData("discount_percentage", (+discount / form.data.total) * 100)
+    setDiscount("")
+    const finalDiscount = +discount > form.data.subtotal ? form.data.subtotal : +discount;
+    form.setData("discount", +finalDiscount)
+    form.setData("discount_percentage", 0)
   }
 
   const discountKeypad = useNumericKeypad({
     onConfirm: updateDiscount,
     initialValue: discount,
-    title: "Define Quantity",
+    title: "Cart Discount",
     maxLength: 6,
-    allowDecimal: false,
+    allowDecimal: true,
   })
-
-  // ##########################
-  // #### Cart management ####
-  // #########################
 
   // Clear selected items when cart changes
   useEffect(() => {
@@ -106,51 +150,106 @@ export default function PosSystem() {
   const addToCart = async (product: CartProduct) => {
     if (!autoMarge) {
       form.setData('products', [...form.data.products, product])
-      return
-    }
-
-    const existingIndex = form.data.products.findIndex((p) => p.product_id === product.product_id && p.unit_quantity_id === product.unit_quantity_id)
-
-    if (existingIndex !== -1) {
-      const existingProduct = form.data.products[existingIndex]
-      const newQuantity = existingProduct.quantity + product.quantity
-
-      const updatedProduct: CartProduct = {
-        ...existingProduct,
-        quantity: newQuantity,
-        total_price: product.unit_price * newQuantity,
-        total_price_with_tax: product.price_with_tax * newQuantity,
-        total_price_without_tax: product.price_without_tax * newQuantity,
-        total_tax_value: product.tax_value * newQuantity,
-      }
-
-      const updatedProducts = [...form.data.products]
-      updatedProducts[existingIndex] = updatedProduct
-
-      form.setData('products', updatedProducts)
     } else {
-      form.setData('products', [...form.data.products, product])
+      const existingIndex = form.data.products.findIndex((p) => p.product_id === product.product_id && p.unit_quantity_id === product.unit_quantity_id)
+
+      if (existingIndex !== -1) {
+        const existingProduct = form.data.products[existingIndex]
+        const newQuantity = existingProduct.quantity + product.quantity
+
+        const updatedProduct: CartProduct = {
+          ...existingProduct,
+          quantity: newQuantity,
+          total_price: product.unit_price * newQuantity,
+          total_price_with_tax: product.price_with_tax * newQuantity,
+          total_price_without_tax: product.price_without_tax * newQuantity,
+          total_tax_value: product.tax_value * newQuantity,
+        }
+
+        const updatedProducts = [...form.data.products]
+        updatedProducts[existingIndex] = updatedProduct
+
+        form.setData('products', updatedProducts)
+      } else {
+        form.setData('products', [...form.data.products, product])
+      }
     }
   }
 
   const removeFromCart = (product: CartProduct) => {
     form.setData('products', form.data.products.filter((item) => !(item._uuid === product._uuid)))
-    setSelectedItems(selectedItems.filter((id) => !(id === product._uuid)
-    ))
+    setSelectedItems(selectedItems.filter((id) => !(id === product._uuid)))
+
   }
 
   const updateQuantity = (product: CartProduct, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(product)
-      return
+      // return
+    } else {
+      form.setData('products', form.data.products.map((item) => {
+        if (item._uuid === product._uuid) {
+          const discount_value = (item.discount_percentage / 100) * item.price_without_tax * quantity;
+          const total_price = item.price_without_tax * quantity
+          const totalTaxValue = item.tax_value * quantity
+          return {
+            ...item,
+            discount: discount_value,
+            quantity,
+            total_tax_value: totalTaxValue,
+            total_price: total_price - discount_value,
+            total_price_with_tax: total_price + totalTaxValue - discount_value,
+            total_price_without_tax: total_price - discount_value,
+          }
+        } else {
+          return item
+        }
+      }))
     }
-
-    form.setData('products', form.data.products.map((item) => (item._uuid === product._uuid ? { ...item, quantity } : item)))
   }
 
-
   const updateProductPrice = (product: CartProduct, price: number) => {
-    form.setData('products', form.data.products.map((item) => (item._uuid === product._uuid ? { ...item } : item)))
+    form.setData('products', form.data.products.map((item) => {
+      if (item._uuid === product._uuid) {
+        const discount_value = (item.discount_percentage / 100) * price * item.quantity;
+        const newTaxValue = calculateNewTaxValue(item.price_without_tax, item.tax_value, price).newTaxValue
+        const totalTaxValue = newTaxValue * item.quantity
+        const total_price = price * item.quantity
+        return {
+          ...item,
+          discount: discount_value,
+          unit_price: price,
+          price_without_tax: price,
+          price_with_tax: price + newTaxValue,
+          tax_value: newTaxValue,
+          total_tax_value: totalTaxValue,
+          total_price: total_price - discount_value,
+          total_price_with_tax: total_price + totalTaxValue - discount_value,
+          total_price_without_tax: total_price - discount_value,
+        }
+      } else {
+        return item
+      }
+    }))
+  }
+
+  const updateProductDiscountPercentage = (product: CartProduct, discount: number) => {
+    form.setData('products', form.data.products.map((item) => {
+      if (item._uuid === product._uuid) {
+        const total_price = item.price_without_tax * item.quantity;
+        const discount_value = (discount / 100) * total_price;
+        return {
+          ...item,
+          discount_percentage: discount,
+          discount: discount_value,
+          total_price: total_price - discount_value,
+          total_price_without_tax: (item.price_without_tax * item.quantity) - discount_value,
+          total_price_with_tax: (item.price_with_tax * item.quantity) - discount_value,
+        }
+      } else {
+        return item
+      }
+    }))
   }
 
   const clearCart = () => {
@@ -171,8 +270,6 @@ export default function PosSystem() {
   }
 
   const selectAllItems = () => {
-    // setSelectedItems(cart.map((item) => item.product_id))
-
     setSelectedItems(form.data.products.map((item) => item._uuid))
   }
 
@@ -196,20 +293,88 @@ export default function PosSystem() {
     setSelectedItems([])
   }
 
-  const calcSubtotal = () => {
-    return form.data.products.reduce((sum, item) => sum + item.price_with_tax * item.quantity, 0)
+
+
+  const handleSelectUnit = (quantity: string) => {
+    if (+quantity < 1) {
+      return toast.warning("Quantity cannot be 0")
+    }
+
+    // if quantity 0 show warning
+    // if quanity - existing product quantity show warning
+    if (selectedProduct && selectedProduct.product.selectedUnitQuantity) {
+      if (selectedProduct.product.selectedUnitQuantity.quantity < parseInt(quantity)) {
+        return toast.warning("Quantity exceeds stock")
+      }
+
+      let quantityInCart = 0;
+      form.data.products.map((product) => {
+        if (product.product_id === selectedProduct.product.id) {
+          quantityInCart += product.quantity
+        }
+      })
+
+      if (quantityInCart + parseInt(quantity) > selectedProduct.product.selectedUnitQuantity?.quantity) {
+        return toast.warning(`Unable to add the product, there is not enough stock. Remaining ${selectedProduct.product.selectedUnitQuantity?.quantity - quantityInCart}`)
+      }
+
+      addToCart({
+        product_id: selectedProduct.product.id,
+        name: selectedProduct.product.name,
+        discount_type: "percentage",
+        discount: 0,
+        discount_percentage: 0,
+        product_type: selectedProduct.type,
+        rate: selectedProduct.product.tax_group.taxes.reduce((acc, tax) => acc + +tax.rate, 0),
+        quantity: parseInt(quantity),
+        tax_group_id: +selectedProduct.product.tax_group_id,
+        tax_type: selectedProduct.product.tax_type,
+        tax_value: selectedProduct.product.selectedUnitQuantity.sale_price_tax,
+        unit_id: selectedProduct.product.selectedUnitQuantity.unit.id,
+        unit_price: selectedProduct.product.selectedUnitQuantity.sale_price,
+        price_with_tax: selectedProduct.product.selectedUnitQuantity.sale_price_with_tax,
+        price_without_tax: selectedProduct.product.selectedUnitQuantity.sale_price_without_tax,
+        unit_name: selectedProduct.product.selectedUnitQuantity.unit.name,
+        total_price: selectedProduct.product.selectedUnitQuantity.sale_price * parseInt(quantity),
+        total_price_without_tax: selectedProduct.product.selectedUnitQuantity.sale_price_without_tax * parseInt(quantity),
+        total_price_with_tax: selectedProduct.product.selectedUnitQuantity.sale_price_with_tax * parseInt(quantity),
+        mode: "normal",
+        unit_quantity_id: selectedProduct.product.selectedUnitQuantity.id,
+        total_tax_value: selectedProduct.product.selectedUnitQuantity.sale_price_tax * parseInt(quantity),
+        _uuid: `${selectedProduct.product.id}-${selectedProduct.product.selectedUnitQuantity.unit.id}-${Date.now()}`,
+      })
+
+
+      if (isAutoFocusOpen && inputRef.current) {
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 0);
+      }
+    }
   }
 
-  const calcTax = () => {
-    return form.data.products.reduce((sum, item) => sum + item.tax_value * item.quantity, 0)
-  }
 
-  const subtotal = calcSubtotal()
-  const tax = calcTax()
-  const total = subtotal - discount
+  const quantityKeypad = useNumericKeypad({
+    onConfirm: handleSelectUnit,
+    initialValue: "",
+    title: "Define Quantity",
+    maxLength: 6,
+    allowDecimal: true,
+  })
 
-  const handleBarcodeScanned = (barcode: string) => {
+  const handleBarcodeScanned = async (barcode: string) => {
+    // /api/products/search/using-barcode/123-466-498-9
     console.log(barcode)
+    try {
+      const res = await axios.get<ProductSearchBarcode>(`/api/products/search/using-barcode/${barcode}`)
+      if (res.data) {
+        setSelectedProduct(res.data)
+        quantityKeypad.openKeypad()
+      }
+    } catch (error) {
+      console.log(error)
+      toast.error("Something went wrong. Please try again.")
+    }
   }
 
   const handleSelectCustomer = (customer: Customer) => {
@@ -223,13 +388,35 @@ export default function PosSystem() {
     setShowSelectedCustomerDetailsDialog(true)
   }
 
+  useEffect(() => {
+    calcCart()
+  }, [form.data.products, form.data.discount, form.data.payments, form.data.shipping, form.data.type])
+
+  useEffect(() => {
+    if (shouldValidate) {
+      if (!form.data.customer || !form.data.customer_id) {
+        setShowSelectCustomerDialog(true)
+      } else if (!form.data.type) {
+        setShowOrderTypeDialog(true)
+        setShouldValidate(false)
+      }
+    }
+  }, [shouldValidate, form.data.customer, form.data.customer_id, form.data.type]);
+
+  useDebouncedEffect(() => {
+    if (isAutoFocusOpen && searchQuery.trim() !== "") {
+      handleBarcodeScanned(searchQuery);
+      setSearchQuery("");
+    }
+  }, [searchQuery], 300);
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-screen w-full flex-col">
       <PrimaryNavigation
-        resetCart={resetCart}
+        resetCart={() => setIsResetCartOpen(true)}
         handleOpenSelectCustomerDialog={setShowSelectCustomerDialog}
         handleOpenOrderTypeDialog={setShowOrderTypeDialog}
+        handleOpenOrderDialog={setShowOrderDialog}
       />
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
@@ -250,6 +437,7 @@ export default function PosSystem() {
               removeFromCart={removeFromCart}
               updateQuantity={updateQuantity}
               updatePrice={updateProductPrice}
+              updateDiscountPercentage={updateProductDiscountPercentage}
               clearCart={clearCart}
               removeSelectedItems={removeSelectedItems}
               selectedItems={selectedItems}
@@ -257,21 +445,32 @@ export default function PosSystem() {
               selectAllItems={selectAllItems}
               deselectAllItems={deselectAllItems}
             />
+
           </div>
 
           <TotalsSummary
-            subtotal={subtotal}
-            tax={tax}
-            discount={discount}
-            onOpenDiscountDialog={() => discountKeypad.openKeypad()}
-            total={total}
+            subtotal={form.data.subtotal}
+            tax={form.data.products_tax_value}
+            discount={form.data.discount}
+            total={form.data.total}
             customer={form.data.customer}
             orderType={form.data.type}
+            shipping={form.data.shipping}
+            onOpenDiscountDialog={() => discountKeypad.openKeypad()}
+            onOpenShippingDialog={() => setShowShippingDialog(true)}
+            onOpenSelectCustomerDialog={() => setShowSelectCustomerDialog(true)}
+            onOpenOrderTypeDialog={() => setShowOrderTypeDialog(true)}
           />
-          <PaymentActions />
+          <PaymentActions
+            form={form}
+            setShowPaymentGatewayDialog={setShowPaymentGatewayDialog}
+            setShouldValidate={setShouldValidate}
+            useBillingAddress={useBillingAddress}
+            useShippingAddress={useShippingAddress}
+            resetCart={resetCart}
+            onOpenDiscountDialog={() => discountKeypad.openKeypad()}
+          />
         </div>
-
-
 
         {/* Right Panel - Products */}
         <div className="w-1/3 flex flex-col">
@@ -285,7 +484,10 @@ export default function PosSystem() {
                   placeholder="Scan Barcode"
                   className="pl-8"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSearchQuery(value);
+                  }}
                   onKeyDown={(e) => e.key === "Enter" && handleBarcodeScanned(searchQuery)}
                   onBlur={() => {
                     if (isAutoFocusOpen && inputRef.current) {
@@ -314,7 +516,6 @@ export default function PosSystem() {
             addToCart={addToCart}
             selectedProducts={form.data.products}
           />
-
         </div>
       </div>
 
@@ -332,186 +533,76 @@ export default function PosSystem() {
         onViewCustomer={onViewCustomer}
       />
 
+      <OrderTypeDialog
+        open={showOrderTypeDialog}
+        onOpenChange={setShowOrderTypeDialog}
+        onSelectOrderType={(orderType) => {
+          if (orderType?.identifier === "delivery") {
+            setShowShippingDialog(true)
+          }
+          if (orderType?.identifier === "takeaway") {
+            form.setData('shipping', 0)
+          }
+          form.setData('type', orderType)
+        }}
+        orderType={form.data.type}
+      />
+
       <CustomerDetailsDialog
         open={showSelectedCustomerDetailsDialog}
         onOpenChange={setShowSelectedCustomerDetailsDialog}
         customer={form.data.customer}
       />
 
-      <OrderTypeDialog
-        open={showOrderTypeDialog}
-        onOpenChange={setShowOrderTypeDialog}
-        onSelectOrderType={(orderType) => {
-          form.setData('type', orderType)
-        }}
-        orderType={form.data.type}
+      <SelectCustomerDialog
+        open={showSelectCustomerDialog}
+        onOpenChange={() => setShowSelectCustomerDialog(false)}
+        selectedCustomer={form.data.customer}
+        handleSelectCustomer={handleSelectCustomer}
+        onViewCustomer={onViewCustomer}
       />
 
       <NumericKeypadDialog {...discountKeypad.keypadProps} />
+
+      <ConfirmationDialog
+        isOpen={isResetCartOpen}
+        onClose={() => setIsResetCartOpen(false)}
+        onConfirm={() => {
+          resetCart()
+          setIsResetCartOpen(false)
+        }}
+        title="Clear Cart"
+        description="Are you sure you want to clear the cart?"
+      />
+
+      <PaymentGatewayDialog
+        open={showPaymentGatewayDialog}
+        onOpenChange={setShowPaymentGatewayDialog}
+        form={form}
+        useBillingAddress={useBillingAddress}
+        useShippingAddress={useShippingAddress}
+        resetCart={resetCart}
+      />
+
+      <OrdersDialog
+        open={showOrderDialog}
+        onOpenChange={setShowOrderDialog}
+        form={form}
+      />
+
+      <ShippingDialog
+        open={showShippingDialog}
+        onOpenChange={setShowShippingDialog}
+        form={form}
+        useBillingAddress={useBillingAddress}
+        useShippingAddress={useShippingAddress}
+        setUseBillingAddress={setUseBillingAddress}
+        setUseShippingAddress={setUseShippingAddress}
+        onOpenSelectCustomerDialog={() => setShowSelectCustomerDialog(true)}
+      />
+
+      <NumericKeypadDialog {...quantityKeypad.keypadProps} />
+
     </div>
   )
 }
-
-
-// form data
-// discount_type: null,
-// title: "",
-// discount: 0,
-// discount_percentage: 0,
-// subtotal: 79.99999997,
-// total: 79.99999997,
-// coupons: [],
-// total_coupons: 0,
-// tendered: 79.99999997,
-// note: "",
-// note_visibility: "hidden",
-// tax_group_id: null,
-// tax_type: false,
-// taxes: [],
-// tax_group: {},
-// payment_status: "paid",
-// customer_id: 73,
-// change: 0,
-// total_products: 1,
-// shipping: 0,
-// tax_value: 0,
-// products_tax_value: 7.272727270000004,
-// shipping_rate: 0,
-// customer: {
-//   id: 73,
-//   username: "jehad.a6k@gmail.com",
-//   active: 0,
-//   author: 72,
-//   email: "jehad.a6k@gmail.com",
-//   password: "$2y$10$xdHSnYk9OQD6eAG6NYsdGubeU3Es7khWyWvsJaanK8m3RuoAhS89.",
-//   group_id: 1,
-//   first_name: "Jehad Abdulwafi",
-//   last_name: null,
-//   gender: null,
-//   phone: "4411346792",
-//   pobox: null,
-//   activation_expiration: null,
-//   total_sales_count: 0,
-//   total_sales: 0,
-//   birth_date: "2025-05-19 13:29:25",
-//   purchases_amount: 489.99999994,
-//   owed_amount: 0,
-//   credit_limit_amount: 0,
-//   account_amount: 0,
-//   activation_token: null,
-//   remember_token: null,
-//   created_at: "2025-05-19T12:29:39.000000Z",
-//   updated_at: "2025-06-26T09:49:17.000000Z",
-//   billing: {
-//     customer_id: 73,
-//     type: "billing",
-//     email: null,
-//     first_name: null,
-//     last_name: null,
-//     phone: null,
-//     address_1: null,
-//     address_2: null,
-//     country: null,
-//     city: null,
-//     pobox: null,
-//     company: null,
-//     uuid: null,
-//     author: 72,
-//     created_at: "2025-05-19T12:29:39.000000Z",
-//     updated_at: "2025-05-19T12:29:39.000000Z"
-//   },
-//   shipping: {
-//     id: 1,
-//     customer_id: 73,
-//     type: "shipping",
-//     email: null,
-//     first_name: null,
-//     last_name: null,
-//     phone: null,
-//     address_1: null,
-//     address_2: null,
-//     country: null,
-//     city: null,
-//     pobox: null,
-//     company: null,
-//     uuid: null,
-//     author: 72,
-//     created_at: "2025-05-19T12:29:39.000000Z",
-//     updated_at: "2025-05-19T12:29:39.000000Z"
-//   },
-//   group: {
-//     id: 1,
-//     name: "Jehad Abdulwafi",
-//     description: null,
-//     reward_system_id: null,
-//     minimal_credit_payment: 0,
-//     author: 72,
-//     uuid: null,
-//     created_at: "2025-05-19T12:29:37.000000Z",
-//     updated_at: "2025-05-19T12:29:37.000000Z"
-//   },
-//   selected: true
-// },
-// type: {
-//   identifier: "takeaway",
-//   label: "Take Away",
-//   icon: "/images/groceries.png",
-//   selected: true
-// },
-// products: [
-//   {
-//     product_id: 7,
-//     name: "orange juices",
-//     discount_type: "percentage",
-//     discount: 0,
-//     discount_percentage: 0,
-//     product_type: "product",
-//     rate: 0,
-//     quantity: 1,
-//     tax_group_id: 1,
-//     tax_type: "inclusive",
-//     tax_value: 7.272727270000004,
-//     unit_id: 0,
-//     unit_price: 72.7272727,
-//     price_with_tax: 79.99999997,
-//     price_without_tax: 72.7272727,
-//     unit_name: "piece",
-//     total_price: 72.7272727,
-//     total_price_without_tax: 72.7272727,
-//     total_price_with_tax: 79.99999997,
-//     mode: "normal",
-//     unit_quantity_id: 9,
-//     total_tax_value: 7.272727270000004
-//   }
-// ],
-// instalments: [],
-// payments: [
-//   {
-//     value: 79.99999997,
-//     identifier: "cash-payment",
-//     selected: false,
-//     label: "Cash",
-//     readonly: false
-//   }
-// ],
-// addresses: {
-//   billing: {
-//     customer_id: 73,
-//     type: "billing",
-//     email: null,
-//     first_name: null,
-//     last_name: null,
-//     phone: null,
-//     address_1: null,
-//     address_2: null,
-//     country: null,
-//     city: null,
-//     pobox: null,
-//     company: null,
-//     uuid: null,
-//     author: 72,
-//     created_at: "2025-05-19T12:29:39.000000Z",
-//     updated_at: "2025-05-19T12:29:39.000000Z"
-//   }
-// }
-//

@@ -343,7 +343,7 @@ class ProductsController extends DashboardController
       'products' => $products
     ]);
 
-    return ProductCrud::table();
+    // return ProductCrud::table();
   }
 
   public function editProduct(Product $product)
