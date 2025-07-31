@@ -18,6 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DataTablePagination } from "./data-table-pagination"
 import { DataTableToolbar } from "./data-table-toolbar"
 
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
@@ -36,9 +37,23 @@ interface DataTableProps<TData, TValue> {
     label: string
     action: (selectedRows: TData[]) => void
   }[]
-
+  initialPageSize?: number
   onAddNew?: () => void
   onRefresh?: () => void
+  customFilterDialog?: boolean
+  onOpenCustomFilterDialog?: () => void
+
+  // Custom pagination
+  useCustomPagination?: boolean
+  onPageChange?: (page: number) => void
+  onPageSizeChange?: (pageSize: number) => void
+
+  // Server side search
+  useServerSideSearch?: boolean
+  onSearch?: (searchTerm: string) => void
+  searchValue?: string
+
+  isLoading?: boolean
 }
 
 export function DataTable<TData, TValue>({
@@ -51,30 +66,66 @@ export function DataTable<TData, TValue>({
   bulkActions = [],
   onAddNew,
   onRefresh,
+  initialPageSize = 10,
+  customFilterDialog,
+  onOpenCustomFilterDialog,
+  useCustomPagination = false,
+  onPageChange,
+  onPageSizeChange,
+  useServerSideSearch = false,
+  onSearch,
+  searchValue = "",
+  isLoading = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
 
+
+  // Determine if we're using custom pagination based on data structure
+  const isCustomPagination = useCustomPagination || (data && typeof data === "object" && "current_page" in data)
+
+  // Extract actual data array
+  const tableData = React.useMemo(() => {
+    if (isCustomPagination && data && typeof data === "object" && "data" in data) {
+      return (data as CustomPaginationData<TData>).data as TData[]
+    }
+    return data as TData[]
+  }, [data, isCustomPagination])
+
+  // Get pagination data for custom pagination
+  const customPaginationData = React.useMemo(() => {
+    if (isCustomPagination && data && typeof data === "object" && "current_page" in data) {
+      return data as CustomPaginationData<TData>
+    }
+    return undefined
+  }, [data, isCustomPagination])
+
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    getPaginationRowModel: isCustomPagination ? undefined : getPaginationRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    enableRowSelection: true,
+    // enableRowSelection: true,
+    initialState: {
+      pagination: {
+        pageSize: initialPageSize,
+      },
+    },
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
     },
+    manualPagination: isCustomPagination,
   })
 
   return (
@@ -92,6 +143,12 @@ export function DataTable<TData, TValue>({
         bulkActions={bulkActions}
         onAddNew={onAddNew}
         onRefresh={onRefresh}
+        customFilterDialog={customFilterDialog}
+        onOpenCustomFilterDialog={onOpenCustomFilterDialog}
+        useServerSideSearch={useServerSideSearch}
+        onSearch={onSearch}
+        searchValue={searchValue}
+        isLoading={isLoading}
       />
       <div className="rounded-md border">
         <Table>
@@ -127,7 +184,13 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} />
+      <DataTablePagination
+        table={table}
+        useCustomPagination={isCustomPagination}
+        customPaginationData={customPaginationData}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+      />
     </div>
   )
 }

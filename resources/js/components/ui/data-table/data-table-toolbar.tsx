@@ -1,14 +1,14 @@
 "use client"
 
 import type { Table } from "@tanstack/react-table"
-import { Plus, RefreshCw, X } from "lucide-react"
+import { Filter, Plus, RefreshCw, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTableViewOptions } from "./data-table-view-options"
 import { DataTableFacetedFilter } from "./data-table-faceted-filter"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
@@ -27,6 +27,13 @@ interface DataTableToolbarProps<TData> {
   }[]
   onAddNew?: () => void
   onRefresh?: () => void
+  customFilterDialog?: boolean
+  onOpenCustomFilterDialog?: () => void
+  // Server-side search props
+  useServerSideSearch?: boolean
+  onSearch?: (searchTerm: string) => void
+  searchValue?: string
+  isLoading?: boolean
 }
 
 export function DataTableToolbar<TData>({
@@ -36,7 +43,16 @@ export function DataTableToolbar<TData>({
   bulkActions = [],
   onAddNew,
   onRefresh,
+  onOpenCustomFilterDialog,
+  customFilterDialog = false,
+  useServerSideSearch = false,
+  onSearch,
+  searchValue = "",
+  isLoading = false,
 }: DataTableToolbarProps<TData>) {
+  const [localSearchValue, setLocalSearchValue] = useState(searchValue)
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null)
+
   const isFiltered = table.getState().columnFilters.length > 0
   const [selectedAction, setSelectedAction] = useState<string | null>(null)
 
@@ -52,6 +68,49 @@ export function DataTableToolbar<TData>({
     setSelectedAction(null)
   }
 
+  // Debounced search for server-side search
+  const debouncedSearch = useCallback(
+    (value: string) => {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout)
+      }
+
+      const timeout = setTimeout(() => {
+        if (onSearch) {
+          onSearch(value)
+        }
+      }, 300) // 300ms delay
+
+      setSearchTimeout(timeout)
+    },
+    [onSearch, searchTimeout],
+  )
+
+  // Handle search input change
+  const handleSearchChange = (value: string) => {
+    setLocalSearchValue(value)
+
+    if (useServerSideSearch) {
+      debouncedSearch(value)
+    } else if (searchKey) {
+      table.getColumn(searchKey)?.setFilterValue(value)
+    }
+  }
+
+  // Update local search value when external searchValue changes
+  useEffect(() => {
+    setLocalSearchValue(searchValue)
+  }, [searchValue])
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout)
+      }
+    }
+  }, [searchTimeout])
+
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-1 items-center space-x-2">
@@ -63,9 +122,20 @@ export function DataTableToolbar<TData>({
         {searchKey && (
           <Input
             placeholder={`Search...`}
-            value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
-            onChange={(event) => table.getColumn(searchKey)?.setFilterValue(event.target.value)}
+            value={localSearchValue}
+            onChange={(event) => handleSearchChange(event.target.value)}
+            // value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
+            // onChange={(event) => table.getColumn(searchKey)?.setFilterValue(event.target.value)}
+            disabled={isLoading}
             className="h-9 w-[150px] lg:w-[250px]"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault()
+                if (onSearch) {
+                  onSearch(localSearchValue)
+                }
+              }
+            }}
           />
         )}
         {filterableColumns.length > 0 &&
@@ -107,8 +177,13 @@ export function DataTableToolbar<TData>({
             </Button>
           </div>
         )}
+        {customFilterDialog && (
+          <Button variant="outline" size="sm" className="h-9 px-2 lg:px-3" onClick={onOpenCustomFilterDialog}>
+            <Filter className="mr-2 h-4 w-4" />
+            Filter
+          </Button>
+        )}
         <DataTableViewOptions table={table} />
-
         {onRefresh && (
           <Button onClick={onRefresh} variant="outline" size="sm" className="h-9">
             <RefreshCw className="h-4 w-4" />
