@@ -2,25 +2,52 @@
 
 namespace App\Settings;
 
+use App\Services\Helper;
 use App\Services\Options;
 use App\Services\SettingsPage;
 
 class WorkersSettings extends SettingsPage
 {
-    const IDENTIFIER = 'workers';
+  const IDENTIFIER = 'workers';
+  const VIEW = 'dashboard/settings/workers';
+  const AUTOLOAD = true;
 
-    const AUTOLOAD = true;
+  public function __construct()
+  {
+    $options = app()->make(Options::class);
 
-    public function __construct()
-    {
-        $options = app()->make( Options::class );
+    $this->form = [
+      'title' => __('Workers Settings'),
+      'description' => __('Configure how background operations works.'),
+      'tabs' => [
+        'general' => include(dirname(__FILE__) . '/workers/general.php'),
+      ],
+    ];
+  }
 
-        $this->form = [
-            'title' => __( 'Workers Settings' ),
-            'description' => __( 'Configure how background operations works.' ),
-            'tabs' => [
-                'general' => include ( dirname( __FILE__ ) . '/workers/general.php' ),
-            ],
-        ];
-    }
+
+  public function getPayload()
+  {
+    return [
+      'ns_workers_enabled' => ns()->option->get('ns_workers_enabled', 'no'),
+    ];
+  }
+
+  public function getOptions()
+  {
+    return [
+      'ns_workers_enabled' =>  collect(Helper::kvToJsOptions([
+        'no' => __('No'),
+        'await_confirm' => __('Test'),
+        'yes' => __('Yes'),
+      ]))->map(function ($option) {
+        $option['disabled'] = false;
+        if ($option['value'] === 'yes') {
+          $option['disabled'] = true;
+        }
+
+        return $option;
+      }),
+    ];
+  }
 }

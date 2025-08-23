@@ -63,13 +63,16 @@
         "clsx": "^2.1.1",
         "cmdk": "^1.1.1",
         "concurrently": "^9.0.1",
+        "currency.js": "^2.0.4",
         "date-fns": "^3.6.0",
         "embla-carousel-react": "^8.6.0",
         "globals": "^15.14.0",
         "input-otp": "^1.4.2",
         "laravel-vite-plugin": "^1.0",
         "lucide-react": "^0.475.0",
+        "mathjs": "^14.6.0",
         "next-themes": "^0.4.6",
+        "numeral": "^2.0.6",
         "qrious": "^4.0.2",
         "qs": "^6.14.0",
         "react": "^19.0.0",
@@ -86,7 +89,8 @@
         "typescript": "^5.7.2",
         "vaul": "^1.1.2",
         "vite": "^6.0",
-        "zod": "^3.25.76"
+        "zod": "^3.25.76",
+        "zustand": "^5.0.8"
     },
     "optionalDependencies": {
         "@rollup/rollup-linux-x64-gnu": "4.9.5",

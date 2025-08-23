@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
 import CartItemComponent from "@/components/pos/cart-item"
+import { usePage } from "@inertiajs/react"
 
 interface CartTableProps {
   cart: CartProduct[]
@@ -32,6 +33,7 @@ export default function CartTable({
   selectAllItems,
   deselectAllItems,
 }: CartTableProps) {
+  const { options } = usePage<{ options: NsPosOptions }>().props;
   const allSelected = cart.length > 0 && selectedItems.length === cart.length
   const someSelected = selectedItems.length > 0 && selectedItems.length < cart.length
 

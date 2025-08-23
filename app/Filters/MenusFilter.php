@@ -38,7 +38,7 @@ class MenusFilter
             $menus = array_insert_after( $menus, 'orders', [
                 'orders' => [
                     'label' => __( 'Orders' ),
-                    'icon' => 'la-list-ol',
+                    'icon' => 'ListOrdered',
                     'childrens' => array_merge(
                         $menus[ 'orders' ][ 'childrens' ], [
                             'instalments' => [

@@ -78,7 +78,7 @@ export function MultiSelector({
                 selectedOptions.map((option) => (
                   <Badge key={option.id.toString()} variant="secondary" className="bg-blue-500 text-white hover:bg-blue-600">
                     {option.name}
-                    <button
+                    <div
                       className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
@@ -92,7 +92,7 @@ export function MultiSelector({
                       onClick={() => handleRemove(option.id)}
                     >
                       <X className="h-3 w-3 text-white hover:text-gray-200" />
-                    </button>
+                    </div>
                   </Badge>
                 ))
               ) : (
@@ -101,7 +101,7 @@ export function MultiSelector({
             </div>
             <div className="flex items-center gap-2">
               {selectedOptions.length > 0 && (
-                <button
+                <div
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
@@ -110,7 +110,7 @@ export function MultiSelector({
                   className="text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
-                </button>
+                </div>
               )}
               <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
             </div>
@@ -128,7 +128,7 @@ export function MultiSelector({
                     value={option.id.toString()}
                     disabled={option.disabled}
                     onSelect={() => {
-                      handleSelect(+option.id)
+                      handleSelect(option.id)
                       setSearchValue("")
                     }}
                   >

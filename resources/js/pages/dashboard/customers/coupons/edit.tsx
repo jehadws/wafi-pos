@@ -115,7 +115,7 @@ export default function CreateCuponPage() {
   };
 
   const validateForm = () => {
-    let isValid = true;
+    const isValid = true;
     form.clearErrors();
 
     // if (!form.data.first_name.trim()) {

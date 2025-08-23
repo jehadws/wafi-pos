@@ -359,6 +359,7 @@ class CategoryController extends DashboardController
    */
   public function showStockFlowCrud()
   {
-    return GlobalProductHistoryCrud::table();
+    return Inertia::render('dashboard/products/stock-flow-records');
+    // return GlobalProductHistoryCrud::table();
   }
 }

@@ -201,11 +201,11 @@ export default function Dashboard() {
                 <Copy className="w-4 h-4 mr-2" />
                 Copy Code
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.get(`/dashboard/procurements/orders/edit/${item.id}`)}>
+              <DropdownMenuItem onClick={() => router.get(`/dashboard/orders/invoice/${item.id}`)}>
                 <FileText className="w-4 h-4 mr-2" />
                 Invoice
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.get(`/dashboard/procurements/orders/edit/${item.id}`)}>
+              <DropdownMenuItem onClick={() => router.get(`/dashboard/orders/receipt/${item.id}`)}>
                 <ReceiptText className="w-4 h-4 mr-2" />
                 Receipt
               </DropdownMenuItem>

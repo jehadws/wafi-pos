@@ -1,30 +1,31 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import AppLayout from "@/layouts/app-layout";
 import { Head, router } from "@inertiajs/react";
 import { ColumnDef } from "@tanstack/react-table";
-import { Copy, FileText, List, MoreHorizontal, ReceiptText, Trash2 } from "lucide-react";
-import { DataTable } from "@/components/ui/data-table/data-table";
+import { List, MoreHorizontal, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { Badge } from "@/components/ui/badge";
+import { DataTable } from "@/components/ui/data-table/data-table";
 import ConfirmationDialog from "@/components/confirmation-dialog";
+import { useEffect, useState } from "react";
+import { formatDate } from "@/utils/format";
+import axios from "axios";
 
 const breadcrumbs = [
   { title: "Dashboard", href: "/dashboard" },
-  { title: "Orders List", href: "/dashboard/orders" }
+  { title: "Accounting", href: "/dashboard/accounting" },
+  { title: "Transactions", href: "/dashboard/accounting/transactions" },
+  { title: "Transactions History", href: "/dashboard/accounting/transactions/history" }
 ];
 
-
 export default function Dashboard() {
-  const [orders, setOrders] = useState<CustomPaginationData<Order>>({
+  const [transaction, setTransaction] = useState<CustomPaginationData<TransactionHistory>>({
     data: [],
     last_page: 1,
     current_page: 1,
     next_page_url: null,
-    path: "http://127.0.0.1:8000/api/crud/ns.orders",
+    path: "http://127.0.0.1:8000/api/crud/ns.transactions-history",
     per_page: 20,
     prev_page_url: null,
     to: 0,
@@ -38,23 +39,21 @@ export default function Dashboard() {
   const [pageSize, setPageSize] = useState(20)
   const [searchTerm, setSearchTerm] = useState("")
 
-
   const [deleteDialog, setDeleteDialog] = useState<{
     isOpen: boolean
     loading: boolean
-    item: Order | null
+    item: TransactionHistory | null
   }>({
     isOpen: false,
     loading: false,
     item: null,
   })
 
-
   const handleDeleteConfirm = async () => {
     if (!deleteDialog.item || deleteDialog.loading) return;
 
     try {
-      router.delete(`/api/crud/ns.orders/${deleteDialog.item.id}`);
+      router.delete(`/api/crud/ns.transactions-history/${deleteDialog.item.id}`);
     } catch (error) {
       console.error(error);
     } finally {
@@ -67,8 +66,7 @@ export default function Dashboard() {
     }
   }
 
-
-  const columns: ColumnDef<Order>[] = [
+  const columns: ColumnDef<TransactionHistory>[] = [
     {
       id: 'select',
       header: ({ table }) => (
@@ -85,73 +83,43 @@ export default function Dashboard() {
       enableHiding: false,
     },
     {
-      accessorKey: 'code',
-      header: 'Code',
+      accessorKey: 'name',
+      header: 'Name',
     },
     {
       accessorKey: 'type',
       header: 'Type',
     },
     {
-      accessorKey: 'customer_first_name',
-      header: 'Customer',
-      cell: ({ row }) => {
-        return row.original.customer_first_name
-      }
+      accessorKey: 'transactions_accounts_name',
+      header: 'Account Name',
     },
     {
-      accessorKey: 'delivery_status',
-      header: 'Delivery',
+      accessorKey: 'operation',
+      header: 'Operation',
     },
     {
-      accessorKey: 'payment_status',
-      header: 'Payment',
-      cell: ({ row }) => {
-        const variant = () => {
-          switch (row.getValue('payment_status')) {
-            case 'Paid': return 'success'
-            case 'Hold': return 'info'
-            case 'Partially Paid': return 'info'
-            case 'Partially Refunded': return 'default'
-            case 'Refunded': return 'default'
-            case 'Unpaid': return 'danger'
-            case 'Voided': return 'error'
-            case 'Due': return 'danger'
-            case 'Due With Payment': return 'danger'
-          }
-        }
-        return <Badge variant={variant()}>{row.getValue('payment_status')}</Badge>
-      }
+      accessorKey: 'value',
+      header: 'Value',
     },
     {
-      accessorKey: 'tax_value',
-      header: 'Tax',
+      accessorKey: 'occurrence',
+      header: 'Occurrence',
     },
     {
-      accessorKey: 'total',
-      header: 'Total',
-    },
-    {
-      accessorKey: 'author_username',
+      accessorKey: 'users_username',
       header: 'Author',
     },
     {
-      accessorKey: 'created_at',
-      header: 'On',
+      accessorKey: 'trigger_date',
+      header: 'Created At',
       cell: ({ row }) => {
-        const value = row.getValue('created_at') as string;
-        const date = new Date(value);
-        return date.toLocaleString('en-US', {
-          dateStyle: 'medium',
-          timeStyle: 'short',
-        });
+        return formatDate(row.original.trigger_date);
       },
     },
     {
       id: 'actions',
       cell: ({ row }) => {
-        const item = row.original;
-
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -161,24 +129,11 @@ export default function Dashboard() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => { }}
-              >
+              <DropdownMenuLabel className="inline-flex items-center">
                 <List className="w-4 h-4 mr-2" />
                 Options
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(item.code.toString())}>
-                <Copy className="w-4 h-4 mr-2" />
-                Copy Code
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.get(`/dashboard/procurements/orders/edit/${item.id}`)}>
-                <FileText className="w-4 h-4 mr-2" />
-                Invoice
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.get(`/dashboard/procurements/orders/edit/${item.id}`)}>
-                <ReceiptText className="w-4 h-4 mr-2" />
-                Receipt
-              </DropdownMenuItem>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => setDeleteDialog({ isOpen: true, loading: false, item: row.original })}
                 className="text-destructive"
@@ -193,18 +148,18 @@ export default function Dashboard() {
     },
   ];
 
-
   const bulkActions = [
     {
       label: 'Delete Selected',
-      action: (selectedRows: Order[]) => {
+      action: (selectedRows: TransactionHistory[]) => {
         const payload = {
           action: 'delete_selected',
           entries: selectedRows.map((row) => row.id),
         };
 
+        // Get CSRF token from meta tag
         router
-          .post('/api/crud/ns.orders/bulk-actions', payload, {
+          .post('/api/crud/ns.transactions-history/bulk-actions', payload, {
             onError: (errors) => {
               toast.error('Operation failed');
               console.error('Error:', errors);
@@ -218,25 +173,22 @@ export default function Dashboard() {
     },
   ];
 
-  const handleAddNew = () => {
-    router.visit(route('dashboard.pos'));
-  }
-
   const handleRefresh = () => {
     getOrders(currentPage, pageSize);
   }
 
   const getOrders = async (page: number, pageSize: number) => {
     try {
-      const res = await axios.get(`/api/crud/ns.orders?page=${page}&per_page=${pageSize}`, {
+      const res = await axios.get(`/api/crud/ns.transactions-history?page=${page}&per_page=${pageSize}`, {
         params: { search: searchTerm },
       });
-      console.log("Orders", res.data);
-      setOrders(res.data)
+      console.log("accounts", res.data);
+      setTransaction(res.data)
     } catch (error) {
       console.error("Error fetching Orders:", error);
     }
   }
+
 
   const handleSearch = (search: string) => {
     setSearchTerm(search)
@@ -259,17 +211,16 @@ export default function Dashboard() {
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title={"Orders List"} />
+      <Head title={"Transactions History List - JGREM"} />
       <div className="flex h-full flex-1 flex-col gap-4 p-4">
         <div className="grid w-full">
           <DataTable
             columns={columns}
-            data={orders}
+            data={transaction}
+            title="Transactions History List"
+            description="Display all transaction history."
+            searchKey="name"
             bulkActions={bulkActions}
-            title="Orders List"
-            onAddNew={handleAddNew}
-            description="Display all orders."
-            searchKey="code"
             onRefresh={handleRefresh}
 
             useCustomPagination
@@ -286,7 +237,7 @@ export default function Dashboard() {
           isOpen={deleteDialog.isOpen}
           onClose={() => setDeleteDialog({ isOpen: false, loading: false, item: null })}
           onConfirm={handleDeleteConfirm}
-          title={`Delete ${deleteDialog.item?.code}`}
+          title={`Delete ${deleteDialog.item?.name}`}
           description="Are you sure you want to delete this item? This action cannot be undone."
           confirmText="Delete"
           cancelText="Cancel"
@@ -297,6 +248,8 @@ export default function Dashboard() {
     </AppLayout>
   );
 }
+
+
 
 
 

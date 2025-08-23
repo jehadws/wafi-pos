@@ -492,20 +492,31 @@ class MenuService
    * @return void
    */
   public function toggleActive()
-  {
-    foreach ($this->menus as $identifier => &$menu) {
-      if (isset($menu['href']) && $menu['href'] === url()->current()) {
-        $menu['toggled'] = true;
-      }
+    {
+        $currentUrl = url()->current();
 
-      if (isset($menu['childrens'])) {
-        foreach ($menu['childrens'] as $subidentifier => &$submenu) {
-          if ($submenu['href'] === url()->current()) {
-            $menu['toggled'] = true;
-            $submenu['active'] = true;
-          }
+        foreach ($this->menus as &$menu) {
+            $menu['active'] = false;
+            $menu['toggled'] = false;
+
+            if (isset($menu['href']) && $menu['href'] === $currentUrl) {
+                $menu['active'] = true;
+            }
+
+            if (isset($menu['childrens'])) {
+                $isChildActive = false;
+                foreach ($menu['childrens'] as &$submenu) {
+                    $submenu['active'] = false;
+                    if (isset($submenu['href']) && $submenu['href'] === $currentUrl) {
+                        $submenu['active'] = true;
+                        $isChildActive = true;
+                    }
+                }
+
+                if ($isChildActive) {
+                    $menu['toggled'] = true;
+                }
+            }
         }
-      }
     }
-  }
 }

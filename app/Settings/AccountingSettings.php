@@ -9,30 +9,51 @@ use App\Services\SettingsPage;
 
 class AccountingSettings extends SettingsPage
 {
-    const IDENTIFIER = 'accounting';
+  const IDENTIFIER = 'accounting';
+  const VIEW = 'dashboard/settings/accounting';
+  const AUTOLOAD = true;
 
-    const AUTOLOAD = true;
+  public function __construct()
+  {
+    $accounting = config('accounting');
+    $accounts = collect($accounting['accounts'])->mapWithKeys(function ($account, $key) {
+      return [$key => Helper::toJsOptions(TransactionAccount::where('category_identifier', $key)->where('sub_category_id', '!=', null)->get(), ['id', 'name'])];
+    });
 
-    public function __construct()
-    {
-        $accounting = config( 'accounting' );
-        $accounts = collect( $accounting[ 'accounts' ] )->mapWithKeys( function ( $account, $key ) {
-            return [ $key => Helper::toJsOptions( TransactionAccount::where( 'category_identifier', $key )->where( 'sub_category_id', '!=', null )->get(), [ 'id', 'name' ] ) ];
-        } );
+    $this->form = [
+      'title' => __('Accounting'),
+      'description' => __('Configure the accounting feature'),
+      'tabs' => SettingForm::tabs(
+        SettingForm::tab(
+          identifier: 'general',
+          label: __('General'),
+          fields: include(dirname(__FILE__) . '/accounting/general.php'),
+          // footer: SettingForm::tabFooter(
+          //   extraComponents: ['nsDefaultAccounting'] // components defined on "resources/ts/components"
+          // )
+        ),
+      ),
+    ];
+  }
 
-        $this->form = [
-            'title' => __( 'Accounting' ),
-            'description' => __( 'Configure the accounting feature' ),
-            'tabs' => SettingForm::tabs(
-                SettingForm::tab(
-                    identifier: 'general',
-                    label: __( 'General' ),
-                    fields: include ( dirname( __FILE__ ) . '/accounting/general.php' ),
-                    footer: SettingForm::tabFooter(
-                        extraComponents : [ 'nsDefaultAccounting' ] // components defined on "resources/ts/components"
-                    )
-                ),
-            ),
-        ];
-    }
+  public function getPayload()
+  {
+    return [
+      'ns_accounting_expenses_accounts' => ns()->option->get('ns_accounting_expenses_accounts'),
+      'ns_accounting_default_paid_expense_offset_account' => ns()->option->get('ns_accounting_default_paid_expense_offset_account'),
+    ];
+  }
+
+  public function getOptions()
+  {
+    $accounting = config('accounting');
+    $accounts = collect($accounting['accounts'])->mapWithKeys(function ($account, $key) {
+      return [$key => Helper::toJsOptions(TransactionAccount::where('category_identifier', $key)->where('sub_category_id', '!=', null)->get(), ['id', 'name'])];
+    });
+
+    return [
+      'ns_accounting_expenses_accounts' => $accounts['expenses'],
+      'ns_accounting_default_paid_expense_offset_account' =>  $accounts['assets'],
+    ];
+  }
 }

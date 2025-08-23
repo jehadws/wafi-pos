@@ -17,55 +17,55 @@ use TorMorten\Eventy\Facades\Events as Hook;
 
 class SettingsController extends DashboardController
 {
-    public function getSettings( $identifier )
-    {
-        Gate::allows( 'manages.options' );
+  public function getSettings($identifier)
+  {
+    Gate::allows('manages.options');
 
-        return $this->handleDefaultSettings( $identifier );
+    return $this->handleDefaultSettings($identifier);
+  }
+
+  public function handleDefaultSettings($identifier)
+  {
+    $settings = Hook::filter('ns.settings', false, $identifier);
+
+    if ($settings instanceof SettingsPage) {
+        return $settings->renderForm();
     }
 
-    public function handleDefaultSettings( $identifier )
-    {
-        $settings = Hook::filter( 'ns.settings', false, $identifier );
+    return abort(404, __('Settings Page Not Found'));
+  }
 
-        if ( $settings instanceof SettingsPage ) {
-            return $settings->renderForm();
-        }
+  /**
+   * Get settings form using the identifier
+   *
+   * @param string identifier
+   * @return array
+   */
+  public function getSettingsForm($identifier)
+  {
+    $settings = Hook::filter('ns.settings', false, $identifier);
 
-        return abort( 404, __( 'Settings Page Not Found' ) );
+    if ($settings instanceof SettingsPage) {
+      return $settings->getForm();
     }
 
-    /**
-     * Get settings form using the identifier
-     *
-     * @param string identifier
-     * @return array
-     */
-    public function getSettingsForm( $identifier )
-    {
-        $settings = Hook::filter( 'ns.settings', false, $identifier );
+    throw new Exception(__('Unable to initiallize the settings page. The identifier "' . $identifier . '", doesn\'t belong to a valid SettingsPage instance.'));
+  }
 
-        if ( $settings instanceof SettingsPage ) {
-            return $settings->getForm();
-        }
+  public function saveSettingsForm(SettingsRequest $request, $identifier)
+  {
+    ns()->restrict(['manage.options']);
 
-        throw new Exception( __( 'Unable to initiallize the settings page. The identifier "' . $identifier . '", doesn\'t belong to a valid SettingsPage instance.' ) );
+    $resource = Hook::filter('ns.settings', false, $identifier);
+
+    if (! $resource instanceof SettingsPage) {
+      throw new Exception(sprintf(
+        __('%s is not an instance of "%s".'),
+        $identifier,
+        SettingsPage::class
+      ));
     }
 
-    public function saveSettingsForm( SettingsRequest $request, $identifier )
-    {
-        ns()->restrict( [ 'manage.options' ] );
-
-        $resource = Hook::filter( 'ns.settings', false, $identifier );
-
-        if ( ! $resource instanceof SettingsPage ) {
-            throw new Exception( sprintf(
-                __( '%s is not an instance of "%s".' ),
-                $identifier,
-                SettingsPage::class
-            ) );
-        }
-
-        return $resource->saveForm( $request );
-    }
+    return $resource->saveForm($request);
+  }
 }

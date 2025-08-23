@@ -110,9 +110,9 @@ class OrdersController extends DashboardController
         ->addView('pages.dashboard.orders.footer')
     );
 
-    $customers = Customer::get([ 'id', 'first_name', 'last_name', ]);
-    $users = User::get([ 'id', 'username', ]);
-    $registers = Register::get([ 'id', 'name', ]);
+    $customers = Customer::get(['id', 'first_name', 'last_name',]);
+    $users = User::get(['id', 'username',]);
+    $registers = Register::get(['id', 'name',]);
     return Inertia::render('dashboard/orders/page', [
       'title' => __('Orders List'),
       'description' => __('List of orders'),
@@ -253,7 +253,7 @@ class OrdersController extends DashboardController
     $order->paymentStatus = $this->ordersService->getPaymentLabel($order->payment_status);
     $order->deliveryStatus = $this->ordersService->getPaymentLabel($order->delivery_status);
 
-    return View::make('pages.dashboard.orders.templates.invoice', [
+    return Inertia::render('dashboard/orders/invoice/page', [
       'order' => $order,
       'options' => $optionsService->get(),
       'billing' => (new CustomerCrud)->getForm()['tabs']['billing']['fields'],
@@ -417,17 +417,27 @@ class OrdersController extends DashboardController
 
   public function listPaymentsTypes()
   {
-    return PaymentTypeCrud::table();
+    $payments = PaymentType::all();
+    return Inertia::render('dashboard/orders/payments-types/page', [
+      'paymentTypes' => $payments,
+    ]);
+
+    // return PaymentTypeCrud::table();
   }
 
   public function createPaymentType()
   {
-    return PaymentTypeCrud::form();
+
+    return Inertia::render('dashboard/orders/payments-types/create');
+    // return PaymentTypeCrud::form();
   }
 
   public function updatePaymentType(PaymentType $paymentType)
   {
-    return PaymentTypeCrud::form($paymentType);
+    return inertia::render('dashboard/orders/payments-types/edit', [
+      'paymentType' => $paymentType,
+    ]);
+    // return PaymentTypeCrud::form($paymentType);
   }
 
   public function getOrderProductsRefunded(Request $request, Order $order)

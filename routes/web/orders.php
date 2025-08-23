@@ -12,4 +12,4 @@ Route::get('/orders/invoice/{order}', [OrdersController::class, 'orderInvoice'])
 Route::get('/orders/receipt/{order}', [OrdersController::class, 'orderReceipt'])->name(ns()->routeName('ns.dashboard.orders-receipt'));
 Route::get('/orders/refund-receipt/{refund}', [OrdersController::class, 'orderRefundReceipt'])->name(ns()->routeName('ns.dashboard.orders-refund-receipt'));
 Route::get('/orders/payment-receipt/{orderPayment}', [OrdersController::class, 'getOrderPaymentReceipt'])->name(ns()->routeName('ns.dashboard.orders-payment-receipt'));
-Route::get('/pos', [OrdersController::class, 'showPOS'])->name('dashboard.pos');
+Route::get('/pos', [OrdersController::class, 'showPOS'])->name(ns()->routeName('ns.dashboard.pos'));

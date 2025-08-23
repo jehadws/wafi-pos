@@ -1,8 +1,10 @@
 import PosSystem from '@/components/pos/pos-system';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { Toaster } from 'sonner';
 
 export default function PosPage() {
+  const { settings } = usePage().props
+  console.log("settings", settings)
   return (
     <>
       <Head title="Point of Sale">

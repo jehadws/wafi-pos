@@ -1,0 +1,225 @@
+import { useTransition } from "react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
+import { Save, Loader2, ChevronsUpDown, Check } from "lucide-react"
+import { toast } from "sonner"
+import AppLayout from "@/layouts/app-layout"
+import { useForm, usePage } from "@inertiajs/react"
+import FormField from "@/components/forms/shared/form-field"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { cn } from "@/lib/utils"
+import axios from "axios"
+
+type General = {
+  ns_customers_credit_enabled: string | null
+  ns_customers_default: string | null
+  ns_customers_default_group: string | null
+  ns_customers_force_unique_phone: string | null
+  ns_customers_force_valid_email: string | null
+  ns_customers_rewards_enabled: string | null
+}
+
+type Payload = {
+  general: General
+}
+
+type Option = {
+  label: string
+  value: string | number
+}
+
+type Options = {
+  ns_customers_credit_enabled: Option[]
+  ns_customers_default: Option[]
+  ns_customers_default_group: Option[]
+  ns_customers_force_unique_phone: Option[]
+  ns_customers_force_valid_email: Option[]
+  ns_customers_rewards_enabled: Option[]
+}
+
+
+export default function SettingsGeneral() {
+  const { options, payload } = usePage<{ options: Options, payload: General }>().props
+  console.log("payload", payload)
+  const [isPending, startTransition] = useTransition()
+
+  const form = useForm<Payload>({
+    general: {
+      ...payload
+    },
+  })
+
+  const handleSave = () => {
+    startTransition(async () => {
+      try {
+        const res = await axios.post("/api/settings/customers", form.data)
+        toast("Settings saved", { description: `The settings was saved successfully.` })
+      } catch (e: any) {
+        toast("Failed to save", {
+          description: e?.message || "An unexpected error occurred.",
+        })
+      }
+    })
+  }
+
+  return (
+    <AppLayout>
+      <div className="p-6">
+        <div className="space-y-6">
+          <div className="relative overflow-hidden rounded-xl border">
+            <div className="relative p-6 md:p-8">
+              <h1 className="text-2xl font-semibold">General Settings</h1>
+              <p className="text-sm text-muted-foreground">Configure the general settings of the application.</p>
+              <div className="mt-4">
+              </div>
+
+
+              <div className="grid gap-6 mt-6 md:grid-cols-2 lg:grid-cols-3">
+                <FormField label="Enable Reward" description="Will activate the reward system for the customers.">
+                  <Select
+                    value={form.data.general.ns_customers_rewards_enabled === "yes" ? "yes" : "no"}
+                    onValueChange={(v) => form.setData("general.ns_customers_rewards_enabled", v)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {options.ns_customers_rewards_enabled.map((l) => (
+                        <SelectItem key={l.value} value={l.value.toString()}>
+                          {l.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+                <FormField label="Require Valid Email" description="Will for valid unique email for every customer.">
+                  <Select
+                    value={form.data.general.ns_customers_force_valid_email ?? "no"}
+                    onValueChange={(v) => form.setData("general.ns_customers_force_valid_email", v)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {options.ns_customers_force_valid_email.map((l) => (
+                        <SelectItem key={l.value} value={l.value.toString()}>
+                          {l.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+                <FormField label="Require Unique Phone" description="Every customer should have a unique phone number.">
+                  <Select
+                    value={form.data.general.ns_customers_force_unique_phone ?? "no"}
+                    onValueChange={(v) => form.setData("general.ns_customers_force_unique_phone", v)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {options.ns_customers_force_unique_phone.map((l) => (
+                        <SelectItem key={l.value} value={l.value.toString()}>
+                          {l.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+
+                <FormField label="Default Customer Account" description="You must create a customer to which each sales are attributed when the walking customer doesn't register.">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={open}
+                        className="w-full justify-between"
+                      >
+                        {form.data.general.ns_customers_default
+                          ? options.ns_customers_default.find((tz) => tz.value === +form.data.general.ns_customers_default)?.label
+                          : "Select default..."}
+                        <ChevronsUpDown className="opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Search framework..." className="h-9" />
+                        <CommandList>
+                          <CommandEmpty>No framework found.</CommandEmpty>
+                          <CommandGroup>
+                            {options.ns_customers_default.map((tz) => (
+                              <CommandItem
+                                key={tz.value}
+                                value={tz.value.toString()}
+                                onSelect={(currentValue) => {
+                                  form.setData("general.ns_customers_default", currentValue)
+                                }}
+                              >
+                                {tz.label}
+                                <Check
+                                  className={cn(
+                                    "ml-auto",
+                                    form.data.general.ns_customers_default === tz.value ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </FormField>
+                <FormField label="Default Customer Group" description="Select to which group each new created customers are assigned to.">
+                  <Select
+                    value={form.data.general.ns_customers_default_group?.toString() ?? "no"}
+                    onValueChange={(v) => form.setData("general.ns_customers_default_group", v)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {options.ns_customers_default_group.map((l) => (
+                        <SelectItem key={l.value} value={l.value.toString()}>
+                          {l.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+                <FormField label="Store P.O.Box" description="The store mail box number.">
+                  <Select
+                    value={form.data.general.ns_customers_credit_enabled ?? "no"}
+                    onValueChange={(v) => form.setData("general.ns_customers_credit_enabled", v)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {options.ns_customers_credit_enabled.map((l) => (
+                        <SelectItem key={l.value} value={l.value.toString()}>
+                          {l.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+              </div>
+
+            </div>
+            <div className="mt-6 flex items-center justify-end rounded-b-xl border-t p-3">
+              <Button onClick={() => handleSave()} disabled={isPending}>
+                {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                Save Settings
+              </Button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </AppLayout>
+  )
+}
+

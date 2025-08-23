@@ -37,7 +37,7 @@ export default function FormHeader({
             {description && <p className="text-sm text-muted-foreground">{description}</p>}
           </div>
         </div>
-        <Button onClick={onSave} disabled={form.processing || form.hasErrors} type="submit" className="bg-blue-600 hover:bg-blue-700">
+        <Button onClick={onSave} disabled={form.processing || form.hasErrors} type="submit">
           {saveLabel}
         </Button>
       </div>

@@ -5,6 +5,8 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
+import Settings from './lib/settings';
+import { ConfirmDialogProvider } from './components/providers/confirm-dialog-provider';
 
 // Set up axios CSRF protection
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
@@ -23,8 +25,12 @@ createInertiaApp({
   resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
   setup({ el, App, props }) {
     const root = createRoot(el);
-
-    root.render(<App {...props} />);
+    Settings.set(props.initialPage.props.settings);
+    root.render(
+      <ConfirmDialogProvider>
+        <App {...props} />
+      </ConfirmDialogProvider>
+    );
   },
   progress: {
     color: '#4B5563',
@@ -33,6 +39,3 @@ createInertiaApp({
 
 // This will set light / dark mode on load...
 initializeTheme();
-
-
-

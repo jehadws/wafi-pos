@@ -148,7 +148,7 @@ export default function CreateProductPage() {
 
   const validateForm = () => {
     console.log("calling validtatio")
-    let isValid = true;
+    const isValid = true;
     form.clearErrors();
 
     // if (!form.data.name.trim()) {

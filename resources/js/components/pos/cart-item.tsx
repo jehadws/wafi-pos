@@ -1,12 +1,15 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Trash2, Plus, Minus } from "lucide-react"
+import { Trash2, Plus, Minus, Award } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { formatCurrency } from "@/utils/format"
 import { useNumericKeypad } from "@/hooks/use-numeric-keypad"
 import { NumericKeypadDialog } from "../ui/numeric-keypad-dialog"
+import { usePage } from "@inertiajs/react"
+import { toast } from "sonner"
+import { useConfirmDialog } from "../providers/confirm-dialog-provider"
 
 interface CartItemProps {
   item: CartProduct
@@ -17,6 +20,8 @@ interface CartItemProps {
 }
 
 export default function CartItem({ item, updateDiscountPercentage, updatePrice, removeFromCart, updateQuantity }: CartItemProps) {
+  const { options } = usePage<{ options: NsPosOptions }>().props;
+  const confirm = useConfirmDialog();
   const [isEditing, setIsEditing] = useState(false)
   const [quantityInput, setQuantityInput] = useState(item.quantity.toString())
 
@@ -84,6 +89,38 @@ export default function CartItem({ item, updateDiscountPercentage, updatePrice, 
     }
   }
 
+  const allowQuantityModification = (product: CartProduct) => {
+    return product.product_type === 'product';
+  }
+
+  const toggleMode = async (product: CartProduct, index: number) => {
+    if (!options.ns_jgrem_allow_wholesale_price) {
+      return toast('Unable to change the price mode. This feature has been disabled.');
+    }
+
+    if (product.mode === 'normal') {
+      const ok = await confirm({
+        title: `Are you sure you want to switch to ${product.mode} price?`,
+        message: `The price of ${product.name} will be ${product.unit_price} ${product.unit_name} for all sales. You can change the price later.`,
+        confirmText: "Yes",
+        cancelText: "No",
+      })
+      if (ok) {
+        // POS.updateProduct(product, { mode: 'wholesale' }, index);
+      }
+    } else {
+      const ok = await confirm({
+        title: `Are you sure you want to switch to ${product.mode} price?`,
+        message: `The price of ${product.name} will be ${product.unit_price} ${product.unit_name} for all sales. You can change the price later.`,
+        confirmText: "Yes",
+        cancelText: "No",
+      })
+      if (ok) {
+        // POS.updateProduct(product, { mode: 'normal' }, index);
+      }
+    }
+  }
+
   return (
     <div className="grid grid-cols-14 text-sm h-14 items-center hover:bg-muted/30 transition-colors">
       <div className="col-span-10 h-10 flex flex-row items-center justify-start px-2 py-2">
@@ -98,18 +135,34 @@ export default function CartItem({ item, updateDiscountPercentage, updatePrice, 
             </p>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6 text-destructive ml-auto hover:text-destructive/80 hover:bg-destructive/10"
-          onClick={(e) => {
-            e.stopPropagation()
-            removeFromCart(item)
-          }}
-          aria-label={`Remove ${item.name} from cart`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <div className="ml-auto">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-destructive hover:text-destructive/80 hover:bg-destructive/10"
+            onClick={(e) => {
+              e.stopPropagation()
+              removeFromCart(item)
+            }}
+            aria-label={`Remove ${item.name} from cart`}
+          >
+            <Trash2 className="h-6 w-6" />
+          </Button>
+          {options.ns_jgrem_allow_wholesale_price && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 hover:text-green-500/80 hover:bg-green-500/10"
+              onClick={(e) => {
+                e.stopPropagation()
+                // toggleMode(product, index)
+              }}
+              aria-label={`Remove ${item.name} from cart`}
+            >
+              <Award className="h-6 w-6" />
+            </Button>
+          )}
+        </div>
       </div>
       <div className="col-span-2 border-l flex items-center justify-center space-x-1 h-14">
         {isEditing ? (

@@ -441,7 +441,7 @@ class ProductsController extends DashboardController
 
   public function showStockAdjustment()
   {
-    return View::make('pages.dashboard.products.stock-adjustment', [
+    return Inertia::render('dashboard/products/stock-adjustment/page', [
       'title' => __('Stock Adjustment'),
       'description' => __('Adjust stock of existing products.'),
       'actions' => Helper::kvToJsOptions([
@@ -641,7 +641,7 @@ class ProductsController extends DashboardController
 
   public function printLabels()
   {
-    return view::make('pages.dashboard.products.print-labels', [
+    return Inertia::render('dashboard/products/print-labels/page', [
       'title' => __('Print Labels'),
       'description' => __('Customize and print products labels.'),
     ]);

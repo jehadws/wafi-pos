@@ -123,3 +123,75 @@ type ProductSearchBarcode = {
     }
   }
 }
+
+interface NsPosOptions {
+  ns_jgrem_printing_document: 'invoice' | 'receipt';
+  ns_orders_allow_partial: 'yes' | 'no';
+  ns_orders_allow_unpaid: 'yes' | 'no';
+  ns_jgrem_order_types: string[]; // from OrdersService::getTypeLabels()
+  ns_jgrem_order_sms: 'yes' | 'no';
+  ns_jgrem_sound_enabled: 'yes' | 'no';
+  ns_jgrem_quick_product: 'yes' | 'no';
+  ns_jgrem_quick_product_default_unit: number; // Unit id
+  ns_jgrem_price_with_tax: 'yes' | 'no';
+  ns_jgrem_unit_price_ediable: 'yes' | 'no';
+  ns_jgrem_printing_enabled_for:
+  | 'disabled'
+  | 'all_orders'
+  | 'partially_paid_orders'
+  | 'only_paid_orders';
+  ns_jgrem_registers_enabled: 'yes' | 'no';
+  ns_jgrem_idle_counter: 'disabled' | '5min' | '10min' | '15min' | '20min' | '30min' | number;
+  ns_jgrem_disbursement: 'yes' | 'no';
+  ns_customers_default: boolean;
+  ns_jgrem_vat: 'disabled' | 'flat_vat' | 'variable_vat' | 'products_vat';
+  ns_jgrem_tax_group: number | string | null; // TaxGroup id
+  ns_jgrem_tax_type: 'inclusive' | 'exclusive' | false;
+  ns_jgrem_printing_gateway: 'default';
+  ns_jgrem_show_quantity: boolean;
+  ns_jgrem_new_item_audio: '' | 'disabled' | string; // '' or audio URL
+  ns_jgrem_complete_sale_audio: '' | 'disabled' | string;
+  ns_jgrem_numpad: 'default' | 'advanced';
+  ns_jgrem_allow_wholesale_price: boolean;
+  ns_jgrem_allow_decimal_quantities: boolean;
+  ns_jgrem_force_autofocus: boolean;
+}
+
+
+interface ProductUnitQuantity {
+  quantity: number;
+  sale_price_tax: number;
+  wholesale_price_tax: number;
+  custom_price_tax: number;
+  expiration_date: string;
+  sale_price: number;
+  sale_price_edit: number;
+  sale_price_without_tax: number;
+  sale_price_with_tax: number;
+  wholesale_price: number;
+  wholesale_price_edit: number;
+  wholesale_price_with_tax: number;
+  wholesale_price_without_tax: number;
+  preview_url: string;
+  custom_price: number;
+  custom_price_edit: number;
+  custom_price_without_tax: number;
+  custom_price_with_tax: number;
+}
+
+
+interface Product {
+  id?: number;
+  name?: string;
+  stock_management?: 'enabled' | 'disabled';
+  unit_id?: number;
+  product_id?: number;
+  discount_type?: string;
+  discount?: number;
+  discount_percentage?: number;
+  total_price?: number;
+  mode: 'normal' | 'wholesale' | 'custom';
+  $original?: any;
+  unit_quantity_id?: number;
+  unit_quantities?: any
+}

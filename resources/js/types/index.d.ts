@@ -87,3 +87,19 @@ export interface User {
   // credit_limit_amount : 0
   [key: string]: unknown; // This allows for additional properties...
 }
+
+
+type Media = {
+  id: number
+  name: string
+  extension: string
+  slug: string
+  user_id: number
+  created_at: string,
+  updated_at: string,
+  sizes: {
+    original: string
+    thumb: string
+  },
+  user: User
+}

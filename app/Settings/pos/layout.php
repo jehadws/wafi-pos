@@ -3,7 +3,7 @@
 use App\Services\Helper;
 
 $audios = Helper::kvToJsOptions( [
-    '' => __( 'Disabled' ),
+    'disabled' => __( 'Disabled' ),
     url( '/audio/bubble.mp3' ) => __( 'Bubble' ),
     url( '/audio/ding.mp3' ) => __( 'Ding' ),
     url( '/audio/pop.mp3' ) => __( 'Pop' ),

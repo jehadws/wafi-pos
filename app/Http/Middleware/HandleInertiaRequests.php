@@ -6,6 +6,7 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
+use App\Settings\GeneralSettings;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -55,6 +56,7 @@ class HandleInertiaRequests extends Middleware
             'menus' => $request->user() ? 
                 app()->make(\App\Services\MenuService::class)->getMenus() : 
                 [],
+            'settings' => (new GeneralSettings)->getPayload(),
         ];
     }
 }
