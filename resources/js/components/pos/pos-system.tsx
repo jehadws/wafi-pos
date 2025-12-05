@@ -5,7 +5,7 @@ import CartTable from "@/components/pos/cart-table"
 import TotalsSummary from "@/components/pos/totals-summary"
 import PaymentActions from "@/components/pos/payment-actions"
 import { toast } from "sonner"
-import { useForm, usePage } from "@inertiajs/react"
+import { useForm } from "@inertiajs/react"
 import ProductsCategoriesPanel from "./products-categories-panel"
 import { SelectCustomerDialog } from "./customer-select-dialog"
 import { OrderTypeDialog } from "./order-type-dialog"
@@ -39,7 +39,6 @@ function calculateNewTaxValue(
 }
 
 export default function PosSystem() {
-  const { categories } = usePage<{ categories: CategoryProduct[] }>().props;
   const [isAutoFocusOpen, setIsAutoFocusOpen] = useState(false)
   const [autoMarge, setAutoMarge] = useState(false)
   const [selectedItems, setSelectedItems] = useState<string[]>([])
@@ -52,6 +51,7 @@ export default function PosSystem() {
   const [showShippingDialog, setShowShippingDialog] = useState(false)
   const [showPaymentGatewayDialog, setShowPaymentGatewayDialog] = useState(false)
   const [isResetCartOpen, setIsResetCartOpen] = useState(false)
+
   const [useBillingAddress, setUseBillingAddress] = useState(false)
   const [useShippingAddress, setUseShippingAddress] = useState(false)
   const [shouldValidate, setShouldValidate] = useState(false);
@@ -425,28 +425,20 @@ export default function PosSystem() {
           <SecondaryNavigation form={form} setShowSelectCustomerDialog={setShowSelectCustomerDialog} />
 
           {/* Cart Table */}
-          <div className="flex-1 overflow-hidden">
-            <div className="grid grid-cols-14 pl-4 border-b bg-muted/50 h-13 text-sm font-medium">
-              <div className="col-span-10 inline-flex items-center">Product</div>
-              <div className="col-span-2 text-center border-l inline-flex items-center justify-center">Quantity</div>
-              <div className="col-span-2 text-center border-l inline-flex items-center justify-center">Total</div>
-            </div>
 
-            <CartTable
-              cart={form.data.products}
-              removeFromCart={removeFromCart}
-              updateQuantity={updateQuantity}
-              updatePrice={updateProductPrice}
-              updateDiscountPercentage={updateProductDiscountPercentage}
-              clearCart={clearCart}
-              removeSelectedItems={removeSelectedItems}
-              selectedItems={selectedItems}
-              toggleItemSelection={toggleItemSelection}
-              selectAllItems={selectAllItems}
-              deselectAllItems={deselectAllItems}
-            />
-
-          </div>
+          <CartTable
+            cart={form.data.products}
+            removeFromCart={removeFromCart}
+            updateQuantity={updateQuantity}
+            updatePrice={updateProductPrice}
+            updateDiscountPercentage={updateProductDiscountPercentage}
+            clearCart={clearCart}
+            removeSelectedItems={removeSelectedItems}
+            selectedItems={selectedItems}
+            toggleItemSelection={toggleItemSelection}
+            selectAllItems={selectAllItems}
+            deselectAllItems={deselectAllItems}
+          />
 
           <TotalsSummary
             subtotal={form.data.subtotal}
@@ -512,7 +504,6 @@ export default function PosSystem() {
           </div>
 
           <ProductsCategoriesPanel
-            categories={categories}
             addToCart={addToCart}
             selectedProducts={form.data.products}
           />

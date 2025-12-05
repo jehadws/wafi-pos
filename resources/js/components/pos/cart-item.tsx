@@ -8,8 +8,6 @@ import { formatCurrency } from "@/utils/format"
 import { useNumericKeypad } from "@/hooks/use-numeric-keypad"
 import { NumericKeypadDialog } from "../ui/numeric-keypad-dialog"
 import { usePage } from "@inertiajs/react"
-import { toast } from "sonner"
-import { useConfirmDialog } from "../providers/confirm-dialog-provider"
 
 interface CartItemProps {
   item: CartProduct
@@ -21,7 +19,6 @@ interface CartItemProps {
 
 export default function CartItem({ item, updateDiscountPercentage, updatePrice, removeFromCart, updateQuantity }: CartItemProps) {
   const { options } = usePage<{ options: NsPosOptions }>().props;
-  const confirm = useConfirmDialog();
   const [isEditing, setIsEditing] = useState(false)
   const [quantityInput, setQuantityInput] = useState(item.quantity.toString())
 
@@ -86,38 +83,6 @@ export default function CartItem({ item, updateDiscountPercentage, updatePrice, 
     } else if (e.key === "Escape") {
       setQuantityInput(item.quantity.toString())
       setIsEditing(false)
-    }
-  }
-
-  const allowQuantityModification = (product: CartProduct) => {
-    return product.product_type === 'product';
-  }
-
-  const toggleMode = async (product: CartProduct, index: number) => {
-    if (!options.ns_jgrem_allow_wholesale_price) {
-      return toast('Unable to change the price mode. This feature has been disabled.');
-    }
-
-    if (product.mode === 'normal') {
-      const ok = await confirm({
-        title: `Are you sure you want to switch to ${product.mode} price?`,
-        message: `The price of ${product.name} will be ${product.unit_price} ${product.unit_name} for all sales. You can change the price later.`,
-        confirmText: "Yes",
-        cancelText: "No",
-      })
-      if (ok) {
-        // POS.updateProduct(product, { mode: 'wholesale' }, index);
-      }
-    } else {
-      const ok = await confirm({
-        title: `Are you sure you want to switch to ${product.mode} price?`,
-        message: `The price of ${product.name} will be ${product.unit_price} ${product.unit_name} for all sales. You can change the price later.`,
-        confirmText: "Yes",
-        cancelText: "No",
-      })
-      if (ok) {
-        // POS.updateProduct(product, { mode: 'normal' }, index);
-      }
     }
   }
 

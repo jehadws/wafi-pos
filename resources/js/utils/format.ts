@@ -1,4 +1,5 @@
 import Settings from "@/lib/settings";
+import NumeralJS from "numeral";
 
 export const formatCurrency = (amount: number) => {
   const { currency } = Settings.get();
@@ -14,9 +15,7 @@ export const formatCurrency = (amount: number) => {
 
 export const rawCurrency = (value) => {
   const numeralFormat = `0.000000000`;
-
-  // return parseFloat(NumeralJS(value).format(numeralFormat));
-  return parseFloat(value);
+  return parseFloat(NumeralJS(value).format(numeralFormat));
 }
 
 export const formatDate = (dateString: string) => {

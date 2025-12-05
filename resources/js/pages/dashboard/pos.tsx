@@ -1,10 +1,19 @@
 import PosSystem from '@/components/pos/pos-system';
+import { usePOS } from '@/hooks/usePOS';
 import { Head, usePage } from '@inertiajs/react';
+import { useEffect } from 'react';
 import { Toaster } from 'sonner';
 
 export default function PosPage() {
-  const { settings } = usePage().props
+  const { settings, options } = usePage().props
+  const { defineOptions } = usePOS();
   console.log("settings", settings)
+  console.log("options", options)
+
+  useEffect(() => {
+    defineOptions(options)
+  }, [options])
+
   return (
     <>
       <Head title="Point of Sale">
