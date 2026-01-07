@@ -420,7 +420,7 @@ export class POS {
    */
   async processInitialQueue() {
     return new Promise(async (resolve, reject) => {
-      for (let index in this._initialQueue) {
+      for (const index in this._initialQueue) {
         try {
           const response = await Promise.race([
             this._initialQueue[index](),
@@ -828,7 +828,7 @@ export class POS {
    */
   submitOrder(orderFields = {}) {
     return new Promise(async (resolve, reject) => {
-      var order = {
+      let order = {
         ...<Order>this.order!.getValue(),
         ...orderFields
       };
@@ -1039,7 +1039,7 @@ export class POS {
 
               orderProduct.$original = () => orderProduct.product;
               orderProduct.$quantities = () => {
-                let unitQuantity = orderProduct
+                const unitQuantity = orderProduct
                   .product
                   .unit_quantities
                   .filter(unitQuantity => +unitQuantity.id === +orderProduct.unit_quantity_id || unitQuantity.id === undefined)[0];
@@ -1197,7 +1197,7 @@ export class POS {
   }
 
   updateCart(current, update) {
-    for (let key in update) {
+    for (const key in update) {
       if (update[key] !== undefined) {
         current[key] = update[key];
       }
@@ -1285,9 +1285,9 @@ export class POS {
       .map(product => product.total_price);
 
     if (total.length > 0) {
-      let productTotalValue = total.reduce((b, a) => b + a);
+      const productTotalValue = total.reduce((b, a) => b + a);
       let dynamicProductValue = 0;
-      let dynamicProducts = products
+      const dynamicProducts = products
         .filter(product => product.product_type === 'dynamic')
         .map(product => {
           product.unit_price = (productTotalValue * product.rate) / 100;
@@ -1376,7 +1376,7 @@ export class POS {
     }
 
     const taxType = order.tax_type;
-    let tax_value = order.tax_value;
+    const tax_value = order.tax_value;
 
     if (taxType === 'exclusive') {
       const op1 = math.chain(order.subtotal).add(order.shipping || 0).add(tax_value).done();
@@ -1467,7 +1467,7 @@ export class POS {
     this._processingAddQueue = true;
 
     if (cartProduct.product_id !== 0) {
-      for (let index in this.addToCartQueue) {
+      for (const index in this.addToCartQueue) {
 
         /**
                                                       * the popup promise receives the product that
@@ -1476,7 +1476,7 @@ export class POS {
                                                       */
         try {
           const promiseInstance = new this.addToCartQueue[index](cartProduct);
-          const result = <Object>(await promiseInstance.run(productData));
+          const result = <object>(await promiseInstance.run(productData));
 
           /**
            * We just mix both to make sure
@@ -1800,7 +1800,7 @@ export class POS {
      */
     this.computeProductTaxValue(product);
 
-    let unitPrice = nsHooks.applyFilters('ns-pos-product-unit-price', product.unit_price, product);
+    const unitPrice = nsHooks.applyFilters('ns-pos-product-unit-price', product.unit_price, product);
 
     product.total_price = math.chain(unitPrice).multiply(product.quantity).subtract(product.discount).done();
     product.total_tax_value = math.chain(product.tax_value).multiply(product.quantity).done();
@@ -1812,7 +1812,7 @@ export class POS {
     const tax_group = product.$original().tax_group;
     const unitPrice = nsHooks.applyFilters('ns-pos-product-unit-price', product.unit_price, product);
 
-    let result = this.computeTaxForGroup(
+    const result = this.computeTaxForGroup(
       math.chain(unitPrice).done(),
       tax_group,
       this.options.getValue().ns_pos_price_with_tax === 'yes' ? 'inclusive' : 'exclusive'
@@ -1865,7 +1865,7 @@ export class POS {
       PaymentQueue
     ]);
 
-    for (let index in queues) {
+    for (const index in queues) {
       try {
         const promise = new queues[index](this.order.getValue());
         const response = await promise.run();
@@ -1883,7 +1883,7 @@ export class POS {
   computeDiscount(product) {
     if (['flat', 'percentage'].includes(product.discount_type)) {
       if (product.discount_type === 'percentage') {
-        let unitPrice = nsHooks.applyFilters('ns-pos-product-unit-price', product.unit_price, product);
+        const unitPrice = nsHooks.applyFilters('ns-pos-product-unit-price', product.unit_price, product);
         product.discount = math.chain(
           math.chain(
             math.chain(unitPrice).multiply(product.discount_percentage).done()

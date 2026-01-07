@@ -10,6 +10,7 @@ import AppLayout from "@/layouts/app-layout"
 import { Media } from "@/types"
 import { TabsContent } from "@/components/tabs"
 import { Input } from "@/components/ui/input"
+import { formatDateTime } from "@/utils/format"
 
 type UploadStatus = "queued" | "uploading" | "done" | "error" | "canceled"
 
@@ -505,7 +506,7 @@ export default function MediaManager() {
                     <div>
                       <div className="text-muted-foreground">Uploaded At:</div>
                       <div className="font-medium">
-                        {new Date(active.created_at).toLocaleString()}
+                        {formatDateTime(active.created_at)}
                       </div>
                     </div>
                     <div>

@@ -6,6 +6,7 @@ import { Head, router, usePage } from "@inertiajs/react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Copy, Edit, List, MoreHorizontal } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table/data-table";
+import { formatDateTime } from "@/utils/format";
 
 const breadcrumbs = [
   { title: "Dashboard", href: "/dashboard" },
@@ -67,22 +68,14 @@ export default function Dashboard() {
       header: 'Expiration Date',
       cell: ({ row }) => {
         const value = row.getValue('expiration_date') as string;
-        const date = new Date(value);
-        return value ? date.toLocaleString('en-US', {
-          dateStyle: 'medium',
-        }) : 'N/A';
+        return value ? formatDateTime(value) : 'N/A'
       },
     },
     {
       accessorKey: 'created_at',
       header: 'On',
       cell: ({ row }) => {
-        const value = row.getValue('created_at') as string;
-        const date = new Date(value);
-        return date.toLocaleString('en-US', {
-          dateStyle: 'medium',
-          timeStyle: 'short',
-        });
+        return formatDateTime(row.getValue('created_at'))
       },
     },
     {

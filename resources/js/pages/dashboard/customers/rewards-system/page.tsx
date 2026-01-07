@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { DataTable } from "@/components/ui/data-table/data-table";
 import { useState } from "react";
 import ConfirmationDialog from "@/components/confirmation-dialog";
+import { formatDateTime } from "@/utils/format";
 
 const breadcrumbs = [
   { title: "Dashboard", href: "/dashboard" },
@@ -86,12 +87,7 @@ export default function RewardSystemPage() {
       accessorKey: 'created_at',
       header: 'Created At',
       cell: ({ row }) => {
-        const value = row.getValue('created_at') as string;
-        const date = new Date(value);
-        return date.toLocaleString('en-US', {
-          dateStyle: 'medium',
-          timeStyle: 'short',
-        });
+        return formatDateTime(row.getValue('created_at'))
       },
     },
     {

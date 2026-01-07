@@ -83,6 +83,8 @@ export default function SettingsGeneral() {
   const { options, settings } = usePage<{ options: Options, settings: Payload }>().props
   const [tab, setTab] = useState<"identification" | "currency" | "date" | "registration">("identification")
   const [isPending, startTransition] = useTransition()
+  // console.log("settings", settings)
+  // console.log("options", options)
 
   const form = useForm<Payload>({
     identification: {

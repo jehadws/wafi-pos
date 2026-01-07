@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import ConfirmationDialog from "@/components/confirmation-dialog";
 import OrdersFilterDialog from "@/components/forms/orders/orders-filter-dialog";
 import OrderOptionsDialog from "@/components/forms/orders/order-options-dialog";
+import { formatDateTime } from "@/utils/format";
 
 type TFilter = {
   "jgrem_orders.created_at": {
@@ -169,12 +170,7 @@ export default function Dashboard() {
       accessorKey: 'created_at',
       header: 'On',
       cell: ({ row }) => {
-        const value = row.getValue('created_at') as string;
-        const date = new Date(value);
-        return date.toLocaleString('en-US', {
-          dateStyle: 'medium',
-          timeStyle: 'short',
-        });
+        return formatDateTime(row.getValue('created_at'))
       },
     },
     {

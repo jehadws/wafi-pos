@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import AppLayout from "@/layouts/app-layout";
+import { formatCurrency, formatDateTime } from "@/utils/format";
 import { Head, usePage } from "@inertiajs/react";
 import { BarChart3, DollarSign, ShoppingCart, Users } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -53,7 +54,7 @@ export default function Dashboard() {
         // console.log("customersResponse", customersResponse);
         // console.log("weeksResponse", weeksResponse);
         // console.log("cashiersResponse", cashiersResponse);
-        // console.log("ordersResponse", ordersResponse);
+        console.log("ordersResponse", ordersResponse);
 
         setCards(cardsResponse);
         setBestCustomers(customersResponse);
@@ -67,26 +68,6 @@ export default function Dashboard() {
 
     fetchDashboardData();
   }, []);
-
-  // Format currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(amount);
-  };
-
-  // Format date
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
 
   const breadcrumbs = [
     { title: "Home", href: "/" },
@@ -240,7 +221,7 @@ export default function Dashboard() {
                         <div>
                           <p className="font-medium">{order.code}</p>
                           <p className="text-sm text-muted-foreground">
-                            {order.user?.name} • {formatDate(order.created_at)}
+                            {order.user?.name} • {formatDateTime(order.created_at)}
                           </p>
                         </div>
                         <div className="font-bold">{formatCurrency(order.total)}</div>

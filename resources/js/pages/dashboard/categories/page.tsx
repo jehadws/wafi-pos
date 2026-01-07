@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import AppLayout from '@/layouts/app-layout';
+import { formatDateTime } from '@/utils/format';
 import { Head, router, usePage } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
 import { Copy, Edit, MoreHorizontal, Trash2 } from 'lucide-react';
@@ -112,12 +113,7 @@ export default function Dashboard() {
       accessorKey: 'created_at',
       header: 'Created At',
       cell: ({ row }) => {
-        const value = row.getValue('created_at') as string;
-        const date = new Date(value);
-        return date.toLocaleString('en-US', {
-          dateStyle: 'medium',
-          timeStyle: 'short',
-        });
+        return formatDateTime(row.getValue('created_at'))
       },
     },
     {

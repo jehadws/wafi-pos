@@ -733,7 +733,7 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
 
         orderProduct.$original = () => orderProduct.product;
         orderProduct.$quantities = () => {
-          let unitQuantity = orderProduct.product.unit_quantities.filter(
+          const unitQuantity = orderProduct.product.unit_quantities.filter(
             (uq: any) => +uq.id === +orderProduct.unit_quantity_id || uq.id === undefined
           )[0];
 
@@ -905,7 +905,7 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
     }
 
     const taxType = order.tax_type;
-    let tax_value = order.tax_value;
+    const tax_value = order.tax_value;
 
     if (taxType === 'exclusive') {
       const op1 = math.chain(order.subtotal).add(order.shipping || 0).add(tax_value).done();
@@ -954,9 +954,9 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
     const total = products.filter((product) => product.product_type !== 'dynamic').map((product) => product.total_price);
 
     if (total.length > 0) {
-      let productTotalValue = total.reduce((b: number, a: number) => b + a);
+      const productTotalValue = total.reduce((b: number, a: number) => b + a);
       let dynamicProductValue = 0;
-      let dynamicProducts = products
+      const dynamicProducts = products
         .filter((product) => product.product_type === 'dynamic')
         .map((product) => {
           product.unit_price = (productTotalValue * (product.rate || 0)) / 100;
@@ -989,7 +989,7 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
   },
 
   addToCart: async (product) => {
-    let productData = {};
+    const productData = {};
     let cartProduct: OrderProduct = {
       product_id: product.id || 0,
       name: product.name,
@@ -1155,7 +1155,7 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
       const lineSubtotal = math.chain(price).multiply(product.quantity).done();
       const lineAfterDiscount = math.chain(lineSubtotal).subtract(product.discount || 0).done();
 
-      let result = get().computeTaxForGroup(
+      const result = get().computeTaxForGroup(
         lineAfterDiscount,
         taxGroup,
         originalProduct.tax_type
@@ -1256,7 +1256,7 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
     // get().computeDiscount(product);
     get().computeProductTaxValue(product);
 
-    let unitPrice = product.unit_price;
+    const unitPrice = product.unit_price;
     product.total_price = math.chain(unitPrice).multiply(product.quantity).subtract(product.discount || 0).done();
 
     if (product.total_tax_value === undefined) {
@@ -1293,7 +1293,7 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
 
     const lineSubtotal = math.chain(unitPrice).multiply(product.quantity).done();
     const lineAfterDiscount = math.chain(lineSubtotal).subtract(product.discount || 0).done();
-    let result = get().computeTaxForGroup(lineAfterDiscount, tax_group, product.tax_type || "");
+    const result = get().computeTaxForGroup(lineAfterDiscount, tax_group, product.tax_type || "");
 
     product.tax_value = math.chain(result.tax_value).divide(product.quantity).done();
     product.total_tax_value = result.tax_value;

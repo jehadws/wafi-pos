@@ -66,6 +66,7 @@
         "concurrently": "^9.0.1",
         "currency.js": "^2.0.4",
         "date-fns": "^3.6.0",
+        "date-fns-tz": "^3.2.0",
         "embla-carousel-react": "^8.6.0",
         "globals": "^15.14.0",
         "input-otp": "^1.4.2",
