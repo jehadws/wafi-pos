@@ -9,6 +9,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 import { Menus } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import {
@@ -29,6 +30,7 @@ import {
   Truck,
   User,
   Users,
+  ChevronLeft,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -64,7 +66,7 @@ const MenuIcon = ({ iconName }: { iconName?: string }) => {
 };
 
 export function NavMain() {
-  const { menus }: { menus: Menus } = usePage().props;
+  const { menus, locale }: { menus: Menus } = usePage().props;
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>(
     Object.fromEntries(
       Object.entries(menus || {}).map(([key, item]) => [key, item.toggled || false])
@@ -89,7 +91,7 @@ export function NavMain() {
         <div className="flex-1 overflow-hidden">
           <ScrollArea className="h-full">
             <div className="pr-4">
-              <SidebarMenu>
+              <SidebarMenu dir={locale === 'ar' ? 'rtl' : 'ltr'}>
                 {Object.entries(menus || {}).map(([key, item]) => {
                   if (!item) return null;
 
@@ -107,8 +109,8 @@ export function NavMain() {
                           >
                             <MenuIcon iconName={item.icon} />
                             <span>{item.label || ''}</span>
-                            <span className="ml-auto">
-                              {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                            <span className={cn(locale === 'ar' ? "mr-auto" : "ml-auto")}>
+                              {isExpanded ? <ChevronDown className="h-4 w-4" /> : locale === "ar" ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                             </span>
                           </SidebarMenuButton>
 

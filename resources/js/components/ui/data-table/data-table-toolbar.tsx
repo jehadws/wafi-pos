@@ -9,6 +9,7 @@ import { DataTableViewOptions } from "./data-table-view-options"
 import { DataTableFacetedFilter } from "./data-table-faceted-filter"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useCallback, useEffect, useState } from "react"
+import { useTranslation } from "@/lib/i18n"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
@@ -50,6 +51,7 @@ export function DataTableToolbar<TData>({
   searchValue = "",
   isLoading = false,
 }: DataTableToolbarProps<TData>) {
+  const { t } = useTranslation();
   const [localSearchValue, setLocalSearchValue] = useState(searchValue)
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null)
 
@@ -121,7 +123,7 @@ export function DataTableToolbar<TData>({
         )}
         {searchKey && (
           <Input
-            placeholder={`Search...`}
+            placeholder={t('Search')}
             value={localSearchValue}
             onChange={(event) => handleSearchChange(event.target.value)}
             // value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
@@ -152,7 +154,7 @@ export function DataTableToolbar<TData>({
           )}
         {isFiltered && (
           <Button variant="ghost" onClick={() => table.resetColumnFilters()} className="h-9 px-2 lg:px-3">
-            Reset
+            {t('Reset')}
             <X className="ml-2 h-4 w-4" />
           </Button>
         )}
@@ -162,7 +164,7 @@ export function DataTableToolbar<TData>({
           <div className="flex items-center space-x-2">
             <Select value={selectedAction || ""} onValueChange={setSelectedAction}>
               <SelectTrigger className="h-9 w-[150px]">
-                <SelectValue placeholder="Bulk Actions" />
+                <SelectValue placeholder={t('Bulk Actions')} />
               </SelectTrigger>
               <SelectContent>
                 {bulkActions.map((action) => (
@@ -173,14 +175,14 @@ export function DataTableToolbar<TData>({
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" onClick={handleApplyAction} disabled={!selectedAction} className="h-9">
-              Apply
+              {t('Apply')}
             </Button>
           </div>
         )}
         {customFilterDialog && (
           <Button variant="outline" size="sm" className="h-9 px-2 lg:px-3" onClick={onOpenCustomFilterDialog}>
             <Filter className="mr-2 h-4 w-4" />
-            Filter
+            {t('Filter')}
           </Button>
         )}
         <DataTableViewOptions table={table} />

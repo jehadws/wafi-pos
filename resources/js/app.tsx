@@ -1,12 +1,14 @@
-import '../css/app.css';
 import axios from 'axios';
+import '../css/app.css';
 
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
-import { initializeTheme } from './hooks/use-appearance';
-import Settings from './lib/settings';
 import { ConfirmDialogProvider } from './components/providers/confirm-dialog-provider';
+import { initializeTheme } from './hooks/use-appearance';
+import { RTLProvider } from './hooks/use-rtl';
+import { TranslationProvider } from './lib/i18n';
+import Settings from './lib/settings';
 
 // Set up axios CSRF protection
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
@@ -26,10 +28,16 @@ createInertiaApp({
   setup({ el, App, props }) {
     const root = createRoot(el);
     Settings.set(props.initialPage.props.settings);
+    console.log("app props", props.initialPage.props);
+    const locale = (props.initialPage.props.locale as any) || 'en';
     root.render(
-      <ConfirmDialogProvider>
-        <App {...props} />
-      </ConfirmDialogProvider>
+      <RTLProvider locale={locale}>
+        <TranslationProvider locale={locale}>
+          <ConfirmDialogProvider>
+            <App {...props} />
+          </ConfirmDialogProvider>
+        </TranslationProvider>
+      </RTLProvider>,
     );
   },
   progress: {

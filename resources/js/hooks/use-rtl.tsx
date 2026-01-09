@@ -1,6 +1,4 @@
-import { type SharedData } from '@/types';
-import { usePage } from '@inertiajs/react';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 type RTLContextType = {
     isRTL: boolean;
@@ -8,8 +6,7 @@ type RTLContextType = {
 
 const RTLContext = createContext<RTLContextType>({ isRTL: false });
 
-export function RTLProvider({ children }: { children: React.ReactNode }) {
-    const { locale } = usePage<SharedData>().props;
+export function RTLProvider({ children, locale }: { children: ReactNode; locale: string }) {
     const [isRTL, setIsRTL] = useState(false);
 
     useEffect(() => {
