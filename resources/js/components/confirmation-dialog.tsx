@@ -50,16 +50,21 @@ export default function ConfirmationDialog({
     isOpen,
     onClose,
     onConfirm,
-    title = 'Are you sure?',
-    description = 'This action cannot be undone.',
-    confirmText = 'Confirm',
-    cancelText = 'Cancel',
+    title,
+    description,
+    confirmText,
+    cancelText,
     variant = 'default',
     loading = false,
 }: ConfirmationDialogProps) {
     const { t } = useTranslation();
     const config = variantConfig[variant];
     const Icon = config.icon;
+
+    const displayTitle = title || t('Would you proceed ?');
+    const displayDescription = description || t('This action will be recorded. Consider providing a reason for this operation');
+    const displayConfirmText = confirmText || t('Confirm');
+    const displayCancelText = cancelText || t('Cancel');
 
     const handleConfirm = () => {
         onConfirm();
@@ -74,22 +79,18 @@ export default function ConfirmationDialog({
                             <Icon className="h-5 w-5" />
                         </div>
                         <div className="flex-1">
-                            <DialogTitle className="text-left">{title || t('Confirm Your Action')}</DialogTitle>
+                            <DialogTitle className="text-left">{displayTitle}</DialogTitle>
                         </div>
                     </div>
-                    {description && (
-                        <DialogDescription className="mt-2 text-left">
-                            {description || t('The processing status of order will be changed. Please confirm your action.')}
-                        </DialogDescription>
-                    )}
+                    {displayDescription && <DialogDescription className="mt-2 text-left">{displayDescription}</DialogDescription>}
                 </DialogHeader>
 
                 <DialogFooter className="flex-col gap-2 sm:flex-row">
                     <Button type="button" variant="outline" onClick={onClose} disabled={loading} className="flex-1">
-                        {cancelText || t('Cancel')}
+                        {displayCancelText}
                     </Button>
                     <Button type="button" variant={config.confirmButtonVariant} onClick={handleConfirm} disabled={loading} className="flex-1">
-                        {loading ? t('Loading...') : confirmText || t('Submit')}
+                        {loading ? t('Loading...') : displayConfirmText}
                     </Button>
                 </DialogFooter>
             </DialogContent>
