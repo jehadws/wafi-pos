@@ -1,269 +1,272 @@
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import AppLayout from "@/layouts/app-layout";
-import { Head, router } from "@inertiajs/react";
-import { ColumnDef } from "@tanstack/react-table";
-import { Edit, List, MoreHorizontal, Trash2 } from "lucide-react";
-import { DataTable } from "@/components/ui/data-table/data-table";
-import { toast } from "sonner";
-import { useEffect, useState } from "react";
-import axios from "axios";
-import ConfirmationDialog from "@/components/confirmation-dialog";
-import { Badge } from "@/components/ui/badge";
-import { formatDateTime } from "@/utils/format";
-
-const breadcrumbs = [
-  { title: "Dashboard", href: "/dashboard" },
-  { title: "Payment Types", href: "/dashboard/orders/payments-types" },
-];
-
+import ConfirmationDialog from '@/components/confirmation-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DataTable } from '@/components/ui/data-table/data-table';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import AppLayout from '@/layouts/app-layout';
+import { useTranslation } from '@/lib/i18n';
+import { formatDateTime } from '@/utils/format';
+import { Head, router } from '@inertiajs/react';
+import { ColumnDef } from '@tanstack/react-table';
+import axios from 'axios';
+import { Edit, List, MoreHorizontal, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export default function Dashboard() {
-  const [paymentTypes, setPaymentTypes] = useState<CustomPaginationData<PaymentType>>({
-    data: [],
-    last_page: 1,
-    current_page: 1,
-    next_page_url: null,
-    path: "http://127.0.0.1:8000/api/crud/ns.payments-types",
-    per_page: 20,
-    prev_page_url: null,
-    to: 0,
-    total: 0,
-    from: 0,
-    last_page_url: "",
-    first_page_url: ""
-  });
+    const { t } = useTranslation();
 
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(20)
-  const [searchTerm, setSearchTerm] = useState("")
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Payment Types'), href: '/dashboard/orders/payments-types' },
+    ];
 
+    const [paymentTypes, setPaymentTypes] = useState<CustomPaginationData<PaymentType>>({
+        data: [],
+        last_page: 1,
+        current_page: 1,
+        next_page_url: null,
+        path: 'http://127.0.0.1:8000/api/crud/ns.payments-types',
+        per_page: 20,
+        prev_page_url: null,
+        to: 0,
+        total: 0,
+        from: 0,
+        last_page_url: '',
+        first_page_url: '',
+    });
 
-  const [deleteDialog, setDeleteDialog] = useState<{
-    isOpen: boolean
-    loading: boolean
-    item: PaymentType | null
-  }>({
-    isOpen: false,
-    loading: false,
-    item: null,
-  })
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(20);
+    const [searchTerm, setSearchTerm] = useState('');
 
-  const handleDeleteConfirm = async () => {
-    if (!deleteDialog.item || deleteDialog.loading) return;
-
-    try {
-      router.delete(`/api/crud/ns.payments-types/${deleteDialog.item.id}`);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      handleRefresh()
-      setDeleteDialog({
-        ...deleteDialog,
-        loading: false,
+    const [deleteDialog, setDeleteDialog] = useState<{
+        isOpen: boolean;
+        loading: boolean;
+        item: PaymentType | null;
+    }>({
         isOpen: false,
+        loading: false,
         item: null,
-      })
-    }
-  }
+    });
 
-  const columns: ColumnDef<PaymentType>[] = [
-    {
-      id: 'select',
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
-      accessorKey: 'identifier',
-      header: 'Identifier',
-    },
-    {
-      accessorKey: 'label',
-      header: 'Label',
-    },
-    {
-      accessorKey: 'active',
-      header: 'Active',
-      cell: ({ row }) => {
-        const variant = () => {
-          switch (row.getValue('active')) {
-            case 'Yes': return 'success'
-            case 'No': return 'danger'
-          }
+    const handleDeleteConfirm = async () => {
+        if (!deleteDialog.item || deleteDialog.loading) return;
+
+        try {
+            router.delete(`/api/crud/ns.payments-types/${deleteDialog.item.id}`);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            handleRefresh();
+            setDeleteDialog({
+                ...deleteDialog,
+                loading: false,
+                isOpen: false,
+                item: null,
+            });
         }
-        return <Badge variant={variant()}>{row.getValue('active')}</Badge>
-      }
-    },
-    {
-      accessorKey: 'priority',
-      header: 'Priority',
-    },
-    {
-      accessorKey: 'user_username',
-      header: 'Author',
-    },
-    {
-      accessorKey: 'readonly',
-      header: 'Readonly',
-    },
-    {
-      accessorKey: 'created_at',
-      header: 'Created On',
-      cell: ({ row }) => {
-        return formatDateTime(row.getValue('created_at'))
-      },
-    },
-    {
-      id: 'actions',
-      cell: ({ row }) => {
-        const item = row.original;
+    };
 
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel className="inline-flex items-center">
-                <List className="w-4 h-4 mr-2" />
-                Options
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.get(`/dashboard/orders/payments-types/edit/${item.id}`)}>
-                <Edit className="w-4 h-4 mr-2" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setDeleteDialog({ isOpen: true, loading: false, item: row.original })}
-                className="text-destructive"
-              >
-                <Trash2 className="w-4 h-4 mr-2 text-destructive" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
-    },
-  ];
-
-  const bulkActions = [
-    {
-      label: 'Delete Selected',
-      action: (selectedRows: PaymentType[]) => {
-        const payload = {
-          action: 'delete_selected',
-          entries: selectedRows.map((row) => row.id),
-        };
-
-        router
-          .post('/api/crud/ns.payments-types/bulk-actions', payload, {
-            onError: (errors) => {
-              toast.error('Operation failed');
-              console.error('Error:', errors);
+    const columns: ColumnDef<PaymentType>[] = [
+        {
+            id: 'select',
+            header: ({ table }) => (
+                <Checkbox
+                    checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
+                    onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                    aria-label="Select all"
+                />
+            ),
+            cell: ({ row }) => (
+                <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label={t('Select row')} />
+            ),
+            enableSorting: false,
+            enableHiding: false,
+        },
+        {
+            accessorKey: 'identifier',
+            header: t('Identifier'),
+        },
+        {
+            accessorKey: 'label',
+            header: t('Label'),
+        },
+        {
+            accessorKey: 'active',
+            header: t('Active'),
+            cell: ({ row }) => {
+                const variant = () => {
+                    switch (row.getValue('active')) {
+                        case 'Yes':
+                            return 'success';
+                        case 'No':
+                            return 'danger';
+                    }
+                };
+                return <Badge variant={variant()}>{row.getValue('active')}</Badge>;
             },
-            onSuccess: () => {
-              toast.success('Successfully processed selected items');
-              router.reload();
-            }
-          })
-      },
-    },
-  ];
+        },
+        {
+            accessorKey: 'priority',
+            header: t('Priority'),
+        },
+        {
+            accessorKey: 'user_username',
+            header: t('Author'),
+        },
+        {
+            accessorKey: 'readonly',
+            header: t('Readonly'),
+        },
+        {
+            accessorKey: 'created_at',
+            header: t('Created On'),
+            cell: ({ row }) => {
+                return formatDateTime(row.getValue('created_at'));
+            },
+        },
+        {
+            id: 'actions',
+            cell: ({ row }) => {
+                const item = row.original;
 
-  const handleAddNew = () => {
-    router.visit(route('ns.dashboard.orders-create-types'));
-  }
+                return (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">{t('Open menu')}</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel className="inline-flex items-center">
+                                <List className="mr-2 h-4 w-4" />
+                                {t('Options')}
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => router.get(`/dashboard/orders/payments-types/edit/${item.id}`)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                {t('Edit')}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => setDeleteDialog({ isOpen: true, loading: false, item: row.original })}
+                                className="text-destructive"
+                            >
+                                <Trash2 className="text-destructive mr-2 h-4 w-4" />
+                                {t('Delete')}
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                );
+            },
+        },
+    ];
 
-  const handleRefresh = () => {
-    getOrders(currentPage, pageSize);
-  }
+    const bulkActions = [
+        {
+            label: t('Delete Selected'),
+            action: (selectedRows: PaymentType[]) => {
+                const payload = {
+                    action: 'delete_selected',
+                    entries: selectedRows.map((row) => row.id),
+                };
 
-  const getOrders = async (page: number, pageSize: number) => {
-    try {
-      const res = await axios.get(`/api/crud/ns.payments-types?page=${page}&per_page=${pageSize}`, {
-        params: { search: searchTerm },
-      });
+                router.post('/api/crud/ns.payments-types/bulk-actions', payload, {
+                    onError: (errors) => {
+                        toast.error(t('Operation failed'));
+                        console.error('Error:', errors);
+                    },
+                    onSuccess: () => {
+                        toast.success(t('Successfully processed selected items'));
+                        router.reload();
+                    },
+                });
+            },
+        },
+    ];
 
-      setPaymentTypes(res.data)
-    } catch (error) {
-      console.error("Error fetching Orders:", error);
-    }
-  }
+    const handleAddNew = () => {
+        router.visit(route('ns.dashboard.orders-create-types'));
+    };
 
-  const handleSearch = (search: string) => {
-    setSearchTerm(search)
-    setCurrentPage(1)
-  }
+    const handleRefresh = () => {
+        getOrders(currentPage, pageSize);
+    };
 
+    const getOrders = async (page: number, pageSize: number) => {
+        try {
+            const res = await axios.get(`/api/crud/ns.payments-types?page=${page}&per_page=${pageSize}`, {
+                params: { search: searchTerm },
+            });
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
+            setPaymentTypes(res.data);
+        } catch (error) {
+            console.error('Error fetching Orders:', error);
+        }
+    };
 
-  const handlePageSizeChange = (size: number) => {
-    setPageSize(size)
-    setCurrentPage(1)
-  }
+    const handleSearch = (search: string) => {
+        setSearchTerm(search);
+        setCurrentPage(1);
+    };
 
-  useEffect(() => {
-    getOrders(currentPage, pageSize);
-  }, [currentPage, pageSize, searchTerm]);
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
 
-  return (
-    <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title={"Payment Types List"} />
-      <div className="flex h-full flex-1 flex-col gap-4 p-4">
-        <div className="grid w-full">
-          <DataTable
-            columns={columns}
-            data={paymentTypes}
-            bulkActions={bulkActions}
-            title="Payment Types List"
-            onAddNew={handleAddNew}
-            description="Display all payment types."
-            searchKey="label"
-            onRefresh={handleRefresh}
+    const handlePageSizeChange = (size: number) => {
+        setPageSize(size);
+        setCurrentPage(1);
+    };
 
-            useCustomPagination
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
+    useEffect(() => {
+        getOrders(currentPage, pageSize);
+    }, [currentPage, pageSize, searchTerm]);
 
-            useServerSideSearch={true}
-            onSearch={handleSearch}
-            searchValue={searchTerm}
-          />
-        </div>
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title={t('Payment Types List')} />
+            <div className="flex h-full flex-1 flex-col gap-4 p-4">
+                <div className="grid w-full">
+                    <DataTable
+                        columns={columns}
+                        data={paymentTypes}
+                        bulkActions={bulkActions}
+                        title={t('Payment Types List')}
+                        onAddNew={handleAddNew}
+                        description={t('Display all payment types.')}
+                        searchKey="label"
+                        onRefresh={handleRefresh}
+                        useCustomPagination
+                        onPageChange={handlePageChange}
+                        onPageSizeChange={handlePageSizeChange}
+                        useServerSideSearch={true}
+                        onSearch={handleSearch}
+                        searchValue={searchTerm}
+                    />
+                </div>
 
-        <ConfirmationDialog
-          isOpen={deleteDialog.isOpen}
-          onClose={() => setDeleteDialog({ isOpen: false, loading: false, item: null })}
-          onConfirm={handleDeleteConfirm}
-          title={`Delete ${deleteDialog.item?.identifier}`}
-          description="Are you sure you want to delete this item? This action cannot be undone."
-          confirmText="Delete"
-          cancelText="Cancel"
-          variant="destructive"
-          loading={deleteDialog.loading}
-        />
-      </div>
-    </AppLayout>
-  );
+                <ConfirmationDialog
+                    isOpen={deleteDialog.isOpen}
+                    onClose={() => setDeleteDialog({ isOpen: false, loading: false, item: null })}
+                    onConfirm={handleDeleteConfirm}
+                    title={t('Delete {identifier}', { identifier: deleteDialog.item?.identifier })}
+                    description={t('Are you sure you want to delete this item? This action cannot be undone.')}
+                    confirmText={t('Delete')}
+                    cancelText={t('Cancel')}
+                    variant="destructive"
+                    loading={deleteDialog.loading}
+                />
+            </div>
+        </AppLayout>
+    );
 }
-
-
-

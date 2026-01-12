@@ -2,6 +2,7 @@
 
 import type { Table } from "@tanstack/react-table"
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
+import { useTranslation } from "@/lib/i18n"
 
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -21,6 +22,7 @@ export function DataTablePagination<TData>({
   onPageChange,
   onPageSizeChange,
 }: DataTablePaginationProps<TData>) {
+  const { t } = useTranslation()
   // Use custom pagination data when available, otherwise fall back to table data
   const currentPage =
     useCustomPagination && customPaginationData
@@ -98,12 +100,12 @@ export function DataTablePagination<TData>({
     <div className="flex items-center justify-between px-2">
       <div className="flex-1 text-sm text-muted-foreground">
         {useCustomPagination
-          ? `Showing ${Math.max((currentPage - 1) * pageSize + 1, 1)} to ${Math.min(currentPage * pageSize, totalItems)} of ${totalItems} entries`
-          : `${selectedRowsCount} of ${totalRowsCount} row(s) selected.`}
+          ? t('displaying {perPage} on {items} items', { perPage: Math.min(currentPage * pageSize, totalItems) - (currentPage - 1) * pageSize, items: totalItems })
+          : t('{entries} entries selected', { entries: selectedRowsCount })}
       </div>
       <div className="flex items-center space-x-6 lg:space-x-8">
         <div className="flex items-center space-x-2">
-          <p className="text-sm font-medium">Rows per page</p>
+          <p className="text-sm font-medium">{t('Rows per page')}</p>
           <Select value={`${pageSize}`} onValueChange={handlePageSizeChange}>
             <SelectTrigger className="h-8 w-[70px]">
               <SelectValue placeholder={pageSize} />
@@ -118,7 +120,7 @@ export function DataTablePagination<TData>({
           </Select>
         </div>
         <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-          Page {currentPage} of {totalPages}
+          {t('Page {current} of {total}', { current: currentPage, total: totalPages })}
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -127,7 +129,7 @@ export function DataTablePagination<TData>({
             onClick={handleFirstPage}
             disabled={!canPreviousPage}
           >
-            <span className="sr-only">Go to first page</span>
+            <span className="sr-only">{t('Go to first page')}</span>
             <ChevronsLeft className="h-4 w-4" />
           </Button>
           <Button
@@ -136,7 +138,7 @@ export function DataTablePagination<TData>({
             onClick={handlePreviousPage}
             disabled={!canPreviousPage}
           >
-            <span className="sr-only">Go to previous page</span>
+            <span className="sr-only">{t('Go to previous page')}</span>
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button
@@ -145,7 +147,7 @@ export function DataTablePagination<TData>({
             onClick={handleNextPage}
             disabled={!canNextPage}
           >
-            <span className="sr-only">Go to next page</span>
+            <span className="sr-only">{t('Go to next page')}</span>
             <ChevronRight className="h-4 w-4" />
           </Button>
           <Button
@@ -154,7 +156,7 @@ export function DataTablePagination<TData>({
             onClick={handleLastPage}
             disabled={!canNextPage}
           >
-            <span className="sr-only">Go to last page</span>
+            <span className="sr-only">{t('Go to last page')}</span>
             <ChevronsRight className="h-4 w-4" />
           </Button>
         </div>
