@@ -1,180 +1,184 @@
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import AppLayout from "@/layouts/app-layout";
-import { Head, router, usePage } from "@inertiajs/react";
-import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
-import { toast } from "sonner";
-import { DataTable } from "@/components/ui/data-table/data-table";
-import ConfirmationDialog from "@/components/confirmation-dialog";
-import { useState } from "react";
-import { formatDateTime } from "@/utils/format";
+import ConfirmationDialog from '@/components/confirmation-dialog';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DataTable } from '@/components/ui/data-table/data-table';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import AppLayout from '@/layouts/app-layout';
+import { useTranslation } from '@/lib/i18n';
+import { formatDateTime } from '@/utils/format';
+import { Head, router, usePage } from '@inertiajs/react';
+import { ColumnDef } from '@tanstack/react-table';
+import { MoreHorizontal } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 const breadcrumbs = [
-  { title: "Dashboard", href: "/dashboard" },
-  { title: "Roles", href: "/dashboard/roles" }
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Roles', href: '/dashboard/roles' },
 ];
 
-
 export default function Dashboard() {
-  const { title, roles } = usePage<{ roles: Role[], title: string }>().props;
-  const [deleteDialog, setDeleteDialog] = useState<{
-    isOpen: boolean
-    loading: boolean
-    role: Role | null
-  }>({
-    isOpen: false,
-    loading: false,
-    role: null,
-  })
-
-  const handleDeleteConfirm = async () => {
-    console.log("delete", deleteDialog.role);
-
-    if (!deleteDialog.role || deleteDialog.loading) return;
-
-    try {
-      router.delete(`/api/crud/ns.roles/${deleteDialog.role.id}`);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setDeleteDialog({
-        ...deleteDialog,
-        loading: false,
+    const { t } = useTranslation();
+    const { title, roles } = usePage<{ roles: Role[]; title: string }>().props;
+    const [deleteDialog, setDeleteDialog] = useState<{
+        isOpen: boolean;
+        loading: boolean;
+        role: Role | null;
+    }>({
         isOpen: false,
+        loading: false,
         role: null,
-      })
-    }
-  }
+    });
 
-  const columns: ColumnDef<Role>[] = [
-    {
-      id: 'select',
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
-      accessorKey: 'name',
-      header: 'Name',
-    },
-    {
-      accessorKey: 'namespace',
-      header: 'Namespace',
-      cell: ({ row }) => row.getValue('namespace'),
-    },
-    {
-      accessorKey: 'created_at',
-      header: 'Created At',
-      cell: ({ row }) => {
-        return formatDateTime(row.getValue('created_at'))
-      },
-    },
-    {
-      id: 'actions',
-      cell: ({ row }) => {
-        const product = row.original;
+    const handleDeleteConfirm = async () => {
+        console.log('delete', deleteDialog.role);
 
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Options</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(product.id.toString())}>Copy ID</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.get(`/dashboard/users/roles/edit/${product.id}`)}>Edit</DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setDeleteDialog({ isOpen: true, loading: false, role: row.original })}
-                className="text-destructive"
-              >
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
-    },
-  ];
+        if (!deleteDialog.role || deleteDialog.loading) return;
 
-  const bulkActions = [
-    {
-      label: 'Delete Selected',
-      action: (selectedRows: Role[]) => {
-        const payload = {
-          action: 'delete_selected',
-          entries: selectedRows.map((row) => row.id),
-        };
+        try {
+            router.delete(`/api/crud/ns.roles/${deleteDialog.role.id}`);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setDeleteDialog({
+                ...deleteDialog,
+                loading: false,
+                isOpen: false,
+                role: null,
+            });
+        }
+    };
 
-        router
-          .post('/api/crud/ns.roles/bulk-actions', payload, {
-            onError: (errors) => {
-              toast.error('Operation failed');
-              console.error('Error:', errors);
+    const columns: ColumnDef<Role>[] = [
+        {
+            id: 'select',
+            header: ({ table }) => (
+                <Checkbox
+                    checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
+                    onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                    aria-label="Select all"
+                />
+            ),
+            cell: ({ row }) => (
+                <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />
+            ),
+            enableSorting: false,
+            enableHiding: false,
+        },
+        {
+            accessorKey: 'name',
+            header: t('Name'),
+        },
+        {
+            accessorKey: 'namespace',
+            header: t('Namespace'),
+            cell: ({ row }) => row.getValue('namespace'),
+        },
+        {
+            accessorKey: 'created_at',
+            header: t('Created At'),
+            cell: ({ row }) => {
+                return formatDateTime(row.getValue('created_at'));
             },
-            onSuccess: () => {
-              toast.success('Successfully processed selected roles');
-              router.reload();
-            }
-          })
-      },
-    },
-  ];
+        },
+        {
+            id: 'actions',
+            cell: ({ row }) => {
+                const product = row.original;
 
-  const handleAddNew = () => {
-    router.visit(route('ns.dashboard.users.roles-create'));
-  }
+                return (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>{t('Options')}</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(product.id.toString())}>{t('Copy ID')}</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => router.get(`/dashboard/users/roles/edit/${product.id}`)}>{t('Edit')}</DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => setDeleteDialog({ isOpen: true, loading: false, role: row.original })}
+                                className="text-destructive"
+                            >
+                                {t('Delete')}
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                );
+            },
+        },
+    ];
 
-  const handleRefresh = () => {
-    router.reload();
-  }
+    const bulkActions = [
+        {
+            label: t('Delete Selected'),
+            action: (selectedRows: Role[]) => {
+                const payload = {
+                    action: 'delete_selected',
+                    entries: selectedRows.map((row) => row.id),
+                };
 
+                router.post('/api/crud/ns.roles/bulk-actions', payload, {
+                    onError: (errors) => {
+                        toast.error(t('Operation failed'));
+                        console.error('Error:', errors);
+                    },
+                    onSuccess: () => {
+                        toast.success(t('Successfully processed selected roles'));
+                        router.reload();
+                    },
+                });
+            },
+        },
+    ];
 
-  return (
-    <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title={title || "Category Products"} />
-      <div className="flex h-full flex-1 flex-col gap-4 p-4">
-        <div className="grid w-full">
-          <DataTable
-            columns={columns}
-            data={roles}
-            title="Roles List"
-            description="Display all roles."
-            searchKey="name"
-            bulkActions={bulkActions}
-            onAddNew={handleAddNew}
-            onRefresh={handleRefresh}
-          />
-        </div>
+    const handleAddNew = () => {
+        router.visit(route('ns.dashboard.users.roles-create'));
+    };
 
-        <ConfirmationDialog
-          isOpen={deleteDialog.isOpen}
-          onClose={() => setDeleteDialog({ isOpen: false, loading: false, role: null })}
-          onConfirm={handleDeleteConfirm}
-          title={`Delete ${deleteDialog.role?.name}`}
-          description="Are you sure you want to delete this role? This action cannot be undone."
-          confirmText="Delete"
-          cancelText="Cancel"
-          variant="destructive"
-          loading={deleteDialog.loading}
-        />
-      </div>
-    </AppLayout>
-  );
+    const handleRefresh = () => {
+        router.reload();
+    };
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title={title || 'Category Products'} />
+            <div className="flex h-full flex-1 flex-col gap-4 p-4">
+                <div className="grid w-full">
+                    <DataTable
+                        columns={columns}
+                        data={roles}
+                        title={t('Roles List')}
+                        description={t('Display all roles.')}
+                        searchKey="name"
+                        bulkActions={bulkActions}
+                        onAddNew={handleAddNew}
+                        onRefresh={handleRefresh}
+                    />
+                </div>
+
+                <ConfirmationDialog
+                    isOpen={deleteDialog.isOpen}
+                    onClose={() => setDeleteDialog({ isOpen: false, loading: false, role: null })}
+                    onConfirm={handleDeleteConfirm}
+                    title={t('Delete {{name}}', { name: deleteDialog.role?.name })}
+                    description={t('Are you sure you want to delete this role? This action cannot be undone.')}
+                    confirmText={t('Delete')}
+                    cancelText={t('Cancel')}
+                    variant="destructive"
+                    loading={deleteDialog.loading}
+                />
+            </div>
+        </AppLayout>
+    );
 }
-
-
