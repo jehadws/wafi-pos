@@ -11,14 +11,14 @@
 | Metric                    | Count | Percentage |
 | ------------------------- | ----- | ---------- |
 | **Total Files Scanned**   | 264   | 100%       |
-| **Internationalized**     | 212   | 80.3%      |
+| **Internationalized**     | 214   | 81.1%      |
 | **Pure UI Components**    | 10    | 3.8%       |
-| **Not Internationalized** | 42    | 15.9%      |
+| **Not Internationalized** | 40    | 15.2%      |
 
-**Estimated Progress:** 80.3% Complete
-**Estimated Remaining:** 42 files
+**Estimated Progress:** 81.1% Complete
+**Estimated Remaining:** 40 files
 
-**Status:** January 14, 2026 - Continued internationalization effort. Fixed hardcoded aria-labels and dropdown options in 13 dashboard pages.
+**Status:** January 14, 2026 - Continued internationalization effort. Fixed hardcoded labels and descriptions in customer forms and coupon forms.
 
 | File                                                            | Changes                                                                                                   |
 | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
@@ -40,6 +40,23 @@
 | `resources/js/pages/dashboard/categories/page.tsx`              | Fixed hardcoded breadcrumbs → `t('Dashboard')`, `t('Category Products')`                                  |
 | `resources/js/pages/dashboard/customers/page.tsx`               | Fixed hardcoded breadcrumbs → `t('Dashboard')`, `t('Customers')`                                          |
 | `resources/js/pages/dashboard/products/page.tsx`                | Fixed hardcoded breadcrumbs, removed duplicate `breadcrumbsWithTranslation`                               |
+
+**Files Modified in This Session:**
+
+| File                                                      | Changes                                                                                                                                                                                                                                                                         |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `resources/js/pages/dashboard/customers/coupons/edit.tsx` | Fixed hardcoded labels → `t('Coupon Name')`, `t('Valid From')`, `t('Valid Till')`, `t('Preview')`                                                                                                                                                                               |
+| `resources/js/pages/dashboard/customers/edit.tsx`         | Fixed 20+ hardcoded labels → `t('Last Name')`, `t('Credit Limit')`, `t('Group')`, `t('Email')`, `t('Phone')`, `t('PO Box')`, `t('Gender')`, `t('First Name')`, `t('Address 1')`, `t('Address 2')`, `t('Country')`, `t('City')`, `t('Company')`, billing/shipping address labels |
+
+**Key Translations Used:**
+
+- Coupon Name, Valid From, Valid Till, Preview
+- Last Name, Credit Limit, Group, Email, Phone, PO Box, Gender, First Name
+- Address 1, Address 2, Country, City, Company
+- Billing First Address, Billing Second Address, Billing Country
+- Shipping First Address, Shipping Second Address, Shipping Country, Shipping phone number
+
+**Progress Update:** 212 → 214 files internationalized (80.3% → 81.1%)
 
 **Progress Update:** 181 → 199 files internationalized (68.6% → 75.4%)
 

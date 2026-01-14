@@ -174,7 +174,7 @@ export default function CreateCuponPage() {
 
                     <div className="space-y-6">
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                            <FormField label="Coupon Name" description="Provide a name for the coupon" required error={form.errors.name}>
+                            <FormField label={t('Coupon Name')} description={t('Provide a name to the resource.')} required error={form.errors.name}>
                                 <Input
                                     id="name"
                                     name="name"
@@ -292,7 +292,7 @@ export default function CreateCuponPage() {
                             <div className="bg-muted/30 rounded-lg p-4">
                                 <div className="mb-2 flex items-center gap-2">
                                     <selectedDiscountType.icon className="h-4 w-4" />
-                                    <span className="font-medium">Preview</span>
+                                    <span className="font-medium">{t('Preview')}</span>
                                 </div>
                                 <p className="text-muted-foreground text-sm">
                                     {form.data.type === 'percentage_discount' &&
@@ -307,7 +307,7 @@ export default function CreateCuponPage() {
 
                         {/* Validity & Restrictions */}
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2">
-                            <FormField label="Valid From" description="Define form which hour during the day the coupons is valid.">
+                            <FormField label={t('Valid From')} description={t('Define form which hour during the day the coupons is valid.')}>
                                 <DatePicker
                                     date={form.data.valid_hours_start}
                                     onDateChange={(date) => form.setData({ ...form.data, valid_hours_start: date })}
@@ -316,7 +316,7 @@ export default function CreateCuponPage() {
                                 />
                             </FormField>
 
-                            <FormField label="Valid Till" description="Define to which hour during the day the coupons end stop valid.">
+                            <FormField label={t('Valid Till')} description={t('Define to which hour during the day the coupons end stop valid.')}>
                                 <DatePicker
                                     date={form.data.valid_hours_end}
                                     onDateChange={(date) => form.setData({ ...form.data, valid_hours_end: date, valid_until: date })}
@@ -370,7 +370,7 @@ export default function CreateCuponPage() {
                                 </div>
                             </FormField>
 
-                            <FormField label={t('Coupon Name')} description={t('Provide a name for the coupon')} required error={form.errors.name}>
+                            <FormField label={t('Coupon Name')} description={t('Provide a name to the resource.')} required error={form.errors.name}>
                                 <Input
                                     id="name"
                                     name="name"

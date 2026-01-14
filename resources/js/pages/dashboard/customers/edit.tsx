@@ -187,9 +187,9 @@ export default function CreateProductPage() {
                         <TabsContent value="general" className="mt-6">
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                                 <FormField
-                                    label="Last Name"
+                                    label={t('Last Name')}
                                     htmlFor="general_last_name"
-                                    description="Provide the customer last name"
+                                    description={t('Provide the customer last name')}
                                     error={form.errors?.general_last_name}
                                 >
                                     <Input
@@ -202,9 +202,9 @@ export default function CreateProductPage() {
                                 </FormField>
 
                                 <FormField
-                                    label="Credit Limit"
+                                    label={t('Credit Limit')}
                                     htmlFor="general_credit_limit_amount"
-                                    description="Set what should be the limit of the purchase on credit."
+                                    description={t('Set what should be the limit of the purchase on credit.')}
                                     error={form.errors?.general_credit_limit_amount}
                                 >
                                     <Input
@@ -217,9 +217,9 @@ export default function CreateProductPage() {
                                     />
                                 </FormField>
                                 <FormField
-                                    label="Group"
+                                    label={t('Group')}
                                     htmlFor="general_group_id"
-                                    description="Assign the customer to a group."
+                                    description={t('Assign the customer to a group.')}
                                     error={form.errors.general_group_id}
                                     required
                                 >
@@ -241,9 +241,9 @@ export default function CreateProductPage() {
                                 </FormField>
 
                                 <FormField
-                                    label="Birth Date"
+                                    label={t('Birth Date')}
                                     htmlFor="general_birth_date"
-                                    description="Displays the customer birth date."
+                                    description={t('Displays the customer birth date.')}
                                     error={form.errors?.general_birth_date}
                                 >
                                     <DatePicker
@@ -253,9 +253,9 @@ export default function CreateProductPage() {
                                 </FormField>
 
                                 <FormField
-                                    label="Email"
+                                    label={t('Email')}
                                     htmlFor="general_email"
-                                    description="Provide the customer email."
+                                    description={t('Provide the customer email.')}
                                     error={form.errors?.general_email}
                                 >
                                     <Input
@@ -268,9 +268,9 @@ export default function CreateProductPage() {
                                 </FormField>
 
                                 <FormField
-                                    label="Phone"
+                                    label={t('Phone')}
                                     htmlFor="general_phone"
-                                    description="Provide the customer phone number"
+                                    description={t('Provide the customer phone number')}
                                     error={form.errors?.general_phone}
                                 >
                                     <Input
@@ -284,9 +284,9 @@ export default function CreateProductPage() {
                                 </FormField>
 
                                 <FormField
-                                    label="PO Box"
+                                    label={t('PO Box')}
                                     htmlFor="general_pobox"
-                                    description="Provide the customer PO.Box"
+                                    description={t('Provide the customer PO.Box')}
                                     error={form.errors?.general_pobox}
                                 >
                                     <Input
@@ -299,9 +299,9 @@ export default function CreateProductPage() {
                                 </FormField>
 
                                 <FormField
-                                    label="Gender"
+                                    label={t('Gender')}
                                     htmlFor="general_gender"
-                                    description="Provide the customer gender."
+                                    description={t('Provide the customer gender')}
                                     error={form.errors?.general_gender}
                                 >
                                     <Select value={form.data.general_gender} onValueChange={(value) => handleSelectChange('general_gender', value)}>
@@ -319,9 +319,9 @@ export default function CreateProductPage() {
                         <TabsContent value="billing_address" className="mt-6">
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                                 <FormField
-                                    label="First Name"
+                                    label={t('First Name')}
                                     htmlFor="billing_first_name"
-                                    description="Provide the billing first name."
+                                    description={t('Provide the billing first name.')}
                                     error={form.errors?.billing_first_name}
                                 >
                                     <Input
@@ -333,9 +333,9 @@ export default function CreateProductPage() {
                                     />
                                 </FormField>
                                 <FormField
-                                    label="Last Name"
+                                    label={t('Last Name')}
                                     htmlFor="billing_last_name"
-                                    description="Provide the billing last name."
+                                    description={t('Provide the billing last name.')}
                                     error={form.errors?.billing_last_name}
                                 >
                                     <Input
@@ -347,9 +347,9 @@ export default function CreateProductPage() {
                                     />
                                 </FormField>
                                 <FormField
-                                    label="Phone"
+                                    label={t('Phone')}
                                     htmlFor="billing_phone"
-                                    description="Provide the Billing phone number."
+                                    description={t('Provide the Billing phone number.')}
                                     error={form.errors?.billing_phone}
                                 >
                                     <Input
@@ -362,9 +362,9 @@ export default function CreateProductPage() {
                                 </FormField>
 
                                 <FormField
-                                    label="Address 1"
+                                    label={t('Address 1')}
                                     htmlFor="billing_address_1"
-                                    description="Provide the Billing First Address."
+                                    description={t('Billing First Address.')}
                                     error={form.errors?.billing_address_1}
                                 >
                                     <Input
@@ -377,9 +377,9 @@ export default function CreateProductPage() {
                                 </FormField>
 
                                 <FormField
-                                    label="Address 2"
+                                    label={t('Address 2')}
                                     htmlFor="billing_address_2"
-                                    description="Provide the Billing Second Address."
+                                    description={t('Billing Second Address.')}
                                     error={form.errors?.billing_address_2}
                                 >
                                     <Input
@@ -392,9 +392,9 @@ export default function CreateProductPage() {
                                 </FormField>
 
                                 <FormField
-                                    label="Country"
+                                    label={t('Country')}
                                     htmlFor="billing_country"
-                                    description="Provide Billing Country."
+                                    description={t('Billing Country.')}
                                     error={form.errors?.billing_country}
                                 >
                                     <Input
@@ -406,7 +406,7 @@ export default function CreateProductPage() {
                                     />
                                 </FormField>
 
-                                <FormField label="City" htmlFor="billing_city" description="Provide Billing city." error={form.errors?.billing_city}>
+                                <FormField label={t('City')} htmlFor="billing_city" description={t('City')} error={form.errors?.billing_city}>
                                     <Input
                                         id="billing_city"
                                         name="billing_city"
@@ -416,12 +416,7 @@ export default function CreateProductPage() {
                                     />
                                 </FormField>
 
-                                <FormField
-                                    label="PO Box"
-                                    htmlFor="billing_pobox"
-                                    description="Provide Postal code."
-                                    error={form.errors?.billing_pobox}
-                                >
+                                <FormField label={t('PO Box')} htmlFor="billing_pobox" description={t('PO Box')} error={form.errors?.billing_pobox}>
                                     <Input
                                         id="billing_pobox"
                                         name="billing_pobox"
@@ -431,7 +426,12 @@ export default function CreateProductPage() {
                                     />
                                 </FormField>
 
-                                <FormField label="Company" htmlFor="billing_company" description="Company name." error={form.errors?.billing_company}>
+                                <FormField
+                                    label={t('Company')}
+                                    htmlFor="billing_company"
+                                    description={t('Company')}
+                                    error={form.errors?.billing_company}
+                                >
                                     <Input
                                         id="billing_company"
                                         name="billing_company"
@@ -442,9 +442,9 @@ export default function CreateProductPage() {
                                 </FormField>
 
                                 <FormField
-                                    label="Email"
+                                    label={t('Email')}
                                     htmlFor="billing_email"
-                                    description="Provide the billing email."
+                                    description={t('Billing phone number.')}
                                     error={form.errors?.billing_email}
                                 >
                                     <Input
@@ -461,9 +461,9 @@ export default function CreateProductPage() {
                         <TabsContent value="shipping_address" className="mt-6">
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                                 <FormField
-                                    label="First Name"
+                                    label={t('First Name')}
                                     htmlFor="shipping_first_name"
-                                    description="Provide the shipping first name."
+                                    description={t('Provide the shipping First Name.')}
                                     error={form.errors?.shipping_first_name}
                                 >
                                     <Input
@@ -475,9 +475,9 @@ export default function CreateProductPage() {
                                     />
                                 </FormField>
                                 <FormField
-                                    label="Last Name"
+                                    label={t('Last Name')}
                                     htmlFor="shipping_last_name"
-                                    description="Provide the shipping last name."
+                                    description={t('Provide the shipping Last Name.')}
                                     error={form.errors?.shipping_last_name}
                                 >
                                     <Input
@@ -489,9 +489,9 @@ export default function CreateProductPage() {
                                     />
                                 </FormField>
                                 <FormField
-                                    label="Phone"
+                                    label={t('Phone')}
                                     htmlFor="shipping_phone"
-                                    description="Provide the shipping phone number."
+                                    description={t('Shipping phone number.')}
                                     error={form.errors?.shipping_phone}
                                 >
                                     <Input
@@ -504,9 +504,9 @@ export default function CreateProductPage() {
                                 </FormField>
 
                                 <FormField
-                                    label="Address 1"
+                                    label={t('Address 1')}
                                     htmlFor="shipping_address_1"
-                                    description="Provide the shipping First Address."
+                                    description={t('Shipping First Address.')}
                                     error={form.errors?.shipping_address_1}
                                 >
                                     <Input
@@ -519,9 +519,9 @@ export default function CreateProductPage() {
                                 </FormField>
 
                                 <FormField
-                                    label="Address 2"
+                                    label={t('Address 2')}
                                     htmlFor="shipping_address_2"
-                                    description="Provide the shipping Second Address."
+                                    description={t('Shipping Second Address.')}
                                     error={form.errors?.shipping_address_2}
                                 >
                                     <Input
@@ -534,9 +534,9 @@ export default function CreateProductPage() {
                                 </FormField>
 
                                 <FormField
-                                    label="Country"
+                                    label={t('Country')}
                                     htmlFor="shipping_country"
-                                    description="Provide shipping Country."
+                                    description={t('Shipping Country.')}
                                     error={form.errors?.shipping_country}
                                 >
                                     <Input
@@ -548,12 +548,7 @@ export default function CreateProductPage() {
                                     />
                                 </FormField>
 
-                                <FormField
-                                    label="City"
-                                    htmlFor="shipping_city"
-                                    description="Provide shipping city."
-                                    error={form.errors?.shipping_city}
-                                >
+                                <FormField label={t('City')} htmlFor="shipping_city" description={t('City')} error={form.errors?.shipping_city}>
                                     <Input
                                         id="shipping_city"
                                         name="shipping_city"
@@ -563,12 +558,7 @@ export default function CreateProductPage() {
                                     />
                                 </FormField>
 
-                                <FormField
-                                    label="PO Box"
-                                    htmlFor="shipping_pobox"
-                                    description="Provide Postal code."
-                                    error={form.errors?.shipping_pobox}
-                                >
+                                <FormField label={t('PO Box')} htmlFor="shipping_pobox" description={t('PO Box')} error={form.errors?.shipping_pobox}>
                                     <Input
                                         id="shipping_pobox"
                                         name="shipping_pobox"
