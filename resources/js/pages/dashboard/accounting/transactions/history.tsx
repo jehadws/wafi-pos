@@ -20,15 +20,16 @@ import { List, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Accounting', href: '/dashboard/accounting' },
-    { title: 'Transactions', href: '/dashboard/accounting/transactions' },
-    { title: 'Transactions History', href: '/dashboard/accounting/transactions/history' },
-];
-
 export default function Dashboard() {
     const { t } = useTranslation();
+
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Accounting'), href: '/dashboard/accounting' },
+        { title: t('Transactions'), href: '/dashboard/accounting/transactions' },
+        { title: 'Transactions History', href: '/dashboard/accounting/transactions/history' },
+    ];
+
     const [transaction, setTransaction] = useState<CustomPaginationData<TransactionHistory>>({
         data: [],
         last_page: 1,
@@ -133,7 +134,7 @@ export default function Dashboard() {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
+                                <span className="sr-only">{t('Open menu')}</span>
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>

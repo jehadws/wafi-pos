@@ -1,3 +1,4 @@
+import { useTranslation } from '@/lib/i18n';
 import { useConfirmDialog } from '@/components/providers/confirm-dialog-provider';
 import { Button } from '@/components/ui/button';
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -50,7 +51,7 @@ export default function page() {
     const quantityKeypad = useNumericKeypad({
         onConfirm: handleQuantity,
         initialValue: '',
-        title: 'Define Quantity',
+        title: t('Define Quantity'),
         maxLength: 6,
         allowDecimal: true,
     });
@@ -210,10 +211,10 @@ export default function page() {
 
     const removeProduct = async (product: StockAdjustmentProduct) => {
         const ok = await confirm({
-            title: 'Confirm Your Action',
-            message: 'Would you like to remove this product from the table?',
-            confirmText: 'Remove',
-            cancelText: 'Cancel',
+            title: t('Confirm Your Action'),
+            message: t('Would you like to remove this product from the table ?'),
+            confirmText: t('Remove'),
+            cancelText: t('Cancel'),
         });
 
         if (ok) {
@@ -257,13 +258,13 @@ export default function page() {
 
     const proceedStockAdjustment = async () => {
         if (products.length === 0) {
-            return toast('Unable to proceed as the table is empty.');
+            return toast(t('Unable to proceed as the table is empty.'));
         }
         const ok = await confirm({
-            title: 'Confirm Your Action',
-            message: 'The stock adjustment is about to be made. Would you like to confirm ?',
-            confirmText: 'Proceed',
-            cancelText: 'Cancel',
+            title: t('Confirm Your Action'),
+            message: t('The stock adjustment is about to be made. Would you like to confirm ?'),
+            confirmText: t('Proceed'),
+            cancelText: t('Cancel'),
         });
 
         if (ok) {
@@ -281,14 +282,14 @@ export default function page() {
         <AppLayout>
             <div className="space-y-6 p-6">
                 <div className="relative">
-                    <h1 className="text-2xl font-semibold">Stock Adjustment</h1>
-                    <p className="text-muted-foreground text-sm">Adjust stock of existing products.</p>
+                    <h1 className="text-2xl font-semibold">{t('Stock Adjustment')}</h1>
+                    <p className="text-muted-foreground text-sm">{t('Adjust stock of existing products.')}</p>
                 </div>
 
                 <div>
                     {/* Search Input */}
                     <Command shouldFilter={false}>
-                        <CommandInput placeholder={'Search Products...'} value={searchQuery} onValueChange={(e) => handleSearch(e)} />
+                        <CommandInput placeholder={t('Search Products...')} value={searchQuery} onValueChange={(e) => handleSearch(e)} />
                         <CommandList>
                             <CommandGroup>
                                 {suggestions.map((product) => (
@@ -344,11 +345,11 @@ export default function page() {
                                                         <DialogTrigger asChild>
                                                             <div className="w-1/2 px-2 md:w-auto">
                                                                 <div className="border-info-secondary cursor-pointer border-b border-dashed py-1 text-xs">
-                                                                    <span className="text-xs">Unit:</span>&nbsp;
+                                                                    <span className="text-xs">{t('Unit')}:</span>&nbsp;
                                                                     {product.adjust_unit?.unit ? (
                                                                         <span>{product.adjust_unit.unit.name}</span>
                                                                     ) : (
-                                                                        <span>N/A</span>
+                                                                        <span>{t('N/A')}</span>
                                                                     )}
                                                                 </div>
                                                             </div>
@@ -383,8 +384,8 @@ export default function page() {
                                                     >
                                                         <DialogTrigger asChild>
                                                             <div className="w-1/2 px-2 md:w-auto">
-                                                                <div className="border-info-secondary cursor-pointer border-b border-dashed py-1 text-xs">
-                                                                    <span className="text-xs">Operation:</span>&nbsp;
+                                                            <div className="border-info-secondary cursor-pointer border-b border-dashed py-1 text-xs">
+                                                                <span className="text-xs">{t('Operation')}:</span>&nbsp;
                                                                     <span>{product.adjust_action}</span>
                                                                 </div>
                                                             </div>
@@ -417,7 +418,7 @@ export default function page() {
                                                             // onClick={() => selectProcurement(product)}
                                                         >
                                                             <div className="border-info-secondary cursor-pointer border-b border-dashed py-1 text-xs">
-                                                                <span className="text-xs">Procurement:</span>&nbsp;
+                                                                <span className="text-xs">{t('Procurement')}:</span>&nbsp;
                                                                 <span>
                                                                     {
                                                                         product.procurement_history.find(
@@ -435,15 +436,15 @@ export default function page() {
                                                         // onClick={() => provideReason(product)}
                                                     >
                                                         <div className="border-info-secondary cursor-pointer border-b border-dashed py-1 text-xs">
-                                                            <span className="text-xs">Reason:</span>&nbsp;
-                                                            {product.adjust_reason ? <span>Provided</span> : <span>Not Provided</span>}
+                                                            <span className="text-xs">{t('Reason')}:</span>&nbsp;
+                                                            {product.adjust_reason ? <span>{t('Provided')}</span> : <span>{t('Not Provided')}</span>}
                                                         </div>
                                                     </div>
 
                                                     {/* Remove */}
                                                     <div className="w-1/2 px-2 md:w-auto" onClick={() => removeProduct(product)}>
                                                         <div className="border-danger-secondary cursor-pointer border-b border-dashed py-1 text-xs">
-                                                            <span className="text-xs">Remove</span>
+                                                            <span className="text-xs">{t('Remove')}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -461,7 +462,7 @@ export default function page() {
                         </Table>
                     </div>
                     <div className="flex w-full justify-end">
-                        <Button onClick={proceedStockAdjustment}>Proceed</Button>
+                        <Button onClick={proceedStockAdjustment}>{t('Proceed')}</Button>
                     </div>
                 </div>
 

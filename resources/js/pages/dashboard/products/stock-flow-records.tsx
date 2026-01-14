@@ -7,14 +7,16 @@ import { ColumnDef } from '@tanstack/react-table';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 
-const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Accounting', href: '/dashboard/accounting' },
-    { title: 'Transactions', href: '/dashboard/accounting/transactions' },
-    { title: 'Transactions History', href: '/dashboard/accounting/transactions/history' },
-];
-
 export default function Dashboard() {
+    const { t } = useTranslation();
+
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Accounting'), href: '/dashboard/accounting' },
+        { title: t('Transactions'), href: '/dashboard/accounting/transactions' },
+        { title: 'Transactions History', href: '/dashboard/accounting/transactions/history' },
+    ];
+
     const [transaction, setTransaction] = useState<CustomPaginationData<GlobalProductHistory>>({
         data: [],
         last_page: 1,

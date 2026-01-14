@@ -10,16 +10,18 @@ import { Input } from '@/components/ui/input';
 import { MultiSelector } from '@/components/ui/multi-selector';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TabsContent } from '@/components/ui/tabs';
+import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { useForm } from '@inertiajs/react';\nimport { useTranslation } from '@/lib/i18n';
+import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 
-const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Groups', href: '/dashboard/units/groups' },
-];
-
-export default function CreateProductPage() {\n    const { t } = useTranslation();
+export default function CreateProductPage() {
+    const { t } = useTranslation();
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Users'), href: '/dashboard/users' },
+        { title: t('Create User'), href: '/dashboard/users/create' },
+    ];
     const { groups, roles } = usePage<{ groups: { id: number; name: string }[]; roles: { id: number; name: string }[] }>().props;
     const form = useForm({
         username: '',
@@ -170,20 +172,20 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={'Create a new user - JGREM'} />
+            <Head title={t('Create a new user') + ' - JGREM'} />
 
             <form onSubmit={handleSubmit}>
                 <div className="bg-background flex h-full min-h-screen flex-1 flex-col gap-4 p-4">
                     <FormHeader
-                        title="Create a new user"
-                        description="Register a new user and save it."
+                        title={t('Create a new user')}
+                        description={t('Register a new user and save it.')}
                         onCancel={() => window.history.back()}
                         onSave={() => {}}
                         form={form}
                     />
 
                     {/* Product Name */}
-                    <FormField label="Username" error={form.errors.username} description="Provide a name to the resource." className="mb-2">
+                    <FormField label={t('Username')} error={form.errors.username} description={t('Provide a name to the resource.')} className="mb-2">
                         <Input
                             id="username"
                             name="username"
@@ -195,19 +197,19 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                     {/* Tabs */}
                     <Tabs defaultValue="general" className="w-full">
                         <TabsList className="grid w-full grid-cols-3">
-                            <TabsTrigger value="general">General</TabsTrigger>
+                            <TabsTrigger value="general">{t('General')}</TabsTrigger>
 
-                            <TabsTrigger value="billing_address">Billing Address</TabsTrigger>
+                            <TabsTrigger value="billing_address">{t('Billing Address')}</TabsTrigger>
 
-                            <TabsTrigger value="shipping_address">Shipping Address</TabsTrigger>
+                            <TabsTrigger value="shipping_address">{t('Shipping Address')}</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="general" className="mt-6">
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                                 <FormField
-                                    label="First Name"
+                                    label={t('First Name')}
                                     htmlFor="general_first_name"
-                                    description="Provide the customer first name"
+                                    description={t('First Name')}
                                     error={form.errors?.general_first_name}
                                 >
                                     <Input
@@ -219,9 +221,9 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                     />
                                 </FormField>
                                 <FormField
-                                    label="Last Name"
+                                    label={t('Last Name')}
                                     htmlFor="general_last_name"
-                                    description="Provide the customer last name"
+                                    description={t('Last Name')}
                                     error={form.errors?.general_last_name}
                                 >
                                     <Input
@@ -233,9 +235,9 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                     />
                                 </FormField>
                                 <FormField
-                                    label="Email"
+                                    label={t('Email')}
                                     htmlFor="general_email"
-                                    description="Provide the customer email."
+                                    description={t('Email')}
                                     error={form.errors?.general_email}
                                     required
                                 >
@@ -249,9 +251,9 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                 </FormField>
 
                                 <FormField
-                                    label="Password"
+                                    label={t('Password')}
                                     htmlFor="general_password"
-                                    description="Make a unique and secure password."
+                                    description={t('Make a unique and secure password.')}
                                     error={form.errors?.general_password}
                                 >
                                     <Input
@@ -264,9 +266,9 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                 </FormField>
 
                                 <FormField
-                                    label="Confirm Password"
+                                    label={t('Confirm Password')}
                                     htmlFor="general_password_confirm"
-                                    description="Should be the same as the password."
+                                    description={t('Should be the same as the password.')}
                                     error={form.errors?.general_password_confirm}
                                 >
                                     <Input
@@ -278,12 +280,7 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                     />
                                 </FormField>
 
-                                <FormField
-                                    label="Active"
-                                    htmlFor="general_active"
-                                    description="Define whether the user can use the application."
-                                    error={form.errors.general_active}
-                                >
+                                <FormField label={t('Active')} htmlFor="general_active" description={t('Active')} error={form.errors.general_active}>
                                     <ToggleButtons
                                         value={form.data.general_active === 1}
                                         onChange={(value) => handleSelectChange('general_active', value ? 1 : 0)}
@@ -291,9 +288,9 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                 </FormField>
 
                                 <FormField
-                                    label="Credit Limit"
+                                    label={t('Credit Limit')}
                                     htmlFor="general_credit_limit_amount"
-                                    description="Set what should be the limit of the purchase on credit."
+                                    description={t('Credit Limit')}
                                     error={form.errors?.general_credit_limit_amount}
                                 >
                                     <Input
@@ -306,21 +303,21 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                     />
                                 </FormField>
 
-                                <FormField label="Roles" description="Define what roles applies to the user">
+                                <FormField label={t('Roles')} description={t('Define what roles applies to the user')}>
                                     <MultiSelector
                                         options={roles}
                                         value={form.data.general_roles}
                                         onChange={(value) => handleSelectChange('general_roles', value)}
-                                        placeholder="Select roles..."
-                                        searchPlaceholder="Search roles..."
-                                        emptyText="No Roles found"
+                                        placeholder={t('Select') + '...'}
+                                        searchPlaceholder={t('Search') + '...'}
+                                        emptyText={t('No result to display.')}
                                     />
                                 </FormField>
 
                                 <FormField
-                                    label="Group"
+                                    label={t('Group')}
                                     htmlFor="general_group_id"
-                                    description="Assign the customer to a group."
+                                    description={t('Group')}
                                     error={form.errors.general_group_id}
                                     required
                                 >
@@ -342,9 +339,9 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                 </FormField>
 
                                 <FormField
-                                    label="Birth Date"
+                                    label={t('Birth Date')}
                                     htmlFor="general_birth_date"
-                                    description="Displays the customer birth date."
+                                    description={t('Birth Date')}
                                     error={form.errors?.general_birth_date}
                                 >
                                     <DatePicker
@@ -353,12 +350,7 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                     />
                                 </FormField>
 
-                                <FormField
-                                    label="Phone"
-                                    htmlFor="general_phone"
-                                    description="Provide the customer phone number"
-                                    error={form.errors?.general_phone}
-                                >
+                                <FormField label={t('Phone')} htmlFor="general_phone" description={t('Phone')} error={form.errors?.general_phone}>
                                     <Input
                                         id="general_phone"
                                         name="general_phone"
@@ -369,12 +361,7 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                     />
                                 </FormField>
 
-                                <FormField
-                                    label="PO Box"
-                                    htmlFor="general_pobox"
-                                    description="Provide the customer PO.Box"
-                                    error={form.errors?.general_pobox}
-                                >
+                                <FormField label={t('PO.Box')} htmlFor="general_pobox" description={t('PO.Box')} error={form.errors?.general_pobox}>
                                     <Input
                                         id="general_pobox"
                                         name="general_pobox"
@@ -384,19 +371,14 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                     />
                                 </FormField>
 
-                                <FormField
-                                    label="Gender"
-                                    htmlFor="general_gender"
-                                    description="Provide the customer gender."
-                                    error={form.errors?.general_gender}
-                                >
+                                <FormField label={t('Gender')} htmlFor="general_gender" description={t('Gender')} error={form.errors?.general_gender}>
                                     <Select value={form.data.general_gender} onValueChange={(value) => handleSelectChange('general_gender', value)}>
                                         <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Not set" />
+                                            <SelectValue placeholder={t('Not Defined')} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="male">Male</SelectItem>
-                                            <SelectItem value="female">Female</SelectItem>
+                                            <SelectItem value="male">{t('Male')}</SelectItem>
+                                            <SelectItem value="female">{t('Female')}</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </FormField>
@@ -405,10 +387,10 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                         <TabsContent value="billing_address" className="mt-6">
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                                 <FormField
-                                    label="First Name"
-                                    htmlFor="billing_first_name"
-                                    description="Provide the billing first name."
-                                    error={form.errors?.billing_first_name}
+                                    label={t('First Name')}
+                                    htmlFor="general_first_name"
+                                    description={t('First Name')}
+                                    error={form.errors?.general_first_name}
                                 >
                                     <Input
                                         id="billing_first_name"
@@ -419,10 +401,10 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                     />
                                 </FormField>
                                 <FormField
-                                    label="Last Name"
-                                    htmlFor="billing_last_name"
-                                    description="Provide the billing last name."
-                                    error={form.errors?.billing_last_name}
+                                    label={t('Last Name')}
+                                    htmlFor="general_last_name"
+                                    description={t('Last Name')}
+                                    error={form.errors?.general_last_name}
                                 >
                                     <Input
                                         id="billing_last_name"
@@ -432,12 +414,7 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                         className={form.errors?.billing_last_name ? 'border-red-500' : ''}
                                     />
                                 </FormField>
-                                <FormField
-                                    label="Phone"
-                                    htmlFor="billing_phone"
-                                    description="Provide the Billing phone number."
-                                    error={form.errors?.billing_phone}
-                                >
+                                <FormField label={t('Phone')} htmlFor="billing_phone" description={t('Phone')} error={form.errors?.billing_phone}>
                                     <Input
                                         id="billing_phone"
                                         name="billing_phone"
@@ -448,9 +425,9 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                 </FormField>
 
                                 <FormField
-                                    label="Address 1"
+                                    label={t('Address 1')}
                                     htmlFor="billing_address_1"
-                                    description="Provide the Billing First Address."
+                                    description={t('Address 1')}
                                     error={form.errors?.billing_address_1}
                                 >
                                     <Input
@@ -463,9 +440,9 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                 </FormField>
 
                                 <FormField
-                                    label="Address 2"
+                                    label={t('Address 2')}
                                     htmlFor="billing_address_2"
-                                    description="Provide the Billing Second Address."
+                                    description={t('Address 2')}
                                     error={form.errors?.billing_address_2}
                                 >
                                     <Input
@@ -478,9 +455,9 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                 </FormField>
 
                                 <FormField
-                                    label="Country"
+                                    label={t('Country')}
                                     htmlFor="billing_country"
-                                    description="Provide Billing Country."
+                                    description={t('Country')}
                                     error={form.errors?.billing_country}
                                 >
                                     <Input
@@ -492,7 +469,7 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                     />
                                 </FormField>
 
-                                <FormField label="City" htmlFor="billing_city" description="Provide Billing city." error={form.errors?.billing_city}>
+                                <FormField label={t('City')} htmlFor="billing_city" description={t('City')} error={form.errors?.billing_city}>
                                     <Input
                                         id="billing_city"
                                         name="billing_city"
@@ -502,12 +479,7 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                     />
                                 </FormField>
 
-                                <FormField
-                                    label="PO Box"
-                                    htmlFor="billing_pobox"
-                                    description="Provide Postal code."
-                                    error={form.errors?.billing_pobox}
-                                >
+                                <FormField label={t('PO.Box')} htmlFor="billing_pobox" description={t('PO.Box')} error={form.errors?.billing_pobox}>
                                     <Input
                                         id="billing_pobox"
                                         name="billing_pobox"
@@ -517,7 +489,22 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                     />
                                 </FormField>
 
-                                <FormField label="Company" htmlFor="billing_company" description="Company name." error={form.errors?.billing_company}>
+                                <FormField
+                                    label={t('Company')}
+                                    htmlFor="shipping_company"
+                                    description={t('Company')}
+                                    error={form.errors?.shipping_company}
+                                >
+                                    <Input
+                                        id="shipping_company"
+                                        name="shipping_company"
+                                        value={form.data.shipping_company}
+                                        onChange={handleInputChange}
+                                        className={form.errors?.shipping_company ? 'border-red-500' : ''}
+                                    />
+                                </FormField>
+
+                                <FormField label={t('Email')} htmlFor="shipping_email" description={t('Email')} error={form.errors?.shipping_email}>
                                     <Input
                                         id="billing_company"
                                         name="billing_company"
@@ -528,10 +515,11 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                 </FormField>
 
                                 <FormField
-                                    label="Email"
-                                    htmlFor="billing_email"
-                                    description="Provide the billing email."
-                                    error={form.errors?.billing_email}
+                                    label={t('Email')}
+                                    htmlFor="general_email"
+                                    description={t('Email')}
+                                    error={form.errors?.general_email}
+                                    required
                                 >
                                     <Input
                                         id="billing_email"
@@ -547,9 +535,9 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                         <TabsContent value="shipping_address" className="mt-6">
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                                 <FormField
-                                    label="First Name"
+                                    label={t('First Name')}
                                     htmlFor="shipping_first_name"
-                                    description="Provide the shipping first name."
+                                    description={t('First Name')}
                                     error={form.errors?.shipping_first_name}
                                 >
                                     <Input
@@ -561,10 +549,10 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                     />
                                 </FormField>
                                 <FormField
-                                    label="Last Name"
-                                    htmlFor="shipping_last_name"
-                                    description="Provide the shipping last name."
-                                    error={form.errors?.shipping_last_name}
+                                    label={t('Last Name')}
+                                    htmlFor="billing_last_name"
+                                    description={t('Last Name')}
+                                    error={form.errors?.billing_last_name}
                                 >
                                     <Input
                                         id="shipping_last_name"
@@ -575,10 +563,10 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                     />
                                 </FormField>
                                 <FormField
-                                    label="Phone"
-                                    htmlFor="shipping_phone"
-                                    description="Provide the shipping phone number."
-                                    error={form.errors?.shipping_phone}
+                                    label={t('Last Name')}
+                                    htmlFor="shipping_last_name"
+                                    description={t('Last Name')}
+                                    error={form.errors?.shipping_last_name}
                                 >
                                     <Input
                                         id="shipping_phone"
@@ -590,9 +578,9 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                 </FormField>
 
                                 <FormField
-                                    label="Address 1"
+                                    label={t('Address 1')}
                                     htmlFor="shipping_address_1"
-                                    description="Provide the shipping First Address."
+                                    description={t('Address 1')}
                                     error={form.errors?.shipping_address_1}
                                 >
                                     <Input
@@ -605,9 +593,9 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                 </FormField>
 
                                 <FormField
-                                    label="Address 2"
+                                    label={t('Address 2')}
                                     htmlFor="shipping_address_2"
-                                    description="Provide the shipping Second Address."
+                                    description={t('Address 2')}
                                     error={form.errors?.shipping_address_2}
                                 >
                                     <Input
@@ -620,9 +608,9 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                 </FormField>
 
                                 <FormField
-                                    label="Country"
+                                    label={t('Country')}
                                     htmlFor="shipping_country"
-                                    description="Provide shipping Country."
+                                    description={t('Country')}
                                     error={form.errors?.shipping_country}
                                 >
                                     <Input
@@ -634,12 +622,7 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                     />
                                 </FormField>
 
-                                <FormField
-                                    label="City"
-                                    htmlFor="shipping_city"
-                                    description="Provide shipping city."
-                                    error={form.errors?.shipping_city}
-                                >
+                                <FormField label={t('Phone')} htmlFor="shipping_phone" description={t('Phone')} error={form.errors?.shipping_phone}>
                                     <Input
                                         id="shipping_city"
                                         name="shipping_city"
@@ -649,12 +632,7 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                     />
                                 </FormField>
 
-                                <FormField
-                                    label="PO Box"
-                                    htmlFor="shipping_pobox"
-                                    description="Provide Postal code."
-                                    error={form.errors?.shipping_pobox}
-                                >
+                                <FormField label={t('City')} htmlFor="shipping_city" description={t('City')} error={form.errors?.shipping_city}>
                                     <Input
                                         id="shipping_pobox"
                                         name="shipping_pobox"
@@ -664,12 +642,7 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                     />
                                 </FormField>
 
-                                <FormField
-                                    label="Company"
-                                    htmlFor="shipping_company"
-                                    description="Company name."
-                                    error={form.errors?.shipping_company}
-                                >
+                                <FormField label={t('PO.Box')} htmlFor="shipping_pobox" description={t('PO.Box')} error={form.errors?.shipping_pobox}>
                                     <Input
                                         id="shipping_company"
                                         name="shipping_company"
@@ -679,12 +652,7 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
                                     />
                                 </FormField>
 
-                                <FormField
-                                    label="Email"
-                                    htmlFor="shipping_email"
-                                    description="Provide the shipping email."
-                                    error={form.errors?.shipping_email}
-                                >
+                                <FormField label={t('Email')} htmlFor="billing_email" description={t('Email')} error={form.errors?.billing_email}>
                                     <Input
                                         id="shipping_email"
                                         name="shipping_email"
@@ -701,4 +669,3 @@ export default function CreateProductPage() {\n    const { t } = useTranslation(
         </AppLayout>
     );
 }
-
