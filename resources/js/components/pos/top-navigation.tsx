@@ -1,72 +1,70 @@
-"use client"
+'use client';
 
-import { Button } from "@/components/ui/button"
-import { Home, Barcode, Percent } from "lucide-react"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useTranslation } from '@/lib/i18n';
+import { Barcode, Home, Percent } from 'lucide-react';
 
 interface TopNavigationProps {
-  isListeningForBarcodes: boolean
-  toggleBarcodeListening: () => void
-  applyAutoMargin: () => void
+    isListeningForBarcodes: boolean;
+    toggleBarcodeListening: () => void;
+    applyAutoMargin: () => void;
 }
 
-export default function TopNavigation({
-  isListeningForBarcodes,
-  toggleBarcodeListening,
-  applyAutoMargin,
-}: TopNavigationProps) {
-  return (
-    <header className="border-b bg-card px-4 py-2">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <h1 className="text-xl font-bold">POS System</h1>
-        </div>
-        <div className="flex items-center space-x-4">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
+export default function TopNavigation({ isListeningForBarcodes, toggleBarcodeListening, applyAutoMargin }: TopNavigationProps) {
+    const { t } = useTranslation();
+    return (
+        <header className="bg-card border-b px-4 py-2">
+            <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <Switch id="barcode-mode" checked={isListeningForBarcodes} onCheckedChange={toggleBarcodeListening} />
-                  <Label htmlFor="barcode-mode" className="flex items-center cursor-pointer">
-                    <Barcode className="h-4 w-4 mr-1" />
-                    Barcode Mode
-                    {isListeningForBarcodes && (
-                      <Badge variant="outline" className="ml-2 bg-green-100 text-green-800 border-green-200">
-                        Active
-                      </Badge>
-                    )}
-                  </Label>
+                    <h1 className="text-xl font-bold">{t('POS System')}</h1>
                 </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>When enabled, automatically adds scanned items to cart</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+                <div className="flex items-center space-x-4">
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className="flex items-center space-x-2">
+                                    <Switch id="barcode-mode" checked={isListeningForBarcodes} onCheckedChange={toggleBarcodeListening} />
+                                    <Label htmlFor="barcode-mode" className="flex cursor-pointer items-center">
+                                        <Barcode className="mr-1 h-4 w-4" />
+                                        {t('Barcode Mode')}
+                                        {isListeningForBarcodes && (
+                                            <Badge variant="outline" className="ml-2 border-green-200 bg-green-100 text-green-800">
+                                                {t('Active')}
+                                            </Badge>
+                                        )}
+                                    </Label>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{t('When enabled, automatically adds scanned items to cart')}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" size="sm" onClick={applyAutoMargin} className="flex items-center">
-                  <Percent className="mr-2 h-4 w-4" />
-                  Auto-Margin
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Apply consistent margin to same items</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="outline" size="sm" onClick={applyAutoMargin} className="flex items-center">
+                                    <Percent className="mr-2 h-4 w-4" />
+                                    {t('Auto-Margin')}
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{t('Apply consistent margin to same items')}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
 
-          <Button variant="outline" size="sm">
-            <Home className="mr-2 h-4 w-4" />
-            Home
-          </Button>
-        </div>
-      </div>
-    </header>
-  )
+                    <Button variant="outline" size="sm">
+                        <Home className="mr-2 h-4 w-4" />
+                        {t('Home')}
+                    </Button>
+                </div>
+            </div>
+        </header>
+    );
 }
