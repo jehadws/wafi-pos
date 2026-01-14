@@ -11,14 +11,14 @@
 | Metric                    | Count | Percentage |
 | ------------------------- | ----- | ---------- |
 | **Total Files Scanned**   | 264   | 100%       |
-| **Internationalized**     | 199   | 75.4%      |
+| **Internationalized**     | 212   | 80.3%      |
 | **Pure UI Components**    | 10    | 3.8%       |
-| **Not Internationalized** | 55    | 20.8%      |
+| **Not Internationalized** | 42    | 15.9%      |
 
-**Estimated Progress:** 75.4% Complete
-**Estimated Remaining:** 55 files
+**Estimated Progress:** 80.3% Complete
+**Estimated Remaining:** 42 files
 
-**Status:** January 14, 2026 - Continued internationalization effort. Fixed hardcoded breadcrumbs in 18 dashboard pages.
+**Status:** January 14, 2026 - Continued internationalization effort. Fixed hardcoded aria-labels and dropdown options in 13 dashboard pages.
 
 | File                                                            | Changes                                                                                                   |
 | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
@@ -47,7 +47,32 @@
 
 ## January 14, 2026 - Session Summary
 
-**Files Modified:** 9
+**Files Modified:** 13
+
+| File                                                               | Changes                                                                   |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| `resources/js/pages/dashboard/products/page.tsx`                   | Fixed hardcoded aria-labels → `t('Select all')`, `t('Select row')`        |
+| `resources/js/pages/dashboard/customers/page.tsx`                  | Fixed hardcoded aria-labels → `t('Select all')`, `t('Select row')`        |
+| `resources/js/pages/dashboard/categories/page.tsx`                 | Fixed hardcoded aria-labels → `t('Select all')`, `t('Select row')`        |
+| `resources/js/pages/dashboard/units/page.tsx`                      | Fixed hardcoded aria-labels → `t('Select all')`, `t('Select row')`        |
+| `resources/js/pages/dashboard/orders/page.tsx`                     | Fixed hardcoded aria-labels → `t('Select all')`, `t('Select row')`        |
+| `resources/js/pages/dashboard/users/page.tsx`                      | Fixed hardcoded aria-labels → `t('Select all')`, `t('Select row')`        |
+| `resources/js/pages/dashboard/providers/page.tsx`                  | Fixed hardcoded aria-labels → `t('Select all')`, `t('Select row')`        |
+| `resources/js/pages/dashboard/procurements/page.tsx`               | Fixed hardcoded aria-labels → `t('Select all')`, `t('Select row')`        |
+| `resources/js/pages/dashboard/accounting/accounts/page.tsx`        | Fixed hardcoded aria-labels → `t('Select all')`, `t('Select row')`        |
+| `resources/js/pages/dashboard/accounting/transactions/page.tsx`    | Fixed hardcoded aria-labels → `t('Select all')`, `t('Select row')`        |
+| `resources/js/pages/dashboard/procurements/products/page.tsx`      | Fixed hardcoded aria-labels → `t('Select all')`, `t('Select row')`        |
+| `resources/js/pages/dashboard/units/groups/page.tsx`               | Fixed 15+ hardcoded strings → dropdown options, bulk actions, dialog text |
+| `resources/js/pages/dashboard/accounting/transactions/history.tsx` | Fixed hardcoded aria-labels and breadcrumb → `t('Transactions History')`  |
+
+**Key Translations Used:**
+
+- Select all, Select row, Open menu, Options, Copy ID, Edit, Delete
+- Delete Selected, Operation failed, Successfully processed selected
+- Unit Groups List, Display all unit groups., Are you sure you want to delete this item?
+- Transactions History
+
+**Progress Update:** 199 → 212 files internationalized (75.4% → 80.3%)
 
 **Key Translations Used:**
 

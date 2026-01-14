@@ -27,7 +27,7 @@ export default function Dashboard() {
         { title: t('Dashboard'), href: '/dashboard' },
         { title: t('Accounting'), href: '/dashboard/accounting' },
         { title: t('Transactions'), href: '/dashboard/accounting/transactions' },
-        { title: 'Transactions History', href: '/dashboard/accounting/transactions/history' },
+        { title: t('Transactions History'), href: '/dashboard/accounting/transactions/history' },
     ];
 
     const [transaction, setTransaction] = useState<CustomPaginationData<TransactionHistory>>({
@@ -83,11 +83,11 @@ export default function Dashboard() {
                 <Checkbox
                     checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
                     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                    aria-label="Select all"
+                    aria-label={t('Select all')}
                 />
             ),
             cell: ({ row }) => (
-                <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />
+                <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label={t('Select row')} />
             ),
             enableSorting: false,
             enableHiding: false,
