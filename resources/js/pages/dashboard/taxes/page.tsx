@@ -19,13 +19,12 @@ import { MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Categories', href: '/dashboard/units' },
-];
-
 export default function RewardSystemPage() {
     const { t } = useTranslation();
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Taxes'), href: '/dashboard/taxes' },
+    ];
     const { title, taxes } = usePage<{ taxes: RewardSystem[]; title: string }>().props;
     console.log(taxes);
     const [deleteDialog, setDeleteDialog] = useState<{
@@ -64,11 +63,11 @@ export default function RewardSystemPage() {
                 <Checkbox
                     checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
                     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                    aria-label="Select all"
+                    aria-label={t('Select all')}
                 />
             ),
             cell: ({ row }) => (
-                <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />
+                <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label={t('Select row')} />
             ),
             enableSorting: false,
             enableHiding: false,
@@ -134,7 +133,7 @@ export default function RewardSystemPage() {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
+                                <span className="sr-only">{t('Open menu')}</span>
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -190,7 +189,7 @@ export default function RewardSystemPage() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={title || 'Coupons List'} />
+            <Head title={title || t('Taxes List')} />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="grid w-full">
                     <DataTable

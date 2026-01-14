@@ -19,13 +19,12 @@ import { MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Categories', href: '/dashboard/units' },
-];
-
 export default function RewardSystemPage() {
     const { t } = useTranslation();
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Taxes Groups'), href: '/dashboard/taxes/groups' },
+    ];
     const { title, groups } = usePage<{ groups: RewardSystem[]; title: string }>().props;
     console.log(groups);
     const [deleteDialog, setDeleteDialog] = useState<{
@@ -64,11 +63,11 @@ export default function RewardSystemPage() {
                 <Checkbox
                     checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
                     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                    aria-label="Select all"
+                    aria-label={t('Select all')}
                 />
             ),
             cell: ({ row }) => (
-                <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />
+                <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label={t('Select row')} />
             ),
             enableSorting: false,
             enableHiding: false,
@@ -97,20 +96,20 @@ export default function RewardSystemPage() {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
+                                <span className="sr-only">{t('Open menu')}</span>
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Options</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(product.id.toString())}>Copy ID</DropdownMenuItem>
+                            <DropdownMenuLabel>{t('Options')}</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(product.id.toString())}>{t('Copy ID')}</DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => router.get(`/dashboard/taxes/groups/edit/${product.id}`)}>Edit</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.get(`/dashboard/taxes/groups/edit/${product.id}`)}>{t('Edit')}</DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => setDeleteDialog({ isOpen: true, loading: false, item: row.original })}
                                 className="text-destructive"
                             >
-                                Delete
+                                {t('Delete')}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -121,7 +120,7 @@ export default function RewardSystemPage() {
 
     const bulkActions = [
         {
-            label: 'Delete Selected',
+            label: t('Delete Selected'),
             action: (selectedRows: RewardSystem[]) => {
                 const payload = {
                     action: 'delete_selected',
@@ -131,11 +130,11 @@ export default function RewardSystemPage() {
                 // Get CSRF token from meta tag
                 router.post('/api/crud/ns.taxes-groups/bulk-actions', payload, {
                     onError: (errors) => {
-                        toast.error('Operation failed');
+                        toast.error(t('Operation failed'));
                         console.error('Error:', errors);
                     },
                     onSuccess: () => {
-                        toast.success('Successfully processed selected');
+                        toast.success(t('Successfully processed selected'));
                         router.reload();
                     },
                 });
@@ -153,14 +152,14 @@ export default function RewardSystemPage() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={title || 'Coupons List'} />
+            <Head title={title || t('Taxes Groups List')} />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="grid w-full">
                     <DataTable
                         columns={columns}
                         data={groups}
-                        title="Taxes Groups List"
-                        description="Display all taxes groups."
+                        title={t('Taxes Groups List')}
+                        description={t('Display all taxes groups.')}
                         searchKey="name"
                         bulkActions={bulkActions}
                         onAddNew={handleAddNew}
@@ -172,10 +171,10 @@ export default function RewardSystemPage() {
                     isOpen={deleteDialog.isOpen}
                     onClose={() => setDeleteDialog({ isOpen: false, loading: false, item: null })}
                     onConfirm={handleDeleteConfirm}
-                    title={`Delete ${deleteDialog.item?.name}`}
-                    description="Are you sure you want to delete this Tax Group? This action cannot be undone."
-                    confirmText="Delete"
-                    cancelText="Cancel"
+                    title={`${t('Delete')} ${deleteDialog.item?.name}`}
+                    description={t('Are you sure you want to delete this Tax Group? This action cannot be undone.')}
+                    confirmText={t('Delete')}
+                    cancelText={t('Cancel')}
                     variant="destructive"
                     loading={deleteDialog.loading}
                 />
