@@ -91,10 +91,10 @@ export default function OrderFilterDialog({ isFilterOpen, setIsFilterOpen, handl
                         </Select>
                     </FormField>
 
-                    <FormField label="Customer">
+                    <FormField label={t('Customer')}>
                         <Select value={Customer} onValueChange={setSelectedCustomer}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Select Customer" />
+                                <SelectValue placeholder={t('Select Customer')} />
                             </SelectTrigger>
                             <SelectContent>
                                 {customers.map((customer) => {
@@ -108,20 +108,20 @@ export default function OrderFilterDialog({ isFilterOpen, setIsFilterOpen, handl
                         </Select>
                     </FormField>
 
-                    <FormField label="Customer Phone">
+                    <FormField label={t('Customer Phone')}>
                         <Input
                             type="text"
-                            placeholder="Customer Phone"
+                            placeholder={t('Customer Phone')}
                             className={cn('bg-dark')}
                             value={CustomerPhone}
                             onChange={(e) => setSelectedCustomerPhone(e.target.value)}
                         />
                     </FormField>
 
-                    <FormField label="Cashier Register">
+                    <FormField label={t('Cash Register')}>
                         <Select value={Register} onValueChange={setSelectedRegister}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Select Customer" />
+                                <SelectValue placeholder={t('Select Cash Register')} />
                             </SelectTrigger>
                             <SelectContent>
                                 {registers.map((register) => {
@@ -139,9 +139,9 @@ export default function OrderFilterDialog({ isFilterOpen, setIsFilterOpen, handl
                 <DialogFooter>
                     <div className="mt-2 flex w-full flex-row items-center justify-between">
                         <Button onClick={handleApplyReset} variant={'destructive'}>
-                            Clear Filters
+                            {t('Reset')}
                         </Button>
-                        <Button onClick={handleApplyFilter}>Apply</Button>
+                        <Button onClick={handleApplyFilter}>{t('Apply')}</Button>
                     </div>
                 </DialogFooter>
             </DialogContent>

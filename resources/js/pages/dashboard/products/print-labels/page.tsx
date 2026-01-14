@@ -1,71 +1,72 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { ProductSearch } from "./components/product-search"
-import { LabelPreview } from "./components/label-preview"
-import { LabelSettingsPanel } from "./components/label-settings"
-import AppLayout from "@/layouts/app-layout"
-import { formatCurrency } from "@/utils/format"
+import AppLayout from '@/layouts/app-layout';
+import { useTranslation } from '@/lib/i18n';
+import { formatCurrency } from '@/utils/format';
+import { useState } from 'react';
+import { LabelPreview } from './components/label-preview';
+import { LabelSettingsPanel } from './components/label-settings';
+import { ProductSearch } from './components/product-search';
 
 export interface LabelSettings {
-  itemsPerRow: number
-  verticalPadding: number
-  horizontalPadding: number
-  barcodeHeight: number
-  documentSize: number
-  showStoreName: boolean
-  showBarcodeText: boolean
-  showProductPrice: boolean
-  showProductName: boolean
+    itemsPerRow: number;
+    verticalPadding: number;
+    horizontalPadding: number;
+    barcodeHeight: number;
+    documentSize: number;
+    showStoreName: boolean;
+    showBarcodeText: boolean;
+    showProductPrice: boolean;
+    showProductName: boolean;
 }
 
 export interface LabelPrintingState {
-  selectedProducts: ProductSearchResult[]
-  settings: LabelSettings
-  searchQuery: string
+    selectedProducts: ProductSearchResult[];
+    settings: LabelSettings;
+    searchQuery: string;
 }
 
-
 interface SelectedProduct extends ProductSearchResult {
-  times: number
-  selectedUnitQuantity: UnitQuantity | null
+    times: number;
+    selectedUnitQuantity: UnitQuantity | null;
 }
 
 export default function LabelPrinter() {
-  const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([])
+    const { t } = useTranslation();
+    const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
 
-  const [settings, setSettings] = useState<LabelSettings>({
-    itemsPerRow: 1,
-    verticalPadding: 16,
-    horizontalPadding: 16,
-    barcodeHeight: 30,
-    documentSize: 800,
-    showStoreName: true,
-    showBarcodeText: true,
-    showProductPrice: true,
-    showProductName: true,
-  })
+    const [settings, setSettings] = useState<LabelSettings>({
+        itemsPerRow: 1,
+        verticalPadding: 16,
+        horizontalPadding: 16,
+        barcodeHeight: 30,
+        documentSize: 800,
+        showStoreName: true,
+        showBarcodeText: true,
+        showProductPrice: true,
+        showProductName: true,
+    });
 
-  const handlePrint = () => {
-    // Generate labels for printing
-    const labels = []
-    for (const product of selectedProducts) {
-      for (let i = 0; i < product.times; i++) {
-        labels.push(product)
-      }
-    }
+    const handlePrint = () => {
+        // Generate labels for printing
+        const labels = [];
+        for (const product of selectedProducts) {
+            for (let i = 0; i < product.times; i++) {
+                labels.push(product);
+            }
+        }
 
-    if (labels.length === 0) {
-      alert("No products selected for printing")
-      return
-    }
+        if (labels.length === 0) {
+            alert(t('No products selected for printing'));
+            return;
+        }
 
-    // Create print content
-    const printContent = `
+        // Create print content
+        const printContent = `
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Print Labels</title>
+          <title>${t('Print Labels')}</title>
           <style>
             @media print {
               body { margin: 0; padding: ${settings.verticalPadding}px ${settings.horizontalPadding}px; }
@@ -93,32 +94,33 @@ export default function LabelPrinter() {
         <body>
           <div class="labels-grid">
             ${labels
-        .map(
-          (product) => `
+                .map(
+                    (product) => `
               <div class="label">
-                ${settings.showStoreName ? '<div class="store-name">ALWAFI</div>' : ""}
+                ${settings.showStoreName ? `<div class="store-name">${t('ALWAFI')}</div>` : ''}
                 <div class="product-info">
                   <div class="product-row">
-                    <span><strong>Product</strong></span>
-                    ${settings.showProductName ? `<span>${product.name}</span>` : "<span></span>"}
+                    <span><strong>${t('Product')}</strong></span>
+                    ${settings.showProductName ? `<span>${product.name}</span>` : '<span></span>'}
                   </div>
                   <div class="product-row">
-                    <span><strong>Unit</strong></span>
+                    <span><strong>${t('Unit')}</strong></span>
                     <span>${product.selectedUnitQuantity?.unit.name}</span>
                   </div>
                   <div class="product-row">
-                    <span><strong>Barcode</strong></span>
+                    <span><strong>${t('Barcode')}</strong></span>
                     <span>${product.barcode}</span>
                   </div>
-                  ${settings.showProductPrice
-              ? `
+                  ${
+                      settings.showProductPrice
+                          ? `
                     <div class="product-row">
-                      <span><strong>Price</strong></span>
+                      <span><strong>${t('Price')}</strong></span>
                       <span>${formatCurrency(product.selectedUnitQuantity?.sale_price!)}</span>
                     </div>
                   `
-              : ""
-            }
+                          : ''
+                  }
                 </div>
                 <div class="barcode">
                   <img
@@ -126,40 +128,39 @@ export default function LabelPrinter() {
                     alt="${product.barcode}"
                     style="height: ${settings.barcodeHeight}px"
                   />
-                  ${settings.showBarcodeText ? `<div style="font-size: 12px;">${product.barcode}</div>` : ""}
+                  ${settings.showBarcodeText ? `<div style="font-size: 12px;">${product.barcode}</div>` : ''}
                 </div>
               </div>
             `,
-        )
-        .join("")}
+                )
+                .join('')}
           </div>
         </body>
       </html>
-    `
+    `;
 
-    // Open print dialog
-    const printWindow = window.open("", "_blank")
-    if (printWindow) {
-      printWindow.document.write(printContent)
-      printWindow.document.close()
-      printWindow.focus()
-      printWindow.print()
-    }
-  }
+        // Open print dialog
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+        }
+    };
 
-  return (
-    <AppLayout>
-      <div className="flex flex-1">
-        {/* Product Search Sidebar */}
-        <ProductSearch selectedProducts={selectedProducts} onProductsChange={setSelectedProducts} onPrint={handlePrint} />
+    return (
+        <AppLayout>
+            <div className="flex flex-1">
+                {/* Product Search Sidebar */}
+                <ProductSearch selectedProducts={selectedProducts} onProductsChange={setSelectedProducts} onPrint={handlePrint} />
 
-        {/* Label Preview */}
-        <LabelPreview products={selectedProducts} settings={settings} />
+                {/* Label Preview */}
+                <LabelPreview products={selectedProducts} settings={settings} />
 
-        {/* Settings Sidebar */}
-        <LabelSettingsPanel settings={settings} onSettingsChange={setSettings} />
-      </div>
-    </AppLayout>
-  )
+                {/* Settings Sidebar */}
+                <LabelSettingsPanel settings={settings} onSettingsChange={setSettings} />
+            </div>
+        </AppLayout>
+    );
 }
-

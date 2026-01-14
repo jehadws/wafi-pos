@@ -11,12 +11,12 @@
 | Metric                    | Count | Percentage |
 | ------------------------- | ----- | ---------- |
 | **Total Files Scanned**   | 264   | 100%       |
-| **Internationalized**     | 118   | 44.7%      |
+| **Internationalized**     | 127   | 48.1%      |
 | **Pure UI Components**    | 10    | 3.8%       |
-| **Not Internationalized** | 136   | 51.5%      |
+| **Not Internationalized** | 127   | 48.1%      |
 
-**Estimated Progress:** 44.7% Complete  
-**Estimated Remaining:** 136 files
+**Estimated Progress:** 47.9% Complete  
+**Estimated Remaining:** 127 files
 
 ---
 
@@ -29,17 +29,59 @@
 | `resources/js/pages/dashboard/reports/annual-report.tsx`       | 18                | Annual sales report with year filter |
 | `resources/js/pages/dashboard/reports/customers-statement.tsx` | 28                | Customer account statement report    |
 
-**Verification:** The following files were already internationalized:
+**Files Verified as Internationalized:**
 
 - `resources/js/pages/dashboard/reports/profit.tsx` ✅
 - `resources/js/pages/dashboard/reports/sales.tsx` ✅
 - `resources/js/pages/dashboard/reports/stock-history.tsx` ✅
 - `resources/js/pages/dashboard/reports/low-stock.tsx` ✅
-- `resources/js/pages/dashboard/categories/page.tsx` ✅
-- `resources/js/pages/dashboard/units/page.tsx` ✅
-- `resources/js/pages/dashboard/users/page.tsx` ✅
-- `resources/js/pages/dashboard/users/roles/page.tsx` ✅
+- `resources/js/pages/dashboard/reports/payment-types.tsx` ✅ (fixed "Summary" header)
+- `resources/js/pages/dashboard/reports/sales-progress.tsx` ✅
+- `resources/js/pages/dashboard/reports/sold-stock.tsx` ✅
+- `resources/js/pages/dashboard/reports/transactions.tsx` ✅
+
+### Accounting Pages Internationalization - January 2026
+
+**Files Verified as Internationalized:**
+
 - `resources/js/pages/dashboard/accounting/accounts/page.tsx` ✅
+- `resources/js/pages/dashboard/accounting/accounts/create.tsx` ✅ (fixed error messages)
+- `resources/js/pages/dashboard/accounting/transactions/page.tsx` ✅
+- `resources/js/pages/dashboard/accounting/transactions/create.tsx` ✅
+- `resources/js/pages/dashboard/accounting/transactions/history.tsx` ✅
+
+### Orders Pages Internationalization - January 2026
+
+**Files Verified as Internationalized:**
+
+- `resources/js/pages/dashboard/orders/page.tsx` ✅
+- `resources/js/pages/dashboard/orders/invoice/page.tsx` ✅
+- `resources/js/pages/dashboard/orders/payments-types/page.tsx` ✅
+- `resources/js/pages/dashboard/orders/payments-types/create.tsx` ✅
+- `resources/js/pages/dashboard/orders/payments-types/edit.tsx` ✅
+
+### Products Pages Internationalization - January 2026
+
+**Files Verified as Internationalized:**
+
+- `resources/js/pages/dashboard/products/page.tsx` ✅
+- `resources/js/pages/dashboard/products/create.tsx` ✅
+- `resources/js/pages/dashboard/products/edit.tsx` ✅
+- `resources/js/pages/dashboard/products/stock-flow-records.tsx` ✅
+- `resources/js/pages/dashboard/products/print-labels/page.tsx` ✅
+
+### Settings Pages Internationalization - January 2026
+
+**Files Verified as Internationalized:**
+
+- `resources/js/pages/dashboard/settings/general.tsx` ✅
+- `resources/js/pages/dashboard/settings/about.tsx` ✅
+- `resources/js/pages/dashboard/settings/invoices.tsx` ✅
+- `resources/js/pages/dashboard/settings/pos.tsx` ✅
+- `resources/js/pages/dashboard/settings/orders.tsx` ✅
+- `resources/js/pages/settings/appearance.tsx` ✅
+- `resources/js/pages/settings/password.tsx` ✅
+- `resources/js/pages/settings/profile.tsx` ✅
 
 ### Dashboard Forms and Pages - January 2026 (7 files)
 
@@ -690,6 +732,69 @@ dashboard.reports.sales;
 
 ## Progress Updates
 
+### January 14, 2026 - Settings and Data Table Components Internationalized ✅
+
+**Completed:** 6 files internationalized
+
+**Files:**
+
+- `resources/js/pages/dashboard/settings/orders.tsx` - Orders settings page with all form labels, buttons, and descriptions
+- `resources/js/pages/dashboard/products/print-labels/page.tsx` - Print labels page with all print-related text
+- `resources/js/components/ui/data-table/data-table.tsx` - Data table "No results" message
+- `resources/js/components/ui/data-table/data-table-faceted-filter.tsx` - "Clear filters" action
+- `resources/js/components/ui/data-table/data-table-view-options.tsx` - "View" and "Toggle columns" labels
+- `resources/js/pages/dashboard/reports/sold-stock.tsx` - Sold stock report with all labels, headers, and buttons
+
+**Key Translations:**
+
+- Orders Settings, Configure settings that applies to orders
+- Enable Reward, Allow Unpaid Orders, Allow Partial Orders, Strict Instalments, Quotation Expiration
+- Yes, No, Select an option, Save Settings, Settings saved, Failed to save
+- Sold Stock, Provides an overview over the sold stock during a specific period
+- Product, Unit, Quantity, Taxes, Total, Range, Document, By, Load, Print
+- By Category, Select Categories, Select Units, Select categories to filter sales by unit
+- View, Toggle columns, No results, Clear filters
+
+**Progress:** 124 → 126 files internationalized (47.0% → 47.7%)
+
+### January 14, 2026 - Additional Report Pages Internationalized ✅
+
+**Completed:** 2 files internationalized
+
+**Files:**
+
+- `resources/js/pages/dashboard/reports/payment-types.tsx` - Sales by payment types report with all labels, headers, and buttons
+- `resources/js/pages/dashboard/reports/sales-progress.tsx` - Sales progress report with all labels, headers, and buttons (partially, has pre-existing TypeScript error)
+- `resources/js/pages/dashboard/reports/transactions.tsx` - Already internationalized (verified during review)
+
+**Files Verified as Already Internationalized:**
+
+- `resources/js/pages/dashboard/accounting/rules/page.tsx` - ✅ Already has useTranslation hook with 12 translation calls
+- `resources/js/pages/dashboard/accounting/rules/components/rule-row.tsx` - ✅ Already internationalized
+- `resources/js/pages/dashboard/accounting/rules/components/account-selector-modal.tsx` - ✅ Already internationalized
+- `resources/js/pages/dashboard/accounting/rules/components/action-selector-modal.tsx` - ✅ Already internationalized
+
+**Key Translations:**
+
+- Sales By Payment Types, Provide a report of the sales by payment types, for a specific period
+- Sales Progress, Provides an overview over the best products sold during a specific period
+- Load, Print, Range, Document, By, Total, Account, Debit, Credit
+- Product, Unit, Quantity, Value, Progress, Current Period, Previous Period, Growth
+
+**Files from Target List That Don't Exist:**
+
+- `resources/js/pages/dashboard/reports/products-sales.tsx`
+- `resources/js/pages/dashboard/reports/categories-sales.tsx`
+- `resources/js/pages/dashboard/reports/taxes-report.tsx`
+- `resources/js/pages/dashboard/reports/expenses-report.tsx`
+- `resources/js/pages/dashboard/reports/orders-report.tsx`
+- `resources/js/pages/dashboard/accounting/rules/create.tsx`
+- `resources/js/pages/dashboard/settings/roles.tsx`
+- `resources/js/pages/dashboard/settings/permissions.tsx`
+- `resources/js/pages/dashboard/settings/printer.tsx`
+
+**Progress:** 124 → 126 files internationalized (47.0% → 47.7%)
+
 ### January 14, 2026 - Settings Pages Internationalized ✅
 
 **Completed:** 3 settings pages internationalized
@@ -868,3 +973,54 @@ dashboard.reports.sales;
 - `resources/js/components/forms/` - Directory not found/empty
 
 **Progress:** 118 → 118 files internationalized (44.7% maintained)
+
+### January 14, 2026 - Form Components and Dashboard Pages Internationalization ✅
+
+**Completed:** 9 files internationalized
+
+**Files Modified:**
+
+| File                                                                                  | Translation Calls | Description                                         |
+| ------------------------------------------------------------------------------------- | ----------------- | --------------------------------------------------- |
+| `resources/js/components/forms/product-form/identification-tab.tsx`                   | 15+               | Product identification form labels and descriptions |
+| `resources/js/components/forms/product-form/units-tab.tsx`                            | 12+               | Units and selling groups configuration              |
+| `resources/js/components/forms/orders/orders-filter-dialog.tsx`                       | 8+                | Order filter dialog labels                          |
+| `resources/js/pages/dashboard/accounting/rules/components/account-selector-modal.tsx` | 5+                | Account selector modal                              |
+| `resources/js/pages/dashboard/accounting/rules/components/action-selector-modal.tsx`  | 5+                | Action selector modal                               |
+| `resources/js/pages/dashboard/accounting/rules/components/rule-row.tsx`               | 10+               | Accounting rule row configuration                   |
+| `resources/js/pages/dashboard/products/print-labels/components/label-preview.tsx`     | 8+                | Label preview component                             |
+| `resources/js/pages/dashboard/products/print-labels/components/label-settings.tsx`    | 12+               | Label settings panel                                |
+| `resources/js/pages/dashboard/products/print-labels/components/product-search.tsx`    | 12+               | Product search for label printing                   |
+
+**Key Translation Keys Used:**
+
+- Product identification: Category, SKU, Barcode, Barcode Type, Type, Status, Stock Management Enabled, Description
+- Units: Unit Group, Accurate Tracking, Auto COGS, Selling Groups, New Group
+- Filters: Customer, Customer Phone, Cash Register, Select Customer, Select Cash Register, Reset, Apply
+- Accounting: Choose Account, Choose Action, Search for options, Not Defined, Select an option, Increase, Decrease, Save
+- Print Labels: No products selected, Search and add products to start creating labels, Products, Included Products, Print Labels, Unit, Price, Settings, Not set, Quantity, Apply Settings, Basic Settings, Visibility Settings, Items Per Row, Vertical/Horizontal Padding, Barcode Height, Document Size, Show Store Name, Show Barcode Text, Show Product Price, Show Product Name
+
+**Verification - Already Internationalized Files:**
+
+The following files were verified as already having proper i18n support:
+
+- All `resources/js/components/pos/` files (cart-item, cart-table, comments-dialog, coupons-dialog, orders-dialog, settings-dialog, shipping-dialog, top-navigation, etc.)
+- `resources/js/components/forms/product-form/expiry-tab.tsx`
+- `resources/js/components/forms/product-form/taxes-tab.tsx`
+- `resources/js/components/forms/shared/form-field.tsx` (pure component, receives text via props)
+- `resources/js/components/forms/shared/input.tsx` (pure component, no user-facing text)
+
+**Progress:** 118 → 127 files internationalized (48.1% Complete)
+
+---
+
+## Summary
+
+| Metric                    | Count | Percentage |
+| ------------------------- | ----- | ---------- |
+| **Total Files Scanned**   | 264   | 100%       |
+| **Internationalized**     | 127   | 48.1%      |
+| **Pure UI Components**    | 10    | 3.8%       |
+| **Not Internationalized** | 127   | 48.1%      |
+
+**Estimated Progress:** 48.1% Complete

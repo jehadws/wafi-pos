@@ -54,7 +54,7 @@ export default function CreateProductPage() {
                         form.setError(flatKey, errors[key]);
                     }
                 }
-                toast.error('Please fix the validation errors');
+                toast.error(t('Please fix the validation errors'));
                 console.error('Validation errors:', errors);
             },
             onSuccess: () => {
@@ -69,7 +69,7 @@ export default function CreateProductPage() {
         form.clearErrors();
 
         if (!form.data.name.trim()) {
-            form.setError('name', 'First name is required');
+            form.setError('name', t('First name is required'));
             isValid = false;
         }
 
