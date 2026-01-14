@@ -1,15 +1,12 @@
 import FormField from '@/components/forms/shared/form-field';
 import { Input } from '@/components/forms/shared/input';
-import { SelectTrigger } from '@/components/select';
 import { Button } from '@/components/ui/button';
-import { DateRangePicker } from '@/components/ui/date-range-picker';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogFooter, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
-import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { DateRange } from 'react-day-picker';
 
@@ -63,14 +60,24 @@ export default function OrderFilterDialog({ isFilterOpen, setIsFilterOpen, handl
     return (
         <Dialog open={isFilterOpen} onOpenChange={setIsFilterOpen}>
             <DialogContent className={cn('flex w-[50vw] max-w-[50vw] flex-col sm:max-w-[50vw]')}>
-<DialogTitle>{t('Search Filters')}</DialogTitle>
+                <DialogTitle>{t('Search Filters')}</DialogTitle>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div className="col-span-2">
-                        <FormField label={t('Date Range')}>
                     <FormField label={t('Payment Status')}>
-                        <SelectValue placeholder={t('Payment Status')} />
+                        <Select value={PaymentStatus} onValueChange={setSelectedPaymentStatus}>
+                            <SelectTrigger>
+                                <SelectValue placeholder={t('Payment Status')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="paid">Paid</SelectItem>
+                                <SelectItem value="pending">Pending</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </FormField>
+
                     <FormField label={t('Author')}>
-                        <SelectValue placeholder={t('Select Author')} />
+                        <Select value={Author} onValueChange={setSelectedAuthor}>
+                            <SelectTrigger>
+                                <SelectValue placeholder={t('Select Author')} />
                             </SelectTrigger>
                             <SelectContent>
                                 {users.map((customer) => {
