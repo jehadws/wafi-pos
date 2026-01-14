@@ -138,11 +138,11 @@ export default function CreateProductPage() {
                         form.setError(flatKey, errors[key]);
                     }
                 }
-                toast.error('Please fix the validation errors');
+                toast.error(t('Please fix the validation errors'));
                 console.error('Validation errors:', errors);
             },
             onSuccess: () => {
-                toast.success('Product created successfully');
+                toast.success(t('Successfully saved'));
             },
         });
     };

@@ -58,7 +58,7 @@ export default function CreateProductPage() {
                 console.error('Validation errors:', errors);
             },
             onSuccess: () => {
-                toast.success('Product created successfully');
+                toast.success(t('Successfully saved'));
             },
         });
     };
@@ -106,7 +106,13 @@ export default function CreateProductPage() {
                     />
 
                     {/* Product Name */}
-                    <FormField label="Name" error={form.errors.name} description="Provide a name to the resource." className="mb-2" required>
+                    <FormField
+                        label={t('Name')}
+                        error={form.errors.name}
+                        description={t('Provide a name to the resource.')}
+                        className="mb-2"
+                        required
+                    >
                         <Input
                             id="name"
                             name="name"
@@ -162,7 +168,7 @@ export default function CreateProductPage() {
                                         onValueChange={(value) => form.setData('general.sub_category_id', value)}
                                     >
                                         <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Not set" />
+                                            <SelectValue placeholder={t('Not set')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {subCategories?.map((category) => (

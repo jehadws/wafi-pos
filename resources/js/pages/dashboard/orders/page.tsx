@@ -304,9 +304,9 @@ export default function Dashboard() {
                         columns={columns}
                         data={orders}
                         bulkActions={bulkActions}
-                        title="Orders List"
+                        title={t('Orders List')}
                         onAddNew={handleAddNew}
-                        description="Display all orders."
+                        description={t('Display all orders.')}
                         searchKey="code"
                         onRefresh={handleRefresh}
                         customFilterDialog

@@ -83,7 +83,7 @@ export default function Dashboard() {
                 <Checkbox
                     checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
                     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                    aria-label="Select all"
+                    aria-label={t('Select all')}
                 />
             ),
             cell: ({ row }) => (

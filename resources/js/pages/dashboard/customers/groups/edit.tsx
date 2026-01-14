@@ -109,7 +109,7 @@ export default function CreateRewardSystemPage() {
                     />
 
                     <div className="grid grid-cols-1 gap-6 space-y-6 md:grid-cols-2">
-                        <FormField label="Name" description="Provide a name to the resource." error={form.errors.name}>
+                        <FormField label={t('Name')} description={t('Provide a name to the resource.')} error={form.errors.name}>
                             <Input
                                 id="name"
                                 name="name"

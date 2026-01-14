@@ -137,47 +137,47 @@ export default function SettingsGeneral() {
                             <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
                                 <TabsContent value="identification" className="mt-6">
                                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                        <FormField label="Store Name" description="This is the store name." htmlFor="ns_store_name">
+                                        <FormField label={t('Store Name')} description="This is the store name." htmlFor="ns_store_name">
                                             <Input
                                                 id="ns_store_name"
                                                 value={form.data.identification.ns_store_name ?? ''}
                                                 onChange={(e) => form.setData('identification.ns_store_name', e.target.value)}
                                             />
                                         </FormField>
-                                        <FormField label="Store Address" description="The actual store address.">
+                                        <FormField label={t('Store Address')} description="The actual store address.">
                                             <Input
                                                 value={form.data.identification.ns_store_address ?? ''}
                                                 onChange={(e) => form.setData('identification.ns_store_address', e.target.value)}
                                             />
                                         </FormField>
-                                        <FormField label="Store City" description="The actual store city.">
+                                        <FormField label={t('Store City')} description="The actual store city.">
                                             <Input
                                                 value={form.data.identification.ns_store_city ?? ''}
                                                 onChange={(e) => form.setData('identification.ns_store_city', e.target.value)}
                                             />
                                         </FormField>
 
-                                        <FormField label="Store Phone" description="The phone number to reach the store.">
+                                        <FormField label={t('Store Phone')} description="The phone number to reach the store.">
                                             <Input
                                                 value={form.data.identification.ns_store_phone ?? ''}
                                                 onChange={(e) => form.setData('identification.ns_store_phone', e.target.value)}
                                             />
                                         </FormField>
-                                        <FormField label="Store Email" description="The store email. Might be used on invoices or reports.">
+                                        <FormField label={t('Store Email')} description="The store email. Might be used on invoices or reports.">
                                             <Input
                                                 type="email"
                                                 value={form.data.identification.ns_store_email ?? ''}
                                                 onChange={(e) => form.setData('identification.ns_store_email', e.target.value)}
                                             />
                                         </FormField>
-                                        <FormField label="Store P.O.Box" description="The store mail box number.">
+                                        <FormField label={t('PO Box')} description="The store mail box number.">
                                             <Input
                                                 value={form.data.identification.ns_store_pobox ?? ''}
                                                 onChange={(e) => form.setData('identification.ns_store_pobox', e.target.value)}
                                             />
                                         </FormField>
 
-                                        <FormField label="Store Fax" description="The store fax number.">
+                                        <FormField label={t('Store Fax')} description="The store fax number.">
                                             <Input
                                                 value={form.data.identification.ns_store_fax ?? ''}
                                                 onChange={(e) => form.setData('identification.ns_store_fax', e.target.value)}
@@ -185,7 +185,7 @@ export default function SettingsGeneral() {
                                         </FormField>
 
                                         <div className="lg:col-span-2">
-                                            <FormField label="Store Additional Information" description="Store additional information.">
+                                            <FormField label={t('Store Additional Information')} description="Store additional information.">
                                                 <Textarea
                                                     rows={5}
                                                     value={form.data.identification.ns_store_additional ?? ''}
@@ -194,7 +194,7 @@ export default function SettingsGeneral() {
                                             </FormField>
                                         </div>
 
-                                        <FormField label="Store Square Logo" description="Choose the square logo for the store.">
+                                        <FormField label={t('Store Square Logo')} description="Choose the square logo for the store.">
                                             <FilePicker
                                                 value={form.data.identification.ns_store_square_logo}
                                                 onChange={(v) => form.setData('identification.ns_store_square_logo', v)}
@@ -202,7 +202,7 @@ export default function SettingsGeneral() {
                                             />
                                         </FormField>
 
-                                        <FormField label="Store Rectangle Logo" description="Choose the rectangle logo for the store.">
+                                        <FormField label={t('Store Rectangle Logo')} description="Choose the rectangle logo for the store.">
                                             <FilePicker
                                                 value={form.data.identification.ns_store_rectangle_logo}
                                                 onChange={(v) => form.setData('identification.ns_store_rectangle_logo', v)}
@@ -210,7 +210,7 @@ export default function SettingsGeneral() {
                                             />
                                         </FormField>
 
-                                        <FormField label="Language" description="Define the default fallback language.">
+                                        <FormField label={t('Language')} description="Define the default fallback language.">
                                             <Select
                                                 value={form.data.identification.ns_store_language ?? 'en'}
                                                 onValueChange={(v) => form.setData('identification.ns_store_language', v)}
@@ -234,7 +234,7 @@ export default function SettingsGeneral() {
                                                 onValueChange={(v) => form.setData('identification.ns_default_theme', v)}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Choose an option" />
+                                                    <SelectValue placeholder={t('Choose an option')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {options.ns_default_theme.map((t) => (
@@ -250,25 +250,25 @@ export default function SettingsGeneral() {
 
                                 <TabsContent value="currency" className="mt-6">
                                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                        <FormField label="Currency Symbol" description="This is the currency symbol." required>
+                                        <FormField label={t('Currency Symbol')} description="This is the currency symbol." required>
                                             <Input
                                                 value={form.data.currency.ns_currency_symbol ?? ''}
                                                 onChange={(e) => form.setData('currency.ns_currency_symbol', e.target.value)}
                                             />
                                         </FormField>
-                                        <FormField label="Currency ISO" description="The international currency ISO format." required>
+                                        <FormField label={t('Currency ISO')} description="The international currency ISO format." required>
                                             <Input
                                                 value={form.data.currency.ns_currency_iso ?? ''}
                                                 onChange={(e) => form.setData('currency.ns_currency_iso', e.target.value)}
                                             />
                                         </FormField>
-                                        <FormField label="Currency Position" description="Define where the currency should be located.">
+                                        <FormField label={t('Currency Position')} description="Define where the currency should be located.">
                                             <Select
                                                 value={form.data.currency.ns_currency_position ?? ''}
                                                 onValueChange={(v) => form.setData('currency.ns_currency_position', v)}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Choose an option" />
+                                                    <SelectValue placeholder={t('Choose an option')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {options.ns_currency_position.map((p) => (
@@ -286,7 +286,7 @@ export default function SettingsGeneral() {
                                                 onValueChange={(v) => form.setData('currency.ns_currency_prefered', v)}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Choose an option" />
+                                                    <SelectValue placeholder={t('Choose an option')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {options.ns_currency_prefered.map((p) => (
@@ -298,7 +298,7 @@ export default function SettingsGeneral() {
                                             </Select>
                                         </FormField>
                                         <FormField
-                                            label="Currency Thousand Separator"
+                                            label={t('Currency Thousand Separator')}
                                             description='Define the symbol that indicate thousand. By default "," is used.'
                                         >
                                             <Input
@@ -307,7 +307,7 @@ export default function SettingsGeneral() {
                                             />
                                         </FormField>
                                         <FormField
-                                            label="Currency Decimal Separator"
+                                            label={t('Currency Decimal Separator')}
                                             description='Define the symbol that indicate decimal number. By default "." is used.'
                                         >
                                             <Input
@@ -316,7 +316,7 @@ export default function SettingsGeneral() {
                                             />
                                         </FormField>
 
-                                        <FormField label="Currency Precision" description="Define how many decimals to use.">
+                                        <FormField label={t('Currency Precision')} description="Define how many decimals to use.">
                                             <Select
                                                 value={String(form.data.currency.ns_currency_precision ?? 2)}
                                                 onValueChange={(v) => form.setData('currency.ns_currency_precision', Number(v))}
@@ -344,7 +344,7 @@ export default function SettingsGeneral() {
                                                 onValueChange={(v) => form.setData('date.ns_date_format', v)}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Choose an option" />
+                                                    <SelectValue placeholder={t('Choose an option')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {options.ns_date_format.map((f) => (
@@ -365,7 +365,7 @@ export default function SettingsGeneral() {
                                                 onValueChange={(v) => form.setData('date.ns_datetime_format', v)}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Choose an option" />
+                                                    <SelectValue placeholder={t('Choose an option')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {options.ns_datetime_format.map((f) => (
@@ -436,7 +436,7 @@ export default function SettingsGeneral() {
                                                 onValueChange={(v) => form.setData('registration.ns_registration_enabled', v)}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Choose an option" />
+                                                    <SelectValue placeholder={t('Choose an option')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem value="yes">Yes</SelectItem>
@@ -451,7 +451,7 @@ export default function SettingsGeneral() {
                                                 onValueChange={(v) => form.setData('registration.ns_registration_role', v)}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Choose an option" />
+                                                    <SelectValue placeholder={t('Choose an option')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {options.ns_registration_role.map((r) => (
@@ -469,7 +469,7 @@ export default function SettingsGeneral() {
                                                 onValueChange={(v) => form.setData('registration.ns_registration_validated', v)}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Choose an option" />
+                                                    <SelectValue placeholder={t('Choose an option')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem value="yes">Yes</SelectItem>
