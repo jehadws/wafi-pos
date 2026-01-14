@@ -91,9 +91,9 @@ export default function SettingsGeneral() {
                                         options={options.ns_accounting_expenses_accounts.map((tz) => ({ name: tz.label, id: +tz.value }))}
                                         value={form.data.general.ns_accounting_expenses_accounts || []}
                                         onChange={(value) => form.setData('general.ns_accounting_expenses_accounts', value)}
-                                        placeholder="Select roles..."
-                                        searchPlaceholder="Search roles..."
-                                        emptyText="No Roles found"
+                                        placeholder={t('Select roles...')}
+                                        searchPlaceholder={t('Search roles...')}
+                                        emptyText={t('No Roles found')}
                                     />
                                 </FormField>
                                 <FormField
@@ -113,9 +113,9 @@ export default function SettingsGeneral() {
                                         </PopoverTrigger>
                                         <PopoverContent className="w-full p-0">
                                             <Command>
-                                                <CommandInput placeholder="Search framework..." className="h-9" />
+                                                <CommandInput placeholder={t('Search') + '...'} className="h-9" />
                                                 <CommandList>
-                                                    <CommandEmpty>No result found.</CommandEmpty>
+                                                    <CommandEmpty>{t('No result to display.')}</CommandEmpty>
                                                     <CommandGroup>
                                                         {options.ns_accounting_default_paid_expense_offset_account.map((tz) => (
                                                             <CommandItem

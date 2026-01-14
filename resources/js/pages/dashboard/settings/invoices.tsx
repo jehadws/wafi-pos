@@ -121,7 +121,7 @@ export default function ReceiptSettings() {
 
                             <Button onClick={handleSave}>
                                 <Save className="mr-2 h-4 w-4" />
-                                Save Settings
+                                {t('Save Settings')}
                             </Button>
                         </div>
 
@@ -186,7 +186,7 @@ export default function ReceiptSettings() {
                                                         }
                                                         onClick={() => form.setData('receipts.ns_invoice_display_tax_breakdown', 'yes')}
                                                     >
-                                                        Yes
+                                                        {t('Yes')}
                                                     </Button>
                                                     <Button
                                                         type="button"
@@ -197,7 +197,7 @@ export default function ReceiptSettings() {
                                                         }
                                                         onClick={() => form.setData('receipts.ns_invoice_display_tax_breakdown', 'no')}
                                                     >
-                                                        No
+                                                        {t('No')}
                                                     </Button>
                                                 </div>
                                             </FormField>
@@ -216,7 +216,7 @@ export default function ReceiptSettings() {
                                                         }
                                                         onClick={() => form.setData('receipts.ns_invoice_merge_similar_products', 'yes')}
                                                     >
-                                                        Yes
+                                                        {t('Yes')}
                                                     </Button>
                                                     <Button
                                                         type="button"
@@ -227,7 +227,7 @@ export default function ReceiptSettings() {
                                                         }
                                                         onClick={() => form.setData('receipts.ns_invoice_merge_similar_products', 'no')}
                                                     >
-                                                        No
+                                                        {t('No')}
                                                     </Button>
                                                 </div>
                                             </FormField>

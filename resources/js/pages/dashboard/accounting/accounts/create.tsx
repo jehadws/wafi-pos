@@ -138,10 +138,10 @@ export default function CreateProductPage() {
                                         }}
                                     >
                                         <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select an option" />
+                                            <SelectValue placeholder={t('Select an option')} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="null">Select an option</SelectItem>
+                                            <SelectItem value="null">{t('Select an option')}</SelectItem>
                                             {category_identifiers?.map((category) => (
                                                 <SelectItem key={category.value} value={category.value}>
                                                     {category.label}

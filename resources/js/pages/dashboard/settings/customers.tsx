@@ -81,7 +81,7 @@ export default function SettingsGeneral() {
                                         onValueChange={(v) => form.setData('general.ns_customers_rewards_enabled', v)}
                                     >
                                         <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select an option" />
+                                            <SelectValue placeholder={t('Select an option')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {options.ns_customers_rewards_enabled.map((l) => (
@@ -98,7 +98,7 @@ export default function SettingsGeneral() {
                                         onValueChange={(v) => form.setData('general.ns_customers_force_valid_email', v)}
                                     >
                                         <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select an option" />
+                                            <SelectValue placeholder={t('Select an option')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {options.ns_customers_force_valid_email.map((l) => (
@@ -115,7 +115,7 @@ export default function SettingsGeneral() {
                                         onValueChange={(v) => form.setData('general.ns_customers_force_unique_phone', v)}
                                     >
                                         <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select an option" />
+                                            <SelectValue placeholder={t('Select an option')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {options.ns_customers_force_unique_phone.map((l) => (
@@ -143,7 +143,7 @@ export default function SettingsGeneral() {
                                         </PopoverTrigger>
                                         <PopoverContent className="w-full p-0">
                                             <Command>
-                                                <CommandInput placeholder="Search framework..." className="h-9" />
+                                                <CommandInput placeholder={t('Search') + '...'} className="h-9" />
                                                 <CommandList>
                                                     <CommandEmpty>No framework found.</CommandEmpty>
                                                     <CommandGroup>
@@ -181,7 +181,7 @@ export default function SettingsGeneral() {
                                         onValueChange={(v) => form.setData('general.ns_customers_default_group', v)}
                                     >
                                         <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select an option" />
+                                            <SelectValue placeholder={t('Select an option')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {options.ns_customers_default_group.map((l) => (
@@ -198,7 +198,7 @@ export default function SettingsGeneral() {
                                         onValueChange={(v) => form.setData('general.ns_customers_credit_enabled', v)}
                                     >
                                         <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select an option" />
+                                            <SelectValue placeholder={t('Select an option')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {options.ns_customers_credit_enabled.map((l) => (

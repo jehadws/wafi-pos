@@ -394,7 +394,7 @@ export default function SettingsGeneral() {
                                                 </PopoverTrigger>
                                                 <PopoverContent className="w-full p-0">
                                                     <Command>
-                                                        <CommandInput placeholder="Search framework..." className="h-9" />
+                                                        <CommandInput placeholder={t('Search') + '...'} className="h-9" />
                                                         <CommandList>
                                                             <CommandEmpty>No framework found.</CommandEmpty>
                                                             <CommandGroup>
@@ -485,14 +485,14 @@ export default function SettingsGeneral() {
                                                     variant={(form.data.registration.ns_recovery_enabled ?? 'yes') === 'yes' ? 'default' : 'outline'}
                                                     onClick={() => form.setData('registration.ns_recovery_enabled', 'yes')}
                                                 >
-                                                    Yes
+                                                    {t('Yes')}
                                                 </Button>
                                                 <Button
                                                     type="button"
                                                     variant={(form.data.registration.ns_recovery_enabled ?? 'yes') === 'no' ? 'default' : 'outline'}
                                                     onClick={() => form.setData('registration.ns_recovery_enabled', 'no')}
                                                 >
-                                                    No
+                                                    {t('No')}
                                                 </Button>
                                             </div>
                                         </FormField>
@@ -503,7 +503,7 @@ export default function SettingsGeneral() {
                         <div className="mt-6 flex items-center justify-end rounded-b-xl border-t p-3">
                             <Button onClick={() => handleSave()} disabled={isPending}>
                                 {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                                Save Settings
+                                {t('Save Settings')}
                             </Button>
                         </div>
                     </div>

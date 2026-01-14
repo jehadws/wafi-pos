@@ -11,20 +11,20 @@
 | Metric                    | Count | Percentage |
 | ------------------------- | ----- | ---------- |
 | **Total Files Scanned**   | 264   | 100%       |
-| **Internationalized**     | 169   | 64.0%      |
+| **Internationalized**     | 172   | 65.2%      |
 | **Pure UI Components**    | 10    | 3.8%       |
-| **Not Internationalized** | 85    | 32.2%      |
+| **Not Internationalized** | 82    | 31.1%      |
 
-**Estimated Progress:** 64.0% Complete
-**Estimated Remaining:** 85 files
+**Estimated Progress:** 65.2% Complete
+**Estimated Remaining:** 82 files
 
-**Status:** January 14, 2026 - Continued internationalization effort. Files modified in this session:
+**Status:** January 14, 2026 - Continued internationalization effort. Additional files modified in this session:
 
-| File                                                                | Changes                                                                                    |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `resources/js/pages/dashboard/settings/pos.tsx`                     | Internationalized tab labels, form field labels, descriptions, placeholders, and buttons   |
-| `resources/js/components/forms/product-form/identification-tab.tsx` | Internationalized barcode type options (Codabar, Code 128, Code 39, Code 11, UPC A, UPC E) |
-| `resources/js/components/pos/payment-gateway-dialog.tsx`            | Internationalized summary card labels (Total, Discount, Paid, Change)                      |
+| File                                                   | Changes                                                                      |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| `resources/js/components/ui/spinner.tsx`               | Added i18n import, replaced "Loading..." with t('Loading...')                |
+| `resources/js/pages/dashboard/settings/customers.tsx`  | Replaced "Search framework..." with t('Search') + '...'                      |
+| `resources/js/pages/dashboard/settings/accounting.tsx` | Replaced "Select roles...", "Search roles...", "No Roles found", "Search..." |
 
 **Files Reviewed in This Session:**
 
@@ -833,3 +833,26 @@ The following files were verified as already having proper i18n support:
 | **Not Internationalized** | 85    | 32.2%      |
 
 **Estimated Progress:** 64.0% Complete
+
+---
+
+## January 14, 2026 - Additional Settings Pages Internationalized
+
+**Files Modified:** 5
+
+| File                                                          | Translation Calls | Description                                                                    |
+| ------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------ |
+| `resources/js/pages/dashboard/settings/general.tsx`           | 3                 | Internationalized "Save Settings" button, Yes/No toggle buttons                |
+| `resources/js/pages/dashboard/settings/accounting.tsx`        | 1                 | Internationalized "No result found" to use "No result to display."             |
+| `resources/js/pages/dashboard/settings/invoices.tsx`          | 4                 | Internationalized Yes/No toggle buttons (2 sets of toggle buttons)             |
+| `resources/js/pages/dashboard/settings/customers.tsx`         | 5                 | Internationalized "Select an option" placeholders (5 SelectValue placeholders) |
+| `resources/js/pages/dashboard/accounting/accounts/create.tsx` | 2                 | Internationalized "Select an option" placeholder and SelectItem content        |
+
+**Key Translations Used:**
+
+- Save Settings
+- Yes, No
+- Select an option
+- No result to display
+
+**Progress:** 169 → 170 files internationalized (64.0% → 64.4%)
