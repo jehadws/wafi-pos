@@ -11,16 +11,92 @@
 | Metric                    | Count | Percentage |
 | ------------------------- | ----- | ---------- |
 | **Total Files Scanned**   | 264   | 100%       |
-| **Internationalized**     | 148   | 56.1%      |
+| **Internationalized**     | 162   | 61.4%      |
 | **Pure UI Components**    | 10    | 3.8%       |
-| **Not Internationalized** | 106   | 40.2%      |
+| **Not Internationalized** | 92    | 34.8%      |
 
-**Estimated Progress:** 56.1% Complete  
-**Estimated Remaining:** 106 files
+**Estimated Progress:** 61.4% Complete
+**Estimated Remaining:** 92 files
+
+**Note:** As of January 14, 2026 (Continuation), the following directories have been verified as complete:
+
+- `resources/js/pages/dashboard/products/` ✅
+- `resources/js/pages/dashboard/procurements/` ✅
+- `resources/js/pages/dashboard/units/` ✅
 
 ---
 
 ## Recently Completed ✅
+
+### Additional Files Internationalized - January 14, 2026 (Continuation)
+
+| File                                                          | Translation Calls | Description                   |
+| ------------------------------------------------------------- | ----------------- | ----------------------------- |
+| `resources/js/pages/dashboard/procurements/products/edit.tsx` | 12                | Procurement product edit form |
+| `resources/js/pages/dashboard/units/groups/create.tsx`        | 8                 | Unit group creation form      |
+| `resources/js/pages/dashboard/units/groups/edit.tsx`          | 8                 | Unit group editing form       |
+
+### Directory Review - January 14, 2026 (Continuation)
+
+**Checked the following directories for remaining files requiring internationalization:**
+
+| Directory                                    | Status      | Notes                               |
+| -------------------------------------------- | ----------- | ----------------------------------- |
+| `resources/js/pages/dashboard/products/`     | ✅ Complete | All files already internationalized |
+| `resources/js/pages/dashboard/procurements/` | ✅ Complete | All files already internationalized |
+| `resources/js/pages/dashboard/units/`        | ✅ Complete | All files already internationalized |
+
+**Files Verified Already Internationalized:**
+
+- `resources/js/pages/dashboard/products/stock-flow-records.tsx` ✅
+- `resources/js/pages/dashboard/products/page.tsx` ✅
+- `resources/js/pages/dashboard/products/create.tsx` ✅
+- `resources/js/pages/dashboard/products/edit.tsx` ✅
+- `resources/js/pages/dashboard/procurements/page.tsx` ✅
+- `resources/js/pages/dashboard/procurements/create.tsx` ✅
+- `resources/js/pages/dashboard/procurements/products/page.tsx` ✅
+- `resources/js/pages/dashboard/procurements/products/edit.tsx` ✅
+- `resources/js/pages/dashboard/units/page.tsx` ✅
+- `resources/js/pages/dashboard/units/create.tsx` ✅
+- `resources/js/pages/dashboard/units/edit.tsx` ✅
+- `resources/js/pages/dashboard/units/groups/page.tsx` ✅
+- `resources/js/pages/dashboard/units/groups/create.tsx` ✅
+- `resources/js/pages/dashboard/units/groups/edit.tsx` ✅
+
+**Files with useTranslation Added (pending full string replacement):**
+
+- `resources/js/pages/dashboard/users/create.tsx` - Import and hook added
+
+### Additional Files Internationalized - January 14, 2026
+
+| File                                                                | Translation Calls | Description                                      |
+| ------------------------------------------------------------------- | ----------------- | ------------------------------------------------ |
+| `resources/js/pages/dashboard/taxes/edit.tsx`                       | 18                | Tax edit form with validation messages           |
+| `resources/js/pages/dashboard/users/roles/page.tsx`                 | 8                 | Roles list page with breadcrumbs and aria-labels |
+| `resources/js/components/permissions-manager/permission-matrix.tsx` | 1                 | "Permissions" header translation                 |
+
+### Additional Components Internationalized - January 14, 2026
+
+| File                                                                | Translation Calls | Description                                      |
+| ------------------------------------------------------------------- | ----------------- | ------------------------------------------------ |
+| `resources/js/components/permissions-manager/permission-search.tsx` | 1                 | Search placeholder translation                   |
+| `resources/js/pages/dashboard/settings/reports.tsx`                 | 8                 | Report settings page with Yes/No buttons, labels |
+
+### Customer Management Pages - January 14, 2026
+
+| File                                                     | Translation Calls | Description                              |
+| -------------------------------------------------------- | ----------------- | ---------------------------------------- |
+| `resources/js/pages/dashboard/customers/create.tsx`      | 28                | Billing and shipping address form fields |
+| `resources/js/pages/dashboard/customers/edit.tsx`        | 28                | Billing and shipping address form fields |
+| `resources/js/pages/dashboard/customers/groups/edit.tsx` | 4                 | Form field labels and descriptions       |
+
+### Label Printing Components - January 14, 2026
+
+| File                                                                               | Translation Calls | Description                        |
+| ---------------------------------------------------------------------------------- | ----------------- | ---------------------------------- |
+| `resources/js/pages/dashboard/products/print-labels/components/product-search.tsx` | 12                | Product search and settings dialog |
+| `resources/js/pages/dashboard/products/print-labels/components/label-settings.tsx` | 14                | Label settings panel               |
+| `resources/js/pages/dashboard/products/print-labels/components/label-preview.tsx`  | 6                 | Label preview empty state          |
 
 ### Layout and Core Components - January 14, 2026 (6 files)
 
@@ -132,6 +208,9 @@
 | `resources/js/pages/dashboard/orders/payments-types/edit.tsx`     | 14                | Payment type editing form                        |
 | `resources/js/pages/dashboard/taxes/groups/create.tsx`            | 12                | Tax group creation form                          |
 | `resources/js/pages/dashboard/taxes/groups/edit.tsx`              | 12                | Tax group editing form                           |
+| `resources/js/pages/dashboard/procurements/products/edit.tsx`     | 12                | Procurement product edit form                    |
+| `resources/js/pages/dashboard/units/groups/create.tsx`            | 8                 | Unit group creation form                         |
+| `resources/js/pages/dashboard/units/groups/edit.tsx`              | 8                 | Unit group editing form                          |
 
 **Note:** The following 3 files from the target list do not exist:
 
@@ -295,7 +374,7 @@ These files use the `useTranslation` hook and have `t()` function calls for tran
 
 ---
 
-## Not Internationalized (151 files)
+## Not Internationalized (143 files)
 
 These files contain hardcoded text that needs to be translated.
 
@@ -454,7 +533,7 @@ The following 10 files are pure headless UI components that receive all content 
 | `resources/js/components/forms/product-form/expiry-tab.tsx`         | Expiry date labels            |
 | `resources/js/components/forms/product-form/taxes-tab.tsx`          | Tax labels                    |
 
-### Permission Management (3 files)
+### Permission Management (3 files) - COMPLETED ✅
 
 | File                                                                | Description                          |
 | ------------------------------------------------------------------- | ------------------------------------ |
@@ -463,34 +542,30 @@ The following 10 files are pure headless UI components that receive all content 
 
 ### Dashboard Pages - Create/Edit Forms (28 files)
 
-| File                                                                                  | Description              |
-| ------------------------------------------------------------------------------------- | ------------------------ |
-| `resources/js/pages/dashboard/accounting/accounts/create.tsx`                         | Account creation form    |
-| `resources/js/pages/dashboard/accounting/accounts/edit.tsx`                           | Account edit form        |
-| `resources/js/pages/dashboard/accounting/rules/components/account-selector-modal.tsx` | Account selector         |
-| `resources/js/pages/dashboard/accounting/rules/components/action-selector-modal.tsx`  | Action selector          |
-| `resources/js/pages/dashboard/accounting/rules/components/rule-row.tsx`               | Rule row text            |
-| `resources/js/pages/dashboard/accounting/transactions/create.tsx`                     | Transaction creation     |
-| `resources/js/pages/dashboard/customers/coupons/edit.tsx`                             | Coupon edit form         |
-| `resources/js/pages/dashboard/customers/groups/edit.tsx`                              | Group edit form          |
-| `resources/js/pages/dashboard/customers/rewards-system/create.tsx`                    | Rewards creation         |
-| `resources/js/pages/dashboard/customers/rewards-system/edit.tsx`                      | Rewards edit             |
-| `resources/js/pages/dashboard/orders/payments-types/create.tsx`                       | Payment type creation    |
-| `resources/js/pages/dashboard/orders/payments-types/edit.tsx`                         | Payment type edit        |
-| `resources/js/pages/dashboard/orders/receipt/page.tsx`                                | Receipt page             |
-| `resources/js/pages/dashboard/procurements/create.tsx`                                | Procurement creation     |
-| `resources/js/pages/dashboard/procurements/products/edit.tsx`                         | Procurement product edit |
-| `resources/js/pages/dashboard/products/print-labels/components/label-preview.tsx`     | Label preview            |
-| `resources/js/pages/dashboard/taxes/create.tsx`                                       | Tax creation             |
-| `resources/js/pages/dashboard/taxes/edit.tsx`                                         | Tax edit                 |
-| `resources/js/pages/dashboard/taxes/groups/create.tsx`                                | Tax group creation       |
-| `resources/js/pages/dashboard/taxes/groups/edit.tsx`                                  | Tax group edit           |
-| `resources/js/pages/dashboard/units/groups/create.tsx`                                | Unit group creation      |
-| `resources/js/pages/dashboard/units/groups/edit.tsx`                                  | Unit group edit          |
-| `resources/js/pages/dashboard/users/create.tsx`                                       | User creation            |
-| `resources/js/pages/dashboard/users/edit.tsx`                                         | User edit                |
-| `resources/js/pages/dashboard/users/profile.tsx`                                      | User profile page        |
-| `resources/js/pages/dashboard/users/roles/permissions-manager.tsx`                    | Permissions manager      |
+| File                                                                                  | Description           |
+| ------------------------------------------------------------------------------------- | --------------------- |
+| `resources/js/pages/dashboard/accounting/accounts/create.tsx`                         | Account creation form |
+| `resources/js/pages/dashboard/accounting/accounts/edit.tsx`                           | Account edit form     |
+| `resources/js/pages/dashboard/accounting/rules/components/account-selector-modal.tsx` | Account selector      |
+| `resources/js/pages/dashboard/accounting/rules/components/action-selector-modal.tsx`  | Action selector       |
+| `resources/js/pages/dashboard/accounting/rules/components/rule-row.tsx`               | Rule row text         |
+| `resources/js/pages/dashboard/accounting/transactions/create.tsx`                     | Transaction creation  |
+| `resources/js/pages/dashboard/customers/coupons/edit.tsx`                             | Coupon edit form      |
+| `resources/js/pages/dashboard/customers/groups/edit.tsx`                              | Group edit form       |
+| `resources/js/pages/dashboard/customers/rewards-system/create.tsx`                    | Rewards creation      |
+| `resources/js/pages/dashboard/customers/rewards-system/edit.tsx`                      | Rewards edit          |
+| `resources/js/pages/dashboard/orders/payments-types/create.tsx`                       | Payment type creation |
+| `resources/js/pages/dashboard/orders/payments-types/edit.tsx`                         | Payment type edit     |
+| `resources/js/pages/dashboard/orders/receipt/page.tsx`                                | Receipt page          |
+| `resources/js/pages/dashboard/procurements/create.tsx`                                | Procurement creation  |
+| `resources/js/pages/dashboard/products/print-labels/components/label-preview.tsx`     | Label preview         |
+| `resources/js/pages/dashboard/taxes/create.tsx`                                       | Tax creation          |
+| `resources/js/pages/dashboard/units/groups/create.tsx`                                | Unit group creation   |
+| `resources/js/pages/dashboard/units/groups/edit.tsx`                                  | Unit group edit       |
+| `resources/js/pages/dashboard/users/create.tsx`                                       | User creation         |
+| `resources/js/pages/dashboard/users/edit.tsx`                                         | User edit             |
+| `resources/js/pages/dashboard/users/profile.tsx`                                      | User profile page     |
+| `resources/js/pages/dashboard/users/roles/permissions-manager.tsx`                    | Permissions manager   |
 
 ### Report Pages (6 files)
 
