@@ -12,14 +12,13 @@ import { Copy, Edit, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Units', href: '/dashboard/units' },
-];
-
 export default function Dashboard() {
     const { t } = useTranslation();
     const { title, units } = usePage<{ units: Unit[]; title: string }>().props;
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Units'), href: '/dashboard/units' },
+    ];
 
     const [deleteDialog, setDeleteDialog] = useState<{
         isOpen: boolean;

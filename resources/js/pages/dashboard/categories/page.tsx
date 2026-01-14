@@ -19,14 +19,13 @@ import { Copy, Edit, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Categories', href: '/dashboard/products/categories' },
-];
-
 export default function Dashboard() {
     const { t } = useTranslation();
     const { title, categories } = usePage<{ categories: CategoryProduct[]; title: string }>().props;
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Category Products'), href: '/dashboard/products/categories' },
+    ];
     const [deleteDialog, setDeleteDialog] = useState<{
         isOpen: boolean;
         loading: boolean;

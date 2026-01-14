@@ -20,14 +20,13 @@ import { Copy, Edit, List, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Accounting', href: '/dashboard/accounting' },
-    { title: 'Accounts', href: '/dashboard/accounting/accounts' },
-];
-
 export default function Dashboard() {
     const { t } = useTranslation();
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Accounting'), href: '/dashboard/accounting' },
+        { title: t('Accounts'), href: '/dashboard/accounting/accounts' },
+    ];
     const [transactionAccounts, setTransactionAccounts] = useState<CustomPaginationData<TransactionAccount>>({
         data: [],
         last_page: 1,

@@ -16,15 +16,15 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
 import { Copy, Edit, List, MoreHorizontal } from 'lucide-react';
 
-const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Procurement Products', href: '/dashboard/procurements/products' },
-];
-
 export default function Dashboard() {
     const { title, products } = usePage<{ products: ProcurementProduct[]; title: string }>().props;
     console.log(products);
     const { t } = useTranslation();
+
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Procurement Products'), href: '/dashboard/procurements/products' },
+    ];
 
     const columns: ColumnDef<ProcurementProduct>[] = [
         {

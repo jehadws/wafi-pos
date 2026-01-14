@@ -16,11 +16,6 @@ import { useForm } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
-const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Groups', href: '/dashboard/units/groups' },
-];
-
 export default function CreateProductPage() {
     const { t } = useTranslation();
     const breadcrumbs = [

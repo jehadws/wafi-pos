@@ -11,28 +11,37 @@
 | Metric                    | Count | Percentage |
 | ------------------------- | ----- | ---------- |
 | **Total Files Scanned**   | 264   | 100%       |
-| **Internationalized**     | 181   | 68.6%      |
+| **Internationalized**     | 199   | 75.4%      |
 | **Pure UI Components**    | 10    | 3.8%       |
-| **Not Internationalized** | 73    | 27.7%      |
+| **Not Internationalized** | 55    | 20.8%      |
 
-**Estimated Progress:** 68.6% Complete
-**Estimated Remaining:** 73 files
+**Estimated Progress:** 75.4% Complete
+**Estimated Remaining:** 55 files
 
-**Status:** January 14, 2026 - Continued internationalization effort. Additional files modified in this session:
+**Status:** January 14, 2026 - Continued internationalization effort. Fixed hardcoded breadcrumbs in 18 dashboard pages.
 
-| File                                                              | Changes                                                           |
-| ----------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `resources/js/pages/dashboard/customers/coupons/edit.tsx`         | Internationalized breadcrumbs, tab labels, and MultiSelector text |
-| `resources/js/pages/dashboard/products/stock-flow-records.tsx`    | Internationalized breadcrumb "Transactions History" → "History"   |
-| `resources/js/pages/dashboard/customers/create.tsx`               | Internationalized breadcrumbs                                     |
-| `resources/js/pages/dashboard/customers/rewards-system/edit.tsx`  | Internationalized breadcrumbs                                     |
-| `resources/js/pages/dashboard/orders/payments-types/edit.tsx`     | Internationalized breadcrumbs                                     |
-| `resources/js/pages/dashboard/orders/payments-types/create.tsx`   | Internationalized breadcrumbs                                     |
-| `resources/js/pages/dashboard/customers/groups/edit.tsx`          | Internationalized breadcrumbs                                     |
-| `resources/js/pages/dashboard/accounting/transactions/create.tsx` | Internationalized breadcrumbs                                     |
-| `resources/js/pages/dashboard/units/groups/page.tsx`              | Internationalized breadcrumbs                                     |
+| File                                                            | Changes                                                                                                   |
+| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `resources/js/pages/dashboard/procurements/products/page.tsx`   | Fixed hardcoded breadcrumbs → `t('Dashboard')`, `t('Procurement Products')`                               |
+| `resources/js/pages/dashboard/units/edit.tsx`                   | Fixed hardcoded breadcrumbs → `t('Dashboard')`, `t('Units')`, `t('Edit Unit')`                            |
+| `resources/js/pages/dashboard/categories/edit.tsx`              | Fixed hardcoded breadcrumbs → `t('Dashboard')`, `t('Category Products')`, `t('Edit Category Products')`   |
+| `resources/js/pages/dashboard/units/create.tsx`                 | Fixed hardcoded breadcrumbs → `t('Dashboard')`, `t('Units')`, `t('Create Unit')`                          |
+| `resources/js/pages/dashboard/categories/create.tsx`            | Fixed hardcoded breadcrumbs → `t('Dashboard')`, `t('Category Products')`, `t('Create Category Products')` |
+| `resources/js/pages/dashboard/customers/edit.tsx`               | Fixed hardcoded breadcrumbs → `t('Dashboard')`, `t('Customers')`, `t('Edit customer')`                    |
+| `resources/js/pages/dashboard/products/edit.tsx`                | Fixed hardcoded breadcrumbs → `t('Dashboard')`, `t('Products')`, `t('Edit Product')`                      |
+| `resources/js/pages/dashboard/products/create.tsx`              | Fixed hardcoded breadcrumbs → `t('Dashboard')`, `t('Products')`, `t('Create Product')`                    |
+| `resources/js/pages/dashboard/accounting/transactions/page.tsx` | Fixed hardcoded breadcrumbs → `t('Dashboard')`, `t('Accounting')`, `t('Transactions')`                    |
+| `resources/js/pages/dashboard/accounting/accounts/page.tsx`     | Fixed hardcoded breadcrumbs → `t('Dashboard')`, `t('Accounting')`, `t('Accounts')`                        |
+| `resources/js/pages/dashboard/procurements/page.tsx`            | Fixed hardcoded breadcrumbs → `t('Dashboard')`, `t('Procurements')`                                       |
+| `resources/js/pages/dashboard/providers/page.tsx`               | Fixed hardcoded breadcrumbs → `t('Dashboard')`, `t('Providers')`                                          |
+| `resources/js/pages/dashboard/users/page.tsx`                   | Fixed hardcoded breadcrumbs → `t('Dashboard')`, `t('Users')`                                              |
+| `resources/js/pages/dashboard/orders/page.tsx`                  | Fixed hardcoded breadcrumbs → `t('Dashboard')`, `t('Orders List')`                                        |
+| `resources/js/pages/dashboard/units/page.tsx`                   | Fixed hardcoded breadcrumbs → `t('Dashboard')`, `t('Units')`                                              |
+| `resources/js/pages/dashboard/categories/page.tsx`              | Fixed hardcoded breadcrumbs → `t('Dashboard')`, `t('Category Products')`                                  |
+| `resources/js/pages/dashboard/customers/page.tsx`               | Fixed hardcoded breadcrumbs → `t('Dashboard')`, `t('Customers')`                                          |
+| `resources/js/pages/dashboard/products/page.tsx`                | Fixed hardcoded breadcrumbs, removed duplicate `breadcrumbsWithTranslation`                               |
 
-**Progress Update:** 172 → 181 files internationalized (65.2% → 68.6%)
+**Progress Update:** 181 → 199 files internationalized (68.6% → 75.4%)
 
 ---
 

@@ -18,14 +18,13 @@ import { cn } from '@/lib/utils';
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 
-const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Products', href: '/dashboard/products' },
-    { title: 'Create Product', href: '/dashboard/products/create' },
-];
-
 export default function CreateProductPage() {
     const { t } = useTranslation();
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Products'), href: '/dashboard/products' },
+        { title: t('Create Product'), href: '/dashboard/products/create' },
+    ];
     const form = useForm<ProductFormData>({
         ...defaultFormData,
     });

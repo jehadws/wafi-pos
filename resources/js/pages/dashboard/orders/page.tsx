@@ -28,13 +28,12 @@ type TFilter = {
     customer_phone: null | string;
 };
 
-const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Orders List', href: '/dashboard/orders' },
-];
-
 export default function Dashboard() {
     const { t } = useTranslation();
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Orders List'), href: '/dashboard/orders' },
+    ];
     const [orders, setOrders] = useState<CustomPaginationData<Order>>({
         data: [],
         last_page: 1,

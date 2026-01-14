@@ -11,14 +11,14 @@ import { cn } from '@/lib/utils';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 
-const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Groups', href: '/dashboard/units/groups' },
-];
-
 export default function CreateProductPage() {
     const { t } = useTranslation();
     const { groups, customer } = usePage<{ groups: { id: number; name: string }[]; customer: Customer }>().props;
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Customers'), href: '/dashboard/customers' },
+        { title: t('Edit customer'), href: '/dashboard/customers/edit' },
+    ];
     const form = useForm({
         first_name: customer.first_name,
         general_last_name: customer.last_name || '',

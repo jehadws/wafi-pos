@@ -18,15 +18,14 @@ import { Copy, Edit, FileCheck, List, MoreHorizontal, ReceiptText, RefreshCw, Tr
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Procurements', href: '/dashboard/procurements' },
-];
-
 export default function Dashboard() {
     const { t } = useTranslation();
     const { title, procurements } = usePage<{ procurements: Procurement[]; title: string }>().props;
     console.log(procurements);
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Procurements'), href: '/dashboard/procurements' },
+    ];
     const [deleteDialog, setDeleteDialog] = useState<{
         isOpen: boolean;
         loading: boolean;
