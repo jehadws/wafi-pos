@@ -25,11 +25,11 @@ export function DataTableViewOptions<TData>({ table }: DataTableViewOptionsProps
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="ml-auto h-9">
           <SlidersHorizontal className="mr-2 h-4 w-4" />
-          ${t('View')}
+          {t('View')}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[150px]">
-        <DropdownMenuLabel>${t('Toggle columns')}</DropdownMenuLabel>
+        <DropdownMenuContent align="end" className="w-[150px]">
+          <DropdownMenuLabel>{t('Toggle columns')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {table
           .getAllColumns()

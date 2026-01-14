@@ -13,17 +13,17 @@ import axios from 'axios';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Accounting', href: '/dashboard/accounting' },
-    { title: 'Accounts', href: '/dashboard/accounting/accounts' },
-    { title: 'Create Account', href: '/dashboard/accounting/accounts/create' },
-];
-
 export default function CreateProductPage() {
     const { t } = useTranslation();
     const { category_identifiers } = usePage<{ category_identifiers: { label: string; value: string }[] }>().props;
     const [subCategories, setSubCategories] = useState<{ label: string; value: number }[]>([]);
+
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Accounting'), href: '/dashboard/accounting' },
+        { title: t('Accounts'), href: '/dashboard/accounting/accounts' },
+        { title: t('Create Account'), href: '/dashboard/accounting/accounts/create' },
+    ];
     const form = useForm({
         name: '',
         general: {

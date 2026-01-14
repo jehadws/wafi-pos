@@ -11,16 +11,54 @@
 | Metric                    | Count | Percentage |
 | ------------------------- | ----- | ---------- |
 | **Total Files Scanned**   | 264   | 100%       |
-| **Internationalized**     | 127   | 48.1%      |
+| **Internationalized**     | 148   | 56.1%      |
 | **Pure UI Components**    | 10    | 3.8%       |
-| **Not Internationalized** | 127   | 48.1%      |
+| **Not Internationalized** | 106   | 40.2%      |
 
-**Estimated Progress:** 47.9% Complete  
-**Estimated Remaining:** 127 files
+**Estimated Progress:** 56.1% Complete  
+**Estimated Remaining:** 106 files
 
 ---
 
 ## Recently Completed ✅
+
+### Layout and Core Components - January 14, 2026 (6 files)
+
+| File                                                                  | Translation Calls | Description                                     |
+| --------------------------------------------------------------------- | ----------------- | ----------------------------------------------- |
+| `resources/js/components/nav-main.tsx`                                | 1                 | "Platform" sidebar label                        |
+| `resources/js/components/app-logo.tsx`                                | 1                 | "Laravel Starter Kit" app name                  |
+| `resources/js/components/language-switcher.tsx`                       | 2                 | "English" and "Arabic" language names           |
+| `resources/js/components/ui/sheet.tsx`                                | 1                 | "Close" button in sheet/drawer                  |
+| `resources/js/components/ui/command.tsx`                              | 2                 | "Command Palette" and "Search for a command..." |
+| `resources/js/components/ui/data-table/data-table.tsx`                | 1                 | Fixed "No results" syntax                       |
+| `resources/js/components/ui/data-table/data-table-faceted-filter.tsx` | 2                 | "No results found" and "Clear filters"          |
+| `resources/js/components/ui/data-table/data-table-view-options.tsx`   | 2                 | "View" and "Toggle columns"                     |
+
+### Core Components and Navigation - January 2026 (7 files)
+
+| File                                                               | Translation Calls | Description                                                 |
+| ------------------------------------------------------------------ | ----------------- | ----------------------------------------------------------- |
+| `resources/js/components/user-menu-content.tsx`                    | 2                 | Settings and Logout menu items                              |
+| `resources/js/components/primary-navigation.tsx`                   | 5                 | Dashboard, Orders, Order Type, Customers, Reset             |
+| `resources/js/components/secondary-navigation.tsx`                 | 5                 | Comments, Taxes, Coupons, Settings, Product                 |
+| `resources/js/pages/dashboard/accounting/accounts/create.tsx`      | 4                 | Dashboard, Accounting, Accounts, Create Account breadcrumbs |
+| `resources/js/pages/dashboard/taxes/groups/create.tsx`             | 2                 | Dashboard, Groups breadcrumbs                               |
+| `resources/js/pages/dashboard/taxes/groups/edit.tsx`               | 2                 | Dashboard, Groups breadcrumbs                               |
+| `resources/js/pages/dashboard/customers/rewards-system/create.tsx` | 2                 | Dashboard, Coupons breadcrumbs                              |
+
+### UI Component Library Internationalization - January 2026 (2 files)
+
+| File                                        | Translation Calls | Description                                  |
+| ------------------------------------------- | ----------------- | -------------------------------------------- |
+| `resources/js/components/ui/sidebar.tsx`    | 3                 | Toggle Sidebar (aria-label, title, sr-only)  |
+| `resources/js/components/ui/pagination.tsx` | 4                 | Previous/Next pagination controls and labels |
+
+### Additional Translations - January 2026 (1 file)
+
+| File                                                            | Translation Calls | Description                           |
+| --------------------------------------------------------------- | ----------------- | ------------------------------------- |
+| `resources/js/components/forms/orders/order-options-dialog.tsx` | 1                 | "All Refunds" label translation added |
 
 ### Report Pages Internationalization - January 2026 (2 files)
 
@@ -288,7 +326,7 @@ Many components contain hardcoded text in props and aria-labels:
 | `resources/js/components/ui/radio-group.tsx`                          | Radio option labels                 |
 | `resources/js/components/ui/toggle.tsx`                               | Toggle labels                       |
 | `resources/js/components/ui/menubar.tsx`                              | Menu bar items                      |
-| `resources/js/components/ui/pagination.tsx`                           | Pagination controls                 |
+| `resources/js/components/ui/pagination.tsx`                           | ~~Pagination controls~~ ✅          |
 | `resources/js/components/ui/navigation-menu.tsx`                      | Navigation items                    |
 | `resources/js/components/ui/sheet.tsx`                                | Sheet titles, descriptions          |
 | `resources/js/components/ui/drawer.tsx`                               | Drawer content                      |
@@ -321,7 +359,7 @@ Many components contain hardcoded text in props and aria-labels:
 | `resources/js/components/ui/numeric-keypad-dialog.tsx`                | Numeric keypad text                 |
 | `resources/js/components/ui/placeholder-pattern.tsx`                  | Placeholder patterns                |
 | `resources/js/components/ui/selectable-item.tsx`                      | Selectable item text                |
-| `resources/js/components/ui/sidebar.tsx`                              | Sidebar items                       |
+| `resources/js/components/ui/sidebar.tsx`                              | ~~Sidebar items~~ ✅                |
 
 **Pure UI Components (No Translation Needed):**
 The following 10 files are pure headless UI components that receive all content through props:
@@ -605,12 +643,12 @@ The following 10 files are pure headless UI components that receive all content 
 
 **Translation Keys Added:** 22+ new keys for POS-specific terms
 
-### Priority 3: UI Component Library (61 files remaining)
+### Priority 3: UI Component Library (59 files remaining)
 
 **Impact:** Medium - Used throughout application
-**Status:** 11 of 71 files reviewed (15%)
+**Status:** 13 of 71 files reviewed (18%)
 
-- 1 file internationalized: dialog.tsx (close button)
+- 3 files internationalized: dialog.tsx (close button), sidebar.tsx, pagination.tsx
 - 10 files verified as pure components (no user-facing text)
 
 **Pure UI Components Identified (no translation needed):**

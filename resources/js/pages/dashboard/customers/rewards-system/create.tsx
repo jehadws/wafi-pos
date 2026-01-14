@@ -16,11 +16,6 @@ import { Select } from '@radix-ui/react-select';
 import { Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Coupons', href: '/dashboard/customers/coupons' },
-];
-
 interface RewardRule {
     id: string;
     from: number;
@@ -39,6 +34,11 @@ type FormData = {
 export default function CreateRewardSystemPage() {
     const { t } = useTranslation();
     const { coupons } = usePage<{ coupons: Coupon[] }>().props;
+
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Coupons'), href: '/dashboard/customers/coupons' },
+    ];
 
     const form = useForm<FormData>({
         name: '',

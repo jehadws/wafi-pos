@@ -9,11 +9,11 @@ import { Languages } from 'lucide-react';
 export function LanguageSwitcher() {
     const { locale } = usePage<SharedData>().props;
     const { isRTL } = useRTL();
-    const { changeLocale } = useTranslation();
+    const { changeLocale, t } = useTranslation();
 
     const languages = [
-        { code: 'en', name: 'English' },
-        { code: 'ar', name: 'العربية' },
+        { code: 'en', name: t('English') },
+        { code: 'ar', name: t('Arabic') },
     ];
 
     return (

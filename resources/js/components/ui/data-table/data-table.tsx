@@ -179,7 +179,7 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  ${t('No results')}
+                  {t('No results')}
                 </TableCell>
               </TableRow>
             )}

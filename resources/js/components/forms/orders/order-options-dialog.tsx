@@ -140,10 +140,10 @@ export default function OrderOptionsDialog({ options, setOptions }: Props) {
                         <div className="mt-6">
                             <div className="mb-4 flex items-center justify-between">
                                 <h3 className="text-lg font-semibold">{t('Refund With Products')}</h3>
-                                <span className="text-sm font-medium">All Refunds</span>
+                                <span className="text-sm font-medium">{t('All Refunds')}</span>
                             </div>
                             {order?.refunded_products?.length === 0 ? (
-                                <div className="rounded p-3 text-center">No refunded products</div>
+                                <div className="rounded p-3 text-center">{t('Nothing to display')}</div>
                             ) : (
                                 <div className="space-y-3">
                                     {order?.refunded_products?.map((product, index) => (
