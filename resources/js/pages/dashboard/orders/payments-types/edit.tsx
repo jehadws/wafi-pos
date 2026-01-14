@@ -13,9 +13,9 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Payment Types', href: '/dashboard/orders/payments-types' },
-    { title: 'Edit payment type', href: '/dashboard/orders/payments-types/edti' },
+    { title: t('Dashboard'), href: '/dashboard' },
+    { title: t('Payment Types'), href: '/dashboard/orders/payments-types' },
+    { title: t('Edit payment type'), href: '/dashboard/orders/payments-types/edti' },
 ];
 
 export default function EditPaymentType() {

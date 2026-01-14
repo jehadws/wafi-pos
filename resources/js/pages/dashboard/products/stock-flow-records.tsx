@@ -14,7 +14,7 @@ export default function Dashboard() {
         { title: t('Dashboard'), href: '/dashboard' },
         { title: t('Accounting'), href: '/dashboard/accounting' },
         { title: t('Transactions'), href: '/dashboard/accounting/transactions' },
-        { title: 'Transactions History', href: '/dashboard/accounting/transactions/history' },
+        { title: t('History'), href: '/dashboard/accounting/transactions/history' },
     ];
 
     const [transaction, setTransaction] = useState<CustomPaginationData<GlobalProductHistory>>({

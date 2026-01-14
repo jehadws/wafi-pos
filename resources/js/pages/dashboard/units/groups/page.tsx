@@ -20,8 +20,8 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Groups', href: '/dashboard/units/groups' },
+    { title: t('Dashboard'), href: '/dashboard' },
+    { title: t('Unit Groups'), href: '/dashboard/units/groups' },
 ];
 
 export default function Dashboard() {

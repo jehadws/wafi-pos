@@ -14,8 +14,8 @@ import { Select } from '@radix-ui/react-select';
 import { toast } from 'sonner';
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Coupons', href: '/dashboard/customers/rewards' },
+    { title: t('Dashboard'), href: '/dashboard' },
+    { title: t('Customers Groups'), href: '/dashboard/customers/groups' },
 ];
 
 export default function CreateRewardSystemPage() {

@@ -17,8 +17,9 @@ import { Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Coupons', href: '/dashboard/customers/coupons' },
+    { title: t('Dashboard'), href: '/dashboard' },
+    { title: t('Reward Systems'), href: '/dashboard/customers/rewards-system' },
+    { title: t('Reward System'), href: '/dashboard/customers/rewards-system' },
 ];
 
 type FormData = {

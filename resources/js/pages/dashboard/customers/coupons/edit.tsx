@@ -22,9 +22,9 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Coupons', href: '/dashboard/customers/coupons' },
-    { title: 'Edit Coupon', href: '/dashboard/customers/coupons' },
+    { title: t('Dashboard'), href: '/dashboard' },
+    { title: t('Coupons'), href: '/dashboard/customers/coupons' },
+    { title: t('Edit Coupon'), href: '/dashboard/customers/coupons' },
 ];
 
 const discountTypes = [
@@ -388,7 +388,7 @@ export default function CreateCuponPage() {
                             <TabsList className="grid w-full grid-cols-3">
                                 <TabsTrigger value="products" className={cn('flex items-center gap-2', activeTab === 'products' ? 'bg-black' : '')}>
                                     <PackageIcon className="h-4 w-4" />
-                                    Products
+                                    {t('Products')}
                                     {form.data.selected_products.length > 0 && (
                                         <Badge variant="secondary" className="ml-1">
                                             {form.data.selected_products.length}
@@ -397,7 +397,7 @@ export default function CreateCuponPage() {
                                 </TabsTrigger>
                                 <TabsTrigger value="categories" className="flex items-center gap-2">
                                     <TagIcon className="h-4 w-4" />
-                                    Categories
+                                    {t('Categories')}
                                     {form.data.selected_categories.length > 0 && (
                                         <Badge variant="secondary" className="ml-1">
                                             {form.data.selected_categories.length}
@@ -406,7 +406,7 @@ export default function CreateCuponPage() {
                                 </TabsTrigger>
                                 <TabsTrigger value="customers" className="flex items-center gap-2">
                                     <UsersIcon className="h-4 w-4" />
-                                    Customer Groups
+                                    {t('Customer Groups')}
                                     {form.data.selected_groups.length > 0 && (
                                         <Badge variant="secondary" className="ml-1">
                                             {form.data.selected_groups.length}
@@ -417,48 +417,48 @@ export default function CreateCuponPage() {
 
                             <TabsContent value="products" className="mt-6 space-y-4">
                                 <FormField
-                                    label="Select Products"
-                                    description="Choose specific products this coupon applies to. Leave empty to apply to all products."
+                                    label={t('Select Products')}
+                                    description={t('Choose specific products this coupon applies to. Leave empty to apply to all products.')}
                                 >
                                     <MultiSelector
                                         options={products}
                                         value={form.data.selected_products}
                                         onChange={(value) => handleSelectChange('selected_products', value)}
-                                        placeholder="Select products..."
-                                        searchPlaceholder="Search products..."
-                                        emptyText="No products found"
+                                        placeholder={t('Select products...')}
+                                        searchPlaceholder={t('Search products...')}
+                                        emptyText={t('No products found')}
                                     />
                                 </FormField>
                             </TabsContent>
 
                             <TabsContent value="categories" className="mt-6 space-y-4">
                                 <FormField
-                                    label="Select Categories"
-                                    description="Choose product categories this coupon applies to. Leave empty to apply to all categories."
+                                    label={t('Select Categories')}
+                                    description={t('Choose product categories this coupon applies to. Leave empty to apply to all categories.')}
                                 >
                                     <MultiSelector
                                         options={categories}
                                         value={form.data.selected_categories}
                                         onChange={(value) => handleSelectChange('selected_categories', value)}
-                                        placeholder="Select categories..."
-                                        searchPlaceholder="Search categories..."
-                                        emptyText="No categories found"
+                                        placeholder={t('Select categories...')}
+                                        searchPlaceholder={t('Search categories...')}
+                                        emptyText={t('No categories found')}
                                     />
                                 </FormField>
                             </TabsContent>
 
                             <TabsContent value="customers" className="mt-6 space-y-4">
                                 <FormField
-                                    label="Select Customer Groups"
-                                    description="Choose which customer groups can use this coupon. Leave empty to allow all customers."
+                                    label={t('Select Customer Groups')}
+                                    description={t('Choose which customer groups can use this coupon. Leave empty to allow all customers.')}
                                 >
                                     <MultiSelector
                                         options={groups}
                                         value={form.data.selected_groups}
                                         onChange={(value) => handleSelectChange('selected_groups', value)}
-                                        placeholder="Select customer groups..."
-                                        searchPlaceholder="Search customer groups..."
-                                        emptyText="No customer groups found"
+                                        placeholder={t('Select customer groups...')}
+                                        searchPlaceholder={t('Search customer groups...')}
+                                        emptyText={t('No customer groups found')}
                                     />
                                 </FormField>
                             </TabsContent>

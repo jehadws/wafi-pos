@@ -12,9 +12,9 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Customers', href: '/dashboard/customers' },
-    { title: 'Create Customer', href: '/dashboard/customers/create' },
+    { title: t('Dashboard'), href: '/dashboard' },
+    { title: t('Customers'), href: '/dashboard/customers' },
+    { title: t('Create Customer'), href: '/dashboard/customers/create' },
 ];
 
 export default function CreateProductPage() {
