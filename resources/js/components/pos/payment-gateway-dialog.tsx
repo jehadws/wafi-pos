@@ -281,10 +281,10 @@ export function PaymentGatewayDialog({ open, onOpenChange, form, useShippingAddr
                             <div className="flex-1 space-y-6 p-6">
                                 {/* Summary Cards */}
                                 <div className="grid grid-cols-2 gap-4">
-                                    <SummaryCard label="Total" amount={form.data.total} variant="total" />
-                                    <SummaryCard label="Discount" amount={form.data.discount} variant="discount" />
-                                    <SummaryCard label="Paid" amount={paid} variant="paid" />
-                                    <SummaryCard label="Change" amount={change} variant="change" isNegative={true} />
+                                    <SummaryCard label={t('Total')} amount={form.data.total} variant="total" />
+                                    <SummaryCard label={t('Discount')} amount={form.data.discount} variant="discount" />
+                                    <SummaryCard label={t('Paid')} amount={paid} variant="paid" />
+                                    <SummaryCard label={t('Change')} amount={change} variant="change" isNegative={true} />
                                 </div>
 
                                 {/* Screen Display */}

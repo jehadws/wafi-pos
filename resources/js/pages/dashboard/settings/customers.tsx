@@ -70,7 +70,7 @@ export default function SettingsGeneral() {
                 <div className="space-y-6">
                     <div className="relative overflow-hidden rounded-xl border">
                         <div className="relative p-6 md:p-8">
-                            <h1 className="text-2xl font-semibold">General Settings</h1>
+                            <h1 className="text-2xl font-semibold">{t('General Settings')}</h1>
                             <p className="text-muted-foreground text-sm">Configure the general settings of the application.</p>
                             <div className="mt-4"></div>
 

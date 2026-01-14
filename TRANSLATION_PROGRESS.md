@@ -11,22 +11,84 @@
 | Metric                    | Count | Percentage |
 | ------------------------- | ----- | ---------- |
 | **Total Files Scanned**   | 264   | 100%       |
-| **Internationalized**     | 167   | 63.3%      |
+| **Internationalized**     | 169   | 64.0%      |
 | **Pure UI Components**    | 10    | 3.8%       |
-| **Not Internationalized** | 87    | 33.0%      |
+| **Not Internationalized** | 85    | 32.2%      |
 
-**Estimated Progress:** 63.3% Complete
-**Estimated Remaining:** 87 files
+**Estimated Progress:** 64.0% Complete
+**Estimated Remaining:** 85 files
 
 **Status:** January 14, 2026 - Continued internationalization effort. Files modified in this session:
 
-| File                                                               | Changes                                                                                                                                                         |
-| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `resources/js/pages/welcome.tsx`                                   | Added i18n import, replaced "Dashboard", "Login", "Register" with translation keys                                                                              |
-| `resources/js/components/providers/confirm-dialog-provider.tsx`    | Added i18n import, replaced "Confirm Action" default with `t('Confirm Your Action')`                                                                            |
-| `resources/js/pages/dashboard/accounting/transactions/history.tsx` | Moved breadcrumbs inside component, added t() calls for Dashboard, Accounting, Transactions; translated "Open menu" aria-label                                  |
-| `resources/js/pages/dashboard/products/stock-flow-records.tsx`     | Moved breadcrumbs inside component, added t() calls for Dashboard, Accounting, Transactions                                                                     |
-| `resources/js/pages/dashboard/products/stock-adjustment/page.tsx`  | Added translations for confirm dialogs, Stock Adjustment title, Search Products placeholder, Unit, N/A, Operation, Procurement, Reason, Remove, Proceed buttons |
+| File                                                                | Changes                                                                                    |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `resources/js/pages/dashboard/settings/pos.tsx`                     | Internationalized tab labels, form field labels, descriptions, placeholders, and buttons   |
+| `resources/js/components/forms/product-form/identification-tab.tsx` | Internationalized barcode type options (Codabar, Code 128, Code 39, Code 11, UPC A, UPC E) |
+| `resources/js/components/pos/payment-gateway-dialog.tsx`            | Internationalized summary card labels (Total, Discount, Paid, Change)                      |
+
+**Files Reviewed in This Session:**
+
+| File                                               | Status                                            |
+| -------------------------------------------------- | ------------------------------------------------- |
+| `resources/js/components/alert.tsx`                | Pure UI component - No user-facing text           |
+| `resources/js/components/sidebar.jsx`              | ✅ Internationalized                              |
+| `resources/js/components/heading-small.tsx`        | Pure component - Receives text via props          |
+| `resources/js/components/heading.tsx`              | Pure component - Receives text via props          |
+| `resources/js/components/secondary-navigation.tsx` | ✅ Already internationalized                      |
+| `resources/js/components/tabs.tsx`                 | Pure UI component - Headless Radix UI             |
+| `resources/js/components/text-link.tsx`            | Pure component - Receives content via props       |
+| `resources/js/components/textarea.tsx`             | Pure UI component - No user-facing text           |
+| `resources/js/pages/dashboard.tsx`                 | ✅ Already internationalized                      |
+| `resources/js/pages/layout.tsx`                    | Pure layout wrapper - No user-facing text         |
+| `resources/js/pages/welcome.tsx`                   | Skipped - No matching translation keys            |
+| `resources/js/hooks/use-numeric-keypad.tsx`        | Hook with default param - Translations in callers |
+| `resources/js/components/icon.tsx`                 | Pure UI component - Icon wrapper                  |
+| `resources/js/components/input-error.tsx`          | Pure component - Receives message via props       |
+| `resources/js/components/label.tsx`                | Pure UI component - Headless Radix UI             |
+| `resources/js/components/switch.tsx`               | Pure UI component - Headless Radix UI             |
+| `resources/js/components/tooltip.tsx`              | Pure UI component - Headless Radix UI             |
+| `resources/js/components/token-qr-dailog.tsx`      | ✅ Already internationalized                      |
+| `resources/js/components/user-info.tsx`            | Pure component - Data display only                |
+| `resources/js/components/user-menu-content.tsx`    | ✅ Already internationalized                      |
+| `resources/js/pages/errors/access-denied.tsx`      | ✅ Already internationalized                      |
+| `resources/js/pages/errors/not-allowed.tsx`        | ✅ Already internationalized                      |
+| `resources/js/lib/settings.ts`                     | Pure configuration class - No user-facing text    |
+| `resources/js/lib/utils.ts`                        | Utility function - No user-facing text            |
+| `resources/js/hooks/pos-example.ts`                | Legacy Vue.js file - Uses different i18n pattern  |
+
+**Progress Update:** 168 → 169 files internationalized (63.6% → 64.0%)
+
+### January 14, 2026 - Continued Internationalization Effort
+
+**Files Modified:** 3
+
+| File                                                                | Translation Calls Added | Description                                                                                                                                                             |
+| ------------------------------------------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `resources/js/pages/dashboard/settings/pos.tsx`                     | 50+                     | Internationalized tab labels (Layout, Printing, Cash Registers, VAT Settings, Keyboard Shortcuts, Features), form field labels, descriptions, placeholders, and buttons |
+| `resources/js/components/forms/product-form/identification-tab.tsx` | 6                       | Internationalized barcode type options (Codabar, Code 128, Code 39, Code 11, UPC A, UPC E)                                                                              |
+| `resources/js/components/pos/payment-gateway-dialog.tsx`            | 4                       | Internationalized summary card labels (Total, Discount, Paid, Change)                                                                                                   |
+
+**Key Translations Used:**
+
+- POS Settings, Layout, Printing, Cash Registers, VAT Settings, Keyboard Shortcuts, Features
+- Enable Cash Registers, VAT Type, Printed Document, Printing Enabled For, Printing Gateway
+- Cancel Order, Hold Order, Create Customer, Proceed Payment, Open Shipping, Open Note, Order Type Selector, Toggle Fullscreen, Toggle Product Merge, Amount Shortcuts
+- Show Quantity, Merge Similar Items, Allow Wholesale Price, Allow Decimal Quantities, Quick Product, Quick Product Default Unit, Editable Unit Price, Show Price With Tax, Order Types, Numpad, Force Barcode Auto Focus, Hide Exhausted Products, Hide Empty Category
+- Yes, No, Default, Advanced, Select an option
+- EAN 8, EAN 13, Codabar, Code 128, Code 39, Code 11, UPC A, UPC E
+- Total, Discount, Paid, Change
+- Save Settings
+
+---
+
+## Executive Summary (Previous)
+
+| Metric                    | Count | Percentage |
+| ------------------------- | ----- | ---------- |
+| **Total Files Scanned**   | 264   | 100%       |
+| **Internationalized**     | 167   | 63.3%      |
+| **Pure UI Components**    | 10    | 3.8%       |
+| **Not Internationalized** | 87    | 33.0%      |
 
 ---
 
@@ -766,8 +828,8 @@ The following files were verified as already having proper i18n support:
 | Metric                    | Count | Percentage |
 | ------------------------- | ----- | ---------- |
 | **Total Files Scanned**   | 264   | 100%       |
-| **Internationalized**     | 167   | 63.3%      |
+| **Internationalized**     | 169   | 64.0%      |
 | **Pure UI Components**    | 10    | 3.8%       |
-| **Not Internationalized** | 87    | 33.0%      |
+| **Not Internationalized** | 85    | 32.2%      |
 
-**Estimated Progress:** 63.3% Complete
+**Estimated Progress:** 64.0% Complete

@@ -115,7 +115,7 @@ export default function ReceiptSettings() {
                     <div className="relative overflow-hidden">
                         <div className="relative flex flex-row items-center justify-between py-6">
                             <div>
-                                <h1 className="text-2xl font-semibold">Invoice Settings</h1>
+                                <h1 className="text-2xl font-semibold">{t('Invoice Settings')}</h1>
                                 <p className="text-muted-foreground text-sm">Configure how invoice and receipts are used.</p>
                             </div>
 

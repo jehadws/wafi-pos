@@ -206,17 +206,17 @@ export default function SettingsGeneral() {
                 <div className="space-y-6">
                     <div className="relative overflow-hidden rounded-xl border">
                         <div className="relative p-6 md:p-8">
-                            <h1 className="text-2xl font-semibold">POS Settings</h1>
-                            <p className="text-muted-foreground text-sm">Configure the pos settings.</p>
+                            <h1 className="text-2xl font-semibold">{t('POS Settings')}</h1>
+                            <p className="text-muted-foreground text-sm">{t('Configure the pos settings.')}</p>
                             <div className="mt-4">
                                 <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
                                     <TabsList className="flex w-full max-w-xl justify-start">
-                                        <TabsTrigger value="layout">Layout</TabsTrigger>
-                                        <TabsTrigger value="printing">Printing</TabsTrigger>
-                                        <TabsTrigger value="registers">Cash Registers</TabsTrigger>
-                                        <TabsTrigger value="vat">VAT Settings</TabsTrigger>
-                                        <TabsTrigger value="shortcuts">Keyboard Shortcuts</TabsTrigger>
-                                        <TabsTrigger value="features">Features</TabsTrigger>
+                                        <TabsTrigger value="layout">{t('Layout')}</TabsTrigger>
+                                        <TabsTrigger value="printing">{t('Printing')}</TabsTrigger>
+                                        <TabsTrigger value="registers">{t('Cash Registers')}</TabsTrigger>
+                                        <TabsTrigger value="vat">{t('VAT Settings')}</TabsTrigger>
+                                        <TabsTrigger value="shortcuts">{t('Keyboard Shortcuts')}</TabsTrigger>
+                                        <TabsTrigger value="features">{t('Features')}</TabsTrigger>
                                     </TabsList>
                                 </Tabs>
                             </div>
@@ -224,17 +224,17 @@ export default function SettingsGeneral() {
                             <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
                                 <TabsContent value="layout" className="mt-6">
                                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                        <FormField label="POS Layout" description="Change the layout of the POS.">
+                                        <FormField label={t('POS Layout')} description={t('Change the layout of the POS.')}>
                                             <Select
                                                 value={form.data.layout.ns_jgrem_layout || ''}
                                                 onValueChange={(v) => form.setData('layout.ns_jgrem_layout', v)}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Select an option" />
+                                                    <SelectValue placeholder={t('Select an option')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem key={'null'} value={'null'}>
-                                                        Select an option
+                                                        {t('Select an option')}
                                                     </SelectItem>
                                                     {options.ns_jgrem_layout.map((l) => (
                                                         <SelectItem key={l.value} value={l.value.toString() || 'null'}>
@@ -244,17 +244,17 @@ export default function SettingsGeneral() {
                                                 </SelectContent>
                                             </Select>
                                         </FormField>
-                                        <FormField label="Sale Complete Sound" description="Change the layout of the POS.">
+                                        <FormField label={t('Sale Complete Sound')} description={t('Change the layout of the POS.')}>
                                             <Select
                                                 value={form.data.layout.ns_jgrem_complete_sale_audio || ''}
                                                 onValueChange={(v) => form.setData('layout.ns_jgrem_complete_sale_audio', v)}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Select an option" />
+                                                    <SelectValue placeholder={t('Select an option')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem key={'null'} value={'null'}>
-                                                        Select an option
+                                                        {t('Select an option')}
                                                     </SelectItem>
                                                     {options.ns_jgrem_complete_sale_audio.map((l) => (
                                                         <SelectItem key={l.value} value={l.value.toString() || 'null'}>
@@ -264,17 +264,20 @@ export default function SettingsGeneral() {
                                                 </SelectContent>
                                             </Select>
                                         </FormField>
-                                        <FormField label="New Item Audio" description="The sound that plays when an item is added to the cart.">
+                                        <FormField
+                                            label={t('New Item Audio')}
+                                            description={t('The sound that plays when an item is added to the cart.')}
+                                        >
                                             <Select
                                                 value={form.data.layout.ns_jgrem_new_item_audio || ''}
                                                 onValueChange={(v) => form.setData('layout.ns_jgrem_new_item_audio', v)}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Select an option" />
+                                                    <SelectValue placeholder={t('Select an option')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem key={'null'} value={'null'}>
-                                                        Select an option
+                                                        {t('Select an option')}
                                                     </SelectItem>
                                                     {options.ns_jgrem_new_item_audio.map((l) => (
                                                         <SelectItem key={l.value} value={l.value.toString()}>
@@ -289,17 +292,20 @@ export default function SettingsGeneral() {
 
                                 <TabsContent value="printing" className="mt-6">
                                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                        <FormField label="Printed Document" description="Choose the document used for printing aster a sale.">
+                                        <FormField
+                                            label={t('Printed Document')}
+                                            description={t('Choose the document used for printing aster a sale.')}
+                                        >
                                             <Select
                                                 value={form.data.printing.ns_jgrem_printing_document || ''}
                                                 onValueChange={(v) => form.setData('printing.ns_jgrem_printing_document', v)}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Select an option" />
+                                                    <SelectValue placeholder={t('Select an option')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem key={'null'} value={'null'}>
-                                                        Select an option
+                                                        {t('Select an option')}
                                                     </SelectItem>
                                                     {options.ns_jgrem_printing_document.map((l) => (
                                                         <SelectItem key={l.value} value={l.value.toString()}>
@@ -310,17 +316,20 @@ export default function SettingsGeneral() {
                                             </Select>
                                         </FormField>
 
-                                        <FormField label="Printing Enabled For" description="Determine when the printing should be enabled.">
+                                        <FormField
+                                            label={t('Printing Enabled For')}
+                                            description={t('Determine when the printing should be enabled.')}
+                                        >
                                             <Select
                                                 value={form.data.printing.ns_jgrem_printing_enabled_for || ''}
                                                 onValueChange={(v) => form.setData('printing.ns_jgrem_printing_enabled_for', v)}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Select an option" />
+                                                    <SelectValue placeholder={t('Select an option')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem key={'null'} value={'null'}>
-                                                        Select an option
+                                                        {t('Select an option')}
                                                     </SelectItem>
                                                     {options.ns_jgrem_printing_enabled_for.map((l) => (
                                                         <SelectItem key={l.value} value={l.value.toString()}>
@@ -331,17 +340,17 @@ export default function SettingsGeneral() {
                                             </Select>
                                         </FormField>
 
-                                        <FormField label="Printing Gateway" description="Determine what is the gateway used for printing.">
+                                        <FormField label={t('Printing Gateway')} description={t('Determine what is the gateway used for printing.')}>
                                             <Select
                                                 value={form.data.printing.ns_jgrem_printing_gateway || ''}
                                                 onValueChange={(v) => form.setData('printing.ns_jgrem_printing_gateway', v)}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Select an option" />
+                                                    <SelectValue placeholder={t('Select an option')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem key={'null'} value={'null'}>
-                                                        Select an option
+                                                        {t('Select an option')}
                                                     </SelectItem>
                                                     {options.ns_jgrem_printing_gateway.map((l) => (
                                                         <SelectItem key={l.value} value={l.value.toString()}>
@@ -356,17 +365,20 @@ export default function SettingsGeneral() {
 
                                 <TabsContent value="registers" className="mt-6">
                                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                        <FormField label="Enable Cash Registers" description="Determine if the POS will support cash registers.">
+                                        <FormField
+                                            label={t('Enable Cash Registers')}
+                                            description={t('Determine if the POS will support cash registers.')}
+                                        >
                                             <Select
                                                 value={form.data.registers.ns_jgrem_registers_enabled || ''}
                                                 onValueChange={(v) => form.setData('registers.ns_jgrem_registers_enabled', v)}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Select an option" />
+                                                    <SelectValue placeholder={t('Select an option')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem key={'null'} value={'null'}>
-                                                        Select an option
+                                                        {t('Select an option')}
                                                     </SelectItem>
                                                     {options.ns_jgrem_registers_enabled.map((l) => (
                                                         <SelectItem key={l.value} value={l.value.toString()}>
@@ -381,17 +393,17 @@ export default function SettingsGeneral() {
 
                                 <TabsContent value="vat" className="mt-6">
                                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                        <FormField label="VAT Type" description="Determine the VAT type that should be used.">
+                                        <FormField label={t('VAT Type')} description={t('Determine the VAT type that should be used.')}>
                                             <Select
                                                 value={form.data.vat.ns_jgrem_vat || ''}
                                                 onValueChange={(v) => form.setData('vat.ns_jgrem_vat', v)}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Select an option" />
+                                                    <SelectValue placeholder={t('Select an option')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem key={'null'} value={'null'}>
-                                                        Select an option
+                                                        {t('Select an option')}
                                                     </SelectItem>
                                                     {options.ns_jgrem_vat.map((l) => (
                                                         <SelectItem key={l.value} value={l.value.toString()}>
@@ -406,7 +418,7 @@ export default function SettingsGeneral() {
 
                                 <TabsContent value="shortcuts" className="mt-6">
                                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                        <FormField label="Cancel Order" description="Keyboard shortcut to cancel the current order.">
+                                        <FormField label={t('Cancel Order')} description={t('Keyboard shortcut to cancel the current order.')}>
                                             <MultiKeySelector
                                                 value={form.data.shortcuts.ns_jgrem_keyboard_cancel_order}
                                                 onChange={(newShortcut) =>
@@ -417,7 +429,7 @@ export default function SettingsGeneral() {
                                             />
                                         </FormField>
 
-                                        <FormField label="Hold Order" description="Keyboard shortcut to hold the current order.">
+                                        <FormField label={t('Hold Order')} description={t('Keyboard shortcut to hold the current order.')}>
                                             <MultiKeySelector
                                                 value={form.data.shortcuts.ns_jgrem_keyboard_hold_order}
                                                 onChange={(newShortcut) => form.setData('shortcuts.ns_jgrem_keyboard_hold_order', newShortcut || [])}
@@ -426,7 +438,7 @@ export default function SettingsGeneral() {
                                             />
                                         </FormField>
 
-                                        <FormField label="Create Customer" description="Keyboard shortcut to create a customer.">
+                                        <FormField label={t('Create Customer')} description={t('Keyboard shortcut to create a customer.')}>
                                             <MultiKeySelector
                                                 value={form.data.shortcuts.ns_jgrem_keyboard_create_customer}
                                                 onChange={(newShortcut) =>
@@ -437,7 +449,7 @@ export default function SettingsGeneral() {
                                             />
                                         </FormField>
 
-                                        <FormField label="Proceed Payment" description="Keyboard shortcut to proceed to the payment.">
+                                        <FormField label={t('Proceed Payment')} description={t('Keyboard shortcut to proceed to the payment.')}>
                                             <MultiKeySelector
                                                 value={form.data.shortcuts.ns_jgrem_keyboard_payment}
                                                 onChange={(newShortcut) => form.setData('shortcuts.ns_jgrem_keyboard_payment', newShortcut || [])}
@@ -446,7 +458,7 @@ export default function SettingsGeneral() {
                                             />
                                         </FormField>
 
-                                        <FormField label="Open Shipping" description="Keyboard shortcut to define shipping details.">
+                                        <FormField label={t('Open Shipping')} description={t('Keyboard shortcut to define shipping details.')}>
                                             <MultiKeySelector
                                                 value={form.data.shortcuts.ns_jgrem_keyboard_shipping}
                                                 onChange={(newShortcut) => form.setData('shortcuts.ns_jgrem_keyboard_shipping', newShortcut || [])}
@@ -455,7 +467,7 @@ export default function SettingsGeneral() {
                                             />
                                         </FormField>
 
-                                        <FormField label="Open Note" description="Keyboard shortcut to open the notes.">
+                                        <FormField label={t('Open Note')} description={t('Keyboard shortcut to open the notes.')}>
                                             <MultiKeySelector
                                                 value={form.data.shortcuts.ns_jgrem_keyboard_note}
                                                 onChange={(newShortcut) => form.setData('shortcuts.ns_jgrem_keyboard_note', newShortcut || [])}
@@ -464,7 +476,10 @@ export default function SettingsGeneral() {
                                             />
                                         </FormField>
 
-                                        <FormField label="Order Type Selector" description="Keyboard shortcut to open the order type selector.">
+                                        <FormField
+                                            label={t('Order Type Selector')}
+                                            description={t('Keyboard shortcut to open the order type selector.')}
+                                        >
                                             <MultiKeySelector
                                                 value={form.data.shortcuts.ns_jgrem_keyboard_order_type}
                                                 onChange={(newShortcut) => form.setData('shortcuts.ns_jgrem_keyboard_order_type', newShortcut || [])}
@@ -473,7 +488,7 @@ export default function SettingsGeneral() {
                                             />
                                         </FormField>
 
-                                        <FormField label="Toggle Fullscreen" description="Keyboard shortcut to toggle fullscreen.">
+                                        <FormField label={t('Toggle Fullscreen')} description={t('Keyboard shortcut to toggle fullscreen.')}>
                                             <MultiKeySelector
                                                 value={form.data.shortcuts.ns_jgrem_keyboard_fullscreen}
                                                 onChange={(newShortcut) => form.setData('shortcuts.ns_jgrem_keyboard_fullscreen', newShortcut || [])}
@@ -482,7 +497,7 @@ export default function SettingsGeneral() {
                                             />
                                         </FormField>
 
-                                        <FormField label="Toggle Product Merge" description="Will enable or disable the product merging.">
+                                        <FormField label={t('Toggle Product Merge')} description={t('Will enable or disable the product merging.')}>
                                             <MultiKeySelector
                                                 value={form.data.shortcuts.ns_jgrem_keyboard_toggle_merge}
                                                 onChange={(newShortcut) =>
@@ -493,7 +508,10 @@ export default function SettingsGeneral() {
                                             />
                                         </FormField>
 
-                                        <FormField label="Amount Shortcuts" description='The amount numbers shortcuts separated with a "|".'>
+                                        <FormField
+                                            label={t('Amount Shortcuts')}
+                                            description={t('The amount numbers shortcuts separated with a "|".')}
+                                        >
                                             <Input
                                                 value={form.data.shortcuts.ns_jgrem_amount_shortcut || ''}
                                                 onChange={(e) => form.setData('shortcuts.ns_jgrem_amount_shortcut', e.target.value)}
@@ -504,8 +522,10 @@ export default function SettingsGeneral() {
                                 <TabsContent value="features" className="mt-6">
                                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                                         <FormField
-                                            label="Show Quantity"
-                                            description="Will show the quantity selector while choosing a product. Otherwise the default quantity is set to 1."
+                                            label={t('Show Quantity')}
+                                            description={t(
+                                                'Will show the quantity selector while choosing a product. Otherwise the default quantity is set to 1.',
+                                            )}
                                         >
                                             <div className="flex gap-2">
                                                 <Button
@@ -513,40 +533,43 @@ export default function SettingsGeneral() {
                                                     variant={(form.data.features.ns_jgrem_show_quantity ?? 'no') === 'yes' ? 'default' : 'outline'}
                                                     onClick={() => form.setData('features.ns_jgrem_show_quantity', 'yes')}
                                                 >
-                                                    Yes
+                                                    {t('Yes')}
                                                 </Button>
                                                 <Button
                                                     type="button"
                                                     variant={(form.data.features.ns_jgrem_show_quantity ?? 'no') === 'no' ? 'default' : 'outline'}
                                                     onClick={() => form.setData('features.ns_jgrem_show_quantity', 'no')}
                                                 >
-                                                    No
+                                                    {t('No')}
                                                 </Button>
                                             </div>
                                         </FormField>
 
-                                        <FormField label="Merge Similar Items" description="Will enforce similar products to be merged from the POS.">
+                                        <FormField
+                                            label={t('Merge Similar Items')}
+                                            description={t('Will enforce similar products to be merged from the POS.')}
+                                        >
                                             <div className="flex gap-2">
                                                 <Button
                                                     type="button"
                                                     variant={(form.data.features.ns_jgrem_items_merge ?? 'no') === 'yes' ? 'default' : 'outline'}
                                                     onClick={() => form.setData('features.ns_jgrem_items_merge', 'yes')}
                                                 >
-                                                    Yes
+                                                    {t('Yes')}
                                                 </Button>
                                                 <Button
                                                     type="button"
                                                     variant={(form.data.features.ns_jgrem_items_merge ?? 'no') === 'no' ? 'default' : 'outline'}
                                                     onClick={() => form.setData('features.ns_jgrem_items_merge', 'no')}
                                                 >
-                                                    No
+                                                    {t('No')}
                                                 </Button>
                                             </div>
                                         </FormField>
 
                                         <FormField
-                                            label="Allow Wholesale Price"
-                                            description="Define if the wholesale price can be selected on the POS."
+                                            label={t('Allow Wholesale Price')}
+                                            description={t('Define if the wholesale price can be selected on the POS.')}
                                         >
                                             <div className="flex gap-2">
                                                 <Button
@@ -556,7 +579,7 @@ export default function SettingsGeneral() {
                                                     }
                                                     onClick={() => form.setData('features.ns_jgrem_allow_wholesale_price', 'yes')}
                                                 >
-                                                    Yes
+                                                    {t('Yes')}
                                                 </Button>
                                                 <Button
                                                     type="button"
@@ -565,14 +588,16 @@ export default function SettingsGeneral() {
                                                     }
                                                     onClick={() => form.setData('features.ns_jgrem_allow_wholesale_price', 'no')}
                                                 >
-                                                    No
+                                                    {t('No')}
                                                 </Button>
                                             </div>
                                         </FormField>
 
                                         <FormField
-                                            label="Allow Decimal Quantities"
-                                            description='Will change the numeric keyboard for allowing decimal for quantities. Only for "default" numpad.'
+                                            label={t('Allow Decimal Quantities')}
+                                            description={t(
+                                                'Will change the numeric keyboard for allowing decimal for quantities. Only for "default" numpad.',
+                                            )}
                                         >
                                             <div className="flex gap-2">
                                                 <Button
@@ -584,7 +609,7 @@ export default function SettingsGeneral() {
                                                     }
                                                     onClick={() => form.setData('features.ns_jgrem_allow_decimal_quantities', 'yes')}
                                                 >
-                                                    Yes
+                                                    {t('Yes')}
                                                 </Button>
                                                 <Button
                                                     type="button"
@@ -595,44 +620,44 @@ export default function SettingsGeneral() {
                                                     }
                                                     onClick={() => form.setData('features.ns_jgrem_allow_decimal_quantities', 'no')}
                                                 >
-                                                    No
+                                                    {t('No')}
                                                 </Button>
                                             </div>
                                         </FormField>
 
-                                        <FormField label="Quick Product" description="Allow quick product to be created from the POS.">
+                                        <FormField label={t('Quick Product')} description={t('Allow quick product to be created from the POS.')}>
                                             <div className="flex gap-2">
                                                 <Button
                                                     type="button"
                                                     variant={(form.data.features.ns_jgrem_quick_product ?? 'no') === 'yes' ? 'default' : 'outline'}
                                                     onClick={() => form.setData('features.ns_jgrem_quick_product', 'yes')}
                                                 >
-                                                    Yes
+                                                    {t('Yes')}
                                                 </Button>
                                                 <Button
                                                     type="button"
                                                     variant={(form.data.features.ns_jgrem_quick_product ?? 'no') === 'no' ? 'default' : 'outline'}
                                                     onClick={() => form.setData('features.ns_jgrem_quick_product', 'no')}
                                                 >
-                                                    No
+                                                    {t('No')}
                                                 </Button>
                                             </div>
                                         </FormField>
 
                                         <FormField
-                                            label="Quick Product Default Unit"
-                                            description="Set what unit is assigned by default to all quick product."
+                                            label={t('Quick Product Default Unit')}
+                                            description={t('Set what unit is assigned by default to all quick product.')}
                                         >
                                             <Select
                                                 value={form.data.features.ns_jgrem_quick_product_default_unit || ''}
                                                 onValueChange={(v) => form.setData('features.ns_jgrem_quick_product_default_unit', v)}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Select an option" />
+                                                    <SelectValue placeholder={t('Select an option')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem key={'null'} value={'null'}>
-                                                        Select an option
+                                                        {t('Select an option')}
                                                     </SelectItem>
                                                     {options.ns_jgrem_quick_product_default_unit.map((l) => (
                                                         <SelectItem key={l.value} value={l.value.toString() || 'null'}>
@@ -643,7 +668,7 @@ export default function SettingsGeneral() {
                                             </Select>
                                         </FormField>
 
-                                        <FormField label="Editable Unit Price" description="Allow product unit price to be edited.">
+                                        <FormField label={t('Editable Unit Price')} description={t('Allow product unit price to be edited.')}>
                                             <div className="flex gap-2">
                                                 <Button
                                                     type="button"
@@ -652,7 +677,7 @@ export default function SettingsGeneral() {
                                                     }
                                                     onClick={() => form.setData('features.ns_jgrem_unit_price_ediable', 'yes')}
                                                 >
-                                                    Yes
+                                                    {t('Yes')}
                                                 </Button>
                                                 <Button
                                                     type="button"
@@ -661,31 +686,31 @@ export default function SettingsGeneral() {
                                                     }
                                                     onClick={() => form.setData('features.ns_jgrem_unit_price_ediable', 'no')}
                                                 >
-                                                    No
+                                                    {t('No')}
                                                 </Button>
                                             </div>
                                         </FormField>
 
-                                        <FormField label="Show Price With Tax" description="Will display price with tax for each products.">
+                                        <FormField label={t('Show Price With Tax')} description={t('Will display price with tax for each products.')}>
                                             <div className="flex gap-2">
                                                 <Button
                                                     type="button"
                                                     variant={(form.data.features.ns_jgrem_price_with_tax ?? 'no') === 'yes' ? 'default' : 'outline'}
                                                     onClick={() => form.setData('features.ns_jgrem_price_with_tax', 'yes')}
                                                 >
-                                                    Yes
+                                                    {t('Yes')}
                                                 </Button>
                                                 <Button
                                                     type="button"
                                                     variant={(form.data.features.ns_jgrem_price_with_tax ?? 'no') === 'no' ? 'default' : 'outline'}
                                                     onClick={() => form.setData('features.ns_jgrem_price_with_tax', 'no')}
                                                 >
-                                                    No
+                                                    {t('No')}
                                                 </Button>
                                             </div>
                                         </FormField>
 
-                                        <FormField label="Order Types" description="Control the order type enabled.">
+                                        <FormField label={t('Order Types')} description={t('Control the order type enabled.')}>
                                             <MultiSelector
                                                 value={form.data.features.ns_jgrem_order_types || []}
                                                 options={options.ns_jgrem_order_types.map((l) => ({ id: l.value, name: l.label }))}
@@ -693,28 +718,28 @@ export default function SettingsGeneral() {
                                             />
                                         </FormField>
 
-                                        <FormField label="Numpad" description="Will set what is the numpad used on the POS screen.">
+                                        <FormField label={t('Numpad')} description={t('Will set what is the numpad used on the POS screen.')}>
                                             <div className="flex gap-2">
                                                 <Button
                                                     type="button"
                                                     variant={(form.data.features.ns_jgrem_numpad ?? 'default') === 'default' ? 'default' : 'outline'}
                                                     onClick={() => form.setData('features.ns_jgrem_numpad', 'default')}
                                                 >
-                                                    Default
+                                                    {t('Default')}
                                                 </Button>
                                                 <Button
                                                     type="button"
                                                     variant={(form.data.features.ns_jgrem_numpad ?? 'default') === 'advanced' ? 'default' : 'outline'}
                                                     onClick={() => form.setData('features.ns_jgrem_numpad', 'advanced')}
                                                 >
-                                                    Advanced
+                                                    {t('Advanced')}
                                                 </Button>
                                             </div>
                                         </FormField>
 
                                         <FormField
-                                            label="Force Barcode Auto Focus"
-                                            description="Will permanently enable barcode autofocus to ease using a barcode reader."
+                                            label={t('Force Barcode Auto Focus')}
+                                            description={t('Will permanently enable barcode autofocus to ease using a barcode reader.')}
                                         >
                                             <div className="flex gap-2">
                                                 <Button
@@ -722,21 +747,21 @@ export default function SettingsGeneral() {
                                                     variant={(form.data.features.ns_jgrem_force_autofocus ?? 'no') === 'yes' ? 'default' : 'outline'}
                                                     onClick={() => form.setData('features.ns_jgrem_force_autofocus', 'yes')}
                                                 >
-                                                    Yes
+                                                    {t('Yes')}
                                                 </Button>
                                                 <Button
                                                     type="button"
                                                     variant={(form.data.features.ns_jgrem_force_autofocus ?? 'no') === 'no' ? 'default' : 'outline'}
                                                     onClick={() => form.setData('features.ns_jgrem_force_autofocus', 'no')}
                                                 >
-                                                    No
+                                                    {t('No')}
                                                 </Button>
                                             </div>
                                         </FormField>
 
                                         <FormField
-                                            label="Hide Exhausted Products"
-                                            description="Will hide exhausted products from selection on the POS."
+                                            label={t('Hide Exhausted Products')}
+                                            description={t('Will hide exhausted products from selection on the POS.')}
                                         >
                                             <div className="flex gap-2">
                                                 <Button
@@ -748,7 +773,7 @@ export default function SettingsGeneral() {
                                                     }
                                                     onClick={() => form.setData('features.ns_jgrem_hide_exhausted_products', 'yes')}
                                                 >
-                                                    Yes
+                                                    {t('Yes')}
                                                 </Button>
                                                 <Button
                                                     type="button"
@@ -757,14 +782,14 @@ export default function SettingsGeneral() {
                                                     }
                                                     onClick={() => form.setData('features.ns_jgrem_hide_exhausted_products', 'no')}
                                                 >
-                                                    No
+                                                    {t('No')}
                                                 </Button>
                                             </div>
                                         </FormField>
 
                                         <FormField
-                                            label="Hide Empty Category"
-                                            description="Category with no or exhausted products will be hidden from selection."
+                                            label={t('Hide Empty Category')}
+                                            description={t('Category with no or exhausted products will be hidden from selection.')}
                                         >
                                             <div className="flex gap-2">
                                                 <Button
@@ -774,7 +799,7 @@ export default function SettingsGeneral() {
                                                     }
                                                     onClick={() => form.setData('features.ns_jgrem_hide_empty_categories', 'yes')}
                                                 >
-                                                    Yes
+                                                    {t('Yes')}
                                                 </Button>
                                                 <Button
                                                     type="button"
@@ -783,7 +808,7 @@ export default function SettingsGeneral() {
                                                     }
                                                     onClick={() => form.setData('features.ns_jgrem_hide_empty_categories', 'no')}
                                                 >
-                                                    No
+                                                    {t('No')}
                                                 </Button>
                                             </div>
                                         </FormField>
@@ -794,7 +819,7 @@ export default function SettingsGeneral() {
                         <div className="mt-6 flex items-center justify-end rounded-b-xl border-t p-3">
                             <Button onClick={() => handleSave()} disabled={isPending}>
                                 {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                                Save Settings
+                                {t('Save Settings')}
                             </Button>
                         </div>
                     </div>

@@ -97,12 +97,12 @@ export default function IdentificationTab({ form, handleInputChange }: Identific
                         <SelectContent>
                             <SelectItem value="ean8">{t('EAN 8')}</SelectItem>
                             <SelectItem value="ean13">{t('EAN 13')}</SelectItem>
-                            <SelectItem value="codabar">Codabar</SelectItem>
-                            <SelectItem value="code128">Code 128</SelectItem>
-                            <SelectItem value="code39">Code 39</SelectItem>
-                            <SelectItem value="code11">Code 11</SelectItem>
-                            <SelectItem value="upca">UPC A</SelectItem>
-                            <SelectItem value="upce">UPC E</SelectItem>
+                            <SelectItem value="codabar">{t('Codabar')}</SelectItem>
+                            <SelectItem value="code128">{t('Code 128')}</SelectItem>
+                            <SelectItem value="code39">{t('Code 39')}</SelectItem>
+                            <SelectItem value="code11">{t('Code 11')}</SelectItem>
+                            <SelectItem value="upca">{t('UPC A')}</SelectItem>
+                            <SelectItem value="upce">{t('UPC E')}</SelectItem>
                         </SelectContent>
                     </Select>
                 </FormField>
