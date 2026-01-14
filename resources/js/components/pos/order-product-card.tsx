@@ -1,17 +1,22 @@
-import { formatCurrency } from "@/utils/format"
+import { useTranslation } from '@/lib/i18n';
+import { formatCurrency } from '@/utils/format';
 
 export default function OrderProductCard({ orderProduct }: { orderProduct: TOrderProducts }) {
-  return (
-    <div className="border rounded-lg p-4">
-      <div className="flex justify-between items-center">
-        <div className="flex flex-col">
-          <span className="font-medium">{orderProduct.name} (x{orderProduct.quantity})</span>
-          <span className="font-medium text-muted-foreground">Unit: {orderProduct.unit.name}</span>
+    const { t } = useTranslation();
+
+    return (
+        <div className="rounded-lg border p-4">
+            <div className="flex items-center justify-between">
+                <div className="flex flex-col">
+                    <span className="font-medium">
+                        {orderProduct.name} (x{orderProduct.quantity})
+                    </span>
+                    <span className="text-muted-foreground font-medium">
+                        {t('Unit')}: {orderProduct.unit.name}
+                    </span>
+                </div>
+                <span className="text-foreground text-xl font-bold">{formatCurrency(orderProduct.total_price)}</span>
+            </div>
         </div>
-        <span className="text-xl font-bold text-foreground">
-          {formatCurrency(orderProduct.total_price)}
-        </span>
-      </div>
-    </div>
-  )
+    );
 }

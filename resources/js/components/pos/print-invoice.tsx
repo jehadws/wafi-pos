@@ -1,48 +1,50 @@
-"use client"
+'use client';
 
-import { Printer } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/lib/i18n';
+import { Printer } from 'lucide-react';
 
 export interface InvoiceItem {
-  id: number
-  name: string
-  quantity: number
-  price: number
-  total: number
+    id: number;
+    name: string;
+    quantity: number;
+    price: number;
+    total: number;
 }
 
 export interface Invoice {
-  id: string
-  date: string
-  orderReceipt: string
-  items: InvoiceItem[]
-  subtotal: number
-  discount: number
-  total: number
-  cash: number
-  paid: number
-  change: number
+    id: string;
+    date: string;
+    orderReceipt: string;
+    items: InvoiceItem[];
+    subtotal: number;
+    discount: number;
+    total: number;
+    cash: number;
+    paid: number;
+    change: number;
 }
 
 interface SimplePrintInvoiceProps {
-  invoice: Invoice
+    invoice: Invoice;
 }
 
 export function SimplePrintInvoice({ invoice }: SimplePrintInvoiceProps) {
-  const handlePrint = () => {
-    const printWindow = window.open("", "_blank")
-    if (!printWindow) return
+    const { t } = useTranslation();
+    const handlePrint = () => {
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) return;
 
-    const formatCurrency = (amount: number) => `USD ${amount.toFixed(2)}`
-    const formatDate = (dateString: string) => new Date(dateString).toLocaleString()
+        const formatCurrency = (amount: number) => `USD ${amount.toFixed(2)}`;
+        const formatDate = (dateString: string) => new Date(dateString).toLocaleString();
 
-    const printDocument = `
+        const printDocument = `
       <!DOCTYPE html>
       <html lang="en">
         <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Invoice - ${invoice.orderReceipt}</title>
+          <title>${t('Invoice')} - ${invoice.orderReceipt}</title>
           <style>
             * {
               margin: 0;
@@ -290,115 +292,108 @@ export function SimplePrintInvoice({ invoice }: SimplePrintInvoiceProps) {
         </head>
         <body>
           <div class="invoice-container">
-            <!-- Header -->
             <div class="invoice-header">
               <div class="company-name">NexoPOS</div>
-              <div class="invoice-subtitle">Point of Sale System</div>
+              <div class="invoice-subtitle">${t('Point of Sale System')}</div>
             </div>
 
-            <!-- Invoice Info -->
             <div class="invoice-info">
               <div class="info-section">
-                <div class="info-label">Date & Time</div>
+                <div class="info-label">${t('Date')} & ${t('Time')}</div>
                 <div class="info-value">${formatDate(invoice.date)}</div>
               </div>
               <div class="info-section">
-                <div class="info-label">Order Receipt</div>
+                <div class="info-label">${t('Order receipt')}</div>
                 <div class="info-value">${invoice.orderReceipt}</div>
               </div>
               <div class="info-section">
-                <div class="info-label">Invoice ID</div>
+                <div class="info-label">${t('Invoice')}</div>
                 <div class="info-value">#${invoice.id}</div>
               </div>
             </div>
 
-            <!-- Invoice Body -->
             <div class="invoice-body">
-              <!-- Items Table -->
               <table class="items-table">
                 <thead class="table-header">
                   <tr>
-                    <th>Product Details</th>
-                    <th style="text-align: right;">Total Amount</th>
+                    <th>${t('Product')}</th>
+                    <th style="text-align: right;">${t('Total')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   ${invoice.items
-        .map(
-          (item) => `
+                      .map(
+                          (item) => `
                     <tr>
                       <td>
                         <div class="item-name">${item.name}</div>
-                        <div class="item-details">Quantity: ${item.quantity} pieces | Unit Price: ${formatCurrency(item.price)}</div>
+                        <div class="item-details">${t('Quantity')}: ${item.quantity} | ${t('Unit Price')}: ${formatCurrency(item.price)}</div>
                       </td>
                       <td class="item-total">${formatCurrency(item.total)}</td>
                     </tr>
                   `,
-        )
-        .join("")}
+                      )
+                      .join('')}
                 </tbody>
               </table>
 
-              <!-- Summary Section -->
               <div class="summary-section">
                 <div class="summary-row">
-                  <span class="summary-label">Subtotal</span>
+                  <span class="summary-label">${t('Sub Total')}</span>
                   <span class="summary-value">${formatCurrency(invoice.subtotal)}</span>
                 </div>
                 <div class="summary-row">
-                  <span class="summary-label">Discount Applied</span>
+                  <span class="summary-label">${t('Discount')}</span>
                   <span class="summary-value">-${formatCurrency(invoice.discount)}</span>
                 </div>
                 <div class="summary-row total-row">
-                  <span class="summary-label">Total Amount</span>
+                  <span class="summary-label">${t('Total')}</span>
                   <span class="summary-value">${formatCurrency(invoice.total)}</span>
                 </div>
               </div>
 
-              <!-- Payment Section -->
               <div class="payment-section">
-                <div class="payment-title">Payment Details</div>
+                <div class="payment-title">${t('Payment')}</div>
                 <div class="payment-details">
                   <div class="payment-item">
-                    <div class="payment-label">Cash Received</div>
+                    <div class="payment-label">${t('Cash')}</div>
                     <div class="payment-amount">${formatCurrency(invoice.cash)}</div>
                   </div>
                   <div class="payment-item">
-                    <div class="payment-label">Amount Paid</div>
+                    <div class="payment-label">${t('Paid')}</div>
                     <div class="payment-amount">${formatCurrency(invoice.paid)}</div>
                   </div>
                   <div class="payment-item">
-                    <div class="payment-label">Change Given</div>
+                    <div class="payment-label">${t('Change')}</div>
                     <div class="payment-amount">${formatCurrency(invoice.change)}</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Footer -->
             <div class="invoice-footer">
-              <div class="footer-line">Thank you for your business!</div>
-              <div class="footer-line">Generated by NexoPOS System</div>
+              <div class="footer-line">${t('Thank you for your business!')}</div>
+              <div class="footer-line">${t('Generated by NexoPOS System')}</div>
               <div class="footer-line">127.0.0.1:9971/dashboard/pos</div>
             </div>
           </div>
         </body>
       </html>
-    `
+    `;
 
-    printWindow.document.write(printDocument)
-    printWindow.document.close()
+        printWindow.document.write(printDocument);
+        printWindow.document.close();
 
-    printWindow.onload = () => {
-      printWindow.print()
-      printWindow.close()
-    }
-  }
+        printWindow.onload = () => {
+            printWindow.print();
+            printWindow.close();
+        };
+    };
 
-  return (
-    <Button onClick={handlePrint} className="flex items-center gap-2">
-      <Printer className="h-4 w-4" />
-      Print Invoice
-    </Button>
-  )
+    return (
+        <Button onClick={handlePrint} className="flex items-center gap-2">
+            <Printer className="h-4 w-4" />
+            {t('Print Invoice')}
+        </Button>
+    );
 }

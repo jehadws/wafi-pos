@@ -1,8 +1,6 @@
-import React from 'react'
+import { useTranslation } from '@/lib/i18n';
 
 export default function Categories() {
-  return (
-    <div>Categories</div>
-  )
+    const { t } = useTranslation();
+    return <div>{t('Categories')}</div>;
 }
-
