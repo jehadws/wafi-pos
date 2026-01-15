@@ -74,7 +74,7 @@ class I18n {
         }
 
         try {
-            const translations = await import(`../../../lang/${locale}.json`);
+            const translations = await import(`../../../../lang/${locale}.json`);
             this.setTranslations(locale, translations.default);
         } catch (error) {
             console.error(`Failed to load translations for locale: ${locale}`, error);
