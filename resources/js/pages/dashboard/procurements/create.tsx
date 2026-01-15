@@ -8,10 +8,12 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/tabs';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownSearch } from '@/components/ui/dropdown-search';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TabsContent } from '@/components/ui/tabs';
+import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { useForm } from '@inertiajs/react';
 import axios from 'axios';
@@ -19,12 +21,6 @@ import { format } from 'date-fns';
 import { ArrowRightLeft, Calculator, Package, Settings, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-
-const breadcrumbs = [
-    { title: t('Dashboard'), href: '/dashboard' },
-    { title: t('Procurements'), href: '/dashboard/procurements' },
-    { title: t('Create Procurement'), href: '/dashboard/procurements/create' },
-];
 
 const DeliveryStatus = [
     { value: 'delivered', label: 'Delivered' },
@@ -54,6 +50,11 @@ export default function CreateProductPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<ProductSearchResult[]>([]);
     const [units, setUnits] = useState<Unit[]>([]);
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Procurements'), href: '/dashboard/procurements' },
+        { title: t('Create Procurement'), href: '/dashboard/procurements/create' },
+    ];
 
     const [activeModal, setActiveModal] = useState<{
         type: 'options' | 'unit' | 'tax' | 'convert' | null;
@@ -419,28 +420,14 @@ export default function CreateProductPage() {
                         <TabsContent value="products" className="mt-6">
                             <div className="space-y-4">
                                 {/* Search Bar */}
-                                <div>
-                                    <Input
-                                        placeholder={t('SKU, Barcode, Product name.')}
-                                        value={searchQuery}
-                                        onChange={(e) => searchProduct(e.target.value)}
-                                        className="w-full"
-                                    />
-                                </div>
-                                <div className="overflow-hidden rounded-lg border">
-                                    {searchResults.length > 0 &&
-                                        searchResults.map((product) => (
-                                            <div
-                                                key={product.id}
-                                                className="hover:bg-accent grid cursor-pointer border-b p-4 text-sm font-medium last:border-b-0"
-                                                onClick={() => addProduct(product)}
-                                            >
-                                                <div className="text-sm font-medium">{product.name}</div>
-                                                <div className="text-muted-foreground mt-1 text-sm">SKU: {product.sku}</div>
-                                                <div className="text-muted-foreground text-sm">Barcode: {product.barcode}</div>
-                                            </div>
-                                        ))}
-                                </div>
+                                <DropdownSearch
+                                    placeholder={t('SKU, Barcode, Product name.')}
+                                    value={searchQuery}
+                                    onValueChange={setSearchQuery}
+                                    onSearch={searchProduct}
+                                    results={searchResults}
+                                    onSelect={addProduct}
+                                />
 
                                 {/* Products Table */}
                                 <div className="overflow-hidden rounded-lg border">
