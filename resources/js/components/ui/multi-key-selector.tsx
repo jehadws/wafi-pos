@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Check, X, Plus, Keyboard } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "@/lib/i18n"
 
 
 type ShortcutOption = {
@@ -33,6 +34,7 @@ export default function MultiKeySelector({
   maxKeys = 4,
   options,
 }: MultiKeySelectorProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const selectedKeys = value || []
@@ -112,7 +114,7 @@ export default function MultiKeySelector({
         </PopoverTrigger>
         <PopoverContent className="w-full p-0" align="start">
           <Command>
-            <CommandInput placeholder="Search keys..." value={searchQuery} onValueChange={setSearchQuery} />
+            <CommandInput placeholder={t('Search')} value={searchQuery} onValueChange={setSearchQuery} />
             <CommandList>
               <CommandEmpty>No keys found.</CommandEmpty>
               <CommandGroup>

@@ -31,10 +31,10 @@ export default function IdentificationTab({ form, handleInputChange }: Identific
                     <Select
                         value={form.data.identification_category_id?.toString()}
                         onValueChange={(value) => handleChange('identification_category_id', value)}
-                        defaultValue="Select category"
+                        defaultValue={t('Select an option')}
                     >
                         <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select category" defaultValue={'Select category'} />
+                            <SelectValue placeholder={t('Select an option')} defaultValue={t('Select an option')} />
                         </SelectTrigger>
                         <SelectContent className="w-full">
                             {categories.map((category) => (

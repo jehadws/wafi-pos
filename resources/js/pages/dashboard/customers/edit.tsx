@@ -306,7 +306,7 @@ export default function CreateProductPage() {
                                 >
                                     <Select value={form.data.general_gender} onValueChange={(value) => handleSelectChange('general_gender', value)}>
                                         <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Not set" />
+                                            <SelectValue placeholder={t('N/A')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="male">Male</SelectItem>

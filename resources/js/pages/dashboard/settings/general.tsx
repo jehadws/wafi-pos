@@ -216,7 +216,7 @@ export default function SettingsGeneral() {
                                                 onValueChange={(v) => form.setData('identification.ns_store_language', v)}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Choose language" />
+                                                    <SelectValue placeholder={t('Language')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {options.ns_store_language.map((l) => (
@@ -322,7 +322,7 @@ export default function SettingsGeneral() {
                                                 onValueChange={(v) => form.setData('currency.ns_currency_precision', Number(v))}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Choose precision" />
+                                                    <SelectValue placeholder={t('Currency Precision')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {[0, 1, 2, 3, 4].map((n) => (

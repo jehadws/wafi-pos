@@ -421,7 +421,7 @@ export default function CreateProductPage() {
                                 {/* Search Bar */}
                                 <div>
                                     <Input
-                                        placeholder="SKU, Barcode, Name"
+                                        placeholder={t('SKU, Barcode, Product name.')}
                                         value={searchQuery}
                                         onChange={(e) => searchProduct(e.target.value)}
                                         className="w-full"

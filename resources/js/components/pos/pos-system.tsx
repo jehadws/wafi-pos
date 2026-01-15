@@ -487,7 +487,7 @@ export default function PosSystem() {
                                 <Input
                                     ref={inputRef}
                                     type="search"
-                                    placeholder="Scan Barcode"
+                                    placeholder={t('Search')}
                                     className="pl-8"
                                     value={searchQuery}
                                     onChange={(e) => {
@@ -505,13 +505,13 @@ export default function PosSystem() {
                                     }}
                                 />
                             </div>
-                            <Button variant="outline" size="icon" onClick={() => setIsAutoFocusOpen((prev) => !prev)} title="Scan Barcode">
+                            <Button variant="outline" size="icon" onClick={() => setIsAutoFocusOpen((prev) => !prev)} title={t('Barcode')}>
                                 <Barcode className={cn('h-4 w-4', isAutoFocusOpen ? 'text-primary' : '')} />
                             </Button>
-                            <Button variant="outline" size="icon" onClick={() => setAutoMarge((prev) => !prev)} title="Auto Marge">
+                            <Button variant="outline" size="icon" onClick={() => setAutoMarge((prev) => !prev)} title={t('Options')}>
                                 <Shrink className={cn('h-4 w-4', autoMarge ? 'text-primary' : '')} />
                             </Button>
-                            <Button variant="outline" size="icon" onClick={() => setShowSearchProductsDialog(true)} title="Search Products">
+                            <Button variant="outline" size="icon" onClick={() => setShowSearchProductsDialog(true)} title={t('Products')}>
                                 <Search className="h-4 w-4" />
                             </Button>
                         </div>
