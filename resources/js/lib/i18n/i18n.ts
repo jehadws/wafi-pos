@@ -74,11 +74,8 @@ class I18n {
         }
 
         try {
-            const response = await fetch(`/lang/${locale}.json`);
-            if (response.ok) {
-                const translations = await response.json();
-                this.setTranslations(locale, translations);
-            }
+            const translations = await import(`../../../lang/${locale}.json`);
+            this.setTranslations(locale, translations.default);
         } catch (error) {
             console.error(`Failed to load translations for locale: ${locale}`, error);
         }

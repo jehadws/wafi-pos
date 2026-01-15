@@ -5,26 +5,48 @@ import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
 const ReactCompilerConfig = {
-  target: '19' // '17' | '18' | '19'
+    target: '19', // '17' | '18' | '19'
 };
 
 export default defineConfig({
-  plugins: [
-    laravel({
-      input: ['resources/css/app.css', 'resources/js/app.tsx'],
-      ssr: 'resources/js/ssr.tsx',
-      refresh: true,
-    }),
+    plugins: [
+        laravel({
+            input: ['resources/css/app.css', 'resources/js/app.tsx'],
+            ssr: 'resources/js/ssr.tsx',
+            refresh: true,
+        }),
 
-    react(),
-    tailwindcss(),
-  ],
-  esbuild: {
-    jsx: 'automatic',
-  },
-  resolve: {
-    alias: {
-      'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
+        react(),
+        tailwindcss(),
+    ],
+    esbuild: {
+        jsx: 'automatic',
     },
-  },
+    resolve: {
+        alias: {
+            'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
+        },
+    },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'translations-ar': ['./lang/ar.json'],
+                    'translations-en': ['./lang/en.json'],
+                    'translations-fr': ['./lang/fr.json'],
+                    'translations-km': ['./lang/km.json'],
+                    'translations-pt': ['./lang/pt.json'],
+                    'translations-tr': ['./lang/tr.json'],
+                    'translations-de': ['./lang/de.json'],
+                    'translations-es': ['./lang/es.json'],
+                    'translations-it': ['./lang/it.json'],
+                    'translations-nl': ['./lang/nl.json'],
+                    'translations-sq': ['./lang/sq.json'],
+                    'translations-vi': ['./lang/vi.json'],
+                },
+                chunkFileNames: 'assets/[name]-[hash].js',
+                entryFileNames: 'assets/[name]-[hash].js',
+            },
+        },
+    },
 });
