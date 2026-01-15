@@ -44,23 +44,12 @@ export default function Dashboard() {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const [cardsResponse, customersResponse, weeksResponse, cashiersResponse, ordersResponse] = await Promise.all([
-                    fetch('/api/dashboard/day').then((res) => res.json()),
-                    fetch('/api/dashboard/best-customers').then((res) => res.json()),
-                    fetch('/api/dashboard/weeks').then((res) => res.json()),
-                    fetch('/api/dashboard/best-cashiers').then((res) => res.json()),
-                    fetch('/api/dashboard/recent-orders').then((res) => res.json()),
-                ]);
+                const response = await fetch('/api/dashboard/all');
+                const data = await response.json();
 
-                // console.log("cardsResponse", cardsResponse);
-                // console.log("customersResponse", customersResponse);
-                // console.log("weeksResponse", weeksResponse);
-                // console.log("cashiersResponse", cashiersResponse);
-                console.log('ordersResponse', ordersResponse);
-
-                setCards(cardsResponse);
-                setBestCustomers(customersResponse);
-                setRecentOrders(ordersResponse);
+                setCards(data.cards);
+                setBestCustomers(data.bestCustomers);
+                setRecentOrders(data.recentOrders);
             } catch (error) {
                 console.error('Error fetching dashboard data:', error);
             } finally {

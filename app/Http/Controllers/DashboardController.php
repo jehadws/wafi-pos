@@ -81,37 +81,24 @@ class DashboardController extends Controller
     }, 15);
   }
 
-  public function getWeekReports()
+  public function getAllDashboardData()
   {
+    $todayStarts = $this->dateService->copy()->startOfDay()->toDateTimeString();
+    $todayEnds = $this->dateService->copy()->endOfDay()->toDateTimeString();
+
+    $cards = DashboardDay::from($todayStarts)->to($todayEnds)->first() ?: [];
+    $bestCustomers = Customer::orderBy('purchases_amount', 'desc')->limit(5)->get();
+    $recentOrders = Order::orderBy('created_at', 'desc')->with('user')->limit(10)->get();
+    $bestCashiers = Role::namespace('jgrem.store.cashier')->users()->orderBy('total_sales', 'desc')->limit(10)->get();
+
     $weekMap = [
-      0 => [
-        'label' => __('Sunday'),
-        'value' => 'SU',
-      ],
-      1 => [
-        'label' => __('Monday'),
-        'value' => 'MO',
-      ],
-      2 => [
-        'label' => __('Tuesday'),
-        'value' => 'TU',
-      ],
-      3 => [
-        'label' => __('Wednesday'),
-        'value' => 'WE',
-      ],
-      4 => [
-        'label' => __('Thursday'),
-        'value' => 'TH',
-      ],
-      5 => [
-        'label' => __('Friday'),
-        'value' => 'FR',
-      ],
-      6 => [
-        'label' => __('Saturday'),
-        'value' => 'SA',
-      ],
+      0 => ['label' => __('Sunday'), 'value' => 'SU'],
+      1 => ['label' => __('Monday'), 'value' => 'MO'],
+      2 => ['label' => __('Tuesday'), 'value' => 'TU'],
+      3 => ['label' => __('Wednesday'), 'value' => 'WE'],
+      4 => ['label' => __('Thursday'), 'value' => 'TH'],
+      5 => ['label' => __('Friday'), 'value' => 'FR'],
+      6 => ['label' => __('Saturday'), 'value' => 'SA'],
     ];
 
     $currentWeekStarts = $this->dateService->copy()->startOfWeek();
@@ -119,32 +106,30 @@ class DashboardController extends Controller
     $lastWeekStarts = $currentWeekStarts->copy()->subDay()->startOfWeek();
     $lastWeekEnds = $currentWeekStarts->copy()->subDay()->endOfWeek();
 
-    DashboardDay::from($currentWeekStarts->toDateTimeString())
-      ->to($currentWeekEnds->toDateTimeString())
-      ->get()
-      ->each(function ($report) use (&$weekMap) {
-        if (! isset($weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['current']['entries'])) {
-          $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['current']['entries'] = [];
-        }
+    DashboardDay::from($currentWeekStarts->toDateTimeString())->to($currentWeekEnds->toDateTimeString())->get()->each(function ($report) use (&$weekMap) {
+      if (!isset($weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['current']['entries'])) {
+        $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['current']['entries'] = [];
+      }
+      $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['current']['entries'][] = $report;
+    });
 
-        $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['current']['entries'][] = $report;
-      });
-
-    DashboardDay::from($lastWeekStarts->toDateTimeString())
-      ->to($lastWeekEnds->toDateTimeString())
-      ->get()
-      ->each(function ($report) use (&$weekMap) {
-        if (! isset($weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['previous']['entries'])) {
-          $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['previous']['entries'] = [];
-        }
-
-        $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['previous']['entries'][] = $report;
-      });
+    DashboardDay::from($lastWeekStarts->toDateTimeString())->to($lastWeekEnds->toDateTimeString())->get()->each(function ($report) use (&$weekMap) {
+      if (!isset($weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['previous']['entries'])) {
+        $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['previous']['entries'] = [];
+      }
+      $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['previous']['entries'][] = $report;
+    });
 
     return [
-      'range_starts' => $lastWeekStarts->toDateTimeString(),
-      'range_ends' => $currentWeekEnds->toDateTimeString(),
-      'result' => $weekMap,
+      'cards' => $cards,
+      'bestCustomers' => $bestCustomers,
+      'recentOrders' => $recentOrders,
+      'bestCashiers' => $bestCashiers,
+      'weeks' => [
+        'range_starts' => $lastWeekStarts->toDateTimeString(),
+        'range_ends' => $currentWeekEnds->toDateTimeString(),
+        'result' => $weekMap,
+      ],
     ];
   }
 }

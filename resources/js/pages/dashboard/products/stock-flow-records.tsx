@@ -35,7 +35,6 @@ export default function Dashboard() {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
     const [searchTerm, setSearchTerm] = useState('');
-    const { t } = useTranslation();
 
     const columns: ColumnDef<GlobalProductHistory>[] = [
         {
