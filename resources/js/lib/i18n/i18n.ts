@@ -30,8 +30,21 @@ class I18n {
     }
 
     private getTranslation(key: string, locale: string): string | null {
+        const translationsObj = this.translations[locale];
+        if (!translationsObj || typeof translationsObj === 'string') {
+            return null;
+        }
+        const translations: Translations = translationsObj;
+
+        if (Object.prototype.hasOwnProperty.call(translations, key)) {
+            const value = translations[key as keyof Translations];
+            if (typeof value === 'string') {
+                return value;
+            }
+        }
+
         const keys = key.split('.');
-        let current: any = this.translations[locale] || {};
+        let current: any = translations;
 
         for (const k of keys) {
             if (current && typeof current === 'object' && k in current) {
