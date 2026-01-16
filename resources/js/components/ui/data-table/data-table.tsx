@@ -134,8 +134,8 @@ export function DataTable<TData, TValue>({
     <div className="space-y-4">
       {(title || description) && (
         <div>
-          {title && <h2 className="text-2xl font-bold tracking-tight">{title}</h2>}
-          {description && <p className="text-muted-foreground">{description}</p>}
+          {title && <h2 className="text-2xl font-bold tracking-tight">{t(title)}</h2>}
+          {description && <p className="text-muted-foreground">{t(description)}</p>}
         </div>
       )}
       <DataTableToolbar
@@ -179,7 +179,7 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  {t('No results')}
+                  {t('There is nothing to display...')}
                 </TableCell>
               </TableRow>
             )}
