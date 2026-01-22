@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
+import { usePage } from '@inertiajs/react';
 import axios from 'axios';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -9,6 +10,7 @@ import { toast } from 'sonner';
 
 export default function SelectUnitQuantityDialog({ selectProduct }: { selectProduct: Product | undefined }) {
     const { t } = useTranslation();
+    const { options } = usePage<{ options: NsPosOptions }>().props;
     const { openDialogs, closeDialog } = usePOS();
     const open = openDialogs['selectQuantity'] || false;
     const [quantities, setQuantities] = useState<UnitQuantity[]>([]);
@@ -89,7 +91,11 @@ export default function SelectUnitQuantityDialog({ selectProduct }: { selectProd
                                     <div className="text-lg font-semibold">
                                         {quantity.unit.name} ({quantity.quantity})
                                     </div>
-                                    <div className="text-sm font-medium">{formatCurrency(quantity.sale_price_without_tax)}</div>
+                                    <div className="text-sm font-medium">
+                                        {options.ns_jgrem_price_with_tax === 'yes'
+                                            ? formatCurrency(quantity.sale_price_with_tax)
+                                            : formatCurrency(quantity.sale_price_without_tax)}
+                                    </div>
                                 </div>
                             </div>
                         ))}

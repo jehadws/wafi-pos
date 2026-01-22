@@ -116,6 +116,7 @@ export default function ProductsCategoriesPanel({ addToCart, selectedProducts }:
             addProductToCart(ProductData);
 
             addToCart({
+                order_id: null,
                 product_id: selectedUnitQuantity.product_id,
                 name: selectProduct.name,
                 discount_type: 'percentage',
@@ -132,7 +133,10 @@ export default function ProductsCategoriesPanel({ addToCart, selectedProducts }:
                 price_with_tax: selectedUnitQuantity.sale_price_with_tax,
                 price_without_tax: selectedUnitQuantity.sale_price_without_tax,
                 unit_name: selectedUnitQuantity.unit.name,
-                total_price: selectedUnitQuantity.sale_price * parseInt(quantity),
+                total_price:
+                    options.ns_jgrem_price_with_tax === 'yes'
+                        ? selectedUnitQuantity.sale_price_with_tax * parseInt(quantity)
+                        : selectedUnitQuantity.sale_price_without_tax * parseInt(quantity),
                 total_price_without_tax: selectedUnitQuantity.sale_price_without_tax * parseInt(quantity),
                 total_price_with_tax: selectedUnitQuantity.sale_price_with_tax * parseInt(quantity),
                 mode: 'normal',

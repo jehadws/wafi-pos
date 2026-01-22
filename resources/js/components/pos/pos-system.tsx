@@ -353,6 +353,7 @@ export default function PosSystem() {
             }
 
             addToCart({
+                order_id: null,
                 product_id: selectedProduct.product.id,
                 name: selectedProduct.product.name,
                 discount_type: 'percentage',
@@ -361,7 +362,7 @@ export default function PosSystem() {
                 product_type: selectedProduct.type,
                 rate: selectedProduct.product.tax_group.taxes.reduce((acc, tax) => acc + +tax.rate, 0),
                 quantity: parseInt(quantity),
-                tax_group_id: +selectedProduct.product.tax_group_id,
+                tax_group_id: +(selectedProduct.product.tax_group_id || 0),
                 tax_type: selectedProduct.product.tax_type,
                 tax_value: selectedProduct.product.selectedUnitQuantity.sale_price_tax,
                 unit_id: selectedProduct.product.selectedUnitQuantity.unit.id,
@@ -369,7 +370,10 @@ export default function PosSystem() {
                 price_with_tax: selectedProduct.product.selectedUnitQuantity.sale_price_with_tax,
                 price_without_tax: selectedProduct.product.selectedUnitQuantity.sale_price_without_tax,
                 unit_name: selectedProduct.product.selectedUnitQuantity.unit.name,
-                total_price: selectedProduct.product.selectedUnitQuantity.sale_price * parseInt(quantity),
+                total_price:
+                    options.ns_jgrem_price_with_tax === 'yes'
+                        ? selectedProduct.product.selectedUnitQuantity.sale_price_with_tax * parseInt(quantity)
+                        : selectedProduct.product.selectedUnitQuantity.sale_price_without_tax * parseInt(quantity),
                 total_price_without_tax: selectedProduct.product.selectedUnitQuantity.sale_price_without_tax * parseInt(quantity),
                 total_price_with_tax: selectedProduct.product.selectedUnitQuantity.sale_price_with_tax * parseInt(quantity),
                 mode: 'normal',

@@ -8,6 +8,7 @@ import { Loader2, Search } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from '../../lib/i18n';
+import { formatCurrency } from '../../utils/format';
 import { Button } from '../ui/button';
 import { NumericKeypadDialog } from '../ui/numeric-keypad-dialog';
 
@@ -19,6 +20,7 @@ interface SearchProductsDialogProps {
 
 export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: SearchProductsDialogProps) {
     const { t } = useTranslation();
+    const { options } = usePage<{ options: NsPosOptions }>().props;
     const [products, setProducts] = useState<Product[]>([]);
     const [selectProduct, setSelectProduct] = useState<Product>();
     const [quantities, setQuantities] = useState<UnitQuantity[]>();
@@ -53,6 +55,7 @@ export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: 
             }
 
             onProductSelected({
+                order_id: null,
                 product_id: selectedUnitQuantity.product_id,
                 name: selectProduct.name,
                 discount_type: 'percentage',
@@ -69,7 +72,10 @@ export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: 
                 price_with_tax: selectedUnitQuantity.sale_price_with_tax,
                 price_without_tax: selectedUnitQuantity.sale_price_without_tax,
                 unit_name: selectedUnitQuantity.unit.name,
-                total_price: selectedUnitQuantity.sale_price * parseInt(quantity),
+                total_price:
+                    options.ns_jgrem_price_with_tax === 'yes'
+                        ? selectedUnitQuantity.sale_price_with_tax * parseInt(quantity)
+                        : selectedUnitQuantity.sale_price_without_tax * parseInt(quantity),
                 total_price_without_tax: selectedUnitQuantity.sale_price_without_tax * parseInt(quantity),
                 total_price_with_tax: selectedUnitQuantity.sale_price_with_tax * parseInt(quantity),
                 mode: 'normal',
@@ -176,7 +182,11 @@ export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: 
                                     <div className="text-lg font-semibold">
                                         {quantity.unit.name} ({quantity.quantity})
                                     </div>
-                                    <div className="text-sm font-medium">${quantity.sale_price_without_tax.toFixed(2)}</div>
+                                    <div className="text-sm font-medium">
+                                        {options.ns_jgrem_price_with_tax === 'yes'
+                                            ? formatCurrency(quantity.sale_price_with_tax)
+                                            : formatCurrency(quantity.sale_price_without_tax)}
+                                    </div>
                                 </div>
                             </div>
                         ))}

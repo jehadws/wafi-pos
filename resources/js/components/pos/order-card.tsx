@@ -240,10 +240,10 @@ export default function OrderCard({ order, form, onOpenChange }: Props) {
                             <strong>{t('Cashier')}:</strong> {order.user_username}
                         </div>
                         <div>
-                            <strong>{t('Total')}:</strong> {order.total}
+                            <strong>{t('Total')}:</strong> {formatCurrency(order.total)}
                         </div>
                         <div>
-                            <strong>{t('Tendered')}:</strong> {order.tendered}
+                            <strong>{t('Tendered')}:</strong> {formatCurrency(order.tendered)}
                         </div>
                     </div>
                     <div className="flex flex-col gap-2">
