@@ -7,7 +7,7 @@ import { useDebouncedEffect } from '@/hooks/use-debounced-effect';
 import { useNumericKeypad } from '@/hooks/use-numeric-keypad';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import { Barcode, Search, Shrink } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -37,6 +37,7 @@ function calculateNewTaxValue(oldPriceWithoutTax: number, oldTaxValue: number, n
 
 export default function PosSystem() {
     const { t } = useTranslation();
+    const { options } = usePage<{ options: NsPosOptions }>().props;
     const [isAutoFocusOpen, setIsAutoFocusOpen] = useState(false);
     const [autoMarge, setAutoMarge] = useState(false);
     const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -185,23 +186,40 @@ export default function PosSystem() {
     const updateQuantity = (product: CartProduct, quantity: number) => {
         if (quantity <= 0) {
             removeFromCart(product);
-            // return
         } else {
             form.setData(
                 'products',
                 form.data.products.map((item) => {
                     if (item._uuid === product._uuid) {
-                        const discount_value = (item.discount_percentage / 100) * item.price_without_tax * quantity;
-                        const total_price = item.price_without_tax * quantity;
-                        const totalTaxValue = item.tax_value * quantity;
+                        const lineSubtotal = item.unit_price * quantity;
+                        const discount_value = item.discount_type === 'percentage' ? (item.discount_percentage / 100) * lineSubtotal : item.discount;
+
+                        const total_price = item.unit_price * quantity;
+                        const totalBeforeTax = total_price - discount_value;
+
+                        let totalTaxValue = 0;
+                        const taxRate = item.price_without_tax > 0 ? item.tax_value / item.price_without_tax : 0;
+
+                        if (item.tax_type === 'exclusive') {
+                            totalTaxValue = totalBeforeTax * taxRate;
+                        } else if (item.tax_type === 'inclusive') {
+                            const taxMultiplier = 1 + taxRate;
+                            const priceWithTax = totalBeforeTax;
+                            const priceWithoutTax = priceWithTax / taxMultiplier;
+                            totalTaxValue = priceWithTax - priceWithoutTax;
+                        }
+
+                        const total_price_with_tax = totalBeforeTax + totalTaxValue;
+                        const total_price_without_tax = totalBeforeTax;
+
                         return {
                             ...item,
                             discount: discount_value,
                             quantity,
                             total_tax_value: totalTaxValue,
-                            total_price: total_price - discount_value,
-                            total_price_with_tax: total_price + totalTaxValue - discount_value,
-                            total_price_without_tax: total_price - discount_value,
+                            total_price: options.ns_jgrem_price_with_tax === 'yes' ? total_price_with_tax : total_price_without_tax,
+                            total_price_with_tax,
+                            total_price_without_tax,
                         };
                     } else {
                         return item;
@@ -220,6 +238,8 @@ export default function PosSystem() {
                     const newTaxValue = calculateNewTaxValue(item.price_without_tax, item.tax_value, price).newTaxValue;
                     const totalTaxValue = newTaxValue * item.quantity;
                     const total_price = price * item.quantity;
+                    const total_price_with_tax = total_price + totalTaxValue - discount_value;
+                    const total_price_without_tax = total_price - discount_value;
                     return {
                         ...item,
                         discount: discount_value,
@@ -228,9 +248,9 @@ export default function PosSystem() {
                         price_with_tax: price + newTaxValue,
                         tax_value: newTaxValue,
                         total_tax_value: totalTaxValue,
-                        total_price: total_price - discount_value,
-                        total_price_with_tax: total_price + totalTaxValue - discount_value,
-                        total_price_without_tax: total_price - discount_value,
+                        total_price: options.ns_jgrem_price_with_tax === 'yes' ? total_price_with_tax : total_price_without_tax,
+                        total_price_with_tax,
+                        total_price_without_tax,
                     };
                 } else {
                     return item;
@@ -246,13 +266,15 @@ export default function PosSystem() {
                 if (item._uuid === product._uuid) {
                     const total_price = item.price_without_tax * item.quantity;
                     const discount_value = (discount / 100) * total_price;
+                    const total_price_with_tax = item.price_with_tax * item.quantity - discount_value;
+                    const total_price_without_tax = total_price - discount_value;
                     return {
                         ...item,
                         discount_percentage: discount,
                         discount: discount_value,
-                        total_price: total_price - discount_value,
-                        total_price_without_tax: item.price_without_tax * item.quantity - discount_value,
-                        total_price_with_tax: item.price_with_tax * item.quantity - discount_value,
+                        total_price: options.ns_jgrem_price_with_tax === 'yes' ? total_price_with_tax : total_price_without_tax,
+                        total_price_without_tax,
+                        total_price_with_tax,
                     };
                 } else {
                     return item;
