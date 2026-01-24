@@ -97,18 +97,12 @@ export const formatDateTime = (dateString: string) => {
   if (!dateString) {
     return '';
   }
-
-  console.log("Date string:", dateString);
-  console.log("Date format for parsing:", ns_datetime_format);
-
   try {
     // First, parse the string with the exact format
     const parseFormat = phpToDateFnsParseFormat(ns_datetime_format || 'Y-m-d H:i');
-    console.log("Parse format:", parseFormat);
 
     // Parse the date string using the exact format
     const parsedDate = parse(dateString, parseFormat, new Date());
-    console.log("Parsed date:", parsedDate);
 
     if (isNaN(parsedDate.getTime())) {
       // If parsing fails, try a more flexible approach
@@ -117,11 +111,9 @@ export const formatDateTime = (dateString: string) => {
 
     // Convert to the desired timezone
     const zonedDate = toZonedTime(parsedDate, ns_datetime_timezone || 'UTC');
-    console.log("Zoned date:", zonedDate);
 
     // Format for display
     const displayFormat = phpToDateFnsFormat(ns_datetime_format || 'Y-m-d H:i');
-    console.log("Display format:", displayFormat);
 
     return format(zonedDate, displayFormat, {
       locale: enUS,
@@ -136,7 +128,6 @@ export const formatDateTime = (dateString: string) => {
       .replace(/\./g, '-')  // Replace dots with dashes
       .replace(/,/g, '');   // Remove commas
 
-    console.log("Trying cleaned date string:", cleanedDateString);
 
     const fallbackDate = new Date(cleanedDateString);
 
