@@ -3,5 +3,5 @@ export interface Category {
     id: number;
     author: number;
     description: string;
-    preview_url: string;
+    preview_url?: string;
 }
