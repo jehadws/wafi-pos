@@ -29,13 +29,7 @@ export default function SelectUnitQuantityDialog({ selectProduct }: { selectProd
 
             setQuantities(res.data);
 
-            /**
-             * This will automatically
-             * select a unit if there is only one unit available.
-             */
-            if (quantities.length === 1) {
-                closeDialog('selectQuantity', res.data[0]);
-            }
+            // User must select manually - never auto-select
         } catch (e) {
             console.error(e);
         } finally {
