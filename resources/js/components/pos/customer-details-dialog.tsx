@@ -11,7 +11,7 @@ import { useTranslation } from '../../lib/i18n';
 interface CustomerDetailsDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    customer: Customer | null;
+    customer: Customer | null | undefined;
 }
 
 export function CustomerDetailsDialog({ open, onOpenChange, customer }: CustomerDetailsDialogProps) {

@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Customer } from '@/interfaces/customer';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/utils/format';
 import axios from 'axios';
@@ -13,7 +14,7 @@ import { useTranslation } from '../../lib/i18n';
 interface SelectCustomerDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    selectedCustomer: Customer | null;
+    selectedCustomer: Customer | null | undefined;
     onViewCustomer: (customer: Customer) => void;
     handleSelectCustomer: (customer: Customer) => void;
 }

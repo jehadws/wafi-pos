@@ -5,9 +5,11 @@ import PrimaryNavigation from '@/components/primary-navigation';
 import SecondaryNavigation from '@/components/secondary-navigation';
 import { useDebouncedEffect } from '@/hooks/use-debounced-effect';
 import { useNumericKeypad } from '@/hooks/use-numeric-keypad';
+import { usePOS } from '@/hooks/usePOS';
+import { OrderProduct } from '@/interfaces/order-product';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import axios from 'axios';
 import { Barcode, Search, Shrink } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -36,10 +38,10 @@ function calculateNewTaxValue(oldPriceWithoutTax: number, oldTaxValue: number, n
 }
 
 export default function PosSystem() {
+    const { products, options, removeProduct, updateProduct, addToCart, order, setDiscount, selectCustomer, setOrderType, autoMerge, setAutoMerge } =
+        usePOS();
     const { t } = useTranslation();
-    const { options } = usePage<{ options: NsPosOptions }>().props;
     const [isAutoFocusOpen, setIsAutoFocusOpen] = useState(false);
-    const [autoMarge, setAutoMarge] = useState(false);
     const [selectedItems, setSelectedItems] = useState<string[]>([]);
     const [showSelectCustomerDialog, setShowSelectCustomerDialog] = useState(false);
     const [showSelectedCustomerDetailsDialog, setShowSelectedCustomerDetailsDialog] = useState(false);
@@ -56,7 +58,7 @@ export default function PosSystem() {
     const [shouldValidate, setShouldValidate] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<ProductSearchBarcode>();
     const inputRef = useRef<HTMLInputElement>(null);
-    const [discount, setDiscount] = useState('');
+    const [discountValue, setDiscountValue] = useState('');
 
     useEffect(() => {
         if (isAutoFocusOpen && inputRef.current) {
@@ -99,41 +101,15 @@ export default function PosSystem() {
         customer: null,
     });
 
-    const calcCart = () => {
-        const products = form.data.products;
-        const payments = form.data.payments;
-        const discount = form.data.discount || 0;
-        const shipping = form.data.type?.identifier === 'takeaway' ? 0 : form.data.shipping;
-
-        const subtotal = products.reduce((sum, item) => sum + item.total_price_with_tax, 0);
-        const productsTax = products.reduce((sum, item) => sum + item.tax_value * item.quantity, 0);
-        const tendered = payments.reduce((sum, item) => sum + item.value, 0);
-        const total = subtotal - discount + shipping;
-        const change = tendered - total;
-
-        const total_products = products.length;
-
-        form.setData({
-            ...form.data,
-            subtotal,
-            products_tax_value: productsTax,
-            total,
-            total_products,
-            tendered,
-            change,
-        });
-    };
-
     const updateDiscount = (discount: string) => {
-        setDiscount('');
-        const finalDiscount = +discount > form.data.subtotal ? form.data.subtotal : +discount;
-        form.setData('discount', +finalDiscount);
-        form.setData('discount_percentage', 0);
+        setDiscountValue('');
+        const finalDiscount = +discount > order.subtotal ? order.subtotal : +discount;
+        setDiscount(finalDiscount);
     };
 
     const discountKeypad = useNumericKeypad({
         onConfirm: updateDiscount,
-        initialValue: discount,
+        initialValue: discountValue,
         title: 'Cart Discount',
         maxLength: 6,
         allowDecimal: true,
@@ -142,150 +118,97 @@ export default function PosSystem() {
     // Clear selected items when cart changes
     useEffect(() => {
         setSelectedItems([]);
-    }, [form.data.products]);
+    }, [products]);
 
-    const addToCart = async (product: CartProduct) => {
-        if (!autoMarge) {
-            form.setData('products', [...form.data.products, product]);
-        } else {
-            const existingIndex = form.data.products.findIndex(
-                (p) => p.product_id === product.product_id && p.unit_quantity_id === product.unit_quantity_id,
-            );
-
-            if (existingIndex !== -1) {
-                const existingProduct = form.data.products[existingIndex];
-                const newQuantity = existingProduct.quantity + product.quantity;
-
-                const updatedProduct: CartProduct = {
-                    ...existingProduct,
-                    quantity: newQuantity,
-                    total_price: product.unit_price * newQuantity,
-                    total_price_with_tax: product.price_with_tax * newQuantity,
-                    total_price_without_tax: product.price_without_tax * newQuantity,
-                    total_tax_value: product.tax_value * newQuantity,
-                };
-
-                const updatedProducts = [...form.data.products];
-                updatedProducts[existingIndex] = updatedProduct;
-
-                form.setData('products', updatedProducts);
-            } else {
-                form.setData('products', [...form.data.products, product]);
-            }
-        }
-    };
-
-    const removeFromCart = (product: CartProduct) => {
-        form.setData(
-            'products',
-            form.data.products.filter((item) => !(item._uuid === product._uuid)),
-        );
+    const removeFromCart = (product: OrderProduct) => {
+        removeProduct(product);
         setSelectedItems(selectedItems.filter((id) => !(id === product._uuid)));
     };
 
-    const updateQuantity = (product: CartProduct, quantity: number) => {
+    const updateQuantity = (product: OrderProduct, quantity: number) => {
+        const quantities = product.$quantities ? product.$quantities() : null;
+        const availableQuantity = quantities?.quantity || 999999;
+
+        if (availableQuantity > 0 && quantity > availableQuantity) {
+            toast.warning('Not enough stock. Available: ' + availableQuantity);
+            return;
+        }
+
         if (quantity <= 0) {
             removeFromCart(product);
         } else {
-            form.setData(
-                'products',
-                form.data.products.map((item) => {
-                    if (item._uuid === product._uuid) {
-                        const lineSubtotal = item.unit_price * quantity;
-                        const discount_value = item.discount_type === 'percentage' ? (item.discount_percentage / 100) * lineSubtotal : item.discount;
+            const lineSubtotal = product.unit_price * quantity;
+            const discount_value =
+                product.discount_type === 'percentage' ? ((product.discount_percentage || 0) / 100) * lineSubtotal : product.discount || 0;
 
-                        const total_price = item.unit_price * quantity;
-                        const totalBeforeTax = total_price - discount_value;
+            const total_price = product.unit_price * quantity;
+            const totalBeforeTax = total_price - discount_value;
 
-                        let totalTaxValue = 0;
-                        const taxRate = item.price_without_tax > 0 ? item.tax_value / item.price_without_tax : 0;
+            let totalTaxValue = 0;
+            const taxRate = product.price_without_tax > 0 ? product.tax_value / product.price_without_tax : 0;
 
-                        if (item.tax_type === 'exclusive') {
-                            totalTaxValue = totalBeforeTax * taxRate;
-                        } else if (item.tax_type === 'inclusive') {
-                            const taxMultiplier = 1 + taxRate;
-                            const priceWithTax = totalBeforeTax;
-                            const priceWithoutTax = priceWithTax / taxMultiplier;
-                            totalTaxValue = priceWithTax - priceWithoutTax;
-                        }
+            if (product.tax_type === 'exclusive') {
+                totalTaxValue = totalBeforeTax * taxRate;
+            } else if (product.tax_type === 'inclusive') {
+                const taxMultiplier = 1 + taxRate;
+                const priceWithTax = totalBeforeTax;
+                const priceWithoutTax = priceWithTax / taxMultiplier;
+                totalTaxValue = priceWithTax - priceWithoutTax;
+            }
 
-                        const total_price_with_tax = totalBeforeTax + totalTaxValue;
-                        const total_price_without_tax = totalBeforeTax;
+            const total_price_with_tax = totalBeforeTax + totalTaxValue;
+            const total_price_without_tax = totalBeforeTax;
 
-                        return {
-                            ...item,
-                            discount: discount_value,
-                            quantity,
-                            total_tax_value: totalTaxValue,
-                            total_price: options.ns_jgrem_price_with_tax === 'yes' ? total_price_with_tax : total_price_without_tax,
-                            total_price_with_tax,
-                            total_price_without_tax,
-                        };
-                    } else {
-                        return item;
-                    }
-                }),
-            );
+            updateProduct(product, {
+                discount: discount_value,
+                quantity,
+                total_tax_value: totalTaxValue,
+                total_price: options.ns_jgrem_price_with_tax === 'yes' ? total_price_with_tax : total_price_without_tax,
+                total_price_with_tax,
+                total_price_without_tax,
+            });
         }
     };
 
-    const updateProductPrice = (product: CartProduct, price: number) => {
-        form.setData(
-            'products',
-            form.data.products.map((item) => {
-                if (item._uuid === product._uuid) {
-                    const discount_value = (item.discount_percentage / 100) * price * item.quantity;
-                    const newTaxValue = calculateNewTaxValue(item.price_without_tax, item.tax_value, price).newTaxValue;
-                    const totalTaxValue = newTaxValue * item.quantity;
-                    const total_price = price * item.quantity;
-                    const total_price_with_tax = total_price + totalTaxValue - discount_value;
-                    const total_price_without_tax = total_price - discount_value;
-                    return {
-                        ...item,
-                        discount: discount_value,
-                        unit_price: price,
-                        price_without_tax: price,
-                        price_with_tax: price + newTaxValue,
-                        tax_value: newTaxValue,
-                        total_tax_value: totalTaxValue,
-                        total_price: options.ns_jgrem_price_with_tax === 'yes' ? total_price_with_tax : total_price_without_tax,
-                        total_price_with_tax,
-                        total_price_without_tax,
-                    };
-                } else {
-                    return item;
-                }
-            }),
-        );
+    const updateProductPrice = (product: OrderProduct, price: number) => {
+        const discount_value = ((product.discount_percentage || 0) / 100) * price * product.quantity;
+        const newTaxValue = calculateNewTaxValue(product.price_without_tax, product.tax_value, price).newTaxValue;
+        const totalTaxValue = newTaxValue * product.quantity;
+        const total_price = price * product.quantity;
+        const total_price_with_tax = total_price + totalTaxValue - discount_value;
+        const total_price_without_tax = total_price - discount_value;
+
+        updateProduct(product, {
+            discount: discount_value,
+            unit_price: price,
+            price_without_tax: price,
+            price_with_tax: price + newTaxValue,
+            tax_value: newTaxValue,
+            total_tax_value: totalTaxValue,
+            total_price: options.ns_jgrem_price_with_tax === 'yes' ? total_price_with_tax : total_price_without_tax,
+            total_price_with_tax,
+            total_price_without_tax,
+        });
     };
 
-    const updateProductDiscountPercentage = (product: CartProduct, discount: number) => {
-        form.setData(
-            'products',
-            form.data.products.map((item) => {
-                if (item._uuid === product._uuid) {
-                    const total_price = item.price_without_tax * item.quantity;
-                    const discount_value = (discount / 100) * total_price;
-                    const total_price_with_tax = item.price_with_tax * item.quantity - discount_value;
-                    const total_price_without_tax = total_price - discount_value;
-                    return {
-                        ...item,
-                        discount_percentage: discount,
-                        discount: discount_value,
-                        total_price: options.ns_jgrem_price_with_tax === 'yes' ? total_price_with_tax : total_price_without_tax,
-                        total_price_without_tax,
-                        total_price_with_tax,
-                    };
-                } else {
-                    return item;
-                }
-            }),
-        );
+    const updateProductDiscountPercentage = (product: OrderProduct, discount: number) => {
+        const total_price = product.price_without_tax * product.quantity;
+        const discount_value = (discount / 100) * total_price;
+        const total_price_with_tax = product.price_with_tax * product.quantity - discount_value;
+        const total_price_without_tax = total_price - discount_value;
+
+        updateProduct(product, {
+            discount_percentage: discount,
+            discount: discount_value,
+            total_price: options.ns_jgrem_price_with_tax === 'yes' ? total_price_with_tax : total_price_without_tax,
+            total_price_without_tax,
+            total_price_with_tax,
+        });
     };
 
     const clearCart = () => {
-        if (form.data.products.length > 0) {
-            form.setData('products', []);
+        if (products.length > 0) {
+            usePOS.getState().clearCart();
             toast.info('Cart cleared', {
                 description: 'All items have been removed from the cart',
             });
@@ -301,7 +224,7 @@ export default function PosSystem() {
     };
 
     const selectAllItems = () => {
-        setSelectedItems(form.data.products.map((item) => item._uuid));
+        setSelectedItems(products.map((item) => item._uuid || `${item.product_id}-${item.unit_id}`));
     };
 
     const deselectAllItems = () => {
@@ -310,10 +233,14 @@ export default function PosSystem() {
 
     const removeSelectedItems = () => {
         if (selectedItems.length === 0) return;
-        form.setData(
-            'products',
-            form.data.products.filter((item) => !selectedItems.includes(item._uuid)),
-        );
+
+        const productsToRemove = selectedItems;
+        productsToRemove.forEach((id) => {
+            const product = products.find((p) => (p._uuid || `${p.product_id}-${p.unit_id}`) === id);
+            if (product) {
+                removeProduct(product);
+            }
+        });
 
         toast.success(t('{entries} items removed', { entries: selectedItems.length }), {
             description: t('Selected items have been removed from the cart'),
@@ -323,7 +250,7 @@ export default function PosSystem() {
     };
 
     const resetCart = () => {
-        form.reset();
+        usePOS.getState().reset();
         setSelectedItems([]);
     };
 
@@ -340,7 +267,7 @@ export default function PosSystem() {
             }
 
             let quantityInCart = 0;
-            form.data.products.map((product) => {
+            products.map((product) => {
                 if (product.product_id === selectedProduct.product.id) {
                     quantityInCart += product.quantity;
                 }
@@ -414,8 +341,7 @@ export default function PosSystem() {
     };
 
     const handleSelectCustomer = (customer: Customer) => {
-        form.setData('customer', customer);
-        form.setData('customer_id', customer.id);
+        selectCustomer(customer);
         setShowSelectCustomerDialog(false);
     };
 
@@ -425,19 +351,15 @@ export default function PosSystem() {
     };
 
     useEffect(() => {
-        calcCart();
-    }, [form.data.products, form.data.discount, form.data.payments, form.data.shipping, form.data.type]);
-
-    useEffect(() => {
         if (shouldValidate) {
-            if (!form.data.customer || !form.data.customer_id) {
+            if (!order.customer || !order.customer_id) {
                 setShowSelectCustomerDialog(true);
-            } else if (!form.data.type) {
+            } else if (!order.type) {
                 setShowOrderTypeDialog(true);
                 setShouldValidate(false);
             }
         }
-    }, [shouldValidate, form.data.customer, form.data.customer_id, form.data.type]);
+    }, [shouldValidate, order.customer, order.customer_id, order.type]);
 
     useDebouncedEffect(
         () => {
@@ -467,8 +389,8 @@ export default function PosSystem() {
                     {/* Cart Table */}
 
                     <CartTable
-                        cart={form.data.products}
-                        removeFromCart={removeFromCart}
+                        cart={products}
+                        removeFromCart={removeProduct}
                         updateQuantity={updateQuantity}
                         updatePrice={updateProductPrice}
                         updateDiscountPercentage={updateProductDiscountPercentage}
@@ -481,20 +403,19 @@ export default function PosSystem() {
                     />
 
                     <TotalsSummary
-                        subtotal={form.data.subtotal}
-                        tax={form.data.products_tax_value}
-                        discount={form.data.discount}
-                        total={form.data.total}
-                        customer={form.data.customer}
-                        orderType={form.data.type}
-                        shipping={form.data.shipping}
+                        subtotal={order.subtotal}
+                        tax={order.products_tax_value || 0}
+                        discount={order.discount || 0}
+                        total={order.total || 0}
+                        customer={order.customer}
+                        orderType={order.type}
+                        shipping={order.shipping || 0}
                         onOpenDiscountDialog={() => discountKeypad.openKeypad()}
                         onOpenShippingDialog={() => setShowShippingDialog(true)}
                         onOpenSelectCustomerDialog={() => setShowSelectCustomerDialog(true)}
                         onOpenOrderTypeDialog={() => setShowOrderTypeDialog(true)}
                     />
                     <PaymentActions
-                        form={form}
                         setShowPaymentGatewayDialog={setShowPaymentGatewayDialog}
                         setShouldValidate={setShouldValidate}
                         useBillingAddress={useBillingAddress}
@@ -534,8 +455,8 @@ export default function PosSystem() {
                             <Button variant="outline" size="icon" onClick={() => setIsAutoFocusOpen((prev) => !prev)} title={t('Barcode')}>
                                 <Barcode className={cn('h-4 w-4', isAutoFocusOpen ? 'text-primary' : '')} />
                             </Button>
-                            <Button variant="outline" size="icon" onClick={() => setAutoMarge((prev) => !prev)} title={t('Options')}>
-                                <Shrink className={cn('h-4 w-4', autoMarge ? 'text-primary' : '')} />
+                            <Button variant="outline" size="icon" onClick={() => setAutoMerge(!autoMerge)} title={t('Options')}>
+                                <Shrink className={cn('h-4 w-4', autoMerge ? 'text-primary' : '')} />
                             </Button>
                             <Button variant="outline" size="icon" onClick={() => setShowSearchProductsDialog(true)} title={t('Products')}>
                                 <Search className="h-4 w-4" />
@@ -543,7 +464,7 @@ export default function PosSystem() {
                         </div>
                     </div>
 
-                    <ProductsCategoriesPanel addToCart={addToCart} selectedProducts={form.data.products} />
+                    <ProductsCategoriesPanel selectedProducts={products} />
                 </div>
             </div>
 
@@ -552,7 +473,7 @@ export default function PosSystem() {
             <SelectCustomerDialog
                 open={showSelectCustomerDialog}
                 onOpenChange={() => setShowSelectCustomerDialog(false)}
-                selectedCustomer={form.data.customer}
+                selectedCustomer={order.customer}
                 handleSelectCustomer={handleSelectCustomer}
                 onViewCustomer={onViewCustomer}
             />
@@ -565,25 +486,17 @@ export default function PosSystem() {
                         setShowShippingDialog(true);
                     }
                     if (orderType?.identifier === 'takeaway') {
-                        form.setData('shipping', 0);
+                        usePOS.getState().setShipping(0);
                     }
-                    form.setData('type', orderType);
+                    setOrderType(orderType!);
                 }}
-                orderType={form.data.type}
+                orderType={order.type}
             />
 
             <CustomerDetailsDialog
                 open={showSelectedCustomerDetailsDialog}
                 onOpenChange={setShowSelectedCustomerDetailsDialog}
-                customer={form.data.customer}
-            />
-
-            <SelectCustomerDialog
-                open={showSelectCustomerDialog}
-                onOpenChange={() => setShowSelectCustomerDialog(false)}
-                selectedCustomer={form.data.customer}
-                handleSelectCustomer={handleSelectCustomer}
-                onViewCustomer={onViewCustomer}
+                customer={order.customer}
             />
 
             <NumericKeypadDialog {...discountKeypad.keypadProps} />
@@ -602,7 +515,6 @@ export default function PosSystem() {
             <PaymentGatewayDialog
                 open={showPaymentGatewayDialog}
                 onOpenChange={setShowPaymentGatewayDialog}
-                form={form}
                 useBillingAddress={useBillingAddress}
                 useShippingAddress={useShippingAddress}
                 resetCart={resetCart}
