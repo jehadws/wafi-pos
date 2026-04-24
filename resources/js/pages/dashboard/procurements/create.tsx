@@ -183,7 +183,7 @@ export default function CreateProductPage() {
             ...product,
         };
 
-        form.setData('products', [...form.data.products, newProduct]);
+        form.setData('products', [newProduct, ...form.data.products]);
 
         setSearchQuery('');
         setSearchResults([]);
@@ -443,9 +443,7 @@ export default function CreateProductPage() {
                                         <div key={product.product_id} className="flex flex-col border-b p-4 last:border-b-0">
                                             <div className="grid grid-cols-5 gap-4">
                                                 <div>
-                                                    <div className="px-3 py-2">
-                                                        {t('USD')} {product.total_purchase_price.toFixed(2)}
-                                                    </div>
+                                                    <div className="px-3 py-2">{product.name}</div>
                                                 </div>
                                                 <div>
                                                     <Input
