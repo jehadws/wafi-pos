@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button';
+import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/utils/format';
-import { InertiaFormProps } from '@inertiajs/react';
 import axios from 'axios';
 import { CreditCard, PauseCircle, Percent, XCircle } from 'lucide-react';
 import { useState } from 'react';
@@ -11,7 +11,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '../ui/input';
 
 type Props = {
-    form: InertiaFormProps<OrderFormValuesType>;
     setShowPaymentGatewayDialog: (value: boolean) => void;
     useBillingAddress: boolean;
     useShippingAddress: boolean;
@@ -21,7 +20,6 @@ type Props = {
 };
 
 export default function PaymentActions({
-    form,
     onOpenDiscountDialog,
     setShouldValidate,
     setShowPaymentGatewayDialog,
@@ -29,15 +27,18 @@ export default function PaymentActions({
     useShippingAddress,
     resetCart,
 }: Props) {
+    const { order, products, submitOrder, reset } = usePOS();
     const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [isVoidOpen, setIsVoidOpen] = useState(false);
+    const [holdTitle, setHoldTitle] = useState('');
+
     const handleSubmit = () => {
-        if (!form.data.products.length) {
+        if (!products.length) {
             toast.error(t('You need to provide some products before proceeding'));
             return;
         }
-        if (!form.data.customer || !form.data.customer_id || !form.data.type) {
+        if (!order.customer || !order.customer_id || !order.type) {
             setShouldValidate(true);
             return;
         }
@@ -45,61 +46,36 @@ export default function PaymentActions({
     };
 
     const handleOnHold = async () => {
-        if (form.data.id) {
-            try {
-                const res = await axios.put(`/api/orders/${form.data.id}`, {
-                    ...form.data,
-                    customer: {
-                        ...form.data.customer,
-                        selected: true,
-                    },
-                    payment_status: 'hold',
-                    addresses: {
-                        billing: useBillingAddress ? form.data?.customer?.billing : form.data?.addresses?.billing,
-                        shipping: useShippingAddress ? form.data?.customer?.shipping : form.data?.addresses?.shipping,
-                    },
-                });
+        try {
+            const orderData = {
+                ...order,
+                title: holdTitle,
+                customer: {
+                    ...order.customer,
+                    selected: true,
+                },
+                payment_status: 'hold',
+                addresses: {
+                    billing: useBillingAddress ? order.customer?.billing : order.addresses?.billing,
+                    shipping: useShippingAddress ? order.customer?.shipping : order.addresses?.shipping,
+                },
+            };
 
-                if (res.data) {
-                    toast.success(t('Order Placed as On Hold'));
-                    resetCart();
-                    setIsOpen(false);
-                }
-            } catch (error) {
-                console.log(error);
-                toast.error(t('Something went wrong. Please try again'));
-            }
-        } else {
-            try {
-                const res = await axios.post('/api/orders', {
-                    ...form.data,
-                    customer: {
-                        ...form.data.customer,
-                        selected: true,
-                    },
-                    payment_status: 'hold',
-                    addresses: {
-                        billing: useBillingAddress ? form.data?.customer?.billing : form.data?.addresses?.billing,
-                        shipping: useShippingAddress ? form.data?.customer?.shipping : form.data?.addresses?.shipping,
-                    },
-                });
-
-                if (res.data) {
-                    toast.success(t('Order Placed as On Hold'));
-                    resetCart();
-                    setIsOpen(false);
-                }
-            } catch (error) {
-                console.log(error);
-                toast.error(t('Something went wrong. Please try again'));
-            }
+            await submitOrder(orderData);
+            toast.success(t('Order Placed as On Hold'));
+            resetCart();
+            setHoldTitle('');
+            setIsOpen(false);
+        } catch (error: any) {
+            console.log(error);
+            toast.error(error?.message || t('Something went wrong. Please try again'));
         }
     };
 
     const handleOnVoid = async () => {
-        if (!form.data.id) return toast.error(t('Unable to void an unpaid order.'));
+        if (!order.id) return toast.error(t('Unable to void an unpaid order.'));
         try {
-            const res = await axios.post(`/api/orders/${form.data.id}/void`, {
+            const res = await axios.post(`/api/orders/${order.id}/void`, {
                 reason: '',
             });
 
@@ -128,15 +104,15 @@ export default function PaymentActions({
                 </Button>
                 <Button
                     onClick={() => {
-                        if (form.data.tendered > 0) {
+                        if (order.tendered > 0) {
                             return toast.error(t('Unable to hold an order which payment status has been updated already.'));
                         }
 
-                        if (!form.data.products.length) {
+                        if (!products.length) {
                             toast.error(t('You need to provide some products before proceeding.'));
                             return;
                         }
-                        if (!form.data.customer || !form.data.customer_id || !form.data.type) {
+                        if (!order.customer || !order.customer_id || !order.type) {
                             setShouldValidate(true);
                             return;
                         }
@@ -159,7 +135,7 @@ export default function PaymentActions({
                     variant="destructive"
                     type="button"
                     onClick={() => {
-                        if (!form.data.id) {
+                        if (!order.id) {
                             toast.error(t('Unable to void an unpaid order.'));
                             return;
                         }
@@ -179,13 +155,13 @@ export default function PaymentActions({
                     </DialogHeader>
 
                     <div className="flex flex-col gap-3">
-                        <div className="w-full text-center text-3xl font-bold">{formatCurrency(form.data.total)}</div>
+                        <div className="w-full text-center text-3xl font-bold">{formatCurrency(order.total)}</div>
                         <div>
                             <Input
                                 type="text"
                                 placeholder={t('Order Reference')}
-                                value={form.data.title || ''}
-                                onChange={(e) => form.setData('title', e.target.value)}
+                                value={holdTitle}
+                                onChange={(e) => setHoldTitle(e.target.value)}
                                 className="w-full"
                             />
                         </div>
@@ -211,12 +187,12 @@ export default function PaymentActions({
                     <DialogHeader>
                         <DialogTitle>{t('Void The Order')}</DialogTitle>
                         <DialogDescription className="sr-only">
-                            {form?.data?.id && form?.data?.tendered > 0 ? t('Void The Order') : t('Order Deletion')}
+                            {order?.id && order?.tendered > 0 ? t('Void The Order') : t('Order Deletion')}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="flex flex-col gap-3">
                         <div className="text-sm">
-                            {form?.data?.id && form?.data?.tendered > 0
+                            {order?.id && order?.tendered > 0
                                 ? t(
                                       "The current order will be void. This will cancel the transaction, but the order won't be deleted. Further details about the operation will be tracked on the report. Consider providing the reason of this operation.",
                                   )

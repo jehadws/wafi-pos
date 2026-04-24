@@ -1,10 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/utils/format';
-import { InertiaFormProps } from '@inertiajs/react';
-import axios from 'axios';
 import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -14,22 +13,32 @@ import { NumberPad } from './number-pad';
 import { PaymentMethodSidebar } from './payment-method-sidebar';
 import SummaryCard from './payment-summary-card';
 
+export type PaymentTypes = 'cash-payment' | 'bank-payment' | 'customer-payment';
+
 export const PAYMENT_METHODS: Record<PaymentTypes, string> = {
     'cash-payment': 'Cash Payment',
     'bank-payment': 'Bank Payment',
     'customer-payment': 'Customer Payment',
 } as const;
 
+interface TPaymentMethod {
+    identifier: PaymentTypes;
+    value: number;
+    label: string;
+    selected: boolean;
+    readonly: boolean;
+}
+
 interface PaymentGatewayProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    form: InertiaFormProps<OrderFormValuesType>;
     useBillingAddress: boolean;
     useShippingAddress: boolean;
     resetCart: () => void;
 }
 
-export function PaymentGatewayDialog({ open, onOpenChange, form, useShippingAddress, useBillingAddress, resetCart }: PaymentGatewayProps) {
+export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, useBillingAddress, resetCart }: PaymentGatewayProps) {
+    const { order, products, submitOrder, addPayment, removePayment, reset } = usePOS();
     const { t } = useTranslation();
     const [tab, setTab] = useState<PaymentTypes | 'payment-list'>('cash-payment');
     const [screenValue, setScreenValue] = useState('0.00');
@@ -37,17 +46,15 @@ export function PaymentGatewayDialog({ open, onOpenChange, form, useShippingAddr
     const [isSaveAsUnpaidOpen, setIsSaveAsUnpaidOpen] = useState(false);
     const [isConfirmFullPaymentOpen, setIsConfirmFullPaymentOpen] = useState(false);
 
-    const paid = form.data.payments.reduce((sum, p) => sum + p.value, 0);
-    const total = form.data.total;
-    const change = form.data.change;
+    const payments = order.payments || [];
+    const paid = payments.reduce((sum: number, p: any) => sum + p.value, 0);
+    const total = order.total || 0;
+    const change = order.tendered > paid ? order.tendered - total : 0;
 
     const handleNumberInput = (digit: string) => {
-        if (!/^\d$/.test(digit)) return; // ignore anything not 0-9
-
+        if (!/^\d$/.test(digit)) return;
         const newRaw = rawValue * 10 + parseInt(digit, 10);
         setRawValue(newRaw);
-
-        // Convert cents to decimal string
         const newFormatted = (newRaw / 100).toFixed(2);
         setScreenValue(newFormatted);
     };
@@ -67,8 +74,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, form, useShippingAddr
             selected: false,
             readonly: false,
         };
-
-        form.setData('payments', [...form.data.payments, payment]);
+        addPayment(payment as any);
         setScreenValue('0.00');
         setRawValue(0);
     };
@@ -83,18 +89,15 @@ export function PaymentGatewayDialog({ open, onOpenChange, form, useShippingAddr
             selected: false,
             readonly: false,
         };
-        form.setData('payments', [...form.data.payments, payment]);
+        addPayment(payment as any);
         setScreenValue('0.00');
         setRawValue(0);
     };
 
     const handleRemovePayment = (identifier: string, value: number) => {
-        const payments = [...form.data.payments];
-        const index = payments.findIndex((item) => item.identifier === identifier && item.value === value);
-
-        if (index !== -1) {
-            payments.splice(index, 1);
-            form.setData('payments', payments);
+        const payment = payments.find((p: any) => p.identifier === identifier && p.value === value);
+        if (payment) {
+            removePayment(payment);
         }
     };
 
@@ -103,161 +106,37 @@ export function PaymentGatewayDialog({ open, onOpenChange, form, useShippingAddr
         setScreenValue('0.00');
     };
 
-    const handleUpdate = async () => {
-        if (form.data.id) {
-            try {
-                const res = await axios.put(`/api/orders/${form.data.id}`, {
-                    ...form.data,
-                    payment_status: 'unpaid',
-                    customer: {
-                        ...form.data.customer,
-                        selected: true,
-                    },
-                    addresses: {
-                        billing: useBillingAddress ? form.data?.customer?.billing : form.data?.addresses?.billing,
-                        shipping: useShippingAddress ? form.data?.customer?.shipping : form.data?.addresses?.shipping,
-                    },
-                });
+    const handleSubmitOrder = async (paymentStatus: string = 'paid') => {
+        const orderData = {
+            ...order,
+            payment_status: paymentStatus,
+            customer: {
+                ...order.customer,
+                selected: true,
+            },
+            addresses: {
+                billing: useBillingAddress ? order.customer?.billing : order.addresses?.billing,
+                shipping: useShippingAddress ? order.customer?.shipping : order.addresses?.shipping,
+            },
+        };
 
-                if (res.data) {
-                    toast.success(t('The operation was successful.'));
-                    resetCart();
-                }
-            } catch (error) {
-                console.log(error);
-                toast.error(t('An unexpected error occurred'));
-            }
-        } else {
-            try {
-                const res = await axios.put('/api/orders', {
-                    ...form.data,
-                    payment_status: 'unpaid',
-                    customer: {
-                        ...form.data.customer,
-                        selected: true,
-                    },
-                    addresses: {
-                        billing: useBillingAddress ? form.data?.customer?.billing : form.data?.addresses?.billing,
-                        shipping: useShippingAddress ? form.data?.customer?.shipping : form.data?.addresses?.shipping,
-                    },
-                });
-                if (res.data) {
-                    toast.success(t('The operation was successful.'));
-                    resetCart();
-                }
-            } catch (error) {
-                console.log(error);
-                toast.error(t('An unexpected error occurred'));
-            }
+        try {
+            await submitOrder(orderData);
+            toast.success(t('The operation was successful.'));
+            resetCart();
+            onOpenChange(false);
+        } catch (error: any) {
+            console.log(error);
+            toast.error(error?.message || t('An unexpected error occurred'));
         }
-    };
-
-    const handleLayaway = () => {
-        // payment_status : "unpaid"
-        console.log('Payment layaway:', {
-            ...form.data,
-        });
-
-        toast.success(t('Partially paid orders are disabled.'));
     };
 
     const handleSaveAsUnpaid = async () => {
-        // payment_status : "unpaid"
-        if (form.data.id) {
-            try {
-                const res = await axios.put(`/api/orders/${form.data.id}`, {
-                    ...form.data,
-                    customer: {
-                        ...form.data.customer,
-                        selected: true,
-                    },
-                    addresses: {
-                        billing: useBillingAddress ? form.data?.customer?.billing : form.data?.addresses?.billing,
-                        shipping: useShippingAddress ? form.data?.customer?.shipping : form.data?.addresses?.shipping,
-                    },
-                });
-
-                if (res.data) {
-                    toast.success(t('The operation was successful.'));
-                    resetCart();
-                }
-            } catch (error) {
-                console.log(error);
-                toast.error(t('An unexpected error occurred'));
-            }
-        } else {
-            try {
-                const res = await axios.post('/api/orders', {
-                    ...form.data,
-                    customer: {
-                        ...form.data.customer,
-                        selected: true,
-                    },
-                    addresses: {
-                        billing: useBillingAddress ? form.data?.customer?.billing : form.data?.addresses?.billing,
-                        shipping: useShippingAddress ? form.data?.customer?.shipping : form.data?.addresses?.shipping,
-                    },
-                });
-
-                if (res.data) {
-                    toast.success(t('The operation was successful.'));
-                    resetCart();
-                }
-            } catch (error) {
-                console.log(error);
-                toast.error(t('An unexpected error occurred'));
-            }
-        }
+        await handleSubmitOrder('unpaid');
     };
 
     const handleSubmitPayment = async () => {
-        if (form.data.id) {
-            try {
-                const res = await axios.put(`/api/orders/${form.data.id}`, {
-                    ...form.data,
-                    customer: {
-                        ...form.data.customer,
-                        selected: true,
-                    },
-                    payment_status: 'paid',
-                    addresses: {
-                        billing: useBillingAddress ? form.data?.customer?.billing : form.data?.addresses?.billing,
-                        shipping: useShippingAddress ? form.data?.customer?.shipping : form.data?.addresses?.shipping,
-                    },
-                });
-
-                if (res.data) {
-                    toast.success(t('The operation was successful.'));
-                    resetCart();
-                }
-            } catch (error) {
-                console.log(error);
-                toast.error(t('An unexpected error occurred'));
-            }
-        } else {
-            try {
-                const res = await axios.post('/api/orders', {
-                    ...form.data,
-                    customer: {
-                        ...form.data.customer,
-                        selected: true,
-                    },
-                    payment_status: 'paid',
-                    addresses: {
-                        billing: useBillingAddress ? form.data?.customer?.billing : form.data?.addresses?.billing,
-                        shipping: useShippingAddress ? form.data?.customer?.shipping : form.data?.addresses?.shipping,
-                    },
-                });
-
-                if (res.data) {
-                    toast.success(t('The operation was successful.'));
-                    resetCart();
-                }
-            } catch (error) {
-                console.log(error);
-                toast.error(t('An unexpected error occurred'));
-            }
-        }
+        await handleSubmitOrder('paid');
     };
 
     return (
@@ -265,7 +144,6 @@ export function PaymentGatewayDialog({ open, onOpenChange, form, useShippingAddr
             <DialogContent className={cn('bg-card flex h-[90vh] max-h-[90vh] w-[95vw] max-w-[95vw] flex-col gap-0 p-0 sm:max-w-[95vw]')}>
                 <DialogTitle className="sr-only">{t('Payment Gateway')}</DialogTitle>
                 <DialogDescription className="sr-only">{t('Payment Gateway')}</DialogDescription>
-                {/* Header */}
                 <div className="border-border flex items-center justify-between border-b p-4">
                     <h2 className="text-foreground text-lg font-semibold">
                         {t('Payment Gateway')} : {tab === 'payment-list' ? t('List Of Payments') : t('Payment Gateway')}
@@ -273,21 +151,17 @@ export function PaymentGatewayDialog({ open, onOpenChange, form, useShippingAddr
                 </div>
 
                 <div className="flex flex-1 overflow-hidden">
-                    {/* Left Sidebar */}
-                    <PaymentMethodSidebar selectedTab={tab} onTabSelect={onTabSelect} totalPayment={form.data.payments.length} />
+                    <PaymentMethodSidebar selectedTab={tab} onTabSelect={onTabSelect} totalPayment={payments.length} />
                     <div className="flex-1">
-                        {/* Main Content */}
                         {tab !== 'payment-list' && (
                             <div className="flex-1 space-y-6 p-6">
-                                {/* Summary Cards */}
                                 <div className="grid grid-cols-2 gap-4">
-                                    <SummaryCard label={t('Total')} amount={form.data.total} variant="total" />
-                                    <SummaryCard label={t('Discount')} amount={form.data.discount} variant="discount" />
+                                    <SummaryCard label={t('Total')} amount={total} variant="total" />
+                                    <SummaryCard label={t('Discount')} amount={order.discount || 0} variant="discount" />
                                     <SummaryCard label={t('Paid')} amount={paid} variant="paid" />
                                     <SummaryCard label={t('Change')} amount={change} variant="change" isNegative={true} />
                                 </div>
 
-                                {/* Screen Display */}
                                 <div className="border-border rounded-lg border p-4">
                                     <div className="flex items-center justify-between">
                                         <span className="text-muted-foreground font-medium">{t('Screen')} :</span>
@@ -297,7 +171,6 @@ export function PaymentGatewayDialog({ open, onOpenChange, form, useShippingAddr
                                     </div>
                                 </div>
 
-                                {/* Number Pad */}
                                 <NumberPad
                                     onNumberClick={handleNumberInput}
                                     onBackspace={handleBackspace}
@@ -310,7 +183,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, form, useShippingAddr
                         {tab === 'payment-list' && (
                             <ScrollArea className="h-full min-h-[150px]">
                                 <div className="flex-1 space-y-2 p-3">
-                                    {form.data.payments.map((payment, index) => (
+                                    {payments.map((payment: any, index: number) => (
                                         <div key={index} className="border-border bg-background/20 rounded-lg border px-4 py-2">
                                             <div className="flex items-center gap-4">
                                                 <span className="text-foreground flex-1">{payment.label}</span>
@@ -332,24 +205,17 @@ export function PaymentGatewayDialog({ open, onOpenChange, form, useShippingAddr
                     </div>
                 </div>
 
-                {/* Footer */}
                 <div className="border-border flex justify-end gap-4 border-t p-4">
-                    {form.data.tendered > 0 && form.data.tendered < form.data.total && (
+                    {order.tendered > 0 && order.tendered < total && (
                         <Button
-                            onClick={handleUpdate}
+                            onClick={() => handleSubmitOrder('partially_paid')}
                             className="bg-blue-600 px-6 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800"
                         >
                             {t('Edit')}
                         </Button>
                     )}
-                    {form.data.tendered === 0 && (
+                    {order.tendered === 0 && (
                         <>
-                            <Button
-                                onClick={handleLayaway}
-                                className="bg-blue-600 px-6 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800"
-                            >
-                                {t('Layaway')} - {formatCurrency(form.data.tendered)}
-                            </Button>
                             <Button
                                 onClick={() => setIsSaveAsUnpaidOpen(true)}
                                 className="bg-blue-600 px-6 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800"
@@ -359,7 +225,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, form, useShippingAddr
                         </>
                     )}
 
-                    {form.data.tendered >= form.data.total && (
+                    {order.tendered >= total && (
                         <Button
                             onClick={() => handleSubmitPayment()}
                             className="bg-green-600 px-6 text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800"
@@ -390,7 +256,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, form, useShippingAddr
                     title={t('Confirm Full Payment')}
                     description={t('A full payment will be made using {paymentType} for {total}', {
                         paymentType: PAYMENT_METHODS[tab as PaymentTypes],
-                        total: formatCurrency(form.data.total),
+                        total: formatCurrency(total),
                     })}
                 />
             </DialogContent>

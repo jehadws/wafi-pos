@@ -6,8 +6,8 @@ interface TotalsSummaryProps {
     discount: number;
     total: number;
     shipping: number;
-    customer: Customer | null;
-    orderType: OrderTypeObj | null;
+    customer: Customer | null | undefined;
+    orderType: OrderTypeObj | null | undefined;
     onOpenDiscountDialog: () => void;
     onOpenShippingDialog: () => void;
     onOpenOrderTypeDialog: () => void;

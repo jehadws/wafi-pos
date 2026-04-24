@@ -3,15 +3,16 @@
 import CartItemComponent from '@/components/pos/cart-item';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { OrderProduct } from '@/interfaces/order-product';
 import { useTranslation } from '@/lib/i18n';
 import { Trash2 } from 'lucide-react';
 
 interface CartTableProps {
-    cart: CartProduct[];
-    removeFromCart: (product: CartProduct) => void;
-    updateQuantity: (product: CartProduct, quantity: number) => void;
-    updatePrice: (product: CartProduct, price: number) => void;
-    updateDiscountPercentage: (product: CartProduct, price: number) => void;
+    cart: OrderProduct[];
+    removeFromCart: (product: OrderProduct) => void;
+    updateQuantity: (product: OrderProduct, quantity: number) => void;
+    updatePrice: (product: OrderProduct, price: number) => void;
+    updateDiscountPercentage: (product: OrderProduct, price: number) => void;
     clearCart: () => void;
     removeSelectedItems: () => void;
     selectedItems: string[];
@@ -88,12 +89,12 @@ export default function CartTable({
                     {cart.length > 0 ? (
                         <div className="pb-12">
                             {cart.map((item) => (
-                                <div key={item._uuid} className="flex items-center border-b">
+                                <div key={item._uuid || `${item.product_id}-${item.unit_id}`} className="flex items-center border-b">
                                     <div className="pl-2">
                                         <input
                                             type="checkbox"
-                                            checked={selectedItems.includes(item._uuid)}
-                                            onChange={() => toggleItemSelection(item._uuid)}
+                                            checked={selectedItems.includes(item._uuid || `${item.product_id}-${item.unit_id}`)}
+                                            onChange={() => toggleItemSelection(item._uuid || `${item.product_id}-${item.unit_id}`)}
                                             className="text-primary focus:ring-primary h-4 w-4 rounded border-gray-300"
                                         />
                                     </div>

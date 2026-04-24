@@ -3,6 +3,7 @@ import type React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNumericKeypad } from '@/hooks/use-numeric-keypad';
+import { OrderProduct } from '@/interfaces/order-product';
 import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
 import { usePage } from '@inertiajs/react';
@@ -11,11 +12,11 @@ import { useState } from 'react';
 import { NumericKeypadDialog } from '../ui/numeric-keypad-dialog';
 
 interface CartItemProps {
-    item: CartProduct;
-    removeFromCart: (product: CartProduct) => void;
-    updateQuantity: (product: CartProduct, quantity: number) => void;
-    updatePrice: (product: CartProduct, price: number) => void;
-    updateDiscountPercentage: (product: CartProduct, price: number) => void;
+    item: OrderProduct;
+    removeFromCart: (product: OrderProduct) => void;
+    updateQuantity: (product: OrderProduct, quantity: number) => void;
+    updatePrice: (product: OrderProduct, price: number) => void;
+    updateDiscountPercentage: (product: OrderProduct, price: number) => void;
 }
 
 export default function CartItem({ item, updateDiscountPercentage, updatePrice, removeFromCart, updateQuantity }: CartItemProps) {
@@ -104,7 +105,7 @@ export default function CartItem({ item, updateDiscountPercentage, updatePrice, 
                             onClick={() => discountKeypad.openKeypad()}
                             className="text-muted-foreground hover:text-primary hover:decoration-primary underline decoration-dotted decoration-1 underline-offset-3"
                         >
-                            {t('Discount')} {item.discount_percentage}%: {formatCurrency(item.discount)}
+                            {t('Discount')} {item.discount_percentage || 0}%: {formatCurrency(item.discount || 0)}
                         </p>
                     </div>
                 </div>
@@ -117,7 +118,7 @@ export default function CartItem({ item, updateDiscountPercentage, updatePrice, 
                             e.stopPropagation();
                             removeFromCart(item);
                         }}
-                        aria-label={t('Remove from cart', { name: item.name })}
+                        aria-label={t('Remove from cart', { name: item.name || '' })}
                     >
                         <Trash2 className="h-6 w-6" />
                     </Button>
@@ -129,7 +130,7 @@ export default function CartItem({ item, updateDiscountPercentage, updatePrice, 
                             onClick={(e) => {
                                 e.stopPropagation();
                             }}
-                            aria-label={t('Remove from cart', { name: item.name })}
+                            aria-label={t('Remove from cart', { name: item.name || '' })}
                         >
                             <Award className="h-6 w-6" />
                         </Button>
