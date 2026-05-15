@@ -28,7 +28,6 @@ createInertiaApp({
   setup({ el, App, props }) {
     const root = createRoot(el);
     Settings.set(props.initialPage.props.settings);
-    console.log("app props", props.initialPage.props);
     const locale = (props.initialPage.props.locale as any) || 'en';
     root.render(
       <RTLProvider locale={locale}>
