@@ -1014,45 +1014,49 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
     addToCart: async (product) => {
         const productData = {};
         let cartProduct: OrderProduct = {
-            product_id: product.id || 0,
+            product_id: product.id || product.product_id || 0,
             name: product.name,
-            discount_type: 'percentage',
-            discount: 0,
-            discount_percentage: 0,
+            discount_type: product.discount_type || 'percentage',
+            discount: product.discount || 0,
+            discount_percentage: product.discount_percentage || 0,
             product_type: product.product_type || 'product',
             rate: product.rate || 0,
             quantity: product.quantity || 0,
             tax_group_id: product.tax_group_id,
             tax_type: product.tax_type || undefined,
-            tax_value: 0,
+            tax_value: product.tax_value || 0,
             unit_id: product.unit_id || 0,
             unit_price: product.unit_price || 0,
             price_with_tax: product.price_with_tax || 0,
             price_without_tax: product.price_without_tax || 0,
             unit_name: product.unit_name || '',
-            total_price: 0,
-            total_price_without_tax: 0,
-            total_price_with_tax: 0,
+            total_price: product.total_price || 0,
+            total_price_without_tax: product.total_price_without_tax || 0,
+            total_price_with_tax: product.total_price_with_tax || 0,
+            total_tax_value: product.total_tax_value || 0,
             mode: product.mode || 'normal',
+            order_id: product.order_id || null,
             $original: product.$original || (() => product),
             $quantities: product.$quantities || undefined,
             unit_quantity_id: product.unit_quantity_id || 0,
+            _uuid: product._uuid || `${product.id || product.product_id}-${product.unit_id}-${Date.now()}`,
         };
 
         set({ processingAddQueue: true });
 
         // The addToCartQueue logic needs to be adapted.
 
-        // For now, we\'ll just assume it resolves.
+        // For now, we'll just assume it resolves.
 
         set({ processingAddQueue: false });
 
         cartProduct = { ...cartProduct, ...productData };
 
         const products = get().products;
+        let newProducts: OrderProduct[];
 
         if (get().autoMerge) {
-            const existing = products.filter(
+            const existingIndex = products.findIndex(
                 (p) =>
                     p.product_id === cartProduct.product_id &&
                     p.tax_group_id === cartProduct.tax_group_id &&
@@ -1060,21 +1064,23 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
                     p.unit_quantity_id === cartProduct.unit_quantity_id,
             );
 
-            if (existing.length > 0) {
-                existing[0].quantity += cartProduct.quantity;
+            if (existingIndex >= 0) {
+                newProducts = products.map((p, i) =>
+                    i === existingIndex ? { ...p, quantity: p.quantity + cartProduct.quantity } : p,
+                );
             } else {
-                products.unshift(cartProduct);
+                newProducts = [cartProduct, ...products];
             }
         } else {
-            products.unshift(cartProduct);
+            newProducts = [cartProduct, ...products];
         }
 
-        get().recomputeProducts(products);
-        set({ products });
+        get().recomputeProducts(newProducts);
+        set({ products: newProducts });
         get().refreshCart();
 
         const url = get().options.ns_jgrem_new_item_audio;
-        if (url.length > 0) {
+        if (url && url.length > 0) {
             new Audio(url).play();
         }
     },
@@ -1105,27 +1111,26 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
     },
 
     resumeRemovingProductUsingIndex: (index, products) => {
-        products.splice(index, 1);
-        set({ products });
+        const newProducts = products.filter((_, i) => i !== index);
+        set({ products: newProducts });
     },
 
     removeProduct: (product) => {
         const products = get().products;
-        const index = products.indexOf(product);
-        products.splice(index, 1);
-        set({ products });
+        const newProducts = products.filter((p) => p !== product);
+        set({ products: newProducts });
         get().refreshCart();
     },
 
     updateProduct: (product, data, index = null) => {
         const products = get().products;
-        index = index === null ? products.indexOf(product) : index;
-        index = index === -1 ? 0 : index;
+        const resolvedIndex = index === null ? products.indexOf(product) : index;
+        const finalIndex = resolvedIndex === -1 ? 0 : resolvedIndex;
 
-        products[index] = { ...product, ...data };
+        const newProducts = products.map((p, i) => (i === finalIndex ? { ...p, ...data } : p));
 
-        get().recomputeProducts(products);
-        set({ products });
+        get().recomputeProducts(newProducts);
+        set({ products: newProducts });
         get().refreshCart();
     },
 
