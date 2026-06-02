@@ -8,6 +8,7 @@ import { ConfirmDialogProvider } from './components/providers/confirm-dialog-pro
 import { initializeTheme } from './hooks/use-appearance';
 import { RTLProvider } from './hooks/use-rtl';
 import { TranslationProvider } from './lib/i18n';
+import { DirectionProvider } from "@/components/ui/direction"
 import Settings from './lib/settings';
 
 // Set up axios CSRF protection
@@ -30,13 +31,16 @@ createInertiaApp({
     Settings.set(props.initialPage.props.settings);
     const locale = (props.initialPage.props.locale as any) || 'en';
     root.render(
-      <RTLProvider locale={locale}>
-        <TranslationProvider locale={locale}>
-          <ConfirmDialogProvider>
-            <App {...props} />
-          </ConfirmDialogProvider>
-        </TranslationProvider>
-      </RTLProvider>,
+      <DirectionProvider direction={locale === 'ar' ? "rtl" : "ltr"}>
+        <RTLProvider locale={locale}>
+          <TranslationProvider locale={locale}>
+            <ConfirmDialogProvider>
+              <App {...props} />
+            </ConfirmDialogProvider>
+          </TranslationProvider>
+        </RTLProvider>
+      </DirectionProvider>
+      ,
     );
   },
   progress: {

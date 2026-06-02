@@ -83,15 +83,18 @@ export default function Dashboard() {
     const handleDeleteConfirm = async () => {
         if (!deleteDialog.item || deleteDialog.loading) return;
 
+        setDeleteDialog((prev) => ({ ...prev, loading: true }));
         try {
-            router.delete(`/api/crud/ns.orders/${deleteDialog.item.id}`);
+            await axios.delete(`/api/crud/ns.orders/${deleteDialog.item.id}`);
+            toast.success(t('The order and the attached products has been deleted.'));
+            setCurrentPage(1);
+            getOrders(1, pageSize, filters);
         } catch (error) {
-            console.error(error);
+            toast.error(t('An unexpected error occurred.'));
         } finally {
             setDeleteDialog({
-                ...deleteDialog,
-                loading: false,
                 isOpen: false,
+                loading: false,
                 item: null,
             });
         }

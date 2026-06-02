@@ -6,26 +6,24 @@ import { useEffect } from 'react';
 import { Toaster } from 'sonner';
 
 export default function PosPage() {
-    const { t } = useTranslation();
-    const { settings, options } = usePage().props;
-    const { defineOptions } = usePOS();
-    console.log('settings', settings);
-    console.log('options', options);
+  const { t } = useTranslation();
+  const { settings, options } = usePage().props;
+  const { defineOptions } = usePOS();
 
-    useEffect(() => {
-        defineOptions(options);
-    }, [options]);
+  useEffect(() => {
+    defineOptions(options);
+  }, [options]);
 
-    return (
-        <>
-            <Head title={t('Point of Sale')}>
-                <link rel="preconnect" href="https://fonts.bunny.net" />
-                <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
-            </Head>
-            <main className="bg-background min-h-screen">
-                <PosSystem />
-            </main>
-            <Toaster />
-        </>
-    );
+  return (
+    <>
+      <Head title={t('Point of Sale')}>
+        <link rel="preconnect" href="https://fonts.bunny.net" />
+        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+      </Head>
+      <main className="bg-background min-h-screen">
+        <PosSystem />
+      </main>
+      <Toaster />
+    </>
+  );
 }
