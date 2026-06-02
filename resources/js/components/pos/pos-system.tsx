@@ -5,11 +5,11 @@ import PrimaryNavigation from '@/components/primary-navigation';
 import SecondaryNavigation from '@/components/secondary-navigation';
 import { useDebouncedEffect } from '@/hooks/use-debounced-effect';
 import { useNumericKeypad } from '@/hooks/use-numeric-keypad';
+import { useRTL } from '@/hooks/use-rtl';
 import { usePOS } from '@/hooks/usePOS';
 import { OrderProduct } from '@/interfaces/order-product';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { useForm } from '@inertiajs/react';
 import axios from 'axios';
 import { Barcode, Search, Shrink } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -26,7 +26,6 @@ import { PaymentGatewayDialog } from './payment-gateway-dialog';
 import ProductsCategoriesPanel from './products-categories-panel';
 import { SearchProductsDialog } from './search-products-dialog';
 import { ShippingDialog } from './shipping-dialog';
-import { useRTL } from '@/hooks/use-rtl';
 
 function calculateNewTaxValue(oldPriceWithoutTax: number, oldTaxValue: number, newPriceWithoutTax: number) {
   const taxRate = oldTaxValue / oldPriceWithoutTax;
@@ -67,41 +66,6 @@ export default function PosSystem() {
       inputRef.current.focus();
     }
   }, [isAutoFocusOpen]);
-
-  const form = useForm<OrderFormValuesType>({
-    id: null,
-    code: null,
-    discount_type: 'flat',
-    title: '',
-    discount: 0,
-    discount_percentage: 0,
-    subtotal: 0,
-    total: 0,
-    coupons: [],
-    total_coupons: 0,
-    tendered: 0,
-    note: '',
-    note_visibility: 'hidden',
-    tax_group_id: null,
-    tax_type: false,
-    taxes: [],
-    tax_group: {},
-    payment_status: 'paid',
-    customer_id: 0,
-    change: 0,
-    addresses: null,
-    shipping_type: 'flat',
-    total_products: 0,
-    shipping: 0,
-    tax_value: 0,
-    products_tax_value: 0,
-    shipping_rate: 0,
-    type: null,
-    products: [],
-    instalments: [],
-    payments: [],
-    customer: null,
-  });
 
   const updateDiscount = (discount: string) => {
     setDiscountValue('');
@@ -329,7 +293,7 @@ export default function PosSystem() {
 
   const handleBarcodeScanned = async (barcode: string) => {
     // /api/products/search/using-barcode/123-466-498-9
-    console.log(barcode);
+    // console.log(barcode);
     try {
       const res = await axios.get<ProductSearchBarcode>(`/api/products/search/using-barcode/${barcode}`);
       if (res.data) {
@@ -385,8 +349,8 @@ export default function PosSystem() {
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Panel - Cart and Actions */}
-        <div className={cn("flex w-1/2 flex-col", isRTL ? "border-l" : "border-r")}>
-          <SecondaryNavigation form={form} setShowSelectCustomerDialog={setShowSelectCustomerDialog} />
+        <div className={cn('flex w-1/2 flex-col', isRTL ? 'border-l' : 'border-r')}>
+          <SecondaryNavigation setShowSelectCustomerDialog={setShowSelectCustomerDialog} />
 
           {/* Cart Table */}
 
@@ -522,12 +486,11 @@ export default function PosSystem() {
         resetCart={resetCart}
       />
 
-      <OrdersDialog open={showOrderDialog} onOpenChange={setShowOrderDialog} form={form} />
+      <OrdersDialog open={showOrderDialog} onOpenChange={setShowOrderDialog} />
 
       <ShippingDialog
         open={showShippingDialog}
         onOpenChange={setShowShippingDialog}
-        form={form}
         useBillingAddress={useBillingAddress}
         useShippingAddress={useShippingAddress}
         setUseBillingAddress={setUseBillingAddress}

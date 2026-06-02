@@ -1,20 +1,19 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { InertiaFormProps } from '@inertiajs/react';
 import FormField from '../forms/shared/form-field';
 import ToggleButtons from '../forms/shared/toggle-buttons';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Separator } from '../ui/separator';
 
 interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    form: InertiaFormProps<OrderFormValuesType>;
     useBillingAddress: boolean;
     useShippingAddress: boolean;
     setUseBillingAddress: (useBillingAddress: boolean) => void;
@@ -25,7 +24,6 @@ interface Props {
 export function ShippingDialog({
     open,
     onOpenChange,
-    form,
     useBillingAddress,
     useShippingAddress,
     setUseBillingAddress,
@@ -33,19 +31,28 @@ export function ShippingDialog({
     onOpenSelectCustomerDialog,
 }: Props) {
     const { t } = useTranslation();
+    const { order, updateAddress, setShipping } = usePOS();
 
     const handleUseBillingAddress = () => {
         setUseBillingAddress(!useBillingAddress);
         if (useBillingAddress) return;
-        if (!form.data.customer) return onOpenSelectCustomerDialog();
-        form.setData('addresses.billing', form.data.customer.billing);
+        if (!order.customer) return onOpenSelectCustomerDialog();
+        updateAddress('billing', order.customer.billing);
     };
 
     const handleUseShippingAddress = () => {
         setUseShippingAddress(!useShippingAddress);
         if (useShippingAddress) return;
-        if (!form.data.customer) return onOpenSelectCustomerDialog();
-        form.setData('addresses.shipping', form.data.customer.shipping);
+        if (!order.customer) return onOpenSelectCustomerDialog();
+        updateAddress('shipping', order.customer.shipping);
+    };
+
+    const handleShippingTypeChange = (value: string) => {
+        setShipping(order.shipping, value);
+    };
+
+    const handleShippingChange = (value: number) => {
+        setShipping(value, order.shipping_type);
     };
 
     return (
@@ -64,7 +71,7 @@ export function ShippingDialog({
                         <div className="flex-1">
                             <Label className="text-sm font-medium">{t('Shipping Type')}</Label>
                             <div className="mt-2">
-                                <Select value={form.data.shipping_type} onValueChange={(value) => form.setData('shipping_type', value)}>
+                                <Select value={order.shipping_type || 'flat'} onValueChange={handleShippingTypeChange}>
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder={t('Not set')} />
                                     </SelectTrigger>
@@ -80,7 +87,7 @@ export function ShippingDialog({
                         <div className="flex-1">
                             <Label className="text-sm font-medium">{t('Shipping Fees')}</Label>
                             <div className="mt-2">
-                                <Input type="number" value={form.data.shipping} onChange={(e) => form.setData('shipping', +e.target.value)} />
+                                <Input type="number" value={order.shipping} onChange={(e) => handleShippingChange(+e.target.value)} />
                             </div>
                             <p className="text-muted-foreground mt-1 text-sm">{t('Define shipping fees.')}</p>
                         </div>
@@ -101,37 +108,27 @@ export function ShippingDialog({
                                 <Input
                                     id="addresses.billing.first_name"
                                     name="addresses.billing.first_name"
-                                    value={form.data?.addresses?.billing?.first_name || ''}
-                                    onChange={(e) => form.setData('addresses.billing.first_name', e.target.value)}
-                                    className={form.errors?.['addresses.billing.first_name'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.billing?.first_name || ''}
+                                    onChange={(e) => updateAddress('billing', { ...order.addresses?.billing, first_name: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
-                            <FormField
-                                label={t('Last Name')}
-                                htmlFor="billing_last_name"
-                                description={t('Provide the billing last name.')}
-                                error={form.errors?.['addresses.billing.last_name']}
-                            >
+                            <FormField label={t('Last Name')} htmlFor="billing_last_name" description={t('Provide the billing last name.')}>
                                 <Input
                                     id="addresses.billing.last_name"
                                     name="addresses.billing.last_name"
-                                    value={form.data?.addresses?.billing?.last_name || ''}
-                                    onChange={(e) => form.setData('addresses.billing.last_name', e.target.value)}
-                                    className={form.errors?.['addresses.billing.last_name'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.billing?.last_name || ''}
+                                    onChange={(e) => updateAddress('billing', { ...order.addresses?.billing, last_name: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
-                            <FormField
-                                label={t('Phone')}
-                                htmlFor="addresses.billing.phone"
-                                description={t('Provide the Billing phone number.')}
-                                error={form.errors?.['addresses.billing.phone']}
-                            >
+                            <FormField label={t('Phone')} htmlFor="addresses.billing.phone" description={t('Provide the Billing phone number.')}>
                                 <Input
                                     id="addresses.billing.phone"
                                     name="addresses.billing.phone"
-                                    value={form.data?.addresses?.billing?.phone || ''}
-                                    onChange={(e) => form.setData('addresses.billing.phone', e.target.value)}
-                                    className={form.errors?.['addresses.billing.phone'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.billing?.phone || ''}
+                                    onChange={(e) => updateAddress('billing', { ...order.addresses?.billing, phone: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
 
@@ -139,14 +136,13 @@ export function ShippingDialog({
                                 label={t('Address 1')}
                                 htmlFor="addresses.billing.address_1"
                                 description={t('Provide the Billing First Address.')}
-                                error={form.errors?.['addresses.billing.address_1']}
                             >
                                 <Input
                                     id="addresses.billing.address_1"
                                     name="addresses.billing.address_1"
-                                    value={form.data?.addresses?.billing?.address_1 || ''}
-                                    onChange={(e) => form.setData('addresses.billing.address_1', e.target.value)}
-                                    className={form.errors?.['addresses.billing.address_1'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.billing?.address_1 || ''}
+                                    onChange={(e) => updateAddress('billing', { ...order.addresses?.billing, address_1: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
 
@@ -154,89 +150,63 @@ export function ShippingDialog({
                                 label={t('Address 2')}
                                 htmlFor="addresses.billing.address_2"
                                 description={t('Provide the Billing Second Address.')}
-                                error={form.errors?.['addresses.billing.address_2']}
                             >
                                 <Input
                                     id="addresses.billing.address_2"
                                     name="addresses.billing.address_2"
-                                    value={form.data?.addresses?.billing?.address_2 || ''}
-                                    onChange={(e) => form.setData('addresses.billing.address_2', e.target.value)}
-                                    className={form.errors?.['addresses.billing.address_2'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.billing?.address_2 || ''}
+                                    onChange={(e) => updateAddress('billing', { ...order.addresses?.billing, address_2: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
 
-                            <FormField
-                                label={t('Country')}
-                                htmlFor="addresses.billing.country"
-                                description={t('Provide Billing Country.')}
-                                error={form.errors?.['addresses.billing.country']}
-                            >
+                            <FormField label={t('Country')} htmlFor="addresses.billing.country" description={t('Provide Billing Country.')}>
                                 <Input
                                     id="addresses.billing.country"
                                     name="addresses.billing.country"
-                                    value={form.data?.addresses?.billing?.country || ''}
-                                    onChange={(e) => form.setData('addresses.billing.country', e.target.value)}
-                                    className={form.errors?.['addresses.billing.country'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.billing?.country || ''}
+                                    onChange={(e) => updateAddress('billing', { ...order.addresses?.billing, country: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
 
-                            <FormField
-                                label={t('City')}
-                                htmlFor="addresses.billing.city"
-                                description={t('Provide Billing city.')}
-                                error={form.errors?.['addresses.billing.city']}
-                            >
+                            <FormField label={t('City')} htmlFor="addresses.billing.city" description={t('Provide Billing city.')}>
                                 <Input
                                     id="addresses.billing.city"
                                     name="addresses.billing.city"
-                                    value={form.data?.addresses?.billing?.city || ''}
-                                    onChange={(e) => form.setData('addresses.billing.city', e.target.value)}
-                                    className={form.errors?.['addresses.billing.city'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.billing?.city || ''}
+                                    onChange={(e) => updateAddress('billing', { ...order.addresses?.billing, city: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
 
-                            <FormField
-                                label={t('PO Box')}
-                                htmlFor="addresses.billing.pobox"
-                                description={t('Provide Postal code.')}
-                                error={form.errors?.['addresses.billing.pobox']}
-                            >
+                            <FormField label={t('PO Box')} htmlFor="addresses.billing.pobox" description={t('Provide Postal code.')}>
                                 <Input
                                     id="addresses.billing.pobox"
                                     name="addresses.billing.pobox"
-                                    value={form.data?.addresses?.billing?.pobox || ''}
-                                    onChange={(e) => form.setData('addresses.billing.pobox', e.target.value)}
-                                    className={form.errors?.['addresses.billing.pobox'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.billing?.pobox || ''}
+                                    onChange={(e) => updateAddress('billing', { ...order.addresses?.billing, pobox: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
 
-                            <FormField
-                                label={t('Company')}
-                                htmlFor="addresses.billing.company"
-                                description={t('Company name.')}
-                                error={form.errors?.['addresses.billing.company']}
-                            >
+                            <FormField label={t('Company')} htmlFor="addresses.billing.company" description={t('Company name.')}>
                                 <Input
                                     id="addresses.billing.company"
                                     name="addresses.billing.company"
-                                    value={form.data?.addresses?.billing?.company || ''}
-                                    onChange={(e) => form.setData('addresses.billing.company', e.target.value)}
-                                    className={form.errors?.['addresses.billing.company'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.billing?.company || ''}
+                                    onChange={(e) => updateAddress('billing', { ...order.addresses?.billing, company: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
 
-                            <FormField
-                                label={t('Email')}
-                                htmlFor="addresses.billing.email"
-                                description={t('Provide the billing email.')}
-                                error={form.errors?.['addresses.billing.email']}
-                            >
+                            <FormField label={t('Email')} htmlFor="addresses.billing.email" description={t('Provide the billing email.')}>
                                 <Input
                                     id="addresses.billing.email"
                                     name="addresses.billing.email"
-                                    value={form.data?.addresses?.billing?.email || ''}
-                                    onChange={(e) => form.setData('addresses.billing.email', e.target.value)}
-                                    className={form.errors?.['addresses.billing.email'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.billing?.email || ''}
+                                    onChange={(e) => updateAddress('billing', { ...order.addresses?.billing, email: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
                         </div>
@@ -258,37 +228,27 @@ export function ShippingDialog({
                                 <Input
                                     id="addresses.shipping.first_name"
                                     name="addresses.shipping.first_name"
-                                    value={form.data?.addresses?.shipping?.first_name || ''}
-                                    onChange={(e) => form.setData('addresses.shipping.first_name', e.target.value)}
-                                    className={form.errors?.['addresses.shipping.first_name'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.shipping?.first_name || ''}
+                                    onChange={(e) => updateAddress('shipping', { ...order.addresses?.shipping, first_name: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
-                            <FormField
-                                label={t('Last Name')}
-                                htmlFor="billing_last_name"
-                                description={t('Provide the shipping last name.')}
-                                error={form.errors?.['addresses.shipping.last_name']}
-                            >
+                            <FormField label={t('Last Name')} htmlFor="billing_last_name" description={t('Provide the shipping last name.')}>
                                 <Input
                                     id="addresses.shipping.last_name"
                                     name="addresses.shipping.last_name"
-                                    value={form.data?.addresses?.shipping?.last_name || ''}
-                                    onChange={(e) => form.setData('addresses.shipping.last_name', e.target.value)}
-                                    className={form.errors?.['addresses.shipping.last_name'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.shipping?.last_name || ''}
+                                    onChange={(e) => updateAddress('shipping', { ...order.addresses?.shipping, last_name: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
-                            <FormField
-                                label={t('Phone')}
-                                htmlFor="addresses.shipping.phone"
-                                description={t('Provide the Shipping phone number.')}
-                                error={form.errors?.['addresses.shipping.phone']}
-                            >
+                            <FormField label={t('Phone')} htmlFor="addresses.shipping.phone" description={t('Provide the Shipping phone number.')}>
                                 <Input
                                     id="addresses.shipping.phone"
                                     name="addresses.shipping.phone"
-                                    value={form.data?.addresses?.shipping?.phone || ''}
-                                    onChange={(e) => form.setData('addresses.shipping.phone', e.target.value)}
-                                    className={form.errors?.['addresses.shipping.phone'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.shipping?.phone || ''}
+                                    onChange={(e) => updateAddress('shipping', { ...order.addresses?.shipping, phone: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
 
@@ -296,14 +256,13 @@ export function ShippingDialog({
                                 label={t('Address 1')}
                                 htmlFor="addresses.shipping.address_1"
                                 description={t('Provide the Shipping First Address.')}
-                                error={form.errors?.['addresses.shipping.address_1']}
                             >
                                 <Input
                                     id="addresses.shipping.address_1"
                                     name="addresses.shipping.address_1"
-                                    value={form.data?.addresses?.shipping?.address_1 || ''}
-                                    onChange={(e) => form.setData('addresses.shipping.address_1', e.target.value)}
-                                    className={form.errors?.['addresses.shipping.address_1'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.shipping?.address_1 || ''}
+                                    onChange={(e) => updateAddress('shipping', { ...order.addresses?.shipping, address_1: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
 
@@ -311,89 +270,63 @@ export function ShippingDialog({
                                 label={t('Address 2')}
                                 htmlFor="addresses.shipping.address_2"
                                 description={t('Provide the Shipping Second Address.')}
-                                error={form.errors?.['addresses.shipping.address_2']}
                             >
                                 <Input
                                     id="addresses.shipping.address_2"
                                     name="addresses.shipping.address_2"
-                                    value={form.data?.addresses?.shipping?.address_2 || ''}
-                                    onChange={(e) => form.setData('addresses.shipping.address_2', e.target.value)}
-                                    className={form.errors?.['addresses.shipping.address_2'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.shipping?.address_2 || ''}
+                                    onChange={(e) => updateAddress('shipping', { ...order.addresses?.shipping, address_2: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
 
-                            <FormField
-                                label={t('Country')}
-                                htmlFor="addresses.shipping.country"
-                                description={t('Provide Shipping Country.')}
-                                error={form.errors?.['addresses.shipping.country']}
-                            >
+                            <FormField label={t('Country')} htmlFor="addresses.shipping.country" description={t('Provide Shipping Country.')}>
                                 <Input
                                     id="addresses.shipping.country"
                                     name="addresses.shipping.country"
-                                    value={form.data?.addresses?.shipping?.country || ''}
-                                    onChange={(e) => form.setData('addresses.shipping.country', e.target.value)}
-                                    className={form.errors?.['addresses.shipping.country'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.shipping?.country || ''}
+                                    onChange={(e) => updateAddress('shipping', { ...order.addresses?.shipping, country: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
 
-                            <FormField
-                                label={t('City')}
-                                htmlFor="addresses.shipping.city"
-                                description={t('Provide Shipping city.')}
-                                error={form.errors?.['addresses.shipping.city']}
-                            >
+                            <FormField label={t('City')} htmlFor="addresses.shipping.city" description={t('Provide Shipping city.')}>
                                 <Input
                                     id="addresses.shipping.city"
                                     name="addresses.shipping.city"
-                                    value={form.data?.addresses?.shipping?.city || ''}
-                                    onChange={(e) => form.setData('addresses.shipping.city', e.target.value)}
-                                    className={form.errors?.['addresses.shipping.city'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.shipping?.city || ''}
+                                    onChange={(e) => updateAddress('shipping', { ...order.addresses?.shipping, city: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
 
-                            <FormField
-                                label={t('PO Box')}
-                                htmlFor="addresses.shipping.pobox"
-                                description={t('Provide Postal code.')}
-                                error={form.errors?.['addresses.shipping.pobox']}
-                            >
+                            <FormField label={t('PO Box')} htmlFor="addresses.shipping.pobox" description={t('Provide Postal code.')}>
                                 <Input
                                     id="addresses.shipping.pobox"
                                     name="addresses.shipping.pobox"
-                                    value={form.data?.addresses?.shipping?.pobox || ''}
-                                    onChange={(e) => form.setData('addresses.shipping.pobox', e.target.value)}
-                                    className={form.errors?.['addresses.shipping.pobox'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.shipping?.pobox || ''}
+                                    onChange={(e) => updateAddress('shipping', { ...order.addresses?.shipping, pobox: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
 
-                            <FormField
-                                label={t('Company')}
-                                htmlFor="addresses.shipping.company"
-                                description={t('Company name.')}
-                                error={form.errors?.['addresses.shipping.company']}
-                            >
+                            <FormField label={t('Company')} htmlFor="addresses.shipping.company" description={t('Company name.')}>
                                 <Input
                                     id="addresses.shipping.company"
                                     name="addresses.shipping.company"
-                                    value={form.data?.addresses?.shipping?.company || ''}
-                                    onChange={(e) => form.setData('addresses.shipping.company', e.target.value)}
-                                    className={form.errors?.['addresses.shipping.company'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.shipping?.company || ''}
+                                    onChange={(e) => updateAddress('shipping', { ...order.addresses?.shipping, company: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
 
-                            <FormField
-                                label={t('Email')}
-                                htmlFor="addresses.shipping.email"
-                                description={t('Provide the shipping email.')}
-                                error={form.errors?.['addresses.shipping.email']}
-                            >
+                            <FormField label={t('Email')} htmlFor="addresses.shipping.email" description={t('Provide the shipping email.')}>
                                 <Input
                                     id="addresses.shipping.email"
                                     name="addresses.shipping.email"
-                                    value={form.data?.addresses?.shipping?.email || ''}
-                                    onChange={(e) => form.setData('addresses.shipping.email', e.target.value)}
-                                    className={form.errors?.['addresses.shipping.email'] ? 'border-red-500' : ''}
+                                    value={order.addresses?.shipping?.email || ''}
+                                    onChange={(e) => updateAddress('shipping', { ...order.addresses?.shipping, email: e.target.value })}
+                                    className={''}
                                 />
                             </FormField>
                         </div>
