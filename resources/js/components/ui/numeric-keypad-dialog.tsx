@@ -102,7 +102,7 @@ export function NumericKeypadDialog({
                 <Button
                   key={num}
                   variant="ghost"
-                  className="h-16 rounded-none border-r border-b last:border-r-0 text-lg font-medium hover:bg-gray-50"
+                  className="h-16 rounded-none border-e border-b last:border-e-0 text-lg font-medium hover:bg-gray-50"
                   onClick={() => handleNumberClick(num)}
                 >
                   {num}
@@ -115,14 +115,14 @@ export function NumericKeypadDialog({
           <div className="grid grid-cols-3">
             <Button
               variant="ghost"
-              className="h-16 rounded-none border-r border-b text-lg font-medium hover:bg-gray-50"
+              className="h-16 rounded-none border-e border-b text-lg font-medium hover:bg-gray-50"
               onClick={handleBackspace}
             >
               <Delete className="h-5 w-5" />
             </Button>
             <Button
               variant="ghost"
-              className="h-16 rounded-none border-r border-b text-lg font-medium hover:bg-gray-50"
+              className="h-16 rounded-none border-e border-b text-lg font-medium hover:bg-gray-50"
               onClick={() => handleNumberClick("0")}
             >
               0
@@ -141,14 +141,14 @@ export function NumericKeypadDialog({
             <div className="grid grid-cols-3">
               <Button
                 variant="ghost"
-                className="h-16 rounded-none border-r text-lg font-medium hover:bg-gray-50"
+                className="h-16 rounded-none border-e text-lg font-medium hover:bg-gray-50"
                 onClick={handleClear}
               >
                 Clear
               </Button>
               <Button
                 variant="ghost"
-                className="h-16 rounded-none border-r text-lg font-medium hover:bg-gray-50"
+                className="h-16 rounded-none border-e text-lg font-medium hover:bg-gray-50"
                 onClick={() => handleNumberClick(".")}
               >
                 .

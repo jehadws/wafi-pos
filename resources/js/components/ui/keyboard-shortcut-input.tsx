@@ -169,14 +169,14 @@ export default function KeyboardShortcutInput({
           readOnly
           disabled={disabled}
           className={cn(
-            "pr-20 cursor-pointer",
+            "pe-20 cursor-pointer",
             isCapturing && "ring-2 ring-blue-500 border-blue-500",
-            currentShortcut && "pr-16",
+            currentShortcut && "pe-16",
           )}
         />
 
         {/* Keyboard icon */}
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+        <div className="absolute end-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {currentShortcut && (
             <Button
               type="button"
@@ -195,7 +195,7 @@ export default function KeyboardShortcutInput({
 
       {/* Status indicator */}
       {isCapturing && (
-        <div className="absolute -bottom-6 left-0 right-0">
+        <div className="absolute -bottom-6 start-0 end-0">
           <Badge variant="secondary" className="text-xs">
             Listening for keys...
           </Badge>

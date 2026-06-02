@@ -79,7 +79,7 @@ export function MultiSelector({
                   <Badge key={option.id.toString()} variant="secondary" className="bg-blue-500 text-white hover:bg-blue-600">
                     {option.name}
                     <div
-                      className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                      className="ms-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           handleRemove(option.id)
@@ -132,7 +132,7 @@ export function MultiSelector({
                       setSearchValue("")
                     }}
                   >
-                    <Check className={cn("mr-2 h-4 w-4", value.includes(option.id) ? "opacity-100" : "opacity-0")} />
+                    <Check className={cn("me-2 h-4 w-4", value.includes(option.id) ? "opacity-100" : "opacity-0")} />
                     {option.name}
                   </CommandItem>
                 ))}
