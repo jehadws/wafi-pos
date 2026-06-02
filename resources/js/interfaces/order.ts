@@ -1,18 +1,17 @@
-import { Address } from "cluster";
-import { Customer } from "./customer";
-import { OrderProduct } from "./order-product";
-import { OrderType } from "./order-type";
-import { Payment } from "./payment";
+import { Customer } from './customer';
+import { OrderProduct } from './order-product';
+import { OrderType } from './order-type';
+import { Payment } from './payment';
 
 export interface Order {
     id?: number;
-    discount_type: 'flat' | 'percentage';
+    discount_type: 'flat' | 'percentage' | null;
     discount: number;
     discount_percentage: number;
     register_id: number | undefined;
     total: number;
     tendered: number;
-    payment_status: 'hold' | 'paid' | 'unpaid' | 'partially_paid' | 'layaway';
+    payment_status: 'hold' | 'paid' | 'unpaid' | 'partially_paid' | 'layaway' | undefined;
     change: number;
     total_products: number;
     customer: Customer | undefined;
@@ -36,7 +35,7 @@ export interface Order {
             product?: {
                 name?: string;
                 id?: number;
-            }
+            };
         }[];
         categories?: {
             category_id?: number;
@@ -44,37 +43,37 @@ export interface Order {
             category?: {
                 name?: string;
                 id?: number;
-            }
-        }[]
+            };
+        }[];
         discount_value?: number;
     }[];
     total_coupons: number;
-    type: OrderType,
-    customer_id: number;
-    products: OrderProduct[], 
-    payments: Payment[],
-    instalments?: { date: string, amount: number, paid?: boolean }[],
+    type: OrderType | undefined;
+    customer_id: number | undefined;
+    products: OrderProduct[];
+    payments: Payment[];
+    instalments?: { date: string; amount: number; paid?: boolean }[];
     note: string;
     note_visibility: 'hidden' | 'visible';
-    tax_group_id?: number,
-    tax_type: 'inclusive' | 'exclusive'
-    taxes: any[],
+    tax_group_id?: number;
+    tax_type: 'inclusive' | 'exclusive' | undefined;
+    taxes: any[];
     final_payment_date?: string;
     total_instalments?: number;
     addresses: {
-        shipping: Address,
-        billing: Address,
+        shipping: any;
+        billing: any;
     };
     tax_value: number;
     products_tax_value: number;
     tax_group: {
-        taxes?: any[],
-        name?: string,
-        id?: number,
-    },
+        taxes?: any[];
+        name?: string;
+        id?: number;
+    };
     shipping: number;
     shipping_rate: number;
-    shipping_type: 'flat' | 'percentage';
+    shipping_type: 'flat' | 'percentage' | undefined;
     subtotal: number;
     title: string;
 }
