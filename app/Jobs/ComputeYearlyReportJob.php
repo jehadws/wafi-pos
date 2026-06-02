@@ -14,6 +14,11 @@ class ComputeYearlyReportJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    /**
+     * The number of seconds the job can run before timing out.
+     */
+    public int $timeout = 300;
+
     public $year;
 
     public $reportService;
