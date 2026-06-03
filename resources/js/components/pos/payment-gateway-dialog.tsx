@@ -38,13 +38,21 @@ interface PaymentGatewayProps {
 }
 
 export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, useBillingAddress, resetCart }: PaymentGatewayProps) {
-  const { order, products, submitOrder, addPayment, removePayment, reset } = usePOS();
+  const { order, products, submitOrder, addPayment, removePayment, reset, options } = usePOS();
   const { t } = useTranslation();
   const [tab, setTab] = useState<PaymentTypes | 'payment-list'>('cash-payment');
   const [screenValue, setScreenValue] = useState('0.00');
   const [rawValue, setRawValue] = useState(0);
   const [isSaveAsUnpaidOpen, setIsSaveAsUnpaidOpen] = useState(false);
   const [isConfirmFullPaymentOpen, setIsConfirmFullPaymentOpen] = useState(false);
+
+  // Parse amount shortcuts from options
+  const amountShortcuts: number[] = (() => {
+    const raw = options.ns_jgrem_amount_shortcut;
+    if (!raw) return [];
+    const str = typeof raw === 'string' ? raw : String(raw);
+    return str.split(',').map((s: string) => parseFloat(s.trim())).filter((n: number) => !isNaN(n) && n > 0);
+  })();
 
   const payments = order.payments || [];
   const paid = payments.reduce((sum: number, p: any) => sum + p.value, 0);
@@ -63,6 +71,12 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
     const newRaw = Math.floor(rawValue / 10);
     setRawValue(newRaw);
     setScreenValue((newRaw / 100).toFixed(2));
+  };
+
+  const handleAmountShortcut = (amount: number) => {
+    const cents = Math.round(amount * 100);
+    setRawValue(cents);
+    setScreenValue(amount.toFixed(2));
   };
 
   const handleFullPayment = (paymentType: PaymentTypes) => {
@@ -170,6 +184,22 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
                     </span>
                   </div>
                 </div>
+
+                {amountShortcuts.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {amountShortcuts.map((amount) => (
+                      <Button
+                        key={amount}
+                        variant="outline"
+                        size="sm"
+                        className="min-w-[60px] font-semibold"
+                        onClick={() => handleAmountShortcut(amount)}
+                      >
+                        {formatCurrency(amount)}
+                      </Button>
+                    ))}
+                  </div>
+                )}
 
                 <NumberPad
                   onNumberClick={handleNumberInput}
