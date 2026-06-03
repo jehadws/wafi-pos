@@ -1259,7 +1259,7 @@
     "[JgremPOS] A New User Has Registered": "[JgremPOS] تم تسجيل مستخدم جديد",
     "[JgremPOS] Your Account Has Been Created": "[JgremPOS] تم إنشاء حسابك",
     "Unable to find the permission with the namespace \"%s\".": "تعذر العثور على الإذن بمساحة الاسم \"%s\".",
-    "Take Away": "يبعد",
+    "Take Away": "استلام",
     "The register has been successfully opened": "تم فتح السجل بنجاح",
     "The register has been successfully closed": "تم إغلاق السجل بنجاح",
     "The provided amount is not allowed. The amount should be greater than \"0\". ": "المبلغ المقدم غير مسموح به. يجب أن يكون المبلغ أكبر من \"0 \".",
