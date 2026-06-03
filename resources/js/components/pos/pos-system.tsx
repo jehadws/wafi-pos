@@ -67,6 +67,61 @@ export default function PosSystem() {
     }
   }, [isAutoFocusOpen]);
 
+  // ─── Keyboard Shortcuts ───────────────────────────────────────────────
+  useEffect(() => {
+    const matchesShortcut = (e: KeyboardEvent, shortcut: string[] | string | null | undefined): boolean => {
+      if (!shortcut || (Array.isArray(shortcut) && shortcut.length === 0)) return false;
+      const keys = Array.isArray(shortcut) ? shortcut : [shortcut];
+      return keys.some((combo) => {
+        const parts = combo.toLowerCase().split('+').map((p) => p.trim());
+        const requireCtrl = parts.includes('ctrl');
+        const requireAlt = parts.includes('alt');
+        const requireShift = parts.includes('shift');
+        const mainKey = parts.find((p) => !['ctrl', 'alt', 'shift'].includes(p)) ?? '';
+        return (
+          e.ctrlKey === requireCtrl &&
+          e.altKey === requireAlt &&
+          e.shiftKey === requireShift &&
+          e.key.toLowerCase() === mainKey
+        );
+      });
+    };
+
+    const handleKeydown = (e: KeyboardEvent) => {
+      const o = options;
+      if (matchesShortcut(e, o.ns_jgrem_keyboard_payment)) {
+        e.preventDefault();
+        setShowPaymentGatewayDialog(true);
+      } else if (matchesShortcut(e, o.ns_jgrem_keyboard_cancel_order)) {
+        e.preventDefault();
+        setIsResetCartOpen(true);
+      } else if (matchesShortcut(e, o.ns_jgrem_keyboard_shipping)) {
+        e.preventDefault();
+        setShowShippingDialog(true);
+      } else if (matchesShortcut(e, o.ns_jgrem_keyboard_order_type)) {
+        e.preventDefault();
+        setShowOrderTypeDialog(true);
+      } else if (matchesShortcut(e, o.ns_jgrem_keyboard_quick_search)) {
+        e.preventDefault();
+        setShowSearchProductsDialog(true);
+      } else if (matchesShortcut(e, o.ns_jgrem_keyboard_toggle_merge)) {
+        e.preventDefault();
+        setAutoMerge(!autoMerge);
+      } else if (matchesShortcut(e, o.ns_jgrem_keyboard_fullscreen)) {
+        e.preventDefault();
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        } else {
+          document.documentElement.requestFullscreen();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeydown);
+    return () => window.removeEventListener('keydown', handleKeydown);
+  }, [options, autoMerge]);
+  // ─────────────────────────────────────────────────────────────────────
+
   const updateDiscount = (discount: string) => {
     setDiscountValue('');
     const finalDiscount = +discount > order.subtotal ? order.subtotal : +discount;
