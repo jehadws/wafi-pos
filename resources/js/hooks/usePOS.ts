@@ -64,6 +64,7 @@ interface POSActions {
     removeCoupon: (coupon: any) => void;
     pushCoupon: (coupon: any) => void;
     defineOptions: (options: any) => void;
+    defineSettings: (settings: any) => void;
     changeVisibleSection: (section: 'cart' | 'grid' | 'both') => void;
     addPayment: (payment: Payment) => void;
     removePayment: (payment: Payment) => void;
@@ -395,6 +396,10 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
         set({ options });
     },
 
+    defineSettings: (settings) => {
+        set({ settings });
+    },
+
     changeVisibleSection: (section) => {
         if (['both', 'cart', 'grid'].includes(section)) {
             if (['cart', 'both'].includes(section)) {
@@ -635,6 +640,11 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
                     const message = __('Partially paid orders are disabled.');
                     toast.error(message);
                     throw { status: 'error', message };
+                } else if (get().options.ns_orders_allow_unpaid === 'no') {
+                    // partial is allowed but unpaid orders are not — must provide at least one payment
+                    const message = __('Unpaid orders are not allowed. Please add at least one payment.');
+                    toast.error(message);
+                    throw { status: 'error', message };
                 } else if (minimalPayment >= 0) {
                     try {
                         const result = await get().canProceedAsLaidAway(order);
@@ -659,8 +669,17 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
     proceedSubmitting: async (order) => {
         const method = order.id !== undefined ? 'put' : 'post';
 
+        // Ensure coupons have coupon_id for the backend
+        const orderToSubmit = {
+            ...order,
+            coupons: order.coupons?.map((c: any) => ({
+                ...c,
+                coupon_id: c.coupon_id || c.id
+            }))
+        };
+
         try {
-            const response = await axios[method](`/api/orders${order.id !== undefined ? '/' + order.id : ''}`, order);
+            const response = await axios[method](`/api/orders${orderToSubmit.id !== undefined ? '/' + orderToSubmit.id : ''}`, orderToSubmit);
             get().reset();
             set({ isSubmitting: false });
 
@@ -937,14 +956,14 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
     },
 
     checkCart: () => {
-        const { order } = get();
+        const { order, products } = get();
         const unmatchedConditions: any[] = [];
 
         order.coupons.forEach((coupon: any) => {
             let isProductValid = true;
             if (coupon.products.length > 0) {
                 isProductValid =
-                    order.products.filter((product) => coupon.products.map((p: any) => p.product_id).includes(product.product_id)).length > 0;
+                    products.filter((product) => coupon.products.map((p: any) => p.product_id).includes(product.product_id)).length > 0;
                 if (!isProductValid && unmatchedConditions.indexOf(coupon) === -1) {
                     unmatchedConditions.push(coupon);
                 }
@@ -953,7 +972,7 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
             let isCategoryValid = true;
             if (coupon.categories.length > 0) {
                 isCategoryValid =
-                    order.products.filter((product) => coupon.categories.map((p: any) => p.category_id).includes(product.$original().category_id))
+                    products.filter((product) => coupon.categories.map((p: any) => p.category_id).includes(product.$original().category_id))
                         .length > 0;
                 if (!isCategoryValid && unmatchedConditions.indexOf(coupon) === -1) {
                     unmatchedConditions.push(coupon);
