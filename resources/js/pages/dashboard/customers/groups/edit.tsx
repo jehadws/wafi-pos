@@ -13,13 +13,13 @@ import { useForm } from '@inertiajs/react';
 import { Select } from '@radix-ui/react-select';
 import { toast } from 'sonner';
 
-const breadcrumbs = [
-    { title: t('Dashboard'), href: '/dashboard' },
-    { title: t('Customers Groups'), href: '/dashboard/customers/groups' },
-];
-
 export default function CreateRewardSystemPage() {
     const { t } = useTranslation();
+
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Customers Groups'), href: '/dashboard/customers/groups' },
+    ];
     const { rewards, group } = usePage<{ rewards: Coupon[]; group: CustomerGroup }>().props;
 
     console.log('group', group);

@@ -73,9 +73,26 @@ export const formatDate = (dateString: string) => {
   if (!dateString) {
     return '';
   }
-  const zonedDate = toZonedTime(new Date(dateString), ns_datetime_timezone || 'UTC');
+
+  let parsedDate = new Date(dateString);
+  
+  if (isNaN(parsedDate.getTime())) {
+    // Fallback for "YYYY-MM-DD HH:mm:ss" format
+    const cleanedDateString = dateString.replace(' ', 'T');
+    parsedDate = new Date(cleanedDateString);
+    
+    if (isNaN(parsedDate.getTime())) {
+      return dateString;
+    }
+  }
+
+  const zonedDate = toZonedTime(parsedDate, ns_datetime_timezone || 'UTC');
   const dateFnsFormat = phpToDateFnsFormat(ns_date_format || 'Y-m-d');
-  return format(zonedDate, dateFnsFormat);
+  
+  return format(zonedDate, dateFnsFormat, {
+    locale: enUS,
+    timeZone: ns_datetime_timezone || 'UTC'
+  });
 }
 
 // export const formatDateTime = (dateString: string) => {
@@ -97,49 +114,31 @@ export const formatDateTime = (dateString: string) => {
   if (!dateString) {
     return '';
   }
-  try {
-    // First, parse the string with the exact format
-    const parseFormat = phpToDateFnsParseFormat(ns_datetime_format || 'Y-m-d H:i');
 
-    // Parse the date string using the exact format
-    const parsedDate = parse(dateString, parseFormat, new Date());
-
-    if (isNaN(parsedDate.getTime())) {
-      // If parsing fails, try a more flexible approach
-      throw new Error('Failed to parse date');
-    }
-
-    // Convert to the desired timezone
-    const zonedDate = toZonedTime(parsedDate, ns_datetime_timezone || 'UTC');
-
-    // Format for display
-    const displayFormat = phpToDateFnsFormat(ns_datetime_format || 'Y-m-d H:i');
-
-    return format(zonedDate, displayFormat, {
-      locale: enUS,
-      timeZone: ns_datetime_timezone || 'UTC'
-    });
-
-  } catch (error) {
-    console.error("Error parsing date:", error);
-
-    // Fallback: Clean the date string and try standard parsing
+  let parsedDate = new Date(dateString);
+  
+  if (isNaN(parsedDate.getTime())) {
+    // Fallback for some non-standard date strings
     const cleanedDateString = dateString
       .replace(/\./g, '-')  // Replace dots with dashes
-      .replace(/,/g, '');   // Remove commas
+      .replace(/,/g, '')    // Remove commas
+      .replace(' ', 'T');   // Handle "YYYY-MM-DD HH:mm:ss"
 
-
-    const fallbackDate = new Date(cleanedDateString);
-
-    if (!isNaN(fallbackDate.getTime())) {
-      const zonedDate = toZonedTime(fallbackDate, ns_datetime_timezone || 'UTC');
-      const displayFormat = phpToDateFnsFormat(ns_datetime_format || 'Y-m-d H:i');
-      return format(zonedDate, displayFormat, {
-        locale: enUS,
-        timeZone: ns_datetime_timezone || 'UTC'
-      });
+    parsedDate = new Date(cleanedDateString);
+    
+    if (isNaN(parsedDate.getTime())) {
+      return dateString; // Return original if all parsing fails
     }
-
-    return dateString; // Return original if all parsing fails
   }
+
+  // Convert to the desired timezone
+  const zonedDate = toZonedTime(parsedDate, ns_datetime_timezone || 'UTC');
+
+  // Format for display
+  const displayFormat = phpToDateFnsFormat(ns_datetime_format || 'Y-m-d H:i');
+
+  return format(zonedDate, displayFormat, {
+    locale: enUS,
+    timeZone: ns_datetime_timezone || 'UTC'
+  });
 };

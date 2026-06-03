@@ -8,11 +8,15 @@ import { Toaster } from 'sonner';
 export default function PosPage() {
   const { t } = useTranslation();
   const { settings, options } = usePage().props;
-  const { defineOptions } = usePOS();
+  const { defineOptions, defineSettings, setAutoMerge } = usePOS();
 
   useEffect(() => {
     defineOptions(options);
-  }, [options]);
+    defineSettings(settings);
+    if (options.ns_jgrem_items_merge !== undefined) {
+      setAutoMerge(options.ns_jgrem_items_merge);
+    }
+  }, [options, settings]);
 
   return (
     <>

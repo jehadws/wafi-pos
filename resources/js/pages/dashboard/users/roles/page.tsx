@@ -19,13 +19,15 @@ import { MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-const breadcrumbs = [
-    { title: t('Dashboard'), href: '/dashboard' },
-    { title: t('Roles'), href: '/dashboard/roles' },
-];
+
 
 export default function Dashboard() {
     const { t } = useTranslation();
+
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Roles'), href: '/dashboard/roles' },
+    ];
     const { title, roles } = usePage<{ roles: Role[]; title: string }>().props;
     const [deleteDialog, setDeleteDialog] = useState<{
         isOpen: boolean;

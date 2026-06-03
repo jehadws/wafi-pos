@@ -11,13 +11,15 @@ import { cn } from '@/lib/utils';
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 
-const breadcrumbs = [
-    { title: t('Dashboard'), href: '/dashboard' },
-    { title: t('Taxes'), href: '/dashboard/taxes' },
-];
+
 
 export default function CreateProductPage() {
     const { t } = useTranslation();
+
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Taxes'), href: '/dashboard/taxes' },
+    ];
     const { groups } = usePage<{ groups: { name: string; id: number }[] }>().props;
     const form = useForm({
         name: '',

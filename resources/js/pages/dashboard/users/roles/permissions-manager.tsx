@@ -12,10 +12,7 @@ interface PermissionManagerProps {
     roles: RoleWithPermissions[];
 }
 
-const breadcrumbs = [
-    { title: t('Dashboard'), href: '/dashboard' },
-    { title: t('Roles'), href: '/dashboard/roles' },
-];
+
 
 type PermissionMatrix = {
     [roleId: number]: {
@@ -26,6 +23,11 @@ type PermissionMatrix = {
 export default function PermissionManager() {
     const { title, permissions, roles } = usePage<PermissionManagerProps>().props;
     const { t } = useTranslation();
+
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Roles'), href: '/dashboard/roles' },
+    ];
     const [searchQuery, setSearchQuery] = useState('');
     const [matrix, setMatrix] = useState<PermissionMatrix>(() => {
         // Initialize matrix from roles data

@@ -14,15 +14,15 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-const breadcrumbs = [
-    { title: t('Dashboard'), href: '/dashboard' },
-    { title: t('Accounting'), href: '/dashboard/accounting' },
-    { title: t('Transactions'), href: '/dashboard/accounting/transactions' },
-    { title: t('Create New Transaction'), href: '/dashboard/accounting/transactions/create' },
-];
-
 export default function CreateProductPage({ infoMessage }: { infoMessage?: string }) {
     const { t } = useTranslation();
+
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Accounting'), href: '/dashboard/accounting' },
+        { title: t('Transactions'), href: '/dashboard/accounting/transactions' },
+        { title: t('Create New Transaction'), href: '/dashboard/accounting/transactions/create' },
+    ];
     const form = useForm({
         name: '',
         general: {

@@ -12,14 +12,14 @@ import { cn } from '@/lib/utils';
 import { Head, useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 
-const breadcrumbs = [
-    { title: t('Dashboard'), href: '/dashboard' },
-    { title: t('Payment Types'), href: '/dashboard/orders/payments-types' },
-    { title: t('Create a new payment type'), href: '/dashboard/orders/payments-types/create' },
-];
-
 export default function Dashboard() {
     const { t } = useTranslation();
+
+    const breadcrumbs = [
+        { title: t('Dashboard'), href: '/dashboard' },
+        { title: t('Payment Types'), href: '/dashboard/orders/payments-types' },
+        { title: t('Create a new payment type'), href: '/dashboard/orders/payments-types/create' },
+    ];
     const form = useForm({
         label: '',
         active: 0,
