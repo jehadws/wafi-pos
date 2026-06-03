@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 use App\Settings\GeneralSettings;
+use Closure;
+use Symfony\Component\HttpFoundation\Response;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -18,6 +20,30 @@ class HandleInertiaRequests extends Middleware
      * @var string
      */
     protected $rootView = 'app';
+
+    /**
+     * Handle the incoming request.
+     * Override to handle session expiry gracefully for Inertia XHR requests.
+     * When session expires, Inertia gets a 409 Conflict which triggers a full
+     * page reload to the login page instead of a broken partial state.
+     */
+    // public function handle(Request $request, Closure $next): Response
+    // {
+    //     $response = $next($request);
+    //
+    //     // Detect a redirect to the login page on an Inertia XHR request
+    //     // (session expired or unauthenticated)
+    //     if (
+    //         $request->header('X-Inertia') &&
+    //         $response->isRedirect() &&
+    //         in_array($response->getStatusCode(), [301, 302, 303, 307, 308]) &&
+    //         str_contains($response->headers->get('Location', ''), '/login')
+    //     ) {
+    //         return response('', 409)->header('X-Inertia-Location', $response->headers->get('Location'));
+    //     }
+    //
+    //     return parent::handle($request, $next);
+    // }
 
     /**
      * Determines the current asset version.
@@ -53,8 +79,8 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'locale' => app()->getLocale(),
-            'menus' => $request->user() ? 
-                app()->make(\App\Services\MenuService::class)->getMenus() : 
+            'menus' => $request->user() ?
+                app()->make(\App\Services\MenuService::class)->getMenus() :
                 [],
             'settings' => (new GeneralSettings)->getPayload(),
         ];
