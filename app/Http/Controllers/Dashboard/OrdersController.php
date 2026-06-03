@@ -224,6 +224,34 @@ class OrdersController extends DashboardController
         'ns_jgrem_allow_wholesale_price' => ns()->option->get('ns_jgrem_allow_wholesale_price', 'no') === 'yes' ? true : false,
         'ns_jgrem_allow_decimal_quantities' => ns()->option->get('ns_jgrem_allow_decimal_quantities', 'no') === 'yes' ? true : false,
         'ns_jgrem_force_autofocus' => ns()->option->get('ns_jgrem_force_autofocus', 'no') === 'yes' ? true : false,
+        'ns_jgrem_items_merge' => ns()->option->get('ns_jgrem_items_merge', 'yes') === 'yes' ? true : false,
+        'ns_jgrem_registers_default_change_payment_type' => ns()->option->get('ns_jgrem_registers_default_change_payment_type', 'cash'),
+        'ns_orders_strict_instalments' => ns()->option->get('ns_orders_strict_instalments', 'no') === 'yes' ? true : false,
+        'ns_customers_credit_enabled' => ns()->option->get('ns_customers_credit_enabled', 'no') === 'yes' ? true : false,
+        // Customer constraints
+        'ns_customers_rewards_enabled' => ns()->option->get('ns_customers_rewards_enabled', 'no') === 'yes' ? true : false,
+        'ns_customers_force_valid_email' => ns()->option->get('ns_customers_force_valid_email', 'no'),
+        'ns_customers_force_unique_phone' => ns()->option->get('ns_customers_force_unique_phone', 'no'),
+        'ns_customers_default_group' => ns()->option->get('ns_customers_default_group', null),
+        // Invoice / receipt settings
+        'ns_invoice_receipt_template' => ns()->option->get('ns_invoice_receipt_template', 'default'),
+        'ns_invoice_receipt_logo' => ns()->option->get('ns_invoice_receipt_logo', ''),
+        'ns_invoice_receipt_footer' => ns()->option->get('ns_invoice_receipt_footer', ''),
+        'ns_invoice_merge_similar_products' => ns()->option->get('ns_invoice_merge_similar_products', 'no') === 'yes' ? true : false,
+        'ns_invoice_display_tax_breakdown' => ns()->option->get('ns_invoice_display_tax_breakdown', 'no') === 'yes' ? true : false,
+        // Keyboard shortcuts
+        'ns_jgrem_keyboard_cancel_order' => ns()->option->get('ns_jgrem_keyboard_cancel_order', []),
+        'ns_jgrem_keyboard_hold_order' => ns()->option->get('ns_jgrem_keyboard_hold_order', []),
+        'ns_jgrem_keyboard_create_customer' => ns()->option->get('ns_jgrem_keyboard_create_customer', []),
+        'ns_jgrem_keyboard_payment' => ns()->option->get('ns_jgrem_keyboard_payment', []),
+        'ns_jgrem_keyboard_shipping' => ns()->option->get('ns_jgrem_keyboard_shipping', []),
+        'ns_jgrem_keyboard_note' => ns()->option->get('ns_jgrem_keyboard_note', []),
+        'ns_jgrem_keyboard_order_type' => ns()->option->get('ns_jgrem_keyboard_order_type', []),
+        'ns_jgrem_keyboard_fullscreen' => ns()->option->get('ns_jgrem_keyboard_fullscreen', []),
+        'ns_jgrem_keyboard_quick_search' => ns()->option->get('ns_jgrem_keyboard_quick_search', []),
+        'ns_jgrem_keyboard_toggle_merge' => ns()->option->get('ns_jgrem_keyboard_toggle_merge', []),
+        // Amount shortcuts (quick payment buttons)
+        'ns_jgrem_amount_shortcut' => ns()->option->get('ns_jgrem_amount_shortcut', null),
       ]),
       'urls' => [
         'sale_printing_url' => Hook::filter('ns-pos-printing-url', ns()->url('/dashboard/orders/receipt/{id}?dash-visibility=disabled&autoprint=true')),
@@ -288,7 +316,7 @@ class OrdersController extends DashboardController
     $order->load('settings');
     $order->load('tax_group');
 
-    return View::make('pages.dashboard.orders.templates.receipt', [
+    return Inertia::render('dashboard/orders/receipt/page', [
       'order' => $order,
       'title' => sprintf(__('Order Receipt &mdash; %s'), $order->code),
       'optionsService' => $this->optionsService,
