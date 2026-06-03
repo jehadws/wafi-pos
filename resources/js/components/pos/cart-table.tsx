@@ -4,6 +4,7 @@ import CartItemComponent from '@/components/pos/cart-item';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRTL } from '@/hooks/use-rtl';
+import { usePOS } from '@/hooks/usePOS';
 import { OrderProduct } from '@/interfaces/order-product';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -38,16 +39,20 @@ export default function CartTable({
 }: CartTableProps) {
     const { isRTL } = useRTL();
     const { t } = useTranslation();
+    const { options } = usePOS();
+    const showQuantity = options.ns_jgrem_show_quantity !== false;
     const allSelected = cart.length > 0 && selectedItems.length === cart.length;
     const someSelected = selectedItems.length > 0 && selectedItems.length < cart.length;
 
     return (
         <div className="flex flex-1 flex-col overflow-hidden">
-            <div className={cn('bg-muted/50 grid h-13 grid-cols-14 border-b text-sm font-medium', isRTL ? 'pr-4' : 'pl-4')}>
-                <div className={cn('col-span-10 inline-flex items-center', isRTL ? 'border-l' : 'border-r')}>{t('Product')}</div>
-                <div className={cn('col-span-2 inline-flex items-center justify-center border-l text-center', isRTL ? 'border-l' : 'border-r')}>
-                    {t('Quantity')}
-                </div>
+            <div className={cn('bg-muted/50 grid h-13 border-b text-sm font-medium', showQuantity ? 'grid-cols-14' : 'grid-cols-12', isRTL ? 'pr-4' : 'pl-4')}>
+                <div className={cn('inline-flex items-center', showQuantity ? 'col-span-10' : 'col-span-10', isRTL ? 'border-l' : 'border-r')}>{t('Product')}</div>
+                {showQuantity && (
+                    <div className={cn('col-span-2 inline-flex items-center justify-center border-l text-center', isRTL ? 'border-l' : 'border-r')}>
+                        {t('Quantity')}
+                    </div>
+                )}
                 <div className="col-span-2 inline-flex items-center justify-center text-center">{t('Total')}</div>
             </div>
             <div className="flex min-h-0 flex-1 flex-col">
@@ -111,6 +116,7 @@ export default function CartTable({
                                             updateDiscountPercentage={updateDiscountPercentage}
                                             removeFromCart={removeFromCart}
                                             updateQuantity={updateQuantity}
+                                            showQuantity={showQuantity}
                                         />
                                     </div>
                                 </div>
