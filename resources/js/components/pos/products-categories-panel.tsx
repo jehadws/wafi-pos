@@ -122,7 +122,7 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
         initialValue: '',
         title: t('Define Quantity'),
         maxLength: 6,
-        allowDecimal: true,
+        allowDecimal: options.ns_jgrem_allow_decimal_quantities ?? true,
     });
 
     const handleClickOnProduct = async (product: Product) => {
