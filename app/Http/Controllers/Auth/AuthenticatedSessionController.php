@@ -44,10 +44,13 @@ class AuthenticatedSessionController extends Controller
 
         Hook::action('ns-login-form', $request);
 
+        // Set remember me cookie to 30 days (industry standard: security + convenience)
+        Auth::guard('web')->setRememberDuration(60 * 24 * 30);
+
         $attempt = Auth::attempt([
             'username' => $request->input('username'),
             'password' => $request->input('password'),
-        ]);
+        ], $request->boolean('remember'));
 
         if ($request->expectsJson()) {
             return $this->handleJsonRequests($request, $attempt);
