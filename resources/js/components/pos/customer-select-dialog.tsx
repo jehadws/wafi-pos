@@ -10,6 +10,7 @@ import axios from 'axios';
 import { Eye, Loader2, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from '../../lib/i18n';
+import { ScrollArea } from '../ui/scroll-area';
 
 interface SelectCustomerDialogProps {
   open: boolean;
@@ -93,46 +94,48 @@ export function SelectCustomerDialog({ open, onOpenChange, selectedCustomer, han
             <Input placeholder={t('Search')} value={searchQuery} onChange={(e) => handleSearch(e.target.value)} className="pl-10" />
           </div>
 
-          <div className="max-h-64 space-y-2 overflow-y-auto">
+          <ScrollArea className="min-h-0 w-full flex-1">
             {loading ? (
               <div className="flex items-center justify-center p-4">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span className="text-muted-foreground ml-2 text-sm">{t('Loading...')}</span>
               </div>
             ) : customers.length > 0 ? (
-              customers.map((customer) => (
-                <div
-                  key={customer.id}
-                  className="hover:bg-muted rounded-md border p-3"
-                  onClick={() => handleSelectCustomer(customer)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">
-                        {customer.first_name} {customer.last_name || ''}
+              <div className='space-y-2'>
+                {customers.map((customer) => (
+                  <div
+                    key={customer.id}
+                    className="hover:bg-muted rounded-md border p-3"
+                    onClick={() => handleSelectCustomer(customer)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium">
+                          {customer.first_name} {customer.last_name || ''}
+                        </div>
+                        <div className="text-sm text-gray-500">{customer.phone}</div>
                       </div>
-                      <div className="text-sm text-gray-500">{customer.phone}</div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{formatCurrency(+customer.purchases_amount)}</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="rounded-full border p-0"
-                        onClick={() => onViewCustomer(customer)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{formatCurrency(+customer.purchases_amount)}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="rounded-full border p-0"
+                          onClick={() => onViewCustomer(customer)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             ) : (
               <div className="p-4 text-center">
                 {searchQuery ? t('No customer match your query...') : t('No customers has been registered')}
               </div>
             )}
-          </div>
+          </ScrollArea>
         </div>
       </DialogContent>
     </Dialog>

@@ -7,6 +7,7 @@ import axios from 'axios';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from '../../lib/i18n';
+import { ScrollArea } from '../ui/scroll-area';
 
 interface CustomerDetailsDialogProps {
   open: boolean;
@@ -52,15 +53,15 @@ export function CustomerDetailsDialog({ open, onOpenChange, customer }: Customer
           <DialogDescription className="sr-only">{t('Details')}</DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-1 flex-col space-y-4">
-          <Tabs defaultValue="customer-account" className={cn('flex-1')} onValueChange={setActiveTab} value={activeTab}>
-            <TabsList className="grid w-full grid-cols-2">
+        <div className="flex flex-1 flex-col overflow-hidden min-h-0 pt-4">
+          <Tabs defaultValue="customer-account" className="flex flex-1 flex-col min-h-0" onValueChange={setActiveTab} value={activeTab}>
+            <TabsList className="grid w-full shrink-0 grid-cols-2">
               <TabsTrigger value="new-customer">{t('Create Customer')}</TabsTrigger>
               <TabsTrigger value="customer-account">{t('Customer Account')}</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="customer-account" className="flex flex-col space-y-4">
-              <div className="rounded-lg p-4">
+            <TabsContent value="customer-account" className="data-[state=active]:flex flex-col flex-1 min-h-0 space-y-4 mt-4">
+              <div className="rounded-lg p-4 shrink-0 bg-muted/30">
                 <h3 className="mb-4 font-medium">
                   {t('Summary For')} : {customer.first_name} {customer.last_name || ''}
                 </h3>
@@ -85,40 +86,41 @@ export function CustomerDetailsDialog({ open, onOpenChange, customer }: Customer
                 </div>
               </div>
 
-              <Tabs defaultValue="orders" className={cn('flex-1')} onValueChange={setActiveSubTab} value={activeSubTab}>
-                <TabsList className="grid w-full grid-cols-4">
+              <Tabs defaultValue="orders" className="flex flex-col flex-1 min-h-0" onValueChange={setActiveSubTab} value={activeSubTab}>
+                <TabsList className="grid w-full shrink-0 grid-cols-4">
                   <TabsTrigger value="orders">{t('Orders')}</TabsTrigger>
                   <TabsTrigger value="wallet-history">{t('Account Credit')}</TabsTrigger>
                   <TabsTrigger value="coupons">{t('Coupons')}</TabsTrigger>
                   <TabsTrigger value="rewards">{t('Rewards')}</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="orders" className={cn('flex flex-1 flex-col space-y-4')}>
-                  <h4 className="mt-4 px-2 font-medium">{t('Last Purchases')}</h4>
+                <TabsContent value="orders" className="data-[state=active]:flex flex-col flex-1 min-h-0 space-y-4 mt-4">
+                  <h4 className="px-2 font-medium shrink-0">{t('Last Purchases')}</h4>
 
                   {loadingOrders ? (
-                    <div className="flex items-center justify-center p-8">
+                    <div className="flex flex-1 items-center justify-center p-8">
                       <Loader2 className="h-6 w-6 animate-spin" />
-                      <span className="ml-2 text-gray-600">{t('Loading...')}</span>
+                      <span className="ml-2">{t('Loading...')}</span>
                     </div>
                   ) : (
-                    <div className="flex-1 overflow-hidden rounded-lg border">
-                      <div className="grid grid-cols-2 p-3 text-center font-medium text-gray-700">
+                    <div className="flex flex-col flex-1 min-h-0 rounded-lg border">
+                      <div className="grid grid-cols-2 bg-muted/50 p-3 text-center font-medium shrink-0">
                         <div>{t('Order')}</div>
                         <div>{t('Options')}</div>
                       </div>
 
-                      <div className="flex-1">
+                      <ScrollArea className="flex-1">
+
                         {orders.length > 0 ? (
                           orders.map((order) => (
-                            <div key={order.id} className="grid grid-cols-2 items-center p-3">
+                            <div key={order.id} className="grid grid-cols-2 items-center p-3 border-b last:border-b-0">
                               <div className="space-y-1">
-                                <div className="font-medium text-gray-800">Code: {order.code}</div>
-                                <div className="text-sm text-gray-600">
+                                <div className="font-medium">Code: {order.code}</div>
+                                <div className="text-sm">
                                   Total: {formatCurrency(order.total)} | Status: {order.human_status}
                                 </div>
-                                <div className="text-sm text-gray-600">Delivery: {order.human_delivery_status}</div>
-                                <div className="text-sm text-gray-500">Date: {formatDate(order.created_at)}</div>
+                                <div className="text-sm">Delivery: {order.human_delivery_status}</div>
+                                <div className="text-sm">Date: {formatDate(order.created_at)}</div>
                               </div>
                               <div className="text-center">
                                 <Button variant="outline" size="sm">
@@ -130,12 +132,12 @@ export function CustomerDetailsDialog({ open, onOpenChange, customer }: Customer
                         ) : (
                           <div className="p-8 text-center text-gray-500">{t('No customer orders has been registered')}</div>
                         )}
-                      </div>
+                      </ScrollArea>
                     </div>
                   )}
 
-                  <div className="flex justify-end">
-                    <Button className="bg-blue-600 hover:bg-blue-700">{t('Account Transaction')}</Button>
+                  <div className="flex shrink-0 justify-end pb-2">
+                    <Button className="bg-blue-600 text-white hover:bg-blue-700">{t('Account Transaction')}</Button>
                   </div>
                 </TabsContent>
 
