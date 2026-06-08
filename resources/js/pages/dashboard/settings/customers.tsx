@@ -134,10 +134,11 @@ export default function SettingsGeneral() {
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
-                                                {form.data.general.ns_customers_default
-                                                    ? options.ns_customers_default.find((tz) => tz.value === +form.data.general.ns_customers_default)
-                                                          ?.label
-                                                    : 'Select default...'}
+                                                {form.data.general.ns_customers_default && form.data.general.ns_customers_default !== 'no'
+                                                    ? options.ns_customers_default.find(
+                                                          (tz) => tz.value.toString() === form.data.general.ns_customers_default?.toString()
+                                                      )?.label ?? 'Select default...'
+                                                    : 'None'}
                                                 <ChevronsUpDown className="opacity-50" />
                                             </Button>
                                         </PopoverTrigger>
@@ -147,6 +148,22 @@ export default function SettingsGeneral() {
                                                 <CommandList>
                                                     <CommandEmpty>No framework found.</CommandEmpty>
                                                     <CommandGroup>
+                                                        <CommandItem
+                                                            value="no"
+                                                            onSelect={() => {
+                                                                form.setData('general.ns_customers_default', 'no');
+                                                            }}
+                                                        >
+                                                            {t('None')}
+                                                            <Check
+                                                                className={cn(
+                                                                    'ml-auto',
+                                                                    form.data.general.ns_customers_default === 'no' || !form.data.general.ns_customers_default
+                                                                        ? 'opacity-100'
+                                                                        : 'opacity-0',
+                                                                )}
+                                                            />
+                                                        </CommandItem>
                                                         {options.ns_customers_default.map((tz) => (
                                                             <CommandItem
                                                                 key={tz.value}
@@ -159,7 +176,7 @@ export default function SettingsGeneral() {
                                                                 <Check
                                                                     className={cn(
                                                                         'ml-auto',
-                                                                        form.data.general.ns_customers_default === tz.value
+                                                                        form.data.general.ns_customers_default?.toString() === tz.value.toString()
                                                                             ? 'opacity-100'
                                                                             : 'opacity-0',
                                                                     )}
