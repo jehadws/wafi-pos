@@ -247,7 +247,7 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
             },
             async () => {
                 const { options } = get();
-                if (options.ns_customers_default !== false) {
+                if (options.ns_customers_default && options.ns_customers_default !== 'no' && options.ns_customers_default !== false) {
                     try {
                         const response = await axios.get(`/api/customers/${options.ns_customers_default}`);
                         get().selectCustomer(response.data);
@@ -1291,13 +1291,13 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
 
     computeProduct: (product) => {
         if (product.product_type === 'product') {
-            if (product.mode === 'normal') {
-                product.unit_price = get().getSalePrice(product.$quantities?.());
-            } else if (product.mode === 'wholesale') {
-                product.unit_price = get().getWholesalePrice(product.$quantities?.());
-            } else if (product.mode === 'custom') {
-                product.unit_price = get().getCustomPrice(product.$quantities?.());
+            if (product.mode === 'normal' && product.$quantities) {
+                // Only read from $quantities when available (i.e. loaded from the catalogue)
+                product.unit_price = get().getSalePrice(product.$quantities());
+            } else if (product.mode === 'wholesale' && product.$quantities) {
+                product.unit_price = get().getWholesalePrice(product.$quantities());
             }
+            // For 'custom' mode: always keep product.unit_price as-is (user-set price)
         }
 
         // get().computeDiscount(product);
