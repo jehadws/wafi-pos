@@ -27,9 +27,20 @@ export default function SelectUnitQuantityDialog({ selectProduct }: { selectProd
                 return toast.error(t('Unable to proceed, no product were provided.'));
             }
 
-            setQuantities(res.data);
+            const loadedQuantities: UnitQuantity[] = res.data;
 
-            // User must select manually - never auto-select
+            // Auto-select: if exactly one unit, or if a default unit is configured and matches
+            const defaultUnitId = options.ns_jgrem_quick_product_default_unit;
+            if (loadedQuantities.length === 1) {
+                return closeDialog('selectQuantity', loadedQuantities[0]);
+            } else if (defaultUnitId) {
+                const matched = loadedQuantities.find((q) => q.unit?.id === defaultUnitId || q.unit_id === defaultUnitId);
+                if (matched) {
+                    return closeDialog('selectQuantity', matched);
+                }
+            }
+
+            setQuantities(loadedQuantities);
         } catch (e) {
             console.error(e);
         } finally {
