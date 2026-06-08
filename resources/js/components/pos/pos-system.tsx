@@ -206,6 +206,7 @@ export default function PosSystem() {
       price_with_tax: price + newTaxValue,
       tax_value: newTaxValue,
       total_tax_value: totalTaxValue,
+      mode: 'custom',
       total_price: options.ns_jgrem_price_with_tax === 'yes' ? total_price_with_tax : total_price_without_tax,
       total_price_with_tax,
       total_price_without_tax,
@@ -427,6 +428,7 @@ export default function PosSystem() {
             subtotal={order.subtotal}
             tax={order.products_tax_value || 0}
             discount={order.discount || 0}
+            totalCoupons={order.total_coupons || 0}
             total={order.total || 0}
             customer={order.customer}
             orderType={order.type}
