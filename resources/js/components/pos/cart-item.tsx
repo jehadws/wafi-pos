@@ -3,6 +3,7 @@ import type React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNumericKeypad } from '@/hooks/use-numeric-keypad';
+import { usePOS } from '@/hooks/usePOS';
 import { OrderProduct } from '@/interfaces/order-product';
 import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
@@ -55,23 +56,27 @@ export default function CartItem({ item, updateDiscountPercentage, updatePrice, 
 
   const handleToggleWholesale = () => {
     const quantities = item.$quantities ? item.$quantities() : null;
-    if (!quantities) return;
 
     if (item.mode === 'wholesale') {
-      // Switch back to normal
-      const salePrice = quantities.sale_price_without_tax || quantities.sale_price || 0;
+      // Switch back to normal — use $quantities if available, else keep current price
+      const salePrice = quantities
+        ? quantities.sale_price_without_tax || quantities.sale_price || item.unit_price
+        : item.unit_price;
       updatePrice(item, salePrice);
-      item.mode = 'normal';
+      // Update mode via the store directly so Zustand triggers a re-render
+      usePOS.getState().updateProduct(item, { mode: 'normal' });
       toast.info(t('Switched to retail price'));
     } else {
-      // Switch to wholesale
-      const wholesalePrice = quantities.wholesale_price_without_tax || quantities.wholesale_price || 0;
+      // Switch to wholesale — use $quantities if available
+      const wholesalePrice = quantities
+        ? quantities.wholesale_price_without_tax || quantities.wholesale_price || 0
+        : 0;
       if (wholesalePrice <= 0) {
         toast.warning(t('No wholesale price defined for this product'));
         return;
       }
       updatePrice(item, wholesalePrice);
-      item.mode = 'wholesale';
+      usePOS.getState().updateProduct(item, { mode: 'wholesale' });
       toast.info(t('Switched to wholesale price'));
     }
   };
