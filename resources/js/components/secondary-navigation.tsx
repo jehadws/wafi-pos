@@ -14,11 +14,13 @@ type Props = {
 
 export default function SecondaryNavigation({ setShowSelectCustomerDialog }: Props) {
   const { t } = useTranslation();
-  const { order, setNote, pushCoupon, removeCoupon, updateCart } = usePOS();
+  const { order, options, setNote, pushCoupon, removeCoupon, updateCart } = usePOS();
   const [isCommentsDialogOpen, setIsCommentsDialogOpen] = useState(false);
   const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
   const [isTaxesDialogOpen, setIsTaxesDialogOpen] = useState(false);
   const [isCouponsDialogOpen, setIsCouponsDialogOpen] = useState(false);
+
+  const isFlatVat = options.ns_jgrem_vat === 'flat_vat';
 
   const [taxRate, setTaxRate] = useState(8);
   const [taxType, setTaxType] = useState('percentage');
@@ -53,11 +55,13 @@ export default function SecondaryNavigation({ setShowSelectCustomerDialog }: Pro
             {t('Comments')}
             {order.note && <span className="bg-primary ml-2 h-2 w-2 rounded-full"></span>}
           </Button>
-          <Button variant="outline" size="sm" className="flex items-center" onClick={() => setIsTaxesDialogOpen(true)}>
-            <Receipt className="mr-2 h-4 w-4" />
-            {t('Taxes')}
-            {taxRate > 0 && <span className="bg-primary ml-2 h-2 w-2 rounded-full"></span>}
-          </Button>
+          {isFlatVat && (
+            <Button variant="outline" size="sm" className="flex items-center" onClick={() => setIsTaxesDialogOpen(true)}>
+              <Receipt className="mr-2 h-4 w-4" />
+              {t('Taxes')}
+              {taxRate > 0 && <span className="bg-primary ml-2 h-2 w-2 rounded-full"></span>}
+            </Button>
+          )}
           <Button variant="outline" size="sm" className="flex items-center" onClick={() => setIsCouponsDialogOpen(true)}>
             <Ticket className="mr-2 h-4 w-4" />
             {t('Coupons')}
