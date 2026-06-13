@@ -277,20 +277,13 @@ class CategoryController extends DashboardController
 
       return [
         'products' => $category->products()
-          ->with('galleries', 'tax_group.taxes')
+          ->with(['galleries', 'tax_group.taxes', 'unit_quantities.unit'])
           ->onSale()
           ->where(function ($query) {
             $this->applyHideProducts($query);
           })
           ->trackingDisabled()
-          ->get()
-          ->map(function ($product) {
-            if ($product->unit_quantities()->count() === 1) {
-              $product->load('unit_quantities.unit');
-            }
-
-            return $product;
-          }),
+          ->get(),
         'categories' => $category
           ->subCategories()
           ->displayOnPOS()
