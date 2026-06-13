@@ -1,109 +1,124 @@
 'use client';
 
-import type React from 'react';
-
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from '@/lib/i18n';
-import { useState } from 'react';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+
+interface TaxGroup {
+    id: number;
+    name: string;
+    taxes?: { rate: number }[];
+}
 
 interface TaxesDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (taxRate: number, taxType: string) => void;
-    currentTaxRate: number;
+    onSave: (taxGroupId: number | null, taxType: string) => void;
+    currentTaxGroupId: number | null;
     currentTaxType: string;
 }
 
-export default function TaxesDialog({ isOpen, onClose, onSave, currentTaxRate, currentTaxType }: TaxesDialogProps) {
+export default function TaxesDialog({ isOpen, onClose, onSave, currentTaxGroupId, currentTaxType }: TaxesDialogProps) {
     const { t } = useTranslation();
-    const [activeTab, setActiveTab] = useState('settings');
-    const [taxRate, setTaxRate] = useState(currentTaxRate.toString());
-    const [taxType, setTaxType] = useState(currentTaxType);
-    const [isTaxActive, setIsTaxActive] = useState(currentTaxRate > 0);
+    const [taxGroups, setTaxGroups] = useState<TaxGroup[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [selectedGroupId, setSelectedGroupId] = useState<string>(currentTaxGroupId?.toString() ?? 'none');
+    const [selectedType, setSelectedType] = useState(currentTaxType || 'inclusive');
+
+    // Reload dialog selections when opened or props change
+    useEffect(() => {
+        setSelectedGroupId(currentTaxGroupId?.toString() ?? 'none');
+        setSelectedType(currentTaxType || 'inclusive');
+    }, [currentTaxGroupId, currentTaxType, isOpen]);
+
+    // Fetch tax groups when dialog opens
+    useEffect(() => {
+        if (!isOpen) return;
+        setLoading(true);
+        axios
+            .get('/api/taxes/groups')
+            .then((res) => {
+                // API may return array directly or paginated { data: [] }
+                const list = Array.isArray(res.data) ? res.data : (res.data?.data ?? []);
+                setTaxGroups(list);
+            })
+            .catch(() => {
+                toast.error(t('Failed to load tax groups'));
+            })
+            .finally(() => setLoading(false));
+    }, [isOpen]);
+
+    const selectedGroup = taxGroups.find((g) => g.id.toString() === selectedGroupId);
+    const summarizedRate = selectedGroup?.taxes?.reduce((acc, t) => acc + t.rate, 0) ?? 0;
 
     const handleSave = () => {
-        const parsedRate = Number.parseFloat(taxRate);
-        if (isNaN(parsedRate) || parsedRate < 0 || parsedRate > 100) {
-            toast.error(t('Invalid tax rate'), {
-                description: t('Please enter a valid tax rate between 0 and 100'),
-            });
-            return;
-        }
-
-        onSave(parsedRate, taxType);
+        const groupId = selectedGroupId === 'none' ? null : Number(selectedGroupId);
+        onSave(groupId, selectedType);
         toast.success(t('Tax settings saved'));
         onClose();
-    };
-
-    const handleTaxRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value.replace(/[^0-9.]/g, '');
-        setTaxRate(value);
-        setIsTaxActive(Number.parseFloat(value) > 0);
     };
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>{t('Tax & Summary')}</DialogTitle>
+                    <DialogTitle>{t('Tax Settings')}</DialogTitle>
                 </DialogHeader>
 
-                <Tabs defaultValue="settings" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="settings">{t('Settings')}</TabsTrigger>
-                        <TabsTrigger value="summary">{t('Summary')}</TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="settings" className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="select-tax">{t('Select Tax')}</Label>
-                            <Input id="select-tax" type="text" placeholder={t('Tax rate (%)')} value={taxRate} onChange={handleTaxRateChange} />
-                            <p className="text-muted-foreground text-sm">{t('Define the tax that apply to the sale.')}</p>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="tax-type">{t('Type')}</Label>
-                            <Select value={taxType} onValueChange={setTaxType}>
-                                <SelectTrigger id="tax-type">
-                                    <SelectValue placeholder={t('Select tax type')} />
+                <div className="space-y-4 py-2">
+                    {/* Tax Group */}
+                    <div className="space-y-2">
+                        <Label htmlFor="tax-group">{t('Tax Group')}</Label>
+                        {loading ? (
+                            <p className="text-muted-foreground text-sm">{t('Loading…')}</p>
+                        ) : (
+                            <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
+                                <SelectTrigger id="tax-group">
+                                    <SelectValue placeholder={t('Select a tax group')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="percentage">{t('Percentage')}</SelectItem>
-                                    <SelectItem value="fixed">{t('Fixed Amount')}</SelectItem>
-                                    <SelectItem value="included">{t('Included in Price')}</SelectItem>
+                                    <SelectItem value="none">{t('None')}</SelectItem>
+                                    {taxGroups.map((group) => (
+                                        <SelectItem key={group.id} value={group.id.toString()}>
+                                            {group.name}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
-                            <p className="text-muted-foreground text-sm">{t('Define how the tax is computed')}</p>
-                        </div>
-                    </TabsContent>
+                        )}
+                        <p className="text-muted-foreground text-sm">{t('The tax group applied to the order.')}</p>
+                    </div>
 
-                    <TabsContent value="summary" className="py-4">
-                        <div className="flex h-[200px] items-center justify-center rounded-md border border-dashed">
-                            {isTaxActive ? (
-                                <div className="text-center">
-                                    <p className="text-sm font-medium">
-                                        {taxType === 'percentage'
-                                            ? `${taxRate}% ${t('tax will be applied to all sales')}`
-                                            : taxType === 'fixed'
-                                              ? `$${taxRate} ${t('fixed tax will be applied to all sales')}`
-                                              : `${t('Tax (')}${taxRate}%${t(') is included in the price')}`}
-                                    </p>
-                                    <p className="text-muted-foreground mt-1 text-xs">
-                                        {t('Tax type:') + ' ' + taxType.charAt(0).toUpperCase() + taxType.slice(1)}
-                                    </p>
-                                </div>
-                            ) : (
-                                <p className="text-muted-foreground text-sm">{t('No tax is active')}</p>
-                            )}
+                    {/* Tax Type */}
+                    <div className="space-y-2">
+                        <Label htmlFor="tax-type">{t('Tax Type')}</Label>
+                        <Select value={selectedType} onValueChange={setSelectedType}>
+                            <SelectTrigger id="tax-type">
+                                <SelectValue placeholder={t('Select tax type')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="inclusive">{t('Inclusive')}</SelectItem>
+                                <SelectItem value="exclusive">{t('Exclusive')}</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <p className="text-muted-foreground text-sm">{t('Defines how the tax is applied to product prices.')}</p>
+                    </div>
+
+                    {/* Summary */}
+                    {selectedGroup && (
+                        <div className="bg-muted rounded-md p-3 text-sm">
+                            <p className="font-medium">{selectedGroup.name}</p>
+                            <p className="text-muted-foreground">
+                                {t('Combined rate')}: {summarizedRate}% &middot; {selectedType}
+                            </p>
                         </div>
-                    </TabsContent>
-                </Tabs>
+                    )}
+                </div>
 
                 <DialogFooter>
                     <Button variant="secondary" onClick={onClose}>

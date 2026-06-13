@@ -42,6 +42,7 @@ interface POSState {
     selectedPaymentType: PaymentType | null;
     userPermissions: { [key: string]: any }[];
     autoMerge: boolean;
+    initialized: boolean;
     // print: Print;
 
     // dialogs
@@ -182,6 +183,7 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
     selectedPaymentType: null,
     userPermissions: [],
     autoMerge: false,
+    initialized: false,
     // print: new Print({
     //   urls: (window as any).systemUrls,
     //   options: (window as any).systemOptions,
@@ -212,6 +214,11 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
 
     // Actions
     initialize: () => {
+        // Guard: only run once. The store is a module-level singleton so this
+        // survives React Strict Mode's double-mount/unmount cycles, unlike useRef.
+        if (get().initialized) return;
+        set({ initialized: true });
+
         const { orderTypeProcessQueue, initialQueue } = get();
         set({
             orderTypeProcessQueue: [
@@ -474,7 +481,7 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
         let order = get().order;
 
         if (order.tax_group_id === undefined || order.tax_group_id === null) {
-            get().computeOrderTaxes(order);
+            order = get().computeOrderTaxes(order);
             return { data: { order }, status: 'success' };
         }
 
@@ -482,6 +489,8 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
 
         if (group.id !== undefined) {
             if (group.id === order.tax_group_id) {
+                // computeOrderTaxGroup internally calls computeOrderTaxes,
+                // so order.tax_value is correctly set after this call.
                 order = get().computeOrderTaxGroup(order, group);
             }
             return { status: 'success', data: { tax: group, order } };
@@ -490,6 +499,7 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
         if (![undefined, null].includes(order.tax_group_id) && order.tax_group_id.toString().length > 0) {
             try {
                 const { data: tax } = await axios.get(`/api/taxes/groups/${order.tax_group_id}`);
+                // computeOrderTaxGroup internally calls computeOrderTaxes.
                 order = get().computeOrderTaxGroup(order, tax);
                 return { status: 'success', data: { tax, order } };
             } catch (error) {
@@ -499,6 +509,7 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
             throw { status: 'error', message: __('No tax group assigned to the order') };
         }
     },
+
 
     computeOrderTaxGroup: (order, taxGroup) => {
         const summarizedRates = taxGroup.taxes.map((tax: any) => parseFloat(tax.rate)).reduce((b: number, a: number) => b + a, 0);

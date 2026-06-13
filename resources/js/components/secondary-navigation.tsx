@@ -14,16 +14,13 @@ type Props = {
 
 export default function SecondaryNavigation({ setShowSelectCustomerDialog }: Props) {
   const { t } = useTranslation();
-  const { order, options, setNote, pushCoupon, removeCoupon, updateCart } = usePOS();
+  const { order, products, options, setNote, pushCoupon, removeCoupon, updateCart, updateProduct, computeTaxes } = usePOS();
   const [isCommentsDialogOpen, setIsCommentsDialogOpen] = useState(false);
   const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
   const [isTaxesDialogOpen, setIsTaxesDialogOpen] = useState(false);
   const [isCouponsDialogOpen, setIsCouponsDialogOpen] = useState(false);
 
-  const isFlatVat = options.ns_jgrem_vat === 'flat_vat';
-
-  const [taxRate, setTaxRate] = useState(8);
-  const [taxType, setTaxType] = useState('percentage');
+  const showTaxes = options.ns_jgrem_vat === 'variable_vat';
 
   const handleSaveNote = (note: string, display: boolean) => {
     setNote(note, display ? 'visible' : 'hidden');
@@ -33,9 +30,18 @@ export default function SecondaryNavigation({ setShowSelectCustomerDialog }: Pro
     updateCart({ title: settings.orderName });
   };
 
-  const handleSaveTax = (rate: number, type: string) => {
-    setTaxRate(rate);
-    setTaxType(type);
+  const handleSaveTax = (taxGroupId: number | null, taxType: string) => {
+    // In variable_vat mode the order-level tax group is the single source of tax.
+    // Zero out product-level tax values so the backend doesn't double-count
+    // (product tax + order tax) when it re-computes the order total.
+    products.forEach((product) => {
+      updateProduct(product, {
+        tax_value: 0,
+        total_tax_value: 0,
+        tax_group_id: undefined,
+      });
+    });
+    updateCart({ tax_group_id: taxGroupId, tax_type: taxType });
   };
 
   const handleApplyCoupon = (coupon: Coupon) => {
@@ -55,11 +61,11 @@ export default function SecondaryNavigation({ setShowSelectCustomerDialog }: Pro
             {t('Comments')}
             {order.note && <span className="bg-primary ml-2 h-2 w-2 rounded-full"></span>}
           </Button>
-          {isFlatVat && (
+          {showTaxes && (
             <Button variant="outline" size="sm" className="flex items-center" onClick={() => setIsTaxesDialogOpen(true)}>
               <Receipt className="mr-2 h-4 w-4" />
               {t('Taxes')}
-              {taxRate > 0 && <span className="bg-primary ml-2 h-2 w-2 rounded-full"></span>}
+              {order.tax_group_id && <span className="bg-primary ml-2 h-2 w-2 rounded-full"></span>}
             </Button>
           )}
           <Button variant="outline" size="sm" className="flex items-center" onClick={() => setIsCouponsDialogOpen(true)}>
@@ -91,8 +97,8 @@ export default function SecondaryNavigation({ setShowSelectCustomerDialog }: Pro
         isOpen={isTaxesDialogOpen}
         onClose={() => setIsTaxesDialogOpen(false)}
         onSave={handleSaveTax}
-        currentTaxRate={taxRate}
-        currentTaxType={taxType}
+        currentTaxGroupId={order.tax_group_id ?? null}
+        currentTaxType={order.tax_type ?? 'inclusive'}
       />
 
       <SettingsDialog
