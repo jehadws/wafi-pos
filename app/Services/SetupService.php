@@ -163,14 +163,6 @@ class SetupService
             '--force' => true,
         ] );
 
-        /**
-         * JgremPOS uses Sanctum, we're making sure to publish the package.
-         */
-        Artisan::call( 'vendor:publish', [
-            '--force' => true,
-            '--provider' => 'Laravel\Sanctum\SanctumServiceProvider',
-        ] );
-
         Artisan::call( 'ns:translate', [
             '--symlink' => true,
         ] );
