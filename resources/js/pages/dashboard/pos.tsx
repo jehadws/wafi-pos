@@ -2,7 +2,7 @@ import PosSystem from '@/components/pos/pos-system';
 import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { Head, usePage } from '@inertiajs/react';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { Toaster } from 'sonner';
 
 /** Static map of identifier → OrderTypeObj shape (mirrors order-type-dialog.tsx) */
@@ -15,25 +15,27 @@ export default function PosPage() {
   const { t } = useTranslation();
   const { settings, options } = usePage().props as { settings: any; options: NsPosOptions };
   const { defineOptions, defineSettings, initialize, processInitialQueue, setAutoMerge, setOrderType, order } = usePOS();
-  const initializedRef = useRef(false);
 
+  // Sync options & settings into the store whenever they change (e.g. Inertia navigation).
   useEffect(() => {
     defineOptions(options);
     defineSettings(settings);
     if ((options as any).ns_jgrem_items_merge !== undefined) {
       setAutoMerge((options as any).ns_jgrem_items_merge);
     }
-
-    // Run the initialization queue exactly once on mount.
-    // This is what triggers the default customer fetch, permissions load, etc.
-    if (!initializedRef.current) {
-      initializedRef.current = true;
-      initialize();
-      processInitialQueue().catch((err) => {
-        console.error('[POS] Initialization queue failed:', err);
-      });
-    }
   }, [options, settings]);
+
+  // Run the initialization queue exactly once on mount.
+  // initialize() has its own guard inside the Zustand store (the `initialized` flag),
+  // so it is safe against React Strict Mode double-invocations and re-renders.
+  // This effect intentionally has an empty dependency array.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    initialize();
+    processInitialQueue().catch((err) => {
+      console.error('[POS] Initialization queue failed:', err);
+    });
+  }, []);
 
   // Auto-select order type when exactly one type is enabled
   useEffect(() => {
