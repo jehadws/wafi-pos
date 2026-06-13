@@ -41,15 +41,15 @@ Route::middleware([
 });
 
 // include_once dirname( __FILE__ ) . '/api/update.php';
-//
-// Route::prefix( 'setup' )
-//     ->middleware( [
-//         ClearRequestCacheMiddleware::class,
-//     ] )
-//     ->group( function () {
-//         Route::get( 'check-database', [ SetupController::class, 'checkExistingCredentials' ] );
-//         Route::post( 'database', [ SetupController::class, 'checkDatabase' ] );
-//         Route::get( 'database', [ SetupController::class, 'checkDbConfigDefined' ] );
-//         Route::post( 'configuration', [ SetupController::class, 'saveConfiguration' ] );
-//     } );
-//
+
+Route::prefix( 'api/setup' )
+    ->middleware( [
+        ClearRequestCacheMiddleware::class,
+    ] )
+    ->group( function () {
+        Route::get( 'check-database', [ SetupController::class, 'checkExistingCredentials' ] );
+        Route::post( 'database', [ SetupController::class, 'checkDatabase' ] );
+        Route::get( 'database', [ SetupController::class, 'checkDbConfigDefined' ] );
+        Route::post( 'configuration', [ SetupController::class, 'saveConfiguration' ] );
+    } );
+

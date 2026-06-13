@@ -60,11 +60,11 @@ Route::middleware([
   });
 });
 
-// Route::middleware([
-//   NotInstalledStateMiddleware::class,
-//   ClearRequestCacheMiddleware::class,
-// ])->group(function () {
-//   Route::prefix('/do-setup/')->group(function () {
-//     Route::get('', [SetupController::class, 'welcome'])->name('ns.do-setup');
-//   });
-// });
+Route::middleware([
+  NotInstalledStateMiddleware::class,
+  ClearRequestCacheMiddleware::class,
+])->group(function () {
+  Route::prefix('/do-setup/')->group(function () {
+    Route::get('', [SetupController::class, 'welcome'])->name('setup.index');
+  });
+});

@@ -23,10 +23,10 @@ class SetupController extends Controller
 
     public function welcome( Request $request )
     {
-        return view( 'pages.setup.welcome', [
-            'title' => __( 'Welcome &mdash; JgremPOS' ),
-            'languages' => config( 'jgrem.languages' ),
-            'lang' => $request->query( 'lang' ) ?: 'en',
+        return inertia( 'setup/wizard', [
+            'store_name' => config('app.name'),
+            'languages' => config( 'jgrem.languages', [] ),
+            'default_lang' => $request->query( 'lang' ) ?: 'en',
         ] );
     }
 
