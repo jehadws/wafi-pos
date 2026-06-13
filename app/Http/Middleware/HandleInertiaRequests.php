@@ -82,7 +82,7 @@ class HandleInertiaRequests extends Middleware
             'menus' => $request->user() ?
                 app()->make(\App\Services\MenuService::class)->getMenus() :
                 [],
-            'settings' => (new GeneralSettings)->getPayload(),
+            'settings' => \App\Services\Helper::installed() ? (new GeneralSettings)->getPayload() : [],
         ];
     }
 }

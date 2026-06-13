@@ -63,12 +63,15 @@ class DateService extends Carbon
      */
     public function getFormatted( string $date, string $mode = 'full' ): string
     {
+        $dateFormat = $this->options ? $this->options->get( 'ns_date_format', 'Y-m-d' ) : 'Y-m-d';
+        $dateTimeFormat = $this->options ? $this->options->get( 'ns_datetime_format', 'Y-m-d H:i:s' ) : 'Y-m-d H:i:s';
+
         switch ( $mode ) {
             case 'short':
-                return $this->parse( $date )->format( $this->options->get( 'ns_date_format', 'Y-m-d' ) );
+                return $this->parse( $date )->format( $dateFormat );
                 break;
             case 'full':
-                return $this->parse( $date )->format( $this->options->get( 'ns_datetime_format', 'Y-m-d H:i:s' ) );
+                return $this->parse( $date )->format( $dateTimeFormat );
                 break;
         }
     }
@@ -88,12 +91,15 @@ class DateService extends Carbon
      */
     public function getNowFormatted( string $mode = 'full' ): string
     {
+        $dateFormat = $this->options ? $this->options->get( 'ns_date_format', 'Y-m-d' ) : 'Y-m-d';
+        $dateTimeFormat = $this->options ? $this->options->get( 'ns_datetime_format', 'Y-m-d H:i:s' ) : 'Y-m-d H:i:s';
+
         switch ( $mode ) {
             case 'short':
-                return $this->format( $this->options->get( 'ns_date_format', 'Y-m-d' ) );
+                return $this->format( $dateFormat );
                 break;
             case 'full':
-                return $this->format( $this->options->get( 'ns_datetime_format', 'Y-m-d H:i:s' ) );
+                return $this->format( $dateTimeFormat );
                 break;
         }
     }

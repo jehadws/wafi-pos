@@ -58,18 +58,22 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     protected function gate(): void
     {
         if ( Helper::installed() ) {
-            $adminRole = Role::namespace( Role::ADMIN );
-            $users = collect( [] );
+            try {
+                $adminRole = Role::namespace( Role::ADMIN );
+                $users = collect( [] );
 
-            if ( $adminRole instanceof Role ) {
-                $users = $adminRole->users;
+                if ( $adminRole instanceof Role ) {
+                    $users = $adminRole->users;
+                }
+
+                Gate::define( 'viewTelescope', function ( $user ) use ( $users ) {
+                    return in_array( $user->email, [
+                        $users->map( fn( $__user ) => $__user->email ),
+                    ] );
+                } );
+            } catch (\Exception $e) {
+                // Ignore DB connection errors during boot
             }
-
-            Gate::define( 'viewTelescope', function ( $user ) use ( $users ) {
-                return in_array( $user->email, [
-                    $users->map( fn( $__user ) => $__user->email ),
-                ] );
-            } );
         }
     }
 }
