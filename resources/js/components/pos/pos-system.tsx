@@ -5,6 +5,7 @@ import PrimaryNavigation from '@/components/primary-navigation';
 import SecondaryNavigation from '@/components/secondary-navigation';
 import { useDebouncedEffect } from '@/hooks/use-debounced-effect';
 import { useNumericKeypad } from '@/hooks/use-numeric-keypad';
+import { usePOSShortcuts } from '@/hooks/use-pos-shortcuts';
 import { useRTL } from '@/hooks/use-rtl';
 import { usePOS } from '@/hooks/usePOS';
 import { OrderProduct } from '@/interfaces/order-product';
@@ -18,6 +19,7 @@ import ConfirmationDialog from '../confirmation-dialog';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { NumericKeypadDialog } from '../ui/numeric-keypad-dialog';
+import { CartCalculator } from '@/services/cart-calculator';
 import { CustomerDetailsDialog } from './customer-details-dialog';
 import { SelectCustomerDialog } from './customer-select-dialog';
 import { OrderTypeDialog } from './order-type-dialog';
@@ -26,16 +28,6 @@ import { PaymentGatewayDialog } from './payment-gateway-dialog';
 import ProductsCategoriesPanel from './products-categories-panel';
 import { SearchProductsDialog } from './search-products-dialog';
 import { ShippingDialog } from './shipping-dialog';
-
-function calculateNewTaxValue(oldPriceWithoutTax: number, oldTaxValue: number, newPriceWithoutTax: number) {
-  const taxRate = oldTaxValue / oldPriceWithoutTax;
-  const newTaxValue = newPriceWithoutTax * taxRate;
-
-  return {
-    taxRate: +(taxRate * 100).toFixed(2), // percent
-    newTaxValue: +newTaxValue.toFixed(2), // rounded tax value
-  };
-}
 
 export default function PosSystem() {
   const { products, options, removeProduct, updateProduct, addToCart, order, setDiscount, selectCustomer, setOrderType, autoMerge, setAutoMerge } =
@@ -68,58 +60,16 @@ export default function PosSystem() {
   }, [isAutoFocusOpen]);
 
   // ─── Keyboard Shortcuts ───────────────────────────────────────────────
-  useEffect(() => {
-    const matchesShortcut = (e: KeyboardEvent, shortcut: string[] | string | null | undefined): boolean => {
-      if (!shortcut || (Array.isArray(shortcut) && shortcut.length === 0)) return false;
-      const keys = Array.isArray(shortcut) ? shortcut : [shortcut];
-      return keys.some((combo) => {
-        const parts = combo.toLowerCase().split('+').map((p) => p.trim());
-        const requireCtrl = parts.includes('ctrl');
-        const requireAlt = parts.includes('alt');
-        const requireShift = parts.includes('shift');
-        const mainKey = parts.find((p) => !['ctrl', 'alt', 'shift'].includes(p)) ?? '';
-        return (
-          e.ctrlKey === requireCtrl &&
-          e.altKey === requireAlt &&
-          e.shiftKey === requireShift &&
-          e.key.toLowerCase() === mainKey
-        );
-      });
-    };
-
-    const handleKeydown = (e: KeyboardEvent) => {
-      const o = options;
-      if (matchesShortcut(e, o.ns_jgrem_keyboard_payment)) {
-        e.preventDefault();
-        setShowPaymentGatewayDialog(true);
-      } else if (matchesShortcut(e, o.ns_jgrem_keyboard_cancel_order)) {
-        e.preventDefault();
-        setIsResetCartOpen(true);
-      } else if (matchesShortcut(e, o.ns_jgrem_keyboard_shipping)) {
-        e.preventDefault();
-        setShowShippingDialog(true);
-      } else if (matchesShortcut(e, o.ns_jgrem_keyboard_order_type)) {
-        e.preventDefault();
-        setShowOrderTypeDialog(true);
-      } else if (matchesShortcut(e, o.ns_jgrem_keyboard_quick_search)) {
-        e.preventDefault();
-        setShowSearchProductsDialog(true);
-      } else if (matchesShortcut(e, o.ns_jgrem_keyboard_toggle_merge)) {
-        e.preventDefault();
-        setAutoMerge(!autoMerge);
-      } else if (matchesShortcut(e, o.ns_jgrem_keyboard_fullscreen)) {
-        e.preventDefault();
-        if (document.fullscreenElement) {
-          document.exitFullscreen();
-        } else {
-          document.documentElement.requestFullscreen();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeydown);
-    return () => window.removeEventListener('keydown', handleKeydown);
-  }, [options, autoMerge]);
+  usePOSShortcuts({
+    options,
+    autoMerge,
+    onPayment: () => setShowPaymentGatewayDialog(true),
+    onCancel: () => setIsResetCartOpen(true),
+    onShipping: () => setShowShippingDialog(true),
+    onOrderType: () => setShowOrderTypeDialog(true),
+    onQuickSearch: () => setShowSearchProductsDialog(true),
+    onToggleMerge: () => setAutoMerge(!autoMerge),
+  });
   // ─────────────────────────────────────────────────────────────────────
 
   const updateDiscount = (discount: string) => {
@@ -158,74 +108,22 @@ export default function PosSystem() {
     if (quantity <= 0) {
       removeFromCart(product);
     } else {
-      const lineSubtotal = product.unit_price * quantity;
-      const discount_value =
-        product.discount_type === 'percentage' ? ((product.discount_percentage || 0) / 100) * lineSubtotal : product.discount || 0;
-
-      const total_price = product.unit_price * quantity;
-      const totalBeforeTax = total_price - discount_value;
-
-      let totalTaxValue = 0;
-      const taxRate = product.price_without_tax > 0 ? product.tax_value / product.price_without_tax : 0;
-
-      if (product.tax_type === 'exclusive') {
-        totalTaxValue = totalBeforeTax * taxRate;
-      } else if (product.tax_type === 'inclusive') {
-        const taxMultiplier = 1 + taxRate;
-        const priceWithTax = totalBeforeTax;
-        const priceWithoutTax = priceWithTax / taxMultiplier;
-        totalTaxValue = priceWithTax - priceWithoutTax;
-      }
-
-      const total_price_with_tax = totalBeforeTax + totalTaxValue;
-      const total_price_without_tax = totalBeforeTax;
-
-      updateProduct(product, {
-        discount: discount_value,
-        quantity,
-        total_tax_value: totalTaxValue,
-        total_price: options.ns_jgrem_price_with_tax === 'yes' ? total_price_with_tax : total_price_without_tax,
-        total_price_with_tax,
-        total_price_without_tax,
-      });
+      const isPriceWithTax = options.ns_jgrem_price_with_tax === 'yes';
+      const updatedValues = CartCalculator.calculateTotalsForQuantityUpdate(product, quantity, isPriceWithTax);
+      updateProduct(product, updatedValues);
     }
   };
 
   const updateProductPrice = (product: OrderProduct, price: number) => {
-    const discount_value = ((product.discount_percentage || 0) / 100) * price * product.quantity;
-    const newTaxValue = calculateNewTaxValue(product.price_without_tax, product.tax_value, price).newTaxValue;
-    const totalTaxValue = newTaxValue * product.quantity;
-    const total_price = price * product.quantity;
-    const total_price_with_tax = total_price + totalTaxValue - discount_value;
-    const total_price_without_tax = total_price - discount_value;
-
-    updateProduct(product, {
-      discount: discount_value,
-      unit_price: price,
-      price_without_tax: price,
-      price_with_tax: price + newTaxValue,
-      tax_value: newTaxValue,
-      total_tax_value: totalTaxValue,
-      mode: 'custom',
-      total_price: options.ns_jgrem_price_with_tax === 'yes' ? total_price_with_tax : total_price_without_tax,
-      total_price_with_tax,
-      total_price_without_tax,
-    });
+    const isPriceWithTax = options.ns_jgrem_price_with_tax === 'yes';
+    const updatedValues = CartCalculator.calculateTotalsForPriceUpdate(product, price, isPriceWithTax);
+    updateProduct(product, updatedValues);
   };
 
   const updateProductDiscountPercentage = (product: OrderProduct, discount: number) => {
-    const total_price = product.price_without_tax * product.quantity;
-    const discount_value = (discount / 100) * total_price;
-    const total_price_with_tax = product.price_with_tax * product.quantity - discount_value;
-    const total_price_without_tax = total_price - discount_value;
-
-    updateProduct(product, {
-      discount_percentage: discount,
-      discount: discount_value,
-      total_price: options.ns_jgrem_price_with_tax === 'yes' ? total_price_with_tax : total_price_without_tax,
-      total_price_without_tax,
-      total_price_with_tax,
-    });
+    const isPriceWithTax = options.ns_jgrem_price_with_tax === 'yes';
+    const updatedValues = CartCalculator.calculateTotalsForDiscountPercentageUpdate(product, discount, isPriceWithTax);
+    updateProduct(product, updatedValues);
   };
 
   const clearCart = () => {
