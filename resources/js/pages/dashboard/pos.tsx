@@ -29,7 +29,7 @@ export default function PosPage() {
   // initialize() has its own guard inside the Zustand store (the `initialized` flag),
   // so it is safe against React Strict Mode double-invocations and re-renders.
   // This effect intentionally has an empty dependency array.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   useEffect(() => {
     initialize();
     processInitialQueue().catch((err) => {

@@ -11,7 +11,7 @@ import { POSManager, POSSettings } from '@/lib/pos/pos-manager';
 const comprehensivePOSManagerTest = async () => {
     console.log('🧪 Running Comprehensive POSManager Tests...\n');
 
-    let testResults = {
+    const testResults = {
         passed: 0,
         failed: 0,
         total: 0,

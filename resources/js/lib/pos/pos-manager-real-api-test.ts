@@ -8,7 +8,7 @@ import { POSManager, POSSettings } from '@/lib/pos/pos-manager';
 const testPOSManagerWithRealAPIData = async () => {
     console.log('🧪 Testing POSManager with REAL API data...\n');
 
-    let testResults = {
+    const testResults = {
         passed: 0,
         failed: 0,
         total: 0,
