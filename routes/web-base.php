@@ -23,9 +23,9 @@ Route::middleware(['web'])->group(function () {
 // require dirname(__FILE__) . '/intermediate.php';
 
 Route::middleware([
-  // InstalledStateMiddleware::class,
-  // CheckMigrationStatus::class,
-  // SubstituteBindings::class,
+  InstalledStateMiddleware::class,
+  CheckMigrationStatus::class,
+  SubstituteBindings::class,
 ])->group(function () {
   /**
    * We would like to isolate certain routes as it's registered
@@ -33,15 +33,15 @@ Route::middleware([
    */
   // require dirname(__FILE__) . '/authenticate.php';
 
-  // Route::get('/database-update', [UpdateController::class, 'updateDatabase'])
-  //   ->withoutMiddleware([CheckMigrationStatus::class])
-  //   ->name('ns.database-update');
+  Route::get('/database-update', [UpdateController::class, 'updateDatabase'])
+    ->withoutMiddleware([CheckMigrationStatus::class])
+    ->name('ns.database-update');
 
   Route::middleware([
-    // Authenticate::class,
-    // CheckApplicationHealthMiddleware::class,
-    // ClearRequestCacheMiddleware::class,
-    // FooterOutputHookMiddleware::class,
+    Authenticate::class,
+    CheckApplicationHealthMiddleware::class,
+    ClearRequestCacheMiddleware::class,
+    FooterOutputHookMiddleware::class,
   ])->group(function () {
     Route::prefix('dashboard')->group(function () {
       event(new WebRoutesLoadedEvent('dashboard'));
@@ -55,7 +55,7 @@ Route::middleware([
       // include dirname(__FILE__) . '/web/modules.php';
       include dirname(__FILE__) . '/web/users.php';
       //
-      // Route::get('/crud/download/{hash}', [CrudController::class, 'downloadSavedFile'])->name('ns.dashboard.crud-download');
+      Route::get('/crud/download/{hash}', [CrudController::class, 'downloadSavedFile'])->name('ns.dashboard.crud-download');
     });
   });
 });

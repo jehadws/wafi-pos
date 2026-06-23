@@ -40,7 +40,7 @@ Route::middleware([
   });
 });
 
-// include_once dirname( __FILE__ ) . '/api/update.php';
+include_once dirname( __FILE__ ) . '/api/update.php';
 
 Route::prefix( 'api/setup' )
     ->middleware( [

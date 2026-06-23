@@ -7,14 +7,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('', [DashboardController::class, 'home'])->name('dashboard')
   ->middleware([NsRestrictMiddleware::arguments('read.dashboard')]);
 
-// Route::get('dashboard', function () {
-//   return Inertia::render('dashboard');
-// })->name('dashboard');
-
 include dirname(__FILE__) . '/web/orders.php';
 include dirname(__FILE__) . '/web/medias.php';
 include dirname(__FILE__) . '/web/customers.php';
-// include dirname(__FILE__) . '/web/cash-registers.php';
+include dirname(__FILE__) . '/web/cash-registers.php';
 include dirname(__FILE__) . '/web/procurements.php';
 include dirname(__FILE__) . '/web/providers.php';
 include dirname(__FILE__) . '/web/settings.php';
