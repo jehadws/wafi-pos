@@ -22,6 +22,6 @@ class InstalledStateMiddleware
       return $next($request);
     }
 
-    return redirect()->route('do-setup');
+    return redirect()->route('setup.index');
   }
 }
