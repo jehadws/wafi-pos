@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/compone
 import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import PrintAgentService from '@/services/print-agent-service';
 import { formatCurrency } from '@/utils/format';
 import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -135,8 +136,36 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
     };
 
     try {
-      await submitOrder(orderData);
+      const createdOrder = await submitOrder(orderData);
       toast.success(t('The operation was successful.'));
+
+      // Check if auto-print is enabled in PrintAgent settings
+      const printerSettings = PrintAgentService.getSettings();
+      if (printerSettings.autoPrintOnSale && paymentStatus === 'paid') {
+        const orderCode = createdOrder?.data?.order?.code || (order as any).code || `ORD-${Date.now()}`;
+        PrintAgentService.printReceipt({
+          storeName: 'JGREM POS',
+          orderCode,
+          date: new Date().toLocaleString(),
+          customer: order.customer ? `${order.customer.first_name || ''} ${order.customer.last_name || ''}`.trim() : undefined,
+          items: products.map((p) => ({
+            name: p.name || 'Item',
+            quantity: p.quantity || 1,
+            price: formatCurrency(p.unit_price || 0),
+            total: formatCurrency(p.total_price || 0),
+          })),
+          subtotal: formatCurrency(order.subtotal || 0),
+          discount: order.discount > 0 ? formatCurrency(order.discount) : undefined,
+          tax: order.tax_value > 0 ? formatCurrency(order.tax_value) : undefined,
+          total: formatCurrency(order.total || 0),
+          tendered: formatCurrency(order.tendered || 0),
+          change: formatCurrency(order.change || 0),
+          barcode: orderCode,
+        }).catch((err) => {
+          console.warn('Auto print failed:', err);
+        });
+      }
+
       resetCart();
       onOpenChange(false);
     } catch (error: any) {

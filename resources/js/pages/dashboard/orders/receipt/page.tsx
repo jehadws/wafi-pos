@@ -6,142 +6,189 @@ import { Printer } from 'lucide-react';
 import React, { useEffect } from 'react';
 
 export default function OrderReceiptPage({ order, optionsService, title }: any) {
-  const { t } = useTranslation();
-  const generalSettings = Settings.get();
-  const storeName = generalSettings?.ns_store_name || 'JgremPOS';
-  const receiptLogo = optionsService?.ns_invoice_receipt_logo || '';
-  const receiptFooter = optionsService?.ns_invoice_receipt_footer || '';
+    const { t } = useTranslation();
+    const generalSettings = Settings.get();
+    const storeName = generalSettings?.identification?.ns_store_name || 'JGREM POS';
+    const receiptLogo = optionsService?.ns_invoice_receipt_logo || '';
+    const receiptFooter = optionsService?.ns_invoice_receipt_footer || '';
+    const showTaxBreakdown = optionsService?.ns_invoice_display_tax_breakdown === 'yes';
 
-  useEffect(() => {
-    // Optional: automatically open print dialog when page loads
-    // setTimeout(() => window.print(), 500);
-  }, []);
+    useEffect(() => {
+        // Optional: automatically open print dialog when page loads
+        // setTimeout(() => window.print(), 500);
+    }, []);
 
-  const handlePrint = () => {
-    window.print();
-  };
+    const handlePrint = () => {
+        window.print();
+    };
 
-  return (
-    <div className="min-h-screen bg-gray-100 p-8 flex flex-col items-center">
-      {/* Hide the print button when actually printing */}
-      <style>{`
-        @media print {
-          .no-print { display: none !important; }
-          body { background: white; margin: 0; padding: 0; }
-          .receipt-container { box-shadow: none !important; max-width: 100% !important; border: none !important; }
-        }
-      `}</style>
+    return (
+        <div className="min-h-screen bg-gray-100 p-6 flex flex-col items-center">
+            <style>{`
+                @media print {
+                    .no-print { display: none !important; }
+                    body { background: white; margin: 0; padding: 0; }
 
-      <div className="w-full max-w-md flex justify-between items-center mb-4 no-print">
-        <h1 className="text-xl font-bold">{title}</h1>
-        <Button onClick={handlePrint} className="gap-2">
-          <Printer size={16} />
-          {t('Print Receipt')}
-        </Button>
-      </div>
+                    @page {
+                        size: 80mm auto;
+                        margin: 0;
+                    }
 
-      <div className="receipt-container bg-white shadow-lg border rounded-lg p-6 w-full max-w-md text-sm font-mono text-gray-800">
-        <div className="text-center mb-6">
-          {receiptLogo && (
-            <img src={receiptLogo} alt={storeName} className="max-h-16 mx-auto mb-2" />
-          )}
-          <h2 className="text-xl font-bold">{storeName}</h2>
-          <p className="text-gray-500">{t('Point of Sale System')}</p>
+                    .receipt-wrapper {
+                        box-shadow: none !important;
+                        border: none !important;
+                        max-width: 80mm !important;
+                        margin: 0 !important;
+                        padding: 4mm !important;
+                    }
+                }
+            `}</style>
+
+            {/* Print button — hidden when printing */}
+            <div className="w-full max-w-sm flex justify-between items-center mb-4 no-print">
+                <h1 className="text-lg font-bold text-gray-800">{title}</h1>
+                <Button onClick={handlePrint} className="gap-2">
+                    <Printer size={16} />
+                    {t('Print Receipt')}
+                </Button>
+            </div>
+
+            {/* Receipt */}
+            <div
+                className="receipt-wrapper bg-white shadow-md border border-gray-200 rounded p-4 w-full"
+                style={{ maxWidth: '340px', fontFamily: "'Courier New', Courier, monospace", fontSize: '12px', color: '#000' }}
+            >
+                {/* Store Header */}
+                <div className="text-center mb-3">
+                    {receiptLogo ? (
+                        <img src={receiptLogo} alt={storeName} style={{ maxHeight: '60px', maxWidth: '140px', margin: '0 auto 4px', display: 'block' }} />
+                    ) : (
+                        <div style={{ fontSize: '20px', fontWeight: 'bold', letterSpacing: '1px', textTransform: 'uppercase' }}>{storeName}</div>
+                    )}
+                </div>
+
+                {/* Divider */}
+                <div style={{ borderTop: '1px dashed #000', margin: '6px 0' }} />
+
+                {/* Order Info */}
+                <div style={{ fontSize: '11px' }}>
+                    <div className="flex justify-between mb-1">
+                        <span style={{ fontWeight: 'bold' }}>{t('Order')}:</span>
+                        <span>{order.code}</span>
+                    </div>
+                    <div className="flex justify-between mb-1">
+                        <span style={{ fontWeight: 'bold' }}>{t('Date')}:</span>
+                        <span>{formatDate(order.created_at)}</span>
+                    </div>
+                    {order.customer && (
+                        <div className="flex justify-between mb-1">
+                            <span style={{ fontWeight: 'bold' }}>{t('Customer')}:</span>
+                            <span>{order.customer.first_name} {order.customer.last_name || ''}</span>
+                        </div>
+                    )}
+                    {order.user && (
+                        <div className="flex justify-between mb-1">
+                            <span style={{ fontWeight: 'bold' }}>{t('Cashier')}:</span>
+                            <span>{order.user.username}</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Divider */}
+                <div style={{ borderTop: '1px dashed #000', margin: '6px 0' }} />
+
+                {/* Products Table */}
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+                    <thead>
+                        <tr style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>
+                            <td style={{ paddingBottom: '3px', borderBottom: '1px dashed #000', width: '55%' }}>{t('Product')}</td>
+                            <td style={{ paddingBottom: '3px', borderBottom: '1px dashed #000', textAlign: 'center', width: '20%' }}>{t('Qty')}</td>
+                            <td style={{ paddingBottom: '3px', borderBottom: '1px dashed #000', textAlign: 'right', width: '25%' }}>{t('Total')}</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {order.products?.map((item: any) => (
+                            <tr key={item.id} style={{ borderBottom: '1px dotted #ccc' }}>
+                                <td style={{ paddingTop: '4px', paddingBottom: '4px', verticalAlign: 'top' }}>
+                                    <div style={{ fontWeight: 'bold', wordBreak: 'break-word' }}>{item.name}</div>
+                                    <div style={{ fontSize: '10px', color: '#333' }}>{formatCurrency(item.unit_price)}</div>
+                                </td>
+                                <td style={{ paddingTop: '4px', paddingBottom: '4px', textAlign: 'center', verticalAlign: 'top' }}>{item.quantity}</td>
+                                <td style={{ paddingTop: '4px', paddingBottom: '4px', textAlign: 'right', fontWeight: 'bold', verticalAlign: 'top' }}>{formatCurrency(item.total_price)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+
+                {/* Divider */}
+                <div style={{ borderTop: '1px dashed #000', margin: '6px 0' }} />
+
+                {/* Summary */}
+                <div style={{ fontSize: '11px' }}>
+                    <div className="flex justify-between mb-1">
+                        <span>{t('Subtotal')}</span>
+                        <span>{formatCurrency(order.subtotal)}</span>
+                    </div>
+                    {order.discount > 0 && (
+                        <div className="flex justify-between mb-1" style={{ color: '#555' }}>
+                            <span>{t('Discount')}</span>
+                            <span>-{formatCurrency(order.discount)}</span>
+                        </div>
+                    )}
+                    {order.tax_value > 0 && (
+                        <div className="flex justify-between mb-1">
+                            <span>{t('Tax')}</span>
+                            <span>{formatCurrency(order.tax_value)}</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Double divider before total */}
+                <div style={{ borderTop: '3px double #000', margin: '6px 0' }} />
+
+                {/* Total */}
+                <div className="flex justify-between" style={{ fontSize: '16px', fontWeight: 'bold' }}>
+                    <span>{t('TOTAL')}</span>
+                    <span>{formatCurrency(order.total)}</span>
+                </div>
+
+                {/* Divider */}
+                <div style={{ borderTop: '1px dashed #000', margin: '6px 0' }} />
+
+                {/* Payments */}
+                {order.payments && order.payments.length > 0 && (
+                    <div style={{ fontSize: '11px' }}>
+                        <div style={{ fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '2px' }}>{t('Payment')}</div>
+                        {order.payments.map((payment: any) => (
+                            <div key={payment.id} className="flex justify-between mb-1">
+                                <span>{payment.label || t('Payment')}</span>
+                                <span>{formatCurrency(payment.value)}</span>
+                            </div>
+                        ))}
+                        <div className="flex justify-between mb-1">
+                            <span style={{ fontWeight: 'bold' }}>{t('Tendered')}</span>
+                            <span>{formatCurrency(order.tendered)}</span>
+                        </div>
+                        <div className="flex justify-between mb-1">
+                            <span>{t('Change')}</span>
+                            <span>{formatCurrency(order.change)}</span>
+                        </div>
+                    </div>
+                )}
+
+                {/* Divider */}
+                <div style={{ borderTop: '1px dashed #000', margin: '6px 0' }} />
+
+                {/* Footer */}
+                <div style={{ textAlign: 'center', fontSize: '11px', lineHeight: '1.6', marginTop: '8px' }}>
+                    <div style={{ fontWeight: 'bold', fontSize: '13px', marginBottom: '2px' }}>
+                        {receiptFooter || t('Thank you for your business!')}
+                    </div>
+                    <div style={{ fontSize: '10px', marginTop: '4px' }}>
+                        {t('Generated by')} {storeName}
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div className="mb-4 pb-4 border-b border-dashed border-gray-300">
-          <div className="flex justify-between mb-1">
-            <span className="font-semibold">{t('Order')}:</span>
-            <span>{order.code}</span>
-          </div>
-          <div className="flex justify-between mb-1">
-            <span className="font-semibold">{t('Date')}:</span>
-            <span>{formatDate(order.created_at)}</span>
-          </div>
-          {order.customer && (
-            <div className="flex justify-between mb-1">
-              <span className="font-semibold">{t('Customer')}:</span>
-              <span>{order.customer.first_name} {order.customer.last_name || ''}</span>
-            </div>
-          )}
-          {order.user && (
-            <div className="flex justify-between">
-              <span className="font-semibold">{t('Cashier')}:</span>
-              <span>{order.user.username}</span>
-            </div>
-          )}
-        </div>
-
-        <table className="w-full mb-4">
-          <thead>
-            <tr className="border-b border-gray-300 text-left">
-              <th className="py-2">{t('Item')}</th>
-              <th className="py-2 text-center">{t('Qty')}</th>
-              <th className="py-2 text-right">{t('Total')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {order.products?.map((item: any) => (
-              <tr key={item.id} className="border-b border-dashed border-gray-200">
-                <td className="py-2 pr-2">
-                  <div className="font-semibold">{item.name}</div>
-                  <div className="text-xs text-gray-500">{formatCurrency(item.unit_price)}</div>
-                </td>
-                <td className="py-2 text-center">{item.quantity}</td>
-                <td className="py-2 text-right font-semibold">{formatCurrency(item.total_price)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="space-y-1 mb-6 pb-4 border-b border-dashed border-gray-300">
-          <div className="flex justify-between">
-            <span>{t('Subtotal')}</span>
-            <span>{formatCurrency(order.subtotal)}</span>
-          </div>
-          {order.discount > 0 && (
-            <div className="flex justify-between text-red-600">
-              <span>{t('Discount')}</span>
-              <span>-{formatCurrency(order.discount)}</span>
-            </div>
-          )}
-          {order.tax_value > 0 && (
-            <div className="flex justify-between">
-              <span>{t('Tax')}</span>
-              <span>{formatCurrency(order.tax_value)}</span>
-            </div>
-          )}
-          <div className="flex justify-between text-lg font-bold mt-2 pt-2 border-t border-gray-800">
-            <span>{t('Total')}</span>
-            <span>{formatCurrency(order.total)}</span>
-          </div>
-        </div>
-
-        {order.payments && order.payments.length > 0 && (
-          <div className="mb-6 pb-4 border-b border-dashed border-gray-300">
-            <h4 className="font-bold mb-2">{t('Payments')}</h4>
-            {order.payments.map((payment: any) => (
-              <div key={payment.id} className="flex justify-between text-sm mb-1">
-                <span>{payment.label || t('Payment')}</span>
-                <span>{formatCurrency(payment.value)}</span>
-              </div>
-            ))}
-            <div className="flex justify-between font-bold mt-2">
-              <span>{t('Tendered')}</span>
-              <span>{formatCurrency(order.tendered)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>{t('Change')}</span>
-              <span>{formatCurrency(order.change)}</span>
-            </div>
-          </div>
-        )}
-
-        <div className="text-center text-sm text-gray-500">
-          <p>{receiptFooter || t('Thank you for your business!')}</p>
-          <p className="mt-2 text-xs">{t('Generated by')} {storeName}</p>
-        </div>
-      </div>
-    </div>
-  );
+    );
 }

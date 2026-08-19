@@ -1,257 +1,306 @@
-import { formatCurrency, formatDate } from "./format"
+import { formatCurrency, formatDate } from './format';
 
+/**
+ * NexoPOS-style thermal receipt template.
+ * Used by order-card.tsx via react-to-print.
+ */
 export const InvoiceTemplate = (order: TOrder, orderProducts: TOrderProducts[]) => {
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Invoice - ${order.code}</title>
-        <style>
-          * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-          }
+    return `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt - ${order.code}</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-          body {
-            font-family: Arial, sans-serif;
-            line-height: 1.4;
-            color: #333;
-            background: #fff;
-            padding: 20px;
-          }
+      @page {
+        size: 80mm auto;
+        margin: 0;
+      }
 
-          .invoice-container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            overflow: hidden;
-          }
+      body {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #000;
+        background: #fff;
+        width: 80mm;
+        padding: 8mm 4mm;
+      }
 
-          .header {
-            padding: 20px;
-            text-align: center;
-          }
+      .receipt {
+        width: 100%;
+      }
 
-          .company-name {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 5px;
-          }
+      /* ── Store Header ── */
+      .store-header {
+        text-align: center;
+        margin-bottom: 6px;
+      }
 
-          .subtitle {
-            font-size: 14px;
-            opacity: 0.9;
-          }
+      .store-logo {
+        max-width: 140px;
+        max-height: 60px;
+        display: block;
+        margin: 0 auto 4px;
+      }
 
-          .info-section {
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 15px;
-          }
+      .store-name {
+        font-size: 18px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
 
-          .info-item {
-            text-align: center;
-            flex: 1;
-            min-width: 120px;
-          }
+      /* ── Dividers ── */
+      .divider {
+        border: none;
+        border-top: 1px dashed #000;
+        margin: 6px 0;
+      }
 
-          .info-label {
-            font-size: 11px;
-            color: #666;
-            text-transform: uppercase;
-            margin-bottom: 3px;
-          }
+      .divider-solid {
+        border: none;
+        border-top: 1px solid #000;
+        margin: 6px 0;
+      }
 
-          .info-value {
-            font-weight: bold;
-            color: #333;
-          }
+      .divider-double {
+        border: none;
+        border-top: 3px double #000;
+        margin: 6px 0;
+      }
 
-          .content {
-            padding: 20px;
-          }
+      /* ── Info rows ── */
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        margin: 1px 0;
+      }
 
-          .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-          }
+      .info-label {
+        font-weight: bold;
+      }
 
-          .items-table th {
-            background: #f1f5f9;
-            padding: 12px 8px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 12px;
-            text-transform: uppercase;
-            border-bottom: 2px solid #e2e8f0;
-          }
+      /* ── Products Table ── */
+      .items-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
 
-          .items-table th:last-child {
-            text-align: right;
-          }
+      .items-table thead tr {
+        font-weight: bold;
+        font-size: 11px;
+        text-transform: uppercase;
+      }
 
-          .items-table td {
-            padding: 12px 8px;
-            border-bottom: 1px solid #e2e8f0;
-            vertical-align: top;
-          }
+      .items-table thead td {
+        padding: 3px 0;
+        border-bottom: 1px dashed #000;
+      }
 
-          .item-name {
-            font-weight: 600;
-            margin-bottom: 3px;
-          }
+      .items-table tbody tr {
+        border-bottom: 1px dotted #ccc;
+      }
 
-          .item-details {
-            font-size: 11px;
-            color: #666;
-          }
+      .items-table tbody td {
+        padding: 4px 0;
+        vertical-align: top;
+        font-size: 11px;
+      }
 
-          .item-total {
-            text-align: right;
-            font-weight: 600;
-          }
+      .col-product {
+        width: 55%;
+      }
 
-          .summary {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-          }
+      .col-qty {
+        width: 20%;
+        text-align: center;
+      }
 
-          .summary-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-          }
+      .col-total {
+        width: 25%;
+        text-align: right;
+        font-weight: bold;
+      }
 
-          .summary-row.total {
-            border-top: 2px solid #333;
-            margin-top: 10px;
-            padding-top: 10px;
-            font-weight: bold;
-            font-size: 16px;
-          }
+      .item-name {
+        font-weight: bold;
+        word-break: break-word;
+      }
 
-          .footer {
-            text-align: center;
-            padding: 15px;
-            background: #f8f9fa;
-            font-size: 11px;
-            color: #666;
-            border-top: 1px solid #e2e8f0;
-          }
+      .item-unit-price {
+        font-size: 10px;
+        color: #333;
+      }
 
-          .footer-line {
-            margin: 2px 0;
-          }
+      /* ── Summary ── */
+      .summary {
+        margin: 6px 0;
+      }
 
-          @media print {
-            body {
-              padding: 0;
-            }
+      .summary-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        padding: 1px 0;
+      }
 
-            .invoice-container {
-              border: none;
-              border-radius: 0;
-            }
+      .summary-row.total {
+        font-size: 15px;
+        font-weight: bold;
+        margin-top: 4px;
+        padding-top: 4px;
+      }
 
-            @page {
-              margin: 0.5in;
-            }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="invoice-container">
-          <!-- Header -->
-          <div class="header">
-            <div class="company-name">Jgrem POS</div>
-            <div class="subtitle">Point of Sale System</div>
-          </div>
+      .summary-row.discount {
+        color: #555;
+      }
 
-          <!-- Info Section -->
-          <div class="info-section">
-            <div class="info-item">
-              <div class="info-label">Date & Time</div>
-              <div class="info-value">${formatDate(order.created_at)}</div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">Order Code</div>
-              <div class="info-value">${order.code}</div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">Order ID</div>
-              <div class="info-value">#${order.id}</div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">Type</div>
-              <div class="info-value">${order.type.toUpperCase()}</div>
-            </div>
-          </div>
+      /* ── Payment ── */
+      .payment-section {
+        margin: 6px 0;
+      }
 
-          <!-- Content -->
-          <div class="content">
-            <!-- Items Table -->
-            <table class="items-table">
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${orderProducts
-      .map(
-        (item) => `
-                  <tr>
-                    <td>
-                      <div class="item-name">${item.name}</div>
-                      <div class="item-details">Qty: ${item.quantity} ${item.unit_name} | Unit: ${formatCurrency(item.price_with_tax)}</div>
-                    </td>
-                    <td class="item-total">${formatCurrency(item.total_price_with_tax)}</td>
-                  </tr>
-                `,
-      )
-      .join("")}
-              </tbody>
-            </table>
+      .payment-title {
+        font-weight: bold;
+        font-size: 11px;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+      }
 
-            <!-- Summary -->
-            <div class="summary">
-              <div class="summary-row">
-                <span>Subtotal</span>
-                <span>${formatCurrency(order.subtotal)}</span>
-              </div>
-              <div class="summary-row">
-                <span>Tax</span>
-                <span>${formatCurrency(order.tax_value)}</span>
-              </div>
-              <div class="summary-row">
-                <span>Discount</span>
-                <span>-${formatCurrency(order.discount)}</span>
-              </div>
-              <div class="summary-row total">
-                <span>Total</span>
-                <span>${formatCurrency(order.total)}</span>
-              </div>
-            </div>
-          </div>
+      /* ── Footer ── */
+      .receipt-footer {
+        text-align: center;
+        font-size: 11px;
+        margin-top: 8px;
+        line-height: 1.6;
+      }
 
-          <!-- Footer -->
-          <div class="footer">
-            <div class="footer-line">Thank you!</div>
-            <div class="footer-line">Customer: ${order.customer_first_name} ${order.customer_last_name}</div>
-            <div class="footer-line">Served by: ${order.user_username}</div>
-          </div>
+      .receipt-footer .thank-you {
+        font-weight: bold;
+        font-size: 13px;
+        margin-bottom: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="receipt">
+
+      <!-- Store Header -->
+      <div class="store-header">
+        <div class="store-name">JGREM POS</div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Order Info -->
+      <div class="info-row">
+        <span class="info-label">Order:</span>
+        <span>${order.code}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Date:</span>
+        <span>${formatDate(order.created_at)}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Type:</span>
+        <span>${order.type ? order.type.toUpperCase() : 'SALE'}</span>
+      </div>
+      ${order.customer_first_name ? `
+      <div class="info-row">
+        <span class="info-label">Customer:</span>
+        <span>${order.customer_first_name} ${order.customer_last_name || ''}</span>
+      </div>` : ''}
+      ${order.user_username ? `
+      <div class="info-row">
+        <span class="info-label">Cashier:</span>
+        <span>${order.user_username}</span>
+      </div>` : ''}
+
+      <hr class="divider">
+
+      <!-- Products Table -->
+      <table class="items-table">
+        <thead>
+          <tr>
+            <td class="col-product">Product</td>
+            <td class="col-qty">Qty</td>
+            <td class="col-total">Total</td>
+          </tr>
+        </thead>
+        <tbody>
+          ${orderProducts.map((item) => `
+          <tr>
+            <td class="col-product">
+              <div class="item-name">${item.name}</div>
+              <div class="item-unit-price">${formatCurrency(item.price_with_tax)} / ${item.unit_name || 'unit'}</div>
+            </td>
+            <td class="col-qty">${item.quantity}</td>
+            <td class="col-total">${formatCurrency(item.total_price_with_tax)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+
+      <hr class="divider">
+
+      <!-- Summary -->
+      <div class="summary">
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span>${formatCurrency(order.subtotal)}</span>
         </div>
-      </body>
-    </html>`
-}
+        ${order.discount > 0 ? `
+        <div class="summary-row discount">
+          <span>Discount</span>
+          <span>-${formatCurrency(order.discount)}</span>
+        </div>` : ''}
+        ${order.tax_value > 0 ? `
+        <div class="summary-row">
+          <span>Tax</span>
+          <span>${formatCurrency(order.tax_value)}</span>
+        </div>` : ''}
+      </div>
+
+      <hr class="divider-double">
+
+      <div class="summary-row total">
+        <span>TOTAL</span>
+        <span>${formatCurrency(order.total)}</span>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Payment -->
+      <div class="payment-section">
+        <div class="payment-title">Payment</div>
+        <div class="summary-row">
+          <span>Tendered</span>
+          <span>${formatCurrency(order.tendered)}</span>
+        </div>
+        <div class="summary-row">
+          <span>Change</span>
+          <span>${formatCurrency(order.change)}</span>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Footer -->
+      <div class="receipt-footer">
+        <div class="thank-you">Thank you!</div>
+        <div>Please come again</div>
+        <div style="margin-top:6px; font-size:10px;">Powered by JGREM POS</div>
+      </div>
+
+    </div>
+  </body>
+</html>`;
+};

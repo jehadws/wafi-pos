@@ -3,12 +3,13 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/compone
 import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import PrintAgentService from '@/services/print-agent-service';
 import { formatCurrency } from '@/utils/format';
 import { InvoiceTemplate } from '@/utils/print';
 import axios from 'axios';
 import { Eye, Loader2, Printer, Unlock } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { useReactToPrint } from 'react-to-print';
+import { toast } from 'sonner';
 import OrderProductCard from './order-product-card';
 
 type Props = {
@@ -130,22 +131,44 @@ export default function OrderCard({ order, onOpenChange }: Props) {
     }
   };
 
-  const handlePrint = useReactToPrint({
-    contentRef: contentRef,
-    documentTitle: `Invoice-${order.code}`,
-  });
+  const [isDirectPrinting, setIsDirectPrinting] = useState(false);
 
   const handlePrepareBeforePrint = async () => {
-    const res = await axios.get(`/api/orders/${order.id}/products`);
-    const html = InvoiceTemplate(order, res.data);
+    setIsDirectPrinting(true);
+    try {
+      const res = await axios.get(`/api/orders/${order.id}/products`);
+      const productsList = res.data || [];
 
-    const container = contentRef.current;
-    if (!container) return;
+      // Format for direct ESC/POS thermal printing
+      await PrintAgentService.printReceipt({
+        storeName: 'JGREM POS',
+        orderCode: order.code,
+        date: order.created_at,
+        cashier: order.user_username,
+        customer: `${order.customer_first_name || ''} ${order.customer_last_name || ''}`.trim() || undefined,
+        orderType: order.type,
+        items: productsList.map((p: any) => ({
+          name: p.name,
+          quantity: p.quantity,
+          price: formatCurrency(p.price_with_tax || p.unit_price),
+          total: formatCurrency(p.total_price_with_tax || p.total_price),
+        })),
+        subtotal: formatCurrency(order.subtotal),
+        discount: order.discount > 0 ? formatCurrency(order.discount) : undefined,
+        tax: order.tax_value > 0 ? formatCurrency(order.tax_value) : undefined,
+        total: formatCurrency(order.total),
+        tendered: formatCurrency(order.tendered),
+        change: formatCurrency(order.change),
+        barcode: order.code,
+      });
 
-    container.innerHTML = html;
-    handlePrint();
-
-    container.innerHTML = '';
+      toast.success(t('Receipt sent to thermal printer.'));
+    } catch (error: any) {
+      console.error('Direct print failed, showing browser fallback:', error);
+      toast.error(error?.message || t('Failed to send print job to Print Agent.'));
+    } finally {
+      setIsDirectPrinting(false);
+    }
   };
 
   const handleOpenOrder = async () => {
@@ -204,9 +227,9 @@ export default function OrderCard({ order, onOpenChange }: Props) {
             <Eye className="h-3 w-3" />
             {t('Products')}
           </Button>
-          <Button variant={'destructive'} onClick={handlePrepareBeforePrint}>
-            <Printer className="h-3 w-3" />
-            {t('Print')}
+          <Button variant={'destructive'} onClick={handlePrepareBeforePrint} disabled={isDirectPrinting}>
+            {isDirectPrinting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Printer className="h-3 w-3" />}
+            {t('Print Direct')}
           </Button>
         </div>
       </div>

@@ -1,0 +1,13 @@
+{
+  "name": "pos-print-agent",
+  "version": "1.0.0",
+  "description": "Lightweight Windows POS Direct Thermal Print Agent for ESC/POS & Label Printing",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["pos", "escpos", "thermal-printer", "print-agent", "nexopos"],
+  "author": "JGREM POS",
+  "license": "MIT",
+  "dependencies": {}
+}

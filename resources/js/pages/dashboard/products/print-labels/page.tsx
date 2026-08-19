@@ -2,8 +2,10 @@
 
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
+import PrintAgentService from '@/services/print-agent-service';
 import { formatCurrency } from '@/utils/format';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { LabelPreview } from './components/label-preview';
 import { LabelSettingsPanel } from './components/label-settings';
 import { ProductSearch } from './components/product-search';
@@ -47,105 +49,37 @@ export default function LabelPrinter() {
         showProductName: true,
     });
 
-    const handlePrint = () => {
-        // Generate labels for printing
-        const labels = [];
-        for (const product of selectedProducts) {
-            for (let i = 0; i < product.times; i++) {
-                labels.push(product);
-            }
-        }
+    const [isPrinting, setIsPrinting] = useState(false);
 
-        if (labels.length === 0) {
-            alert(t('No products selected for printing'));
+    const handlePrint = async () => {
+        if (selectedProducts.length === 0) {
+            toast.error(t('No products selected for printing'));
             return;
         }
 
-        // Create print content
-        const printContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>${t('Print Labels')}</title>
-          <style>
-            @media print {
-              body { margin: 0; padding: ${settings.verticalPadding}px ${settings.horizontalPadding}px; }
-              .no-print { display: none; }
-              .page-break { page-break-after: always; }
-            }
-            body { font-family: Arial, sans-serif; }
-            .labels-grid {
-              display: grid;
-              grid-template-columns: repeat(${settings.itemsPerRow}, 1fr);
-              gap: 8px;
-            }
-            .label {
-              border: 1px solid #ccc;
-              padding: 12px;
-              min-height: 120px;
-              background: white;
-            }
-            .store-name { text-align: center; font-weight: bold; font-size: 14px; margin-bottom: 8px; }
-            .product-info { font-size: 12px; }
-            .product-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
-            .barcode { text-align: center; margin-top: 8px; }
-          </style>
-        </head>
-        <body>
-          <div class="labels-grid">
-            ${labels
-                .map(
-                    (product) => `
-              <div class="label">
-                ${settings.showStoreName ? `<div class="store-name">${t('ALWAFI')}</div>` : ''}
-                <div class="product-info">
-                  <div class="product-row">
-                    <span><strong>${t('Product')}</strong></span>
-                    ${settings.showProductName ? `<span>${product.name}</span>` : '<span></span>'}
-                  </div>
-                  <div class="product-row">
-                    <span><strong>${t('Unit')}</strong></span>
-                    <span>${product.selectedUnitQuantity?.unit.name}</span>
-                  </div>
-                  <div class="product-row">
-                    <span><strong>${t('Barcode')}</strong></span>
-                    <span>${product.barcode}</span>
-                  </div>
-                  ${
-                      settings.showProductPrice
-                          ? `
-                    <div class="product-row">
-                      <span><strong>${t('Price')}</strong></span>
-                      <span>${formatCurrency(product.selectedUnitQuantity?.sale_price!)}</span>
-                    </div>
-                  `
-                          : ''
-                  }
-                </div>
-                <div class="barcode">
-                  <img
-                    src="/storage/products/barcodes/${product.barcode}.png"
-                    alt="${product.barcode}"
-                    style="height: ${settings.barcodeHeight}px"
-                  />
-                  ${settings.showBarcodeText ? `<div style="font-size: 12px;">${product.barcode}</div>` : ''}
-                </div>
-              </div>
-            `,
-                )
-                .join('')}
-          </div>
-        </body>
-      </html>
-    `;
+        const labelItems = selectedProducts.map((product) => ({
+            name: settings.showProductName ? product.name : '',
+            price: settings.showProductPrice && product.selectedUnitQuantity ? formatCurrency(product.selectedUnitQuantity.sale_price) : undefined,
+            barcode: product.barcode,
+            sku: product.sku,
+            unit: product.selectedUnitQuantity?.unit.name,
+            copies: product.times || 1,
+            storeName: settings.showStoreName ? 'ALWAFI' : undefined,
+        }));
 
-        // Open print dialog
-        const printWindow = window.open('', '_blank');
-        if (printWindow) {
-            printWindow.document.write(printContent);
-            printWindow.document.close();
-            printWindow.focus();
-            printWindow.print();
+        setIsPrinting(true);
+        try {
+            const res = await PrintAgentService.printLabels(labelItems, {
+                showStoreNameOnLabel: settings.showStoreName,
+                showPriceOnLabel: settings.showProductPrice,
+                showSkuOnLabel: false,
+                barcodeHeight: settings.barcodeHeight || 45,
+            });
+            toast.success(res.message || t('Labels sent to thermal printer successfully!'));
+        } catch (err: any) {
+            toast.error(err.message || t('Failed to print labels.'));
+        } finally {
+            setIsPrinting(false);
         }
     };
 
