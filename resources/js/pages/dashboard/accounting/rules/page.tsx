@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { Head } from '@inertiajs/react';
-import axios from 'axios';
+import { transactionsApi } from '@/api';
 import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -17,8 +17,8 @@ export default function AccountingRulesManager() {
 
     const getRules = async () => {
         try {
-            const response = await axios.get('/api/transactions/rules');
-            setRules(response.data);
+            const rules = await transactionsApi.getRules();
+            setRules(rules);
         } catch (error) {
             console.error(error);
         }
@@ -26,8 +26,8 @@ export default function AccountingRulesManager() {
 
     const getAccounts = async () => {
         try {
-            const response = await axios.get('/api/transactions-accounts');
-            setAccounts(response.data);
+            const accounts = await transactionsApi.getAccounts();
+            setAccounts(accounts);
         } catch (error) {
             console.error(error);
         }
@@ -35,8 +35,8 @@ export default function AccountingRulesManager() {
 
     const getActions = async () => {
         try {
-            const response = await axios.get('/api/transactions-accounts/actions');
-            setActions(response.data);
+            const actions = await transactionsApi.getAccountActions();
+            setActions(actions);
         } catch (error) {
             console.error(error);
         }
@@ -44,8 +44,8 @@ export default function AccountingRulesManager() {
 
     const handleSave = async (rule: Partial<TransactionRule>) => {
         try {
-            const { data } = await axios.post('/api/transactions/rules', { rule });
-            toast(data.message);
+            const { message } = await transactionsApi.createRule(rule);
+            toast(message);
         } catch (error) {
             console.error(error);
         }
@@ -53,8 +53,8 @@ export default function AccountingRulesManager() {
 
     const handleDelete = async (id: number) => {
         try {
-            const { data } = await axios.delete(`/transactions/rules/${id}`);
-            toast(data.message);
+            const { message } = await transactionsApi.deleteRule(id);
+            toast(message);
         } catch (error) {
             console.error(error);
         } finally {

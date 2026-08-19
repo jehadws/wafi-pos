@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslation } from '@/lib/i18n';
-import axios from 'axios';
+import { productsApi } from '@/api';
 import { Printer, Search, Settings, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -31,8 +31,7 @@ export function ProductSearch({ selectedProducts, onProductsChange, onPrint }: P
     const handleSearch = async (query: string) => {
         setSearchQuery(query);
         if (query.trim()) {
-            const { data } = await axios.post('/api/products/search', { search: query });
-            console.log(data);
+            const data = await productsApi.search(query);
             setSearchResults(data);
             setShowResults(true);
         } else {

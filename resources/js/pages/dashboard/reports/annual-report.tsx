@@ -6,7 +6,7 @@ import { useTranslation } from '@/lib/i18n';
 import { SharedData } from '@/types';
 import { formatCurrency } from '@/utils/format';
 import { usePage } from '@inertiajs/react';
-import axios from 'axios';
+import { reportsApi } from '@/api';
 import { Printer, RefreshCcw, RotateCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -59,9 +59,8 @@ export default function Component() {
 
     const getData = async () => {
         try {
-            const res = await axios.post('/api/reports/annual-report', { year: selectedYear });
-            console.log('Data', res.data);
-            setReportData(res.data);
+            const data = await reportsApi.annualReport(selectedYear);
+            setReportData(data);
         } catch (error) {
             console.error('Error fetching Orders:', error);
         }
@@ -75,10 +74,10 @@ export default function Component() {
 
     const recomputeData = async () => {
         try {
-            const res = await axios.post('/api/reports/compute/yearly', { year: selectedYear });
-            toast.success(res.data.message);
-            if (res.data.success === 'success') {
-                toast.success(res.data.message);
+            const result = await reportsApi.computeYearly(selectedYear);
+            toast.success(result.message);
+            if (result.success === 'success') {
+                toast.success(result.message);
             }
         } catch (error) {
             console.error('Error Recomputing report:', error);

@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { useForm, usePage } from '@inertiajs/react';
-import axios from 'axios';
+import { settingsApi } from '@/api';
 import { PrinterSettingsDialog } from '@/components/pos/printer-settings-dialog';
 import { Loader2, Printer, Save } from 'lucide-react';
 import { useState, useTransition } from 'react';
@@ -191,7 +191,7 @@ export default function SettingsGeneral() {
                                 : form.data.features.ns_jgrem_quick_product_default_unit,
                     },
                 };
-                await axios.post('/api/settings/pos', data);
+                await settingsApi.update('pos', data);
                 toast(t('Settings saved'), { description: t('The settings was saved successfully.') });
             } catch (e: any) {
                 toast(t('Failed to save'), {

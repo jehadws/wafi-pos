@@ -15,7 +15,7 @@ import { useTranslation } from '@/lib/i18n';
 import { formatDate } from '@/utils/format';
 import { Head, router } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
-import axios from 'axios';
+import { crudApi } from '@/api';
 import { List, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -187,11 +187,8 @@ export default function Dashboard() {
 
     const getOrders = async (page: number, pageSize: number) => {
         try {
-            const res = await axios.get(`/api/crud/ns.transactions-history?page=${page}&per_page=${pageSize}`, {
-                params: { search: searchTerm },
-            });
-            console.log('accounts', res.data);
-            setTransaction(res.data);
+            const history = await crudApi.list('ns.transactions-history', { page, per_page: pageSize, search: searchTerm });
+            setTransaction(history);
         } catch (error) {
             console.error('Error fetching Orders:', error);
         }

@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { useForm, usePage } from '@inertiajs/react';
-import axios from 'axios';
+import { settingsApi } from '@/api';
 import { Loader2, Save } from 'lucide-react';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
@@ -56,7 +56,7 @@ export default function SettingsGeneral() {
                             form.data.general.ns_orders_quotation_expiration === 'null' ? null : form.data.general.ns_orders_quotation_expiration,
                     },
                 };
-                await axios.post('/api/settings/orders', data);
+                await settingsApi.update('orders', data);
                 toast(t('Settings saved'), { description: t('The settings was saved successfully.') });
             } catch (e: any) {
                 toast(t('Failed to save'), {

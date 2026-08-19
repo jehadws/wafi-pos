@@ -9,7 +9,7 @@ import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { Media } from '@/types';
 import { formatDateTime } from '@/utils/format';
-import axios from 'axios';
+import { mediasApi } from '@/api';
 import { ChevronLeft, ChevronRight, FileIcon, PauseCircle, PlayCircle, Search, Trash2, UploadCloud } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -110,7 +110,7 @@ export default function MediaManager() {
             const form = new FormData();
             form.append('file', file, file.name);
 
-            const res = await axios.post('/api/medias', form, {
+            const res = await mediasApi.upload(form, {
                 signal: controller.signal as any,
                 headers: { 'Content-Type': 'multipart/form-data' },
                 onUploadProgress: (evt) => {
@@ -123,7 +123,7 @@ export default function MediaManager() {
             });
 
             clearInterval(fallback);
-            const serverUrl = res.data?.files?.[0]?.url as string | undefined;
+            const serverUrl = res?.files?.[0]?.url as string | undefined;
             setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status: 'done', progress: 100, serverUrl } : it)));
         } catch (err: any) {
             clearInterval(fallback);
@@ -179,7 +179,7 @@ export default function MediaManager() {
     const fetchGallery = async (p = page, q = searchQuery) => {
         setGalleryLoading(true);
         try {
-            const { data } = await axios.get<MediaListResponse>(`/api/medias?page=${p}&search=${encodeURIComponent(q)}`);
+            const data = await mediasApi.list<MediaListResponse>(p, q);
             setGallery(data.data);
             setPage(data.current_page);
             setTotalPages(data.last_page);
@@ -221,7 +221,7 @@ export default function MediaManager() {
         if (selected.size === 0) return;
         if (!window.confirm(t('Delete {size} media item(s)?', { size: selected.size }))) return;
         try {
-            await axios.post('/api/medias/bulk-delete', { ids: Array.from(selected) });
+            await mediasApi.bulkDelete(Array.from(selected));
             setGallery((prev) => prev.filter((m) => !selected.has(m.id)));
             setSelected(new Set());
             setSelectionMode(false);

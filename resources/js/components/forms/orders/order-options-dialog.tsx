@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { useForm } from '@inertiajs/react';
-import axios from 'axios';
+import { ordersApi } from '@/api';
 import { LoaderCircle, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -91,10 +91,11 @@ export default function OrderOptionsDialog({ options, setOptions }: Props) {
     };
 
     const handleSubmitRefund = async (total: string) => {
-        if (isSubmitting) return;
+        const orderId = options.id;
+        if (isSubmitting || !orderId) return;
         setIsSubmitting(true);
         try {
-            await axios.post(`/api/orders/${options.id}/refund`, { ...form.data, total });
+            await ordersApi.refund(orderId, { ...form.data, total });
             toast.success(t('The order has been successfully refunded.'));
             form.reset();
             refetch();
@@ -116,10 +117,11 @@ export default function OrderOptionsDialog({ options, setOptions }: Props) {
     };
 
     const handleVoidOrder = async () => {
-        if (isVoiding) return;
+        const orderId = options.id;
+        if (isVoiding || !orderId) return;
         setIsVoiding(true);
         try {
-            await axios.post(`/api/orders/${options.id}/void`, { reason: '' });
+            await ordersApi.void(orderId, { reason: '' });
             toast.success(t('The order has been voided.'));
             refetch();
             setIsVoidDialogOpen(false);

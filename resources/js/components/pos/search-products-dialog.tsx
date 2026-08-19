@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useNumericKeypad } from '@/hooks/use-numeric-keypad';
-import axios from 'axios';
+import { productsApi } from '@/api';
 import { Loader2, Search } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -37,9 +37,9 @@ export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: 
     setLoading(true);
 
     try {
-      const res = await axios.post('/api/products/search', { search: query });
-      if (res.data) {
-        setProducts(res.data);
+      const products = await productsApi.search(query);
+      if (products) {
+        setProducts(products);
       }
     } catch (error) {
       console.error('Error searching products:', error);
@@ -99,10 +99,10 @@ export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: 
     setSelectProduct(product);
     try {
       setLoading(true);
-      const res = await axios.get(`/api/products/${product.id}/units/quantities`);
-      if (res.data && res.data.length > 0) {
-        setQuantities(res.data);
-        if (res.data.length > 1) {
+      const quantities = await productsApi.getUnitQuantities(product.id);
+      if (quantities && quantities.length > 0) {
+        setQuantities(quantities);
+        if (quantities.length > 1) {
           setIsOpen(true);
         } else {
           // add to cart

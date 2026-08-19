@@ -16,7 +16,7 @@ import { TabsContent } from '@/components/ui/tabs';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { useForm } from '@inertiajs/react';
-import axios from 'axios';
+import { procurementsApi } from '@/api';
 import { format } from 'date-fns';
 import { ArrowRightLeft, Calculator, Package, Settings, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -219,13 +219,10 @@ export default function CreateProductPage() {
     const searchProduct = async (search: string) => {
         setSearchQuery(search);
         try {
-            const response = await axios.post('/api/procurements/products/search-product', {
-                search,
-            });
+            const results = await procurementsApi.searchProduct(search);
 
-            if (response.data) {
-                setSearchResults(response.data);
-                console.log('Search results:', response.data);
+            if (results) {
+                setSearchResults(results);
             }
         } catch (error) {
             console.error('Error searching selectedProducts:', error);
@@ -234,15 +231,14 @@ export default function CreateProductPage() {
 
     const getConvertUnits = async (group_id: number, product_id: number) => {
         try {
-            const response = await axios.get(`/api/units-groups/${group_id}/units`);
+            const groupUnits = await procurementsApi.getUnitGroupUnits(group_id);
 
-            if (response.data) {
+            if (groupUnits) {
                 // remove the units that are in product.unit_quantities
-                const data = response.data.filter(
+                const data = groupUnits.filter(
                     (unit: Unit) => !form.data.products.find((p) => p.unit_quantities.find((uq) => uq.unit_id === unit.id)),
                 );
                 setUnits(data);
-                console.log('Convert units', response.data);
             }
         } catch (error) {
             console.error('Error get convert units:', error);

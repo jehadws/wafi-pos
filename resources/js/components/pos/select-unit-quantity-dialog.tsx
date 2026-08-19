@@ -3,7 +3,7 @@ import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
 import { usePage } from '@inertiajs/react';
-import axios from 'axios';
+import { productsApi } from '@/api';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -20,14 +20,12 @@ export default function SelectUnitQuantityDialog({ selectProduct }: { selectProd
         try {
             setQuantities([]);
             setIsLoading(true);
-            const res = await axios.get(`/api/products/${product.id}/units/quantities`);
+            const loadedQuantities = await productsApi.getUnitQuantities(product.id);
 
-            if (res.data.length === 0) {
+            if (loadedQuantities.length === 0) {
                 closeDialog('selectQuantity', null);
                 return toast.error(t('Unable to proceed, no product were provided.'));
             }
-
-            const loadedQuantities: UnitQuantity[] = res.data;
 
             // Auto-select: if exactly one unit, or if a default unit is configured and matches
             const defaultUnitId = options.ns_jgrem_quick_product_default_unit;

@@ -8,7 +8,7 @@ import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { User } from '@/types';
 import { formatCurrency } from '@/utils/format';
-import axios from 'axios';
+import { categoriesApi, reportsApi, usersApi } from '@/api';
 import { endOfToday, format, startOfToday } from 'date-fns';
 import { Filter, Printer, RotateCcw } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -100,9 +100,8 @@ export default function SalesPage() {
 
     const getData = async (filters: TFilter) => {
         try {
-            const res = await axios.post('/api/reports/sale-report', filters);
-            console.log('Data', res.data);
-            setData(res.data);
+            const data = await reportsApi.saleReport(filters);
+            setData(data);
         } catch (error) {
             console.error('Error fetching Orders:', error);
         }
@@ -110,9 +109,8 @@ export default function SalesPage() {
 
     const getUsers = async () => {
         try {
-            const res = await axios.get('/api/users');
-            setUsers(res.data);
-            console.log('Users', res.data);
+            const users = await usersApi.getAll();
+            setUsers(users);
         } catch (error) {
             console.error('Error fetching Orders:', error);
         }
@@ -120,9 +118,8 @@ export default function SalesPage() {
 
     const getCategories = async () => {
         try {
-            const res = await axios.get('/api/categories');
-            setCategories(res.data);
-            console.log('Categories', res.data);
+            const categories = await categoriesApi.getAll();
+            setCategories(categories);
         } catch (error) {
             console.error('Error fetching Orders:', error);
         }

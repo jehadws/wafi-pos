@@ -8,7 +8,7 @@ import { useTranslation } from '@/lib/i18n';
 import { SharedData } from '@/types';
 import { formatCurrency } from '@/utils/format';
 import { usePage } from '@inertiajs/react';
-import axios from 'axios';
+import { categoriesApi, reportsApi, unitsApi } from '@/api';
 import { endOfToday, format, startOfToday } from 'date-fns';
 import { Filter, Printer, RotateCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -53,9 +53,8 @@ export default function SalesPage() {
 
     const getData = async (filters: TFilter) => {
         try {
-            const res = await axios.post('/api/reports/sold-stock-report', filters);
-            console.log('Data', res.data);
-            setData(res.data);
+            const data = await reportsApi.soldStockReport(filters);
+            setData(data);
         } catch (error) {
             console.error('Error fetching Orders:', error);
         }
@@ -63,9 +62,8 @@ export default function SalesPage() {
 
     const getUnits = async () => {
         try {
-            const res = await axios.get('/api/units');
-            setUnits(res.data);
-            console.log('units', res.data);
+            const units = await unitsApi.getAll();
+            setUnits(units);
         } catch (error) {
             console.error('Error fetching units:', error);
         }
@@ -73,9 +71,8 @@ export default function SalesPage() {
 
     const getCategories = async () => {
         try {
-            const res = await axios.get('/api/categories');
-            setCategories(res.data);
-            console.log('Categories', res.data);
+            const categories = await categoriesApi.getAll();
+            setCategories(categories);
         } catch (error) {
             console.error('Error fetching Categories:', error);
         }

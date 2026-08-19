@@ -6,7 +6,7 @@ import { useTranslation } from '@/lib/i18n';
 import { SharedData } from '@/types';
 import { formatCurrency } from '@/utils/format';
 import { usePage } from '@inertiajs/react';
-import axios from 'axios';
+import { reportsApi } from '@/api';
 import { endOfToday, format, startOfToday } from 'date-fns';
 import { Printer, RotateCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -44,9 +44,8 @@ export default function Component() {
 
     const getData = async (filters: TFilter) => {
         try {
-            const res = await axios.post('/api/reports/payment-types', filters);
-            console.log('Data', res.data);
-            setData(res.data);
+            const data = await reportsApi.paymentTypes(filters);
+            setData(data);
         } catch (error) {
             console.error('Error fetching Orders:', error);
         }

@@ -7,7 +7,7 @@ import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
-import axios from 'axios';
+import { categoriesApi, reportsApi, unitsApi } from '@/api';
 import { format } from 'date-fns';
 import { Filter, Printer, RefreshCw, RotateCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -89,9 +89,8 @@ export default function Component() {
     const getData = async (filters: TFilter) => {
         setIsLoading(true);
         try {
-            const res = await axios.post('/api/reports/product-history-combined', filters);
-            console.log('Data', res.data);
-            setData(res.data);
+            const data = await reportsApi.productHistoryCombined(filters);
+            setData(data);
         } catch (error) {
             console.error('Error fetching Orders:', error);
         } finally {
@@ -101,9 +100,9 @@ export default function Component() {
 
     const generateReport = async () => {
         try {
-            const res = await axios.post('/api/reports/compute-combined-report', filters);
-            if (res.data.status === 'success') {
-                toast.success(res.data.message);
+            const result = await reportsApi.computeCombinedReport(filters);
+            if (result.status === 'success') {
+                toast.success(result.message);
             }
         } catch (error) {
             console.error('Error fetching Orders:', error);
@@ -113,9 +112,8 @@ export default function Component() {
 
     const getUnits = async () => {
         try {
-            const res = await axios.get('/api/units');
-            setUnits(res.data);
-            console.log('units', res.data);
+            const units = await unitsApi.getAll();
+            setUnits(units);
         } catch (error) {
             console.error('Error fetching units:', error);
         }
@@ -123,9 +121,8 @@ export default function Component() {
 
     const getCategories = async () => {
         try {
-            const res = await axios.get('/api/categories');
-            setCategories(res.data);
-            console.log('Categories', res.data);
+            const categories = await categoriesApi.getAll();
+            setCategories(categories);
         } catch (error) {
             console.error('Error fetching Categories:', error);
         }

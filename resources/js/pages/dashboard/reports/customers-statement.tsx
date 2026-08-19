@@ -8,7 +8,7 @@ import { useTranslation } from '@/lib/i18n';
 import { SharedData } from '@/types';
 import { formatCurrency } from '@/utils/format';
 import { usePage } from '@inertiajs/react';
-import axios from 'axios';
+import { customersApi, reportsApi } from '@/api';
 import { endOfToday, format, startOfToday } from 'date-fns';
 import { CreditCard, DollarSign, Printer, RotateCcw, Search, ShoppingBag, TrendingUp, Wallet } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -55,7 +55,7 @@ export default function Component() {
 
         setIsSearching(true);
         try {
-            const { data } = await axios.post('/api/customers/search', { search: query });
+            const data = await customersApi.search(query);
 
             setCustomers(data);
             setShowCustomerList(true);
@@ -81,7 +81,7 @@ export default function Component() {
 
         setIsLoading(true);
         try {
-            const { data } = await axios.post(`/api/reports/customers-statement/${selectedCustomer.id}`, filters);
+            const data = await reportsApi.customersStatement(selectedCustomer.id, filters);
             setCustomerStatement(data);
         } catch (error) {
             console.error('Error loading customer statement:', error);

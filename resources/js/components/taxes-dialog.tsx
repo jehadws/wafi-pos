@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslation } from '@/lib/i18n';
-import axios from 'axios';
+import { taxesApi } from '@/api';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -40,11 +40,11 @@ export default function TaxesDialog({ isOpen, onClose, onSave, currentTaxGroupId
     useEffect(() => {
         if (!isOpen) return;
         setLoading(true);
-        axios
-            .get('/api/taxes/groups')
-            .then((res) => {
+        taxesApi
+            .getGroups()
+            .then((data) => {
                 // API may return array directly or paginated { data: [] }
-                const list = Array.isArray(res.data) ? res.data : (res.data?.data ?? []);
+                const list = Array.isArray(data) ? data : (data?.data ?? []);
                 setTaxGroups(list);
             })
             .catch(() => {

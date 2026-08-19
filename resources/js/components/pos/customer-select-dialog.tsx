@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Customer } from '@/interfaces/customer';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/utils/format';
-import axios from 'axios';
+import { customersApi } from '@/api';
 import { Eye, Loader2, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from '../../lib/i18n';
@@ -30,8 +30,8 @@ export function SelectCustomerDialog({ open, onOpenChange, selectedCustomer, han
   const fetchCustomers = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/customers/recently-active');
-      setCustomers(res.data);
+      const customers = await customersApi.getRecentlyActive();
+      setCustomers(customers);
     } catch (error) {
       console.error('Error fetching customers:', error);
     } finally {
@@ -44,10 +44,9 @@ export function SelectCustomerDialog({ open, onOpenChange, selectedCustomer, han
     if (query.length < 2) return;
     setLoading(true);
     try {
-      // /api/customers/search
-      const res = await axios.post('/api/customers/search', { search: query });
-      if (res.data) {
-        setCustomers(res.data);
+      const customers = await customersApi.search(query);
+      if (customers) {
+        setCustomers(customers);
       }
     } catch (error) {
       console.error('Error searching customers:', error);

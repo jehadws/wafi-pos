@@ -14,8 +14,8 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
+import { usersApi } from '@/api';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import axios from 'axios';
 import { CreditCard, Eye, EyeOff, FileText, Home, Key, Lock, RefreshCw, Shield, Trash2, Upload, User } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -151,8 +151,8 @@ export default function EnhancedProfileSettings() {
 
     const handleDeleteToken = () => {
         if (tokenToDelete) {
-            axios
-                .delete(`/api/users/tokens/${tokenToDelete.id}`)
+            usersApi
+                .deleteToken(tokenToDelete.id)
                 .then(() => {
                     toast.success(t('Token deleted successfully'));
                     getTokens();
@@ -177,11 +177,10 @@ export default function EnhancedProfileSettings() {
     };
 
     const generateToken = () => {
-        axios
-            .post('/api/users/create-token', { name: tokenName })
-            .then((response) => {
-                const token = response.data.data.token.plainTextToken;
-                console.log('Token:', token);
+        usersApi
+            .createToken(tokenName)
+            .then((data) => {
+                const token = data.data.token.plainTextToken;
 
                 setToken(token);
                 setOpenTokenModal(true);

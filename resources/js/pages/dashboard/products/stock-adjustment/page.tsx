@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout'
 import React, { useState } from 'react'
-import axios from 'axios'
+import { procurementsApi, productsApi } from '@/api'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { toast } from 'sonner'
 import { usePage } from '@inertiajs/react'
@@ -75,7 +75,7 @@ export default function page() {
   const handleSearch = async (query: string) => {
     setSearchQuery(query)
     if (query.trim()) {
-      const { data } = await axios.post("/api/procurements/products/search-procurement-product", { argument: query })
+      const data = await procurementsApi.searchProcurementProduct(query)
       if (data.from === 'products') {
         if (data.products.length > 0) {
           setSuggestions(data.products)
@@ -159,7 +159,7 @@ export default function page() {
       return toast('The product already exists on the table.');
     }
 
-    const { data } = await axios.get<UnitQuantity[]>(`/api/products/${suggestion.id}/units/quantities`);
+    const data = await productsApi.getUnitQuantities(suggestion.id);
     if (data?.length > 0) {
 
       const defaultUnit = data?.filter(unitQuantity => unitQuantity.unit.base_unit);
@@ -258,7 +258,7 @@ export default function page() {
 
     if (ok) {
       try {
-        const { data } = await axios.post('/api/products/adjustments', { products: products })
+        const data = await productsApi.createAdjustment(products)
         toast(data.message);
         setProducts([]);
       } catch (error) {

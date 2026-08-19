@@ -4,7 +4,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import axios from 'axios';
+import { crudApi } from '@/api';
 import { Loader2, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import ConfirmationDialog from '../confirmation-dialog';
@@ -31,10 +31,8 @@ export function OrdersDialog({ open, onOpenChange }: Props) {
   const getOnHoldOrders = async (search?: string, page = 1) => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/crud/ns.hold-orders', {
-        params: { search, page },
-      });
-      setOnHoldOrders({ data: res.data.data, page: res.data.current_page, lastPage: res.data.last_page });
+      const res = await crudApi.list('ns.hold-orders', { search, page });
+      setOnHoldOrders({ data: res.data, page: res.current_page, lastPage: res.last_page });
     } catch (error) {
       console.error('Error fetching On Hold Orders:', error);
     } finally {
@@ -45,10 +43,8 @@ export function OrdersDialog({ open, onOpenChange }: Props) {
   const getUnpaidOrders = async (search?: string, page = 1) => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/crud/ns.unpaid-orders', {
-        params: { search, page },
-      });
-      setUnpaidOrders({ data: res.data.data, page: res.data.current_page, lastPage: res.data.last_page });
+      const res = await crudApi.list('ns.unpaid-orders', { search, page });
+      setUnpaidOrders({ data: res.data, page: res.current_page, lastPage: res.last_page });
     } catch (error) {
       console.error('Error fetching Unpaid Orders:', error);
     } finally {
@@ -59,10 +55,8 @@ export function OrdersDialog({ open, onOpenChange }: Props) {
   const getPartiallyPaidOrders = async (search?: string, page = 1) => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/crud/ns.partially-paid-orders', {
-        params: { search, page },
-      });
-      setPartiallyPaidOrders({ data: res.data.data, page: res.data.current_page, lastPage: res.data.last_page });
+      const res = await crudApi.list('ns.partially-paid-orders', { search, page });
+      setPartiallyPaidOrders({ data: res.data, page: res.current_page, lastPage: res.last_page });
     } catch (error) {
       console.error('Error fetching Partially Paid Orders:', error);
     } finally {

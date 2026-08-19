@@ -3,7 +3,7 @@ import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/utils/format';
-import axios from 'axios';
+import { ordersApi } from '@/api';
 import { CreditCard, PauseCircle, Percent, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -75,11 +75,9 @@ export default function PaymentActions({
   const handleOnVoid = async () => {
     if (!order.id) return toast.error(t('Unable to void an unpaid order.'));
     try {
-      const res = await axios.post(`/api/orders/${order.id}/void`, {
-        reason: '',
-      });
+      const result = await ordersApi.void(order.id, { reason: '' });
 
-      if (res.data) {
+      if (result) {
         toast.success(t('The order has been deleted.'));
         resetCart();
         setIsVoidOpen(false);

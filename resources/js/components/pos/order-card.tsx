@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import PrintAgentService from '@/services/print-agent-service';
 import { formatCurrency } from '@/utils/format';
 import { InvoiceTemplate } from '@/utils/print';
-import axios from 'axios';
+import { ordersApi } from '@/api';
 import { Eye, Loader2, Printer, Unlock } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -122,8 +122,8 @@ export default function OrderCard({ order, onOpenChange }: Props) {
   const getOrderProducts = async (orderId: number) => {
     setLoading(true);
     try {
-      const res = await axios.get(`/api/orders/${orderId}/products`);
-      setOrderProducts(res.data);
+      const orderProducts = await ordersApi.getProducts(orderId);
+      setOrderProducts(orderProducts);
     } catch (error) {
       console.error('Error fetching Order Products:', error);
     } finally {
@@ -136,8 +136,7 @@ export default function OrderCard({ order, onOpenChange }: Props) {
   const handlePrepareBeforePrint = async () => {
     setIsDirectPrinting(true);
     try {
-      const res = await axios.get(`/api/orders/${order.id}/products`);
-      const productsList = res.data || [];
+      const productsList = (await ordersApi.getProducts(order.id)) || [];
 
       // Format for direct ESC/POS thermal printing
       await PrintAgentService.printReceipt({

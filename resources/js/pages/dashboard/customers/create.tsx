@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 
-export default function CreateProductPage() {
+export default function CreateCustomerPage() {
     const { t } = useTranslation();
 
     const breadcrumbs = [

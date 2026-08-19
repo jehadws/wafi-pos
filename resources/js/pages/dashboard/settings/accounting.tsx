@@ -8,7 +8,7 @@ import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { useForm, usePage } from '@inertiajs/react';
-import axios from 'axios';
+import { settingsApi, transactionsApi } from '@/api';
 import { Check, ChevronsUpDown, Loader2, Save } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
@@ -47,7 +47,7 @@ export default function SettingsGeneral() {
     const handleSave = () => {
         startTransition(async () => {
             try {
-                await axios.post('/api/settings/accounting', form.data);
+                await settingsApi.update('accounting', form.data);
                 toast(t('Settings saved'), { description: t('The settings was saved successfully.') });
             } catch (e: any) {
                 toast(t('Failed to save'), {
@@ -61,7 +61,7 @@ export default function SettingsGeneral() {
         // /api/transactions-accounts/reset-defaults
         startTransition(async () => {
             try {
-                await axios.get('/api/transactions-accounts/reset-defaults');
+                await transactionsApi.resetAccountDefaults();
                 setIsOpen(false);
                 toast(t('Settings saved'), { description: t('The default accounts has been created.') });
             } catch (e: any) {

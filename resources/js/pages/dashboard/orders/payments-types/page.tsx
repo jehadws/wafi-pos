@@ -16,7 +16,7 @@ import { useTranslation } from '@/lib/i18n';
 import { formatDateTime } from '@/utils/format';
 import { Head, router } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
-import axios from 'axios';
+import { crudApi } from '@/api';
 import { Edit, List, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -204,11 +204,9 @@ export default function Dashboard() {
 
     const getOrders = async (page: number, pageSize: number) => {
         try {
-            const res = await axios.get(`/api/crud/ns.payments-types?page=${page}&per_page=${pageSize}`, {
-                params: { search: searchTerm },
-            });
+            const paymentTypes = await crudApi.list('ns.payments-types', { page, per_page: pageSize, search: searchTerm });
 
-            setPaymentTypes(res.data);
+            setPaymentTypes(paymentTypes);
         } catch (error) {
             console.error('Error fetching Orders:', error);
         }

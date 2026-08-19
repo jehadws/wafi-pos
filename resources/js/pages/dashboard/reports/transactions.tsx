@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
-import axios from 'axios';
+import { reportsApi } from '@/api';
 import { endOfToday, format, startOfToday } from 'date-fns';
 import { ArrowRight, Printer, RotateCcw } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -54,9 +54,8 @@ export default function Component() {
     const getData = async (filters: TFilter) => {
         setIsLoading(true);
         try {
-            const res = await axios.post('/api/reports/transactions', filters);
-            console.log('Data', res.data);
-            setData(res.data);
+            const data = await reportsApi.transactions(filters);
+            setData(data);
         } catch (error) {
             console.error('Error fetching Orders:', error);
         } finally {

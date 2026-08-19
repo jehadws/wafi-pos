@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/lib/i18n';
-import axios from 'axios';
+import { customersApi } from '@/api';
 import { AlertCircle, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -54,12 +54,10 @@ export default function CouponsDialog({
     setLoading(true);
 
     try {
-      const res = await axios.post(`/api/customers/coupons/${couponCode}`, {
-        customer_id: selectedCustomer.id,
-      });
+      const coupon = await customersApi.applyCoupon(couponCode, selectedCustomer.id);
 
-      if (res.data) {
-        onApplyCoupon(res.data);
+      if (coupon) {
+        onApplyCoupon(coupon);
         setCouponCode('');
         toast.success(t('Coupon applied successfully'));
       }

@@ -5,7 +5,7 @@ import { OrderType } from '@/interfaces/order-type';
 import { Payment } from '@/interfaces/payment';
 import { PaymentType } from '@/interfaces/payment-type';
 import { ProductUnitQuantity } from '@/interfaces/product-unit-quantity';
-import axios from 'axios';
+import { customersApi, ordersApi, taxesApi, usersApi } from '@/api';
 import { isSameDay, startOfDay } from 'date-fns';
 import { toast } from 'sonner';
 import { create } from 'zustand';
@@ -231,9 +231,9 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
             ...initialQueue,
             async () => {
                 try {
-                    const response = await axios.get(`/api/users/permissions/`);
-                    set({ userPermissions: response.data });
-                    return response.data;
+                    const userPermissions = await usersApi.getPermissions();
+                    set({ userPermissions });
+                    return userPermissions;
                 } catch (error) {
                     throw error;
                 }
@@ -256,8 +256,8 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
                 const { options } = get();
                 if (options.ns_customers_default && options.ns_customers_default !== 'no' && options.ns_customers_default !== false) {
                     try {
-                        const response = await axios.get(`/api/customers/${options.ns_customers_default}`);
-                        get().selectCustomer(response.data);
+                        const customer = await customersApi.get(options.ns_customers_default);
+                        get().selectCustomer(customer);
                         return {
                             status: 'success',
                             message: __('The customer has been loaded'),
@@ -498,7 +498,7 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
 
         if (![undefined, null].includes(order.tax_group_id) && order.tax_group_id.toString().length > 0) {
             try {
-                const { data: tax } = await axios.get(`/api/taxes/groups/${order.tax_group_id}`);
+                const tax = await taxesApi.getGroup(order.tax_group_id);
                 // computeOrderTaxGroup internally calls computeOrderTaxes.
                 order = get().computeOrderTaxGroup(order, tax);
                 return { status: 'success', data: { tax, order } };
@@ -678,8 +678,6 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
     },
 
     proceedSubmitting: async (order) => {
-        const method = order.id !== undefined ? 'put' : 'post';
-
         // Ensure coupons have coupon_id for the backend
         const orderToSubmit = {
             ...order,
@@ -690,7 +688,7 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
         };
 
         try {
-            const response = await axios[method](`/api/orders${orderToSubmit.id !== undefined ? '/' + orderToSubmit.id : ''}`, orderToSubmit);
+            const submittedOrder = await ordersApi.submit(orderToSubmit);
             get().reset();
             set({ isSubmitting: false });
 
@@ -698,7 +696,7 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
             if (url.length > 0) {
                 new Audio(url).play();
             }
-            return response.data;
+            return submittedOrder;
         } catch (error) {
             set({ isSubmitting: false });
             throw error;
@@ -729,7 +727,7 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
         if (['inclusive', 'exclusive'].includes(product.tax_type)) {
             try {
                 if (product.tax_group_id) {
-                    const { data: taxGroup } = await axios.get(`/api/taxes/groups/${product.tax_group_id}`);
+                    const taxGroup = await taxesApi.getGroup(product.tax_group_id);
                     ['sale', 'wholesale', 'custom'].forEach((label) => {
                         quantities[label + '_price_tax'] = taxGroup.taxes
                             .map((tax: any) => get().getVatValue(quantities[label + '_price'], tax.rate, product.tax_type))
@@ -755,7 +753,7 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
 
     loadOrder: async (order_id) => {
         try {
-            const { data: order } = await axios.get(`/api/orders/${order_id}/pos`);
+            const order = await ordersApi.getForPos(order_id);
 
             const fullOrder = { ...defaultOrder(), ...order };
             const products: OrderProduct[] = [];
@@ -885,8 +883,8 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
 
         if (customer.group === undefined || customer.group === null) {
             try {
-                const response = await axios.get(`/api/customers/${customer.id}/group`);
-                const finalOrder = { ...newOrder, customer: { ...customer, group: response.data } };
+                const group = await customersApi.getGroup(customer.id);
+                const finalOrder = { ...newOrder, customer: { ...customer, group } };
                 set({ order: finalOrder });
                 return finalOrder;
             } catch (error) {
@@ -1130,7 +1128,7 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
 
         if (product.id) {
             try {
-                await axios.post(`/api/users/check-permission/`, { permission: 'nexopos.pos.delete-order-product' });
+                await usersApi.checkPermission('nexopos.pos.delete-order-product');
                 get().resumeRemovingProductUsingIndex(index, products);
             } catch (exception: any) {
                 toast.error(__('Forbidden Action'), { description: __('You are not allowed to remove this product.') });
@@ -1426,7 +1424,7 @@ export const usePOS = create<POSState & POSActions>((set, get) => ({
 
     loadCustomer: async (id) => {
         try {
-            const { data: customer } = await axios.get(`/api/customers/${id}`);
+            const customer = await customersApi.get(id);
             get().selectCustomer(customer);
             return customer;
         } catch (error) {

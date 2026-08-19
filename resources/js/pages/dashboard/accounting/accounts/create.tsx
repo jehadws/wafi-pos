@@ -9,7 +9,7 @@ import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Head, useForm, usePage } from '@inertiajs/react';
-import axios from 'axios';
+import { transactionsApi } from '@/api';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -80,12 +80,8 @@ export default function CreateProductPage() {
         setSubCategories([]);
         form.setData('general.sub_category_id', '');
         try {
-            const { data } = await axios.post('/api/transactions-accounts/category-identifier', {
-                exclude: 0,
-                identifier,
-            });
+            const data = await transactionsApi.getCategoryIdentifier(identifier);
             setSubCategories(data);
-            console.log('sub accounts', data);
         } catch (error) {
             console.error('Error fetching sub accounts:', error);
         }

@@ -1,4 +1,3 @@
-import axios from 'axios';
 import '../css/app.css';
 
 import { createInertiaApp, router } from '@inertiajs/react';
@@ -12,28 +11,9 @@ import { TranslationProvider } from './lib/i18n';
 import { DirectionProvider } from "@/components/ui/direction"
 import Settings from './lib/settings';
 
-// Set up axios CSRF protection
-axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-
-// Global interceptor — handle session and permission errors from any axios API call
-// axios.interceptors.response.use(
-//   (response) => response,
-//   (error) => {
-//     const status = error?.response?.status;
-//
-//     if (status === 401 || status === 419) {
-//       // Session expired or CSRF token expired → send to login
-//       window.location.href = '/login';
-//     } else if (status === 403) {
-//       // Authenticated but no permission → send to access-denied page
-//       // Pass current URL as `back` so the "Go Back" button works
-//       const back = encodeURIComponent(window.location.href);
-//       window.location.href = `/errors/access-denied?back=${back}`;
-//     }
-//
-//     return Promise.reject(error);
-//   }
-// );
+// API calls go through the shared client in `@/api/http`, which owns the
+// base URL, the X-Requested-With header, and the global error interceptor
+// (401/419 → login, 403 → access-denied).
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 

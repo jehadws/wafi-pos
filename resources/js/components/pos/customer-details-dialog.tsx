@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { formatCurrency, formatDate } from '@/utils/format';
-import axios from 'axios';
+import { customersApi } from '@/api';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from '../../lib/i18n';
@@ -23,11 +23,11 @@ export function CustomerDetailsDialog({ open, onOpenChange, customer }: Customer
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
 
   const fetchCustomerOrders = async () => {
+    if (!customer) return;
     setLoadingOrders(true);
     try {
-      // /api/customers/73/orders
-      const res = await axios.get(`/api/customers/${customer?.id}/orders`);
-      setOrders(res.data);
+      const orders = await customersApi.getOrders(customer.id);
+      setOrders(orders);
     } catch (error) {
       console.error('Error fetching customers:', error);
     } finally {

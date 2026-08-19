@@ -1,3 +1,4 @@
+import { ordersApi } from '@/api';
 import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 
@@ -15,7 +16,7 @@ export function useOrder(orderId: number | null) {
 
         setLoading(true);
         try {
-            const { data } = await axios.get(`/api/orders/${orderId}`, { signal: controller.signal });
+            const data = await ordersApi.get(orderId, { signal: controller.signal });
             setOrder(data);
         } catch (error) {
             if (axios.isCancel(error)) return;

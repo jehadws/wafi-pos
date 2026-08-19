@@ -10,7 +10,7 @@ import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Head, useForm } from '@inertiajs/react';
 import { DialogTitle } from '@radix-ui/react-dialog';
-import axios from 'axios';
+import { transactionsApi } from '@/api';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -86,8 +86,7 @@ export default function CreateProductPage({ infoMessage }: { infoMessage?: strin
     const getSubAccounts = async () => {
         setLoading(true);
         try {
-            const { data } = await axios.get('/api/transactions/configurations');
-            console.log('configurations', data);
+            const data = await transactionsApi.getConfigurations();
             setConfigurations(data);
             setAccounts(data.configurations[0].fields.find((field) => field.name === 'account_id').options);
         } catch (error) {

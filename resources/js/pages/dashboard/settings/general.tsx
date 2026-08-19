@@ -10,7 +10,7 @@ import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { useForm, usePage } from '@inertiajs/react';
-import axios from 'axios';
+import { settingsApi } from '@/api';
 import { Check, ChevronsUpDown, Loader2, Save, UploadCloud } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
@@ -105,7 +105,7 @@ export default function SettingsGeneral() {
     const handleSave = () => {
         startTransition(async () => {
             try {
-                const res = await axios.post('/api/settings/general', form.data);
+                await settingsApi.update('general', form.data);
                 toast(t('Settings saved'), { description: t('The settings was saved successfully.') });
             } catch (e: any) {
                 toast(t('Failed to save'), {

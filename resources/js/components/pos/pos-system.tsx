@@ -11,7 +11,7 @@ import { usePOS } from '@/hooks/usePOS';
 import { OrderProduct } from '@/interfaces/order-product';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import axios from 'axios';
+import { productsApi } from '@/api';
 import { Barcode, Search, Shrink } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -249,9 +249,9 @@ export default function PosSystem() {
     // /api/products/search/using-barcode/123-466-498-9
     // console.log(barcode);
     try {
-      const res = await axios.get<ProductSearchBarcode>(`/api/products/search/using-barcode/${barcode}`);
-      if (res.data) {
-        setSelectedProduct(res.data);
+      const product = await productsApi.searchByBarcode(barcode);
+      if (product) {
+        setSelectedProduct(product);
         quantityKeypad.openKeypad();
       }
     } catch (error) {

@@ -7,7 +7,7 @@ import { useTranslation } from '@/lib/i18n';
 import { SharedData } from '@/types';
 import { formatCurrency } from '@/utils/format';
 import { usePage } from '@inertiajs/react';
-import axios from 'axios';
+import { categoriesApi, reportsApi, unitsApi } from '@/api';
 import { format } from 'date-fns';
 import { ChevronLeft, ChevronRight, Filter, Printer, RotateCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -131,13 +131,11 @@ export default function SalesPage() {
         setIsLoading(true);
         try {
             if (reportType === 'low-stock-report') {
-                const res = await axios.post('/api/reports/low-stock', filters);
-                console.log('Data', res.data);
-                setLowStockData(res.data);
+                const data = await reportsApi.lowStock(filters);
+                setLowStockData(data);
             } else {
-                const res = await axios.post('/api/reports/stock-report', filters);
-                console.log('Data', res.data);
-                setData(res.data);
+                const data = await reportsApi.stockReport(filters);
+                setData(data);
             }
         } catch (error) {
             console.error('Error fetching Orders:', error);
@@ -155,9 +153,8 @@ export default function SalesPage() {
 
     const getUnits = async () => {
         try {
-            const res = await axios.get('/api/units');
-            setUnits(res.data);
-            console.log('units', res.data);
+            const units = await unitsApi.getAll();
+            setUnits(units);
         } catch (error) {
             console.error('Error fetching units:', error);
         }
@@ -165,9 +162,8 @@ export default function SalesPage() {
 
     const getCategories = async () => {
         try {
-            const res = await axios.get('/api/categories');
-            setCategories(res.data);
-            console.log('Categories', res.data);
+            const categories = await categoriesApi.getAll();
+            setCategories(categories);
         } catch (error) {
             console.error('Error fetching Categories:', error);
         }

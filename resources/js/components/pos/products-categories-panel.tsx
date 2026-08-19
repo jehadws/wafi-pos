@@ -3,7 +3,7 @@ import { usePOS } from '@/hooks/usePOS';
 import { OrderProduct } from '@/interfaces/order-product';
 import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
-import axios from 'axios';
+import { categoriesApi } from '@/api';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -33,10 +33,10 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
     const loadCategories = async (parent?: CategoryProduct) => {
         setLoading(true);
         try {
-            const res = await axios.get(`/api/categories/pos/${parent ? parent.id : ''}`);
-            setCategories(res.data.categories);
-            setProducts(res.data.products);
-            updateBreadCrumb(res.data.currentCategory);
+            const content = await categoriesApi.getPosContent(parent?.id);
+            setCategories(content.categories);
+            setProducts(content.products);
+            updateBreadCrumb(content.currentCategory);
         } catch (error) {
             console.log('error', error);
         } finally {

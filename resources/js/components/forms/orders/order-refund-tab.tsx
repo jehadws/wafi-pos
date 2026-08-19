@@ -5,7 +5,7 @@ import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { formatCurrency } from '@/utils/format';
-import axios from 'axios';
+import { ordersApi } from '@/api';
 import { Delete, LoaderCircle, Search } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -80,8 +80,8 @@ export default function OrderRefundTab({
         setPaymentSearchQuery('');
         setLoadingPayments(true);
         try {
-            const { data } = await axios.get(`/api/orders/payments`);
-            setPayments(data[0]?.options || []);
+            const payments = await ordersApi.getPayments();
+            setPayments(payments[0]?.options || []);
         } catch {
             setPayments([]);
         } finally {

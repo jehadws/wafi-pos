@@ -1,0 +1,21 @@
+import { get, post } from './http';
+
+/**
+ * Products API — `/api/products/*`
+ */
+export const productsApi = {
+    /** Fetch all products. */
+    getAll: () => get('/products'),
+
+    /** Search products by name / SKU / barcode. */
+    search: (query: string) => post('/products/search', { search: query }),
+
+    /** Look up a single product by its barcode (POS scanner). */
+    searchByBarcode: (barcode: string) => get<ProductSearchBarcode>(`/products/search/using-barcode/${barcode}`),
+
+    /** Fetch the unit quantities available for a product. */
+    getUnitQuantities: (productId: number | string) => get<UnitQuantity[]>(`/products/${productId}/units/quantities`),
+
+    /** Submit a stock adjustment for a set of products. */
+    createAdjustment: (products: unknown[]) => post<{ message: string }>('/products/adjustments', { products }),
+};

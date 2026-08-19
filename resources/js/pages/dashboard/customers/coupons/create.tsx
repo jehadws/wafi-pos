@@ -13,7 +13,7 @@ import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Head, useForm } from '@inertiajs/react';
 import { Select } from '@radix-ui/react-select';
-import axios from 'axios';
+import { categoriesApi, customersApi, productsApi } from '@/api';
 import { format } from 'date-fns';
 import { DollarSignIcon, PackageIcon, PercentIcon, TagIcon, UsersIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -119,9 +119,9 @@ export default function CreateCuponPage() {
     useEffect(() => {
         const getData = async () => {
             const [productsRes, categoriesRes, groupsRes] = await Promise.all([
-                axios.get('/api/products').then((res) => res.data),
-                axios.get('/api/categories').then((res) => res.data),
-                axios.get('/api/customers-groups').then((res) => res.data),
+                productsApi.getAll(),
+                categoriesApi.getAll(),
+                customersApi.getGroups(),
             ]);
             setProducts(productsRes);
             setCategories(categoriesRes);
