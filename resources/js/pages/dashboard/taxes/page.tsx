@@ -26,7 +26,6 @@ export default function RewardSystemPage() {
         { title: t('Taxes'), href: '/dashboard/taxes' },
     ];
     const { title, taxes } = usePage<{ taxes: RewardSystem[]; title: string }>().props;
-    console.log(taxes);
     const [deleteDialog, setDeleteDialog] = useState<{
         isOpen: boolean;
         loading: boolean;
@@ -38,7 +37,6 @@ export default function RewardSystemPage() {
     });
 
     const handleDeleteConfirm = async () => {
-        console.log('delete', deleteDialog.item);
 
         if (!deleteDialog.item || deleteDialog.loading) return;
 

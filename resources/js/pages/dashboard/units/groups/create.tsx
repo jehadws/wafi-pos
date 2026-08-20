@@ -1,60 +1,22 @@
 import FormField from '@/components/forms/shared/form-field';
 import FormHeader from '@/components/forms/shared/form-header';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { Head, useForm } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
+import { useUnitGroupForm } from './use-unit-group-form';
+import { UnitGroupFormFields } from './unit-group-form-fields';
 
-export default function Dashboard() {
+export default function CreateUnitGroupPage() {
     const { t } = useTranslation();
-    const form = useForm({
-        name: '',
-        description: '',
-    });
-
     const breadcrumbs = [
         { title: t('Dashboard'), href: '/dashboard' },
         { title: t('Unit Groups'), href: '/dashboard/units/groups' },
         { title: t('Create Unit Group'), href: '/dashboard/units/groups/create' },
     ];
 
-    const handleInputChange = (name: keyof typeof form.data, value: string | number | number[]) => {
-        form.setData({ ...form.data, [name]: value });
-
-        // @ts-ignore
-        if (form.errors[name]) form.clearErrors(name);
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        validateStep();
-        console.log('Submitting data:', form.data);
-        form.post(route('ns.units.postGroup'), {
-            showProgress: true,
-            onError: (errors) => {
-                console.error('Validation errors:', errors);
-                if (errors.error) {
-                    alert(errors.error);
-                }
-            },
-            onSuccess: (page) => {
-                console.log('Property created successfully', page);
-            },
-        });
-    };
-
-    const validateStep = () => {
-        let isValid = true;
-        form.clearErrors();
-
-        if (!form.data.name.trim()) {
-            form.setError('name', t('Name is required'));
-            isValid = false;
-        }
-        return isValid;
-    };
+    const { form, handleSubmit, handleInputChange } = useUnitGroupForm('create');
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -79,17 +41,8 @@ export default function Dashboard() {
                             required
                         />
                     </FormField>
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <FormField label={t('Description')} htmlFor="description" error={form.errors?.description}>
-                            <Textarea
-                                id="description"
-                                name="description"
-                                value={form.data.description}
-                                onChange={(e) => handleInputChange('description', e.target.value)}
-                                rows={4}
-                            />
-                        </FormField>
-                    </div>
+
+                    <UnitGroupFormFields form={form} handleInputChange={handleInputChange} />
                 </div>
             </form>
         </AppLayout>

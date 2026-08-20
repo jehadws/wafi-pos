@@ -151,7 +151,6 @@ export default function page() {
 
 
   const addSuggestion = async (suggestion: Product) => {
-    console.log(suggestion);
     const alreadyAdded = products.filter(product => product.id === suggestion.id).length > 0;
 
     if (alreadyAdded) {

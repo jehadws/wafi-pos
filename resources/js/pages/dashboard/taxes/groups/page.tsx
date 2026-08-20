@@ -26,7 +26,6 @@ export default function RewardSystemPage() {
         { title: t('Taxes Groups'), href: '/dashboard/taxes/groups' },
     ];
     const { title, groups } = usePage<{ groups: RewardSystem[]; title: string }>().props;
-    console.log(groups);
     const [deleteDialog, setDeleteDialog] = useState<{
         isOpen: boolean;
         loading: boolean;
@@ -38,7 +37,6 @@ export default function RewardSystemPage() {
     });
 
     const handleDeleteConfirm = async () => {
-        console.log('delete', deleteDialog.item);
 
         if (!deleteDialog.item || deleteDialog.loading) return;
 

@@ -1,78 +1,26 @@
 import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
-
 import FormField from '@/components/forms/shared/form-field';
 import FormHeader from '@/components/forms/shared/form-header';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { useForm } from '@inertiajs/react';
-import { toast } from 'sonner';
+import { useTaxGroupForm } from './use-tax-group-form';
+import { TaxGroupFormFields } from './tax-group-form-fields';
 
-export default function CreateProductPage() {
+export default function CreateTaxGroupPage() {
     const { t } = useTranslation();
-
     const breadcrumbs = [
         { title: t('Dashboard'), href: '/dashboard' },
-        { title: t('Groups'), href: '/dashboard/units/groups' },
+        { title: t('Tax Groups'), href: '/dashboard/taxes/groups' },
+        { title: t('Create Tax Group'), href: '/dashboard/taxes/groups/create' },
     ];
-    const form = useForm({
-        name: '',
-        description: '',
-    });
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        form.setData({ ...form.data, [name]: value });
-        // @ts-ignore
-        if (form.errors[name]) form.clearErrors(name);
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (!validateForm()) return;
-
-        form.transform(() => ({
-            name: form.data.name,
-            general: {
-                description: form.data.description,
-            },
-        }));
-
-        console.log('Submitting data:', form.data);
-
-        // http://127.0.0.1:9973/api/?
-        form.post('/api/crud/ns.taxes-groups', {
-            preserveScroll: true,
-            onError: (errors) => {
-                console.error('Validation errors:', errors);
-                toast.error(t('Please fix the validation errors'));
-            },
-            onSuccess: () => {
-                toast.success(t('Successfully saved'));
-            },
-        });
-    };
-
-    const validateForm = () => {
-        let isValid = true;
-        form.clearErrors();
-
-        if (!form.data.name.trim()) {
-            form.setError('name', t('Role name is required'));
-            isValid = false;
-        }
-
-        return isValid;
-    };
+    const { form, handleSubmit, handleInputChange } = useTaxGroupForm('create');
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('Create a new tax group')} />
-
             <form onSubmit={handleSubmit}>
                 <div className="bg-background flex h-full min-h-screen flex-1 flex-col gap-4 p-4">
                     <FormHeader
@@ -87,32 +35,15 @@ export default function CreateProductPage() {
                         <Input
                             id="name"
                             name="name"
+                            value={form.data.name}
                             onChange={handleInputChange}
                             className={cn(form.errors.name && 'border-destructive')}
-                            placeholder={t('Enter Provider name')}
+                            placeholder={t('Enter Tax Group name')}
                             required
                         />
                     </FormField>
 
-                    <div className="space-y-6">
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                            <FormField
-                                label={t('Description')}
-                                htmlFor="description"
-                                description={t('Provide a short description to the tax group.')}
-                                error={form.errors?.description}
-                            >
-                                <Textarea
-                                    id="description"
-                                    name="description"
-                                    value={form.data.description}
-                                    onChange={handleInputChange}
-                                    placeholder={t('Enter Role description')}
-                                    rows={4}
-                                />
-                            </FormField>
-                        </div>
-                    </div>
+                    <TaxGroupFormFields form={form} handleInputChange={handleInputChange} />
                 </div>
             </form>
         </AppLayout>

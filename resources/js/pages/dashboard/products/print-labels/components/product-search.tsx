@@ -63,11 +63,6 @@ export function ProductSearch({ selectedProducts, onProductsChange, onPrint }: P
             setIsOpen(false);
 
             const productIndex = selectedProducts.findIndex((p) => p?.selectedUnitQuantity?.id === product?.selectedUnitQuantity?.id);
-            console.log('prodcut index', productIndex);
-            console.log('product', product);
-            console.log('selected products', selectedProducts);
-            console.log('times', times);
-            console.log('selected unit quantity', selectedUnitQuantity);
 
             if (productIndex !== -1) {
                 const updatedProducts = [...selectedProducts];
