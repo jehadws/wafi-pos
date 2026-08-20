@@ -12,7 +12,9 @@
  */
 
 import { OrderType } from '@/interfaces/order-type';
+import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { customersApi, usersApi } from '@/api';
+import type { POSStore } from './pos-store-types';
 import { StateCreator } from 'zustand';
 import { toast } from 'sonner';
 
@@ -52,7 +54,7 @@ export type SessionSlice = SessionSliceState & SessionSliceActions;
 // Slice factory
 // ---------------------------------------------------------------------------
 
-export const createSessionSlice: StateCreator<any, [], [], SessionSlice> = (set, get) => ({
+export const createSessionSlice: StateCreator<POSStore, [], [], SessionSlice> = (set, get) => ({
     // Initial state
     settings: {},
     options: {},
@@ -85,10 +87,10 @@ export const createSessionSlice: StateCreator<any, [], [], SessionSlice> = (set,
             // 2. Assign tax group from options to the order
             () => {
                 const { options, order } = get();
-                const newOrder = { ...order, tax_type: options.ns_jgrem_tax_type };
+                const newOrder = { ...order, tax_type: options[POS_OPTION_KEYS.taxType] };
 
-                if (options.ns_jgrem_tax_group !== false) {
-                    newOrder.tax_group_id = options.ns_jgrem_tax_group;
+                if (options[POS_OPTION_KEYS.taxGroup] !== false) {
+                    newOrder.tax_group_id = options[POS_OPTION_KEYS.taxGroup];
                 }
                 set({ order: newOrder });
                 return { status: 'success', message: 'tax group assignated' };
@@ -97,12 +99,12 @@ export const createSessionSlice: StateCreator<any, [], [], SessionSlice> = (set,
             async () => {
                 const { options } = get();
                 if (
-                    options.ns_customers_default &&
-                    options.ns_customers_default !== 'no' &&
-                    options.ns_customers_default !== false
+                    options[POS_OPTION_KEYS.defaultCustomer] &&
+                    options[POS_OPTION_KEYS.defaultCustomer] !== 'no' &&
+                    options[POS_OPTION_KEYS.defaultCustomer] !== false
                 ) {
                     try {
-                        const customer = await customersApi.get(options.ns_customers_default);
+                        const customer = await customersApi.get(options[POS_OPTION_KEYS.defaultCustomer]);
                         get().selectCustomer(customer);
                         return {
                             status: 'success',
@@ -132,22 +134,6 @@ export const createSessionSlice: StateCreator<any, [], [], SessionSlice> = (set,
         set({ initialQueue: newInitialQueue });
 
         get().refreshCart();
-
-        // Store reference so we can remove it on cleanup (prevents double-registration
-        // in React Strict Mode and on hot-reload).
-        const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
-            if (get().products.length > 0) {
-                e.preventDefault();
-                e.returnValue = 'Some products have been added to the cart. Would you like to discard this order?';
-                return e.returnValue;
-            }
-        };
-
-        // Remove any previously registered listener before adding a fresh one
-        window.removeEventListener('beforeunload', (get() as any).__beforeUnloadHandler);
-        window.addEventListener('beforeunload', beforeUnloadHandler);
-        // Save reference on the store so it can be retrieved for cleanup
-        set({ __beforeUnloadHandler: beforeUnloadHandler } as any);
     },
 
     processInitialQueue: async () => {

@@ -1,5 +1,7 @@
 import PosSystem from '@/components/pos/pos-system';
+import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { usePOS } from '@/hooks/usePOS';
+import { usePosBeforeUnload } from '@/hooks/use-pos-before-unload';
 import { useTranslation } from '@/lib/i18n';
 import { Head, usePage } from '@inertiajs/react';
 import { useEffect } from 'react';
@@ -16,12 +18,14 @@ export default function PosPage() {
   const { settings, options } = usePage().props as { settings: any; options: NsPosOptions };
   const { defineOptions, defineSettings, initialize, processInitialQueue, setAutoMerge, setOrderType, order } = usePOS();
 
+  usePosBeforeUnload();
+
   // Sync options & settings into the store whenever they change (e.g. Inertia navigation).
   useEffect(() => {
     defineOptions(options);
     defineSettings(settings);
-    if ((options as any).ns_jgrem_items_merge !== undefined) {
-      setAutoMerge((options as any).ns_jgrem_items_merge);
+    if (options[POS_OPTION_KEYS.itemsMerge] !== undefined) {
+      setAutoMerge(Boolean(options[POS_OPTION_KEYS.itemsMerge]));
     }
   }, [options, settings]);
 
@@ -39,7 +43,7 @@ export default function PosPage() {
 
   // Auto-select order type when exactly one type is enabled
   useEffect(() => {
-    const enabledTypes = options.ns_jgrem_order_types;
+    const enabledTypes = options[POS_OPTION_KEYS.orderTypes];
     if (Array.isArray(enabledTypes) && enabledTypes.length === 1 && !order.type) {
       const identifier = enabledTypes[0];
       const meta = ORDER_TYPE_MAP[identifier];
@@ -47,7 +51,7 @@ export default function PosPage() {
         setOrderType({ ...meta, selected: true } as OrderTypeObj);
       }
     }
-  }, [options.ns_jgrem_order_types]);
+  }, [options[POS_OPTION_KEYS.orderTypes]]);
 
   return (
     <>

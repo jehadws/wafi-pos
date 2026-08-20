@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRTL } from '@/hooks/use-rtl';
 import { usePOS } from '@/hooks/usePOS';
+import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { OrderProduct } from '@/interfaces/order-product';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -40,7 +41,7 @@ export default function CartTable({
     const { isRTL } = useRTL();
     const { t } = useTranslation();
     const { options } = usePOS();
-    const showQuantity = options.ns_jgrem_show_quantity !== false;
+    const showQuantity = options[POS_OPTION_KEYS.showQuantity] !== false;
     const allSelected = cart.length > 0 && selectedItems.length === cart.length;
     const someSelected = selectedItems.length > 0 && selectedItems.length < cart.length;
 

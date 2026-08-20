@@ -4,6 +4,7 @@ import TotalsSummary from '@/components/pos/totals-summary';
 import PrimaryNavigation from '@/components/primary-navigation';
 import SecondaryNavigation from '@/components/secondary-navigation';
 import { useDebouncedEffect } from '@/hooks/use-debounced-effect';
+import { isPriceWithTax } from '@/constants/pos-options';
 import { useNumericKeypad } from '@/hooks/use-numeric-keypad';
 import { usePOSShortcuts } from '@/hooks/use-pos-shortcuts';
 import { useRTL } from '@/hooks/use-rtl';
@@ -108,21 +109,21 @@ export default function PosSystem() {
     if (quantity <= 0) {
       removeFromCart(product);
     } else {
-      const isPriceWithTax = options.ns_jgrem_price_with_tax === 'yes';
-      const updatedValues = CartCalculator.calculateTotalsForQuantityUpdate(product, quantity, isPriceWithTax);
+      const isPriceWithTaxMode = isPriceWithTax(options);
+      const updatedValues = CartCalculator.calculateTotalsForQuantityUpdate(product, quantity, isPriceWithTaxMode);
       updateProduct(product, updatedValues);
     }
   };
 
   const updateProductPrice = (product: OrderProduct, price: number) => {
-    const isPriceWithTax = options.ns_jgrem_price_with_tax === 'yes';
-    const updatedValues = CartCalculator.calculateTotalsForPriceUpdate(product, price, isPriceWithTax);
+    const isPriceWithTaxMode = isPriceWithTax(options);
+    const updatedValues = CartCalculator.calculateTotalsForPriceUpdate(product, price, isPriceWithTaxMode);
     updateProduct(product, updatedValues);
   };
 
   const updateProductDiscountPercentage = (product: OrderProduct, discount: number) => {
-    const isPriceWithTax = options.ns_jgrem_price_with_tax === 'yes';
-    const updatedValues = CartCalculator.calculateTotalsForDiscountPercentageUpdate(product, discount, isPriceWithTax);
+    const isPriceWithTaxMode = isPriceWithTax(options);
+    const updatedValues = CartCalculator.calculateTotalsForDiscountPercentageUpdate(product, discount, isPriceWithTaxMode);
     updateProduct(product, updatedValues);
   };
 
@@ -220,7 +221,7 @@ export default function PosSystem() {
         price_without_tax: selectedProduct.product.selectedUnitQuantity.sale_price_without_tax,
         unit_name: selectedProduct.product.selectedUnitQuantity.unit.name,
         total_price:
-          options.ns_jgrem_price_with_tax === 'yes'
+          isPriceWithTax(options)
             ? selectedProduct.product.selectedUnitQuantity.sale_price_with_tax * parseInt(quantity)
             : selectedProduct.product.selectedUnitQuantity.sale_price_without_tax * parseInt(quantity),
         total_price_without_tax: selectedProduct.product.selectedUnitQuantity.sale_price_without_tax * parseInt(quantity),

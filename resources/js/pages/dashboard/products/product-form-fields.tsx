@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { TabsContent } from '@/components/ui/tabs';
 import { useTranslation } from '@/lib/i18n';
 import { ProductFormData } from '@/components/forms/product-form/types';
+import { InertiaFormProps } from '@inertiajs/react';
 import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
@@ -26,7 +27,7 @@ import { cn } from '@/lib/utils';
 // ---------------------------------------------------------------------------
 
 interface ProductFormFieldsProps {
-    form: any;
+    form: InertiaFormProps<ProductFormData>;
     handleInputChange: (name: keyof ProductFormData, value: any) => void;
 }
 

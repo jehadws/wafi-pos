@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -14,13 +15,7 @@ import { NumberPad } from './number-pad';
 import { PaymentMethodSidebar } from './payment-method-sidebar';
 import SummaryCard from './payment-summary-card';
 
-export type PaymentTypes = 'cash-payment' | 'bank-payment' | 'customer-payment';
-
-export const PAYMENT_METHODS: Record<PaymentTypes, string> = {
-  'cash-payment': 'Cash Payment',
-  'bank-payment': 'Bank Payment',
-  'customer-payment': 'Customer Payment',
-} as const;
+import { getPaymentMethodLabel, type PaymentTypes } from '@/constants/payment-methods';
 
 interface TPaymentMethod {
   identifier: PaymentTypes;
@@ -49,7 +44,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
 
   // Parse amount shortcuts from options
   const amountShortcuts: number[] = (() => {
-    const raw = options.ns_jgrem_amount_shortcut;
+    const raw = options[POS_OPTION_KEYS.amountShortcut];
     if (!raw) return [];
     const str = typeof raw === 'string' ? raw : String(raw);
     return str.split(',').map((s: string) => parseFloat(s.trim())).filter((n: number) => !isNaN(n) && n > 0);
@@ -85,7 +80,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
     const payment: TPaymentMethod = {
       identifier: paymentType,
       value: total - paid,
-      label: PAYMENT_METHODS[paymentType],
+      label: getPaymentMethodLabel(paymentType),
       selected: false,
       readonly: false,
     };
@@ -100,7 +95,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
     const payment: TPaymentMethod = {
       identifier: paymentType,
       value: amount,
-      label: PAYMENT_METHODS[paymentType],
+      label: getPaymentMethodLabel(paymentType),
       selected: false,
       readonly: false,
     };
@@ -313,7 +308,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
           }}
           title={t('Confirm Full Payment')}
           description={t('A full payment will be made using {paymentType} for {total}', {
-            paymentType: PAYMENT_METHODS[tab as PaymentTypes],
+            paymentType: getPaymentMethodLabel(tab as PaymentTypes),
             total: formatCurrency(total),
           })}
         />

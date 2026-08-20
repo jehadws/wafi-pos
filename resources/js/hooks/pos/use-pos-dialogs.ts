@@ -7,6 +7,7 @@
  * Extracted from usePOS.ts: openDialogs, resolvers, openDialog, closeDialog
  */
 
+import type { POSStore } from './pos-store-types';
 import { StateCreator } from 'zustand';
 
 // ---------------------------------------------------------------------------
@@ -33,7 +34,7 @@ export interface PosDialogsSlice {
 // Slice factory
 // ---------------------------------------------------------------------------
 
-export const createPosDialogsSlice: StateCreator<PosDialogsSlice> = (set, get) => ({
+export const createPosDialogsSlice: StateCreator<POSStore, [], [], PosDialogsSlice> = (set, get) => ({
     // Initial state
     openDialogs: {},
     resolvers: {},

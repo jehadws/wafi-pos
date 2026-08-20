@@ -22,47 +22,13 @@ import { Order } from '@/interfaces/order';
 import { OrderProduct } from '@/interfaces/order-product';
 import { OrderType } from '@/interfaces/order-type';
 import { Payment } from '@/interfaces/payment';
-import { PaymentType } from '@/interfaces/payment-type';
-import { ProductUnitQuantity } from '@/interfaces/product-unit-quantity';
 
+import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { ordersApi, taxesApi } from '@/api';
 import printAgentService from '@/services/print-agent-service';
-import { isSameDay, startOfDay } from 'date-fns';
-import { toast } from 'sonner';
-import { create } from 'zustand';
-
-// Services (pure)
-import {
-    getPriceWithoutTax,
-    getPriceWithTax,
-    getVatValue,
-    computeTaxForGroup,
-    computeOrderTaxGroup,
-    computeOrderTaxes,
-    sumProductsTaxes,
-    computeProductTax,
-    proceedProductTaxComputation,
-    computeCustomProductTax,
-    computeNormalProductTax,
-    computeWholesaleProductTax,
-    computeProductTaxValue,
-} from '@/services/tax';
-
-import {
-    getSalePrice,
-    getCustomPrice,
-    getWholesalePrice,
-    getPrice,
-    getProductUnitPrice,
-    sumProductsTotals,
-} from '@/services/pricing';
-
-import {
-    defineQuantities,
-    getStockUsage,
-    computeProduct,
-    recomputeProducts,
-} from '@/services/order-builder';
+import { computeOrderTaxGroup, computeOrderTaxes } from '@/services/tax';
+import { sumProductsTotals } from '@/services/pricing';
+import { defineQuantities } from '@/services/order-builder';
 
 // Slices
 import {
@@ -72,87 +38,16 @@ import {
     createCustomerSlice,
     createSessionSlice,
 } from '@/hooks/pos';
-import type {
-    PosDialogsSlice,
-    CartSlice,
-    PaymentsSlice,
-    CustomerSlice,
-    SessionSlice,
-} from '@/hooks/pos';
+import type { POSStore } from '@/hooks/pos/pos-store-types';
 
-import { formatCurrency, rawCurrency } from '@/utils/format';
+export type { POSStore } from '@/hooks/pos/pos-store-types';
+
+import { formatCurrency } from '@/utils/format';
+import { isSameDay, startOfDay } from 'date-fns';
+import { toast } from 'sonner';
+import { create } from 'zustand';
 import * as math from 'mathjs';
 
-
-// ─────────────────────────────────────────────────────────────────────────────
-// POSStore — full typed shape of the merged store
-// ─────────────────────────────────────────────────────────────────────────────
-
-type POSStoreCoreState = {
-    order: Order;
-    isSubmitting: boolean;
-    /** Guard: true while refreshCart is awaiting the tax API */
-    isRefreshing: boolean;
-    /** Set when refreshCart is called while a refresh is already in-flight */
-    refreshPending: boolean;
-    breadcrumbs: any[];
-    customers: Customer[];
-};
-
-export type POSStore = POSStoreCoreState &
-    PosDialogsSlice &
-    CartSlice &
-    PaymentsSlice &
-    CustomerSlice &
-    SessionSlice & {
-        // Pricing thin-wrappers
-        getSalePrice: (item: ProductUnitQuantity | undefined) => number;
-        getCustomPrice: (item: any) => number;
-        getWholesalePrice: (item: any) => number;
-        getPrice: (quantities: any, mode: string, type: string) => number;
-        getProductUnitPrice: (mode: string, quantities: any) => number;
-        // Tax thin-wrappers
-        getPriceWithoutTax: (value: number, rate: number, type: string) => number;
-        getPriceWithTax: (value: number, rate: number, type: string) => number;
-        getVatValue: (value: number, rate: number, type: string) => number;
-        computeTaxForGroup: (price: number, tax_group: any, tax_type: string) => any;
-        computeOrderTaxGroup: (order: Order, taxGroup: any) => Order;
-        computeOrderTaxes: (order: Order) => Order;
-        sumProductsTaxes: (order: Order) => Order;
-        computeProductTax: (product: OrderProduct) => OrderProduct;
-        proceedProductTaxComputation: (product: OrderProduct, price: number) => any;
-        computeCustomProductTax: (product: OrderProduct) => OrderProduct;
-        computeNormalProductTax: (product: OrderProduct) => OrderProduct;
-        computeWholesaleProductTax: (product: OrderProduct) => OrderProduct;
-        computeProductTaxValue: (product: OrderProduct) => void;
-        // Order-builder thin-wrappers
-        getStockUsage: (product_id: number, unit_quantity_id: number) => number;
-        defineQuantities: (product: any, units?: any[]) => Promise<any>;
-        computeProduct: (product: OrderProduct) => OrderProduct;
-        sumProductsTotals: (order: Order) => Order;
-        // Cart orchestration
-        buildOrder: (order: Order) => void;
-        buildProducts: (products: OrderProduct[]) => void;
-        updateCart: (update: object) => void;
-        refreshCart: () => Promise<void>;
-        // Tax async
-        computeTaxes: () => Promise<any>;
-        // Session
-        reset: () => Promise<void>;
-        // Submission
-        canProceedAsLaidAway: (order: Order) => Promise<any>;
-        submitOrder: (orderFields?: object) => Promise<any>;
-        proceedSubmitting: (order: Order) => Promise<any>;
-        // Order loading
-        loadOrder: (order_id: number) => Promise<Order>;
-        // Setters
-        setDiscount: (value: number, type?: 'flat' | 'percentage') => void;
-        setShipping: (value: number, shippingType?: string) => void;
-        setNote: (note: string, visibility?: 'hidden' | 'visible') => void;
-        setOrderType: (type: OrderType) => void;
-        updateAddress: (type: 'billing' | 'shipping', address: any) => void;
-        printOrderReceipt: (order: Order, mode: string) => void;
-    };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Default order factory
@@ -216,84 +111,7 @@ export const usePOS = create<POSStore>((set, get) => ({
     ...createSessionSlice(set, get, {} as any),
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Pricing helpers (thin wrappers → pure functions, kept for API compat)
-    // ─────────────────────────────────────────────────────────────────────────
-
-    getSalePrice: (item: ProductUnitQuantity | undefined) =>
-        getSalePrice(item, get().options),
-
-    getCustomPrice: (item: any) =>
-        getCustomPrice(item, get().options),
-
-    getWholesalePrice: (item: any) =>
-        getWholesalePrice(item, get().options),
-
-    getPrice: (quantities: any, mode: string, type: string) =>
-        getPrice(quantities, mode, type),
-
-    getProductUnitPrice: (mode: string, quantities: any) =>
-        getProductUnitPrice(mode, quantities),
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Tax helpers (thin wrappers → pure functions, kept for API compat)
-    // ─────────────────────────────────────────────────────────────────────────
-
-    getPriceWithoutTax: (value: number, rate: number, type: string) =>
-        getPriceWithoutTax(value, rate, type),
-
-    getPriceWithTax: (value: number, rate: number, type: string) =>
-        getPriceWithTax(value, rate, type),
-
-    getVatValue: (value: number, rate: number, type: string) =>
-        getVatValue(value, rate, type),
-
-    computeTaxForGroup: (price: number, tax_group: any, tax_type: string) =>
-        computeTaxForGroup(price, tax_group, tax_type),
-
-    computeOrderTaxGroup: (order: Order, taxGroup: any) =>
-        computeOrderTaxGroup(order, taxGroup, get().options),
-
-    computeOrderTaxes: (order: Order) =>
-        computeOrderTaxes(order, get().options),
-
-    sumProductsTaxes: (order: Order) =>
-        sumProductsTaxes(order, get().products, get().options),
-
-    computeProductTax: (product: OrderProduct) =>
-        computeProductTax(product),
-
-    proceedProductTaxComputation: (product: OrderProduct, price: number) =>
-        proceedProductTaxComputation(product, price),
-
-    computeCustomProductTax: (product: OrderProduct) =>
-        computeCustomProductTax(product),
-
-    computeNormalProductTax: (product: OrderProduct) =>
-        computeNormalProductTax(product),
-
-    computeWholesaleProductTax: (product: OrderProduct) =>
-        computeWholesaleProductTax(product),
-
-    computeProductTaxValue: (product: OrderProduct) =>
-        computeProductTaxValue(product),
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Order-builder helpers (thin wrappers)
-    // ─────────────────────────────────────────────────────────────────────────
-
-    getStockUsage: (product_id: number, unit_quantity_id: number) =>
-        getStockUsage(get().products, product_id, unit_quantity_id),
-
-    defineQuantities: (product: any, units?: any[]) =>
-        defineQuantities(product, units),
-
-    computeProduct: (product: OrderProduct) =>
-        computeProduct(product, get().options),
-
-    // recomputeProducts is already provided by the cart slice.
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Cart orchestration (these need both cart + order state)
+    // Cart orchestration (needs both cart + order state)
     // ─────────────────────────────────────────────────────────────────────────
 
     buildOrder: (order: Order) => {
@@ -311,9 +129,6 @@ export const usePOS = create<POSStore>((set, get) => ({
         set({ order: newOrder });
         get().refreshCart();
     },
-
-    sumProductsTotals: (order: Order) =>
-        sumProductsTotals(order, get().products, get().options),
 
     refreshCart: async () => {
         if (get().isRefreshing) {
@@ -437,7 +252,7 @@ export const usePOS = create<POSStore>((set, get) => ({
             order = computeOrderTaxGroup(order, tax, options);
             return { status: 'success', data: { tax, order } };
         } else {
-            throw { status: 'error', message: 'No tax group assigned to the order' };
+            throw new Error('No tax group assigned to the order');
         }
     },
 
@@ -555,11 +370,11 @@ export const usePOS = create<POSStore>((set, get) => ({
                 order.total > 0 &&
                 order.total > order.tendered
             ) {
-                if (get().options.ns_orders_allow_partial === 'no') {
+                if (get().options[POS_OPTION_KEYS.allowPartial] === 'no') {
                     const message = 'Partially paid orders are disabled.';
                     toast.error(message);
                     throw new Error(message);
-                } else if (get().options.ns_orders_allow_unpaid === 'no') {
+                } else if (get().options[POS_OPTION_KEYS.allowUnpaid] === 'no') {
                     const message =
                         'Unpaid orders are not allowed. Please add at least one payment.';
                     toast.error(message);
@@ -595,7 +410,7 @@ export const usePOS = create<POSStore>((set, get) => ({
             get().reset();
             set({ isSubmitting: false });
 
-            const url = get().options.ns_jgrem_complete_sale_audio;
+            const url = get().options[POS_OPTION_KEYS.completeSaleAudio];
             if (url && url.length > 0) {
                 new Audio(url).play().catch((err: Error) => {
                     // Autoplay may be blocked by browser policy — non-fatal
@@ -725,15 +540,15 @@ export const usePOS = create<POSStore>((set, get) => ({
     printOrderReceipt: (order: Order, mode: string) => {
         const { options } = get();
 
-        if (options.ns_jgrem_printing_enabled_for === 'disabled') {
+        if (options[POS_OPTION_KEYS.printingEnabledFor] === 'disabled') {
             return false;
         }
 
         const shouldPrint =
-            options.ns_jgrem_printing_enabled_for === 'all_orders' ||
-            (options.ns_jgrem_printing_enabled_for === 'partially_paid_orders' &&
+            options[POS_OPTION_KEYS.printingEnabledFor] === 'all_orders' ||
+            (options[POS_OPTION_KEYS.printingEnabledFor] === 'partially_paid_orders' &&
                 ['paid', 'partially_paid'].includes(order.payment_status as string)) ||
-            (options.ns_jgrem_printing_enabled_for === 'only_paid_orders' &&
+            (options[POS_OPTION_KEYS.printingEnabledFor] === 'only_paid_orders' &&
                 ['paid'].includes(order.payment_status as string));
 
         if (!shouldPrint) return false;
@@ -741,7 +556,7 @@ export const usePOS = create<POSStore>((set, get) => ({
         // Delegate to PrintAgentService — maps Order → FormattedReceiptData internally
         printAgentService
             .printOrderReceipt(order, mode, {
-                autoPrintOnSale: options.ns_jgrem_printing_auto ?? true,
+                autoPrintOnSale: options[POS_OPTION_KEYS.printingAuto] ?? true,
             })
             .catch((err: Error) => {
                 // Non-blocking: print failures should not interrupt the sale flow

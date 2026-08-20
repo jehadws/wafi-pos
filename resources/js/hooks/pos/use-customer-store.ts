@@ -9,6 +9,7 @@
 
 import { Customer } from '@/interfaces/customer';
 import { customersApi } from '@/api';
+import type { POSStore } from './pos-store-types';
 import { StateCreator } from 'zustand';
 import { toast } from 'sonner';
 
@@ -30,7 +31,7 @@ export type CustomerSlice = CustomerSliceActions;
 // Slice factory
 // ---------------------------------------------------------------------------
 
-export const createCustomerSlice: StateCreator<any, [], [], CustomerSlice> = (set, get) => ({
+export const createCustomerSlice: StateCreator<POSStore, [], [], CustomerSlice> = (set, get) => ({
     selectCustomer: async (customer) => {
         const { order } = get();
         const billing = { ...(customer.billing || {}) };
@@ -71,11 +72,10 @@ export const createCustomerSlice: StateCreator<any, [], [], CustomerSlice> = (se
         if (alreadyAdded) {
             const message = 'This coupon is already added to the cart';
             toast.error(message);
-            throw message;
+            throw new Error(message);
         }
 
-        // ✅ immutable — spread creates new coupons array
-        set((state: any) => ({
+        set((state) => ({
             order: {
                 ...state.order,
                 coupons: [...state.order.coupons, coupon],
@@ -85,11 +85,10 @@ export const createCustomerSlice: StateCreator<any, [], [], CustomerSlice> = (se
     },
 
     removeCoupon: (coupon) => {
-        // ✅ immutable — filter creates new coupons array
-        set((state: any) => ({
+        set((state) => ({
             order: {
                 ...state.order,
-                coupons: state.order.coupons.filter((c: any) => c !== coupon),
+                coupons: state.order.coupons.filter((c) => c !== coupon),
             },
         }));
     },

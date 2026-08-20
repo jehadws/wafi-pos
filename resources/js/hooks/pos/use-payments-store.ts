@@ -11,6 +11,8 @@
 
 import { Payment } from '@/interfaces/payment';
 import { PaymentType } from '@/interfaces/payment-type';
+import { buildDefaultPaymentTypes } from '@/constants/payment-methods';
+import type { POSStore } from './pos-store-types';
 import { StateCreator } from 'zustand';
 import { toast } from 'sonner';
 
@@ -41,15 +43,15 @@ export type PaymentsSlice = PaymentsSliceState & PaymentsSliceActions;
 // Slice factory
 // ---------------------------------------------------------------------------
 
-export const createPaymentsSlice: StateCreator<any, [], [], PaymentsSlice> = (set, get) => ({
+export const createPaymentsSlice: StateCreator<POSStore, [], [], PaymentsSlice> = (set, get) => ({
     // Initial state
-    paymentsType: [],
-    selectedPaymentType: null,
+    paymentsType: buildDefaultPaymentTypes(),
+    selectedPaymentType: buildDefaultPaymentTypes()[0] ?? null,
 
     addPayment: (payment) => {
         if (payment.value > 0) {
             // ✅ immutable — creates a new payments array so Zustand detects the change
-            set((state: any) => ({
+            set((state) => ({
                 order: {
                     ...state.order,
                     payments: [...state.order.payments, payment],
@@ -68,10 +70,10 @@ export const createPaymentsSlice: StateCreator<any, [], [], PaymentsSlice> = (se
         }
 
         // ✅ immutable — filter creates a new array
-        set((state: any) => ({
+        set((state) => ({
             order: {
                 ...state.order,
-                payments: state.order.payments.filter((p: Payment) => p !== payment),
+                payments: state.order.payments.filter((p) => p !== payment),
             },
         }));
 

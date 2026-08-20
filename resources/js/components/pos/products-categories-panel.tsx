@@ -1,5 +1,6 @@
 import { useNumericKeypad } from '@/hooks/use-numeric-keypad';
 import { usePOS } from '@/hooks/usePOS';
+import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { OrderProduct } from '@/interfaces/order-product';
 import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
@@ -125,7 +126,7 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
         initialValue: '',
         title: t('Define Quantity'),
         maxLength: 6,
-        allowDecimal: options.ns_jgrem_allow_decimal_quantities ?? true,
+        allowDecimal: options[POS_OPTION_KEYS.allowDecimalQuantities] ?? true,
     });
 
     const handleClickOnProduct = async (product: Product) => {

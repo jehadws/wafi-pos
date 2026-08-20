@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNumericKeypad } from '@/hooks/use-numeric-keypad';
 import { usePOS } from '@/hooks/usePOS';
+import { isPosOptionEnabled, POS_OPTION_KEYS } from '@/constants/pos-options';
 import { OrderProduct } from '@/interfaces/order-product';
 import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
-import { usePage } from '@inertiajs/react';
 import { Award, Minus, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -24,7 +24,7 @@ interface CartItemProps {
 
 export default function CartItem({ item, updateDiscountPercentage, updatePrice, removeFromCart, updateQuantity, showQuantity = true }: CartItemProps) {
   const { t } = useTranslation();
-  const { options } = usePage<{ options: NsPosOptions }>().props;
+  const { options } = usePOS();
   const [isEditing, setIsEditing] = useState(false);
   const [quantityInput, setQuantityInput] = useState(item.quantity.toString());
 
@@ -157,7 +157,7 @@ export default function CartItem({ item, updateDiscountPercentage, updatePrice, 
           >
             <Trash2 className="h-6 w-6" />
           </Button>
-          {options.ns_jgrem_allow_wholesale_price && (
+          {isPosOptionEnabled(options, POS_OPTION_KEYS.allowWholesalePrice) && (
             <Button
               variant="ghost"
               size="icon"

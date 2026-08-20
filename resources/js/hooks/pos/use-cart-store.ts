@@ -12,8 +12,10 @@
  */
 
 import { OrderProduct } from '@/interfaces/order-product';
+import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { usersApi } from '@/api';
 import { recomputeProducts } from '@/services/order-builder';
+import type { POSStore } from './pos-store-types';
 import { StateCreator } from 'zustand';
 import { toast } from 'sonner';
 
@@ -55,7 +57,7 @@ export type CartSlice = CartSliceState & CartSliceActions;
  * refreshCart, removeCoupon, and read options + order.
  * Pass the merged store type as the generic parameter in usePOS.ts.
  */
-export const createCartSlice: StateCreator<any, [], [], CartSlice> = (set, get) => ({
+export const createCartSlice: StateCreator<POSStore, [], [], CartSlice> = (set, get) => ({
     // Initial state
     products: [],
     autoMerge: false,
@@ -126,7 +128,7 @@ export const createCartSlice: StateCreator<any, [], [], CartSlice> = (set, get) 
         set({ products: recomputed });
         get().refreshCart();
 
-        const url = get().options?.ns_jgrem_new_item_audio;
+        const url = get().options?.[POS_OPTION_KEYS.newItemAudio];
         if (url && url.length > 0) {
             new Audio(url).play().catch((err: Error) => {
                 // Autoplay may be blocked by browser policy — non-fatal
