@@ -35,7 +35,6 @@ export default function EditRewardSystemPage() {
         { title: t('Reward System'), href: '/dashboard/customers/rewards-system' },
     ];
     const { coupons, reward } = usePage<{ coupons: Coupon[]; reward: RewardSystem }>().props;
-    console.log('reward', reward);
 
     const form = useForm<FormData>({
         name: reward.name,
@@ -114,18 +113,6 @@ export default function EditRewardSystemPage() {
             },
             rules: rules,
         }));
-
-        console.log('data', {
-            name: form.data.name,
-            general: {
-                coupon_id: form.data.coupon_id,
-                target: form.data.target,
-                description: form.data.description,
-            },
-            rules: rules,
-        });
-
-        console.log('form.data', form.data);
 
         form.put(`/api/crud/ns.rewards-system/${reward.id}`, {
             preserveScroll: true,

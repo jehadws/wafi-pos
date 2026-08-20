@@ -118,18 +118,6 @@ export default function CreateRewardSystemPage() {
             rules: rules,
         }));
 
-        console.log('data', {
-            name: form.data.name,
-            general: {
-                coupon_id: form.data.coupon_id,
-                target: form.data.target,
-                description: form.data.description,
-            },
-            rules: rules,
-        });
-
-        console.log('form.data', form.data);
-
         form.post('/api/crud/ns.rewards-system', {
             preserveScroll: true,
             onError: (errors) => {

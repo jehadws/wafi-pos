@@ -36,7 +36,6 @@ export default function Dashboard() {
     });
 
     const handleDeleteConfirm = async () => {
-        console.log('delete', deleteDialog.customer);
 
         if (!deleteDialog.customer || deleteDialog.loading) return;
 
