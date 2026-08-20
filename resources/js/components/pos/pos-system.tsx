@@ -154,13 +154,14 @@ export default function PosSystem() {
   const removeSelectedItems = () => {
     if (selectedItems.length === 0) return;
 
-    const productsToRemove = selectedItems;
-    productsToRemove.forEach((id) => {
-      const product = products.find((p) => (p._uuid || `${p.product_id}-${p.unit_id}`) === id);
-      if (product) {
-        removeProduct(product);
-      }
-    });
+    // Batch remove: compute the new products array once, then do a single state
+    // update + one refreshCart call instead of N individual async calls.
+    const idSet = new Set(selectedItems);
+    const remaining = products.filter(
+      (p) => !idSet.has(p._uuid || `${p.product_id}-${p.unit_id}`),
+    );
+    usePOS.getState().buildProducts(remaining);
+    usePOS.getState().refreshCart();
 
     toast.success(t('{entries} items removed', { entries: selectedItems.length }), {
       description: t('Selected items have been removed from the cart'),
@@ -186,12 +187,13 @@ export default function PosSystem() {
         return toast.warning(t('The specified quantity exceed the available quantity.'));
       }
 
-      let quantityInCart = 0;
-      products.map((product) => {
+      // ✅ .reduce() for accumulation, not .map()
+      const quantityInCart = products.reduce((acc, product) => {
         if (product.product_id === selectedProduct.product.id) {
-          quantityInCart += product.quantity;
+          return acc + product.quantity;
         }
-      });
+        return acc;
+      }, 0);
 
       if (quantityInCart + parseInt(quantity) > selectedProduct.product.selectedUnitQuantity?.quantity) {
         return toast.warning(
@@ -326,7 +328,7 @@ export default function PosSystem() {
             discount={order.discount || 0}
             totalCoupons={order.total_coupons || 0}
             total={order.total || 0}
-            customer={order.customer}
+            customer={order.customer as any}
             orderType={order.type}
             shipping={order.shipping || 0}
             onOpenDiscountDialog={() => discountKeypad.openKeypad()}
@@ -393,7 +395,7 @@ export default function PosSystem() {
         open={showSelectCustomerDialog}
         onOpenChange={() => setShowSelectCustomerDialog(false)}
         selectedCustomer={order.customer}
-        handleSelectCustomer={handleSelectCustomer}
+        handleSelectCustomer={handleSelectCustomer as any}
         onViewCustomer={onViewCustomer}
       />
 
@@ -409,13 +411,13 @@ export default function PosSystem() {
           }
           setOrderType(orderType!);
         }}
-        orderType={order.type}
+        orderType={order.type ?? null}
       />
 
       <CustomerDetailsDialog
         open={showSelectedCustomerDetailsDialog}
         onOpenChange={setShowSelectedCustomerDetailsDialog}
-        customer={order.customer}
+        customer={order.customer as any}
       />
 
       <NumericKeypadDialog {...discountKeypad.keypadProps} />

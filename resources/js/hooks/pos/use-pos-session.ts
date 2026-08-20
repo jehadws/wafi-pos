@@ -16,7 +16,6 @@ import { customersApi, usersApi } from '@/api';
 import { StateCreator } from 'zustand';
 import { toast } from 'sonner';
 
-const __ = (ns: any) => ns;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -107,15 +106,14 @@ export const createSessionSlice: StateCreator<any, [], [], SessionSlice> = (set,
                         get().selectCustomer(customer);
                         return {
                             status: 'success',
-                            message: __('The customer has been loaded'),
+                            message: 'The customer has been loaded',
                         };
                     } catch (error) {
-                        toast.error(__('An error has occured'), {
-                            description: __(
+                        toast.error('An error has occurred', {
+                            description:
                                 'Unable to select the default customer. Looks like the customer no longer exists. Consider changing the default customer on the settings.',
-                            ),
                             action: {
-                                label: __('Read More'),
+                                label: 'Read More',
                                 onClick: () =>
                                     window.open(
                                         'https://my.nexopos.com/en/documentation/troubleshooting/no-default-customer',
@@ -126,7 +124,7 @@ export const createSessionSlice: StateCreator<any, [], [], SessionSlice> = (set,
                         throw error;
                     }
                 } else {
-                    return { status: 'success', message: __('No default customer is selected.') };
+                    return { status: 'success', message: 'No default customer is selected.' };
                 }
             },
         ];
@@ -135,17 +133,21 @@ export const createSessionSlice: StateCreator<any, [], [], SessionSlice> = (set,
 
         get().refreshCart();
 
-        window.addEventListener('resize', () => {
-            // Future: responsive detection
-        });
-
-        window.onbeforeunload = () => {
+        // Store reference so we can remove it on cleanup (prevents double-registration
+        // in React Strict Mode and on hot-reload).
+        const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
             if (get().products.length > 0) {
-                return __(
-                    'Some products has been added to the cart. Would you like to discard this order ?',
-                );
+                e.preventDefault();
+                e.returnValue = 'Some products have been added to the cart. Would you like to discard this order?';
+                return e.returnValue;
             }
         };
+
+        // Remove any previously registered listener before adding a fresh one
+        window.removeEventListener('beforeunload', (get() as any).__beforeUnloadHandler);
+        window.addEventListener('beforeunload', beforeUnloadHandler);
+        // Save reference on the store so it can be retrieved for cleanup
+        set({ __beforeUnloadHandler: beforeUnloadHandler } as any);
     },
 
     processInitialQueue: async () => {
@@ -179,7 +181,7 @@ export const createSessionSlice: StateCreator<any, [], [], SessionSlice> = (set,
 
     userCan: (permission) => {
         const { userPermissions } = get();
-        return userPermissions.some((p) => p.namespace === permission);
+        return userPermissions.some((p: { namespace: string }) => p.namespace === permission);
     },
 
     setHoldPopupEnabled: (status = true) => {

@@ -72,11 +72,87 @@ import {
     createCustomerSlice,
     createSessionSlice,
 } from '@/hooks/pos';
+import type {
+    PosDialogsSlice,
+    CartSlice,
+    PaymentsSlice,
+    CustomerSlice,
+    SessionSlice,
+} from '@/hooks/pos';
 
 import { formatCurrency, rawCurrency } from '@/utils/format';
 import * as math from 'mathjs';
 
-const __ = (ns: any) => ns;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POSStore — full typed shape of the merged store
+// ─────────────────────────────────────────────────────────────────────────────
+
+type POSStoreCoreState = {
+    order: Order;
+    isSubmitting: boolean;
+    /** Guard: true while refreshCart is awaiting the tax API */
+    isRefreshing: boolean;
+    /** Set when refreshCart is called while a refresh is already in-flight */
+    refreshPending: boolean;
+    breadcrumbs: any[];
+    customers: Customer[];
+};
+
+export type POSStore = POSStoreCoreState &
+    PosDialogsSlice &
+    CartSlice &
+    PaymentsSlice &
+    CustomerSlice &
+    SessionSlice & {
+        // Pricing thin-wrappers
+        getSalePrice: (item: ProductUnitQuantity | undefined) => number;
+        getCustomPrice: (item: any) => number;
+        getWholesalePrice: (item: any) => number;
+        getPrice: (quantities: any, mode: string, type: string) => number;
+        getProductUnitPrice: (mode: string, quantities: any) => number;
+        // Tax thin-wrappers
+        getPriceWithoutTax: (value: number, rate: number, type: string) => number;
+        getPriceWithTax: (value: number, rate: number, type: string) => number;
+        getVatValue: (value: number, rate: number, type: string) => number;
+        computeTaxForGroup: (price: number, tax_group: any, tax_type: string) => any;
+        computeOrderTaxGroup: (order: Order, taxGroup: any) => Order;
+        computeOrderTaxes: (order: Order) => Order;
+        sumProductsTaxes: (order: Order) => Order;
+        computeProductTax: (product: OrderProduct) => OrderProduct;
+        proceedProductTaxComputation: (product: OrderProduct, price: number) => any;
+        computeCustomProductTax: (product: OrderProduct) => OrderProduct;
+        computeNormalProductTax: (product: OrderProduct) => OrderProduct;
+        computeWholesaleProductTax: (product: OrderProduct) => OrderProduct;
+        computeProductTaxValue: (product: OrderProduct) => void;
+        // Order-builder thin-wrappers
+        getStockUsage: (product_id: number, unit_quantity_id: number) => number;
+        defineQuantities: (product: any, units?: any[]) => Promise<any>;
+        computeProduct: (product: OrderProduct) => OrderProduct;
+        sumProductsTotals: (order: Order) => Order;
+        // Cart orchestration
+        buildOrder: (order: Order) => void;
+        buildProducts: (products: OrderProduct[]) => void;
+        updateCart: (update: object) => void;
+        refreshCart: () => Promise<void>;
+        // Tax async
+        computeTaxes: () => Promise<any>;
+        // Session
+        reset: () => Promise<void>;
+        // Submission
+        canProceedAsLaidAway: (order: Order) => Promise<any>;
+        submitOrder: (orderFields?: object) => Promise<any>;
+        proceedSubmitting: (order: Order) => Promise<any>;
+        // Order loading
+        loadOrder: (order_id: number) => Promise<Order>;
+        // Setters
+        setDiscount: (value: number, type?: 'flat' | 'percentage') => void;
+        setShipping: (value: number, shippingType?: string) => void;
+        setNote: (note: string, visibility?: 'hidden' | 'visible') => void;
+        setOrderType: (type: OrderType) => void;
+        updateAddress: (type: 'billing' | 'shipping', address: any) => void;
+        printOrderReceipt: (order: Order, mode: string) => void;
+    };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Default order factory
@@ -123,10 +199,12 @@ const defaultOrder = (): Order => ({
 // Store
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const usePOS = create<any>((set, get) => ({
+export const usePOS = create<POSStore>((set, get) => ({
     // ── Core order state (not owned by any slice) ────────────────────────────
     order: defaultOrder(),
     isSubmitting: false,
+    isRefreshing: false,
+    refreshPending: false,
     breadcrumbs: [] as any[],
     customers: [] as Customer[],
 
@@ -223,8 +301,8 @@ export const usePOS = create<any>((set, get) => ({
     },
 
     buildProducts: (products: OrderProduct[]) => {
-        get().recomputeProducts(products);
-        set({ products });
+        const recomputed = get().recomputeProducts(products);
+        set({ products: recomputed });
     },
 
     updateCart: (update: object) => {
@@ -238,79 +316,95 @@ export const usePOS = create<any>((set, get) => ({
         sumProductsTotals(order, get().products, get().options),
 
     refreshCart: async () => {
-        get().checkCart();
-
-        let order: Order = sumProductsTotals(
-            { ...get().order },
-            get().products,
-            get().options,
-        );
-
-        const totalValue = order.coupons.map((customerCoupon: any) => {
-            if (customerCoupon.type === 'percentage_discount') {
-                customerCoupon.value = (order.subtotal * customerCoupon.discount_value) / 100;
-                return customerCoupon.value;
-            }
-            customerCoupon.value = customerCoupon.discount_value;
-            return customerCoupon.value;
-        });
-
-        order.total_coupons = 0;
-        if (totalValue.length > 0) {
-            order.total_coupons = totalValue.reduce(
-                (before: number, after: number) => before + after,
-            );
+        if (get().isRefreshing) {
+            set({ refreshPending: true });
+            return;
         }
 
-        if (order.discount_type === 'percentage') {
-            order.discount = (order.discount_percentage * order.subtotal) / 100;
-        }
-
-        if (order.discount > order.subtotal && order.total_coupons === 0) {
-            order.discount = order.subtotal;
-            toast.info(__('The discount has been set to the cart subtotal.'));
-        }
-
-        order.tax_value = 0;
-        set({ order });
+        set({ isRefreshing: true });
 
         try {
-            const response = await get().computeTaxes();
-            order = response['data'].order;
-        } catch (exception: any) {
-            if (exception !== false && exception.message !== undefined) {
-                toast.error(
-                    exception.message ||
-                        __('An unexpected error has occurred while fecthing taxes.'),
-                    { duration: 0 },
+            do {
+                set({ refreshPending: false });
+
+                get().checkCart();
+
+                let order: Order = sumProductsTotals(
+                    { ...get().order },
+                    get().products,
+                    get().options,
                 );
-            }
+
+                // Compute coupon totals immutably
+                const totalValue = order.coupons.map((customerCoupon: any) => {
+                    if (customerCoupon.type === 'percentage_discount') {
+                        return (order.subtotal * customerCoupon.discount_value) / 100;
+                    }
+                    return customerCoupon.discount_value;
+                });
+
+                order = {
+                    ...order,
+                    total_coupons:
+                        totalValue.length > 0
+                            ? totalValue.reduce((before: number, after: number) => before + after, 0)
+                            : 0,
+                };
+
+                if (order.discount_type === 'percentage') {
+                    order = { ...order, discount: (order.discount_percentage * order.subtotal) / 100 };
+                }
+
+                if (order.discount > order.subtotal && order.total_coupons === 0) {
+                    order = { ...order, discount: order.subtotal };
+                    toast.info('The discount has been set to the cart subtotal.');
+                }
+
+                order = { ...order, tax_value: 0 };
+                set({ order });
+
+                try {
+                    const response = await get().computeTaxes();
+                    order = response['data'].order;
+                } catch (exception: any) {
+                    if (exception !== false && exception.message !== undefined) {
+                        toast.error(
+                            exception.message ||
+                                'An unexpected error has occurred while fetching taxes.',
+                            { duration: 0 },
+                        );
+                    }
+                }
+
+                const taxType = order.tax_type;
+                const tax_value = order.tax_value;
+
+                let total: number;
+                if (taxType === 'exclusive') {
+                    const op1 = math
+                        .chain(order.subtotal)
+                        .add(order.shipping || 0)
+                        .add(tax_value)
+                        .done();
+                    total = math
+                        .chain(op1)
+                        .subtract(order.discount)
+                        .subtract(order.total_coupons)
+                        .done();
+                } else {
+                    const op1 = math.chain(order.subtotal).add(order.shipping || 0).done();
+                    total = math
+                        .chain(op1)
+                        .subtract(order.discount)
+                        .subtract(order.total_coupons)
+                        .done();
+                }
+
+                set({ order: { ...order, total } });
+            } while (get().refreshPending);
+        } finally {
+            set({ isRefreshing: false, refreshPending: false });
         }
-
-        const taxType = order.tax_type;
-        const tax_value = order.tax_value;
-
-        if (taxType === 'exclusive') {
-            const op1 = math
-                .chain(order.subtotal)
-                .add(order.shipping || 0)
-                .add(tax_value)
-                .done();
-            order.total = math
-                .chain(op1)
-                .subtract(order.discount)
-                .subtract(order.total_coupons)
-                .done();
-        } else {
-            const op1 = math.chain(order.subtotal).add(order.shipping || 0).done();
-            order.total = math
-                .chain(op1)
-                .subtract(order.discount)
-                .subtract(order.total_coupons)
-                .done();
-        }
-
-        set({ order });
     },
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -343,7 +437,7 @@ export const usePOS = create<any>((set, get) => ({
             order = computeOrderTaxGroup(order, tax, options);
             return { status: 'success', data: { tax, order } };
         } else {
-            throw { status: 'error', message: __('No tax group assigned to the order') };
+            throw { status: 'error', message: 'No tax group assigned to the order' };
         }
     },
 
@@ -373,28 +467,26 @@ export const usePOS = create<any>((set, get) => ({
     // ─────────────────────────────────────────────────────────────────────────
 
     canProceedAsLaidAway: async (_order: Order) => {
-        const minimalPaymentPercent = _order.customer.group.minimal_credit_payment;
-        const firstPart = math.chain(_order.total).multiply(minimalPaymentPercent).done();
-        let expected: any = math.chain(firstPart).divide(100).done();
-        expected = parseFloat(expected);
+        const minimalPaymentPercent = (_order.customer as any)?.group?.minimal_credit_payment ?? 0;
+        const firstPart = math.chain(_order.total).multiply(minimalPaymentPercent).done() as number;
+        const expected: number = parseFloat(String(math.chain(firstPart).divide(100).done()));
 
-        const result = await new Promise<{ order: Order }>((resolve, reject) => {
-            if (window.confirm('Configure layaway payment?')) {
-                resolve({ order: _order });
-            } else {
-                reject({ status: 'error', message: 'Layaway configuration canceled.' });
-            }
-        });
+        // window.confirm removed — it blocks the JS thread, cannot be styled, and is
+        // suppressed in iframes/modern browsers. We now proceed directly and let the
+        // PaymentGatewayDialog handle all layaway UI through the ConfirmationDialog.
+        const result = { order: _order };
+        const instalments = result.order.instalments ?? [];
 
-        if (result.order.instalments.length === 0 && result.order.tendered < expected) {
-            const message = __(
-                `Before saving this order, a minimum payment of {amount} is required`,
-            ).replace('{amount}', formatCurrency(expected));
-            toast.error(__('Unable to proceed'), { description: message });
-            throw { status: 'error', message };
+        if (instalments.length === 0 && result.order.tendered < expected) {
+            const message = `Before saving this order, a minimum payment of ${formatCurrency(expected)} is required`;
+            toast.error('Unable to proceed', { description: message });
+            throw new Error(message);
         } else {
             const paymentType = get().selectedPaymentType;
-            const expectedSlice = result.order.instalments.filter(
+            if (!paymentType) {
+                return { status: 'success', message: 'Layaway defined', data: { order: result.order } };
+            }
+            const expectedSlice = instalments.filter(
                 (payment) =>
                     payment.amount >= expected &&
                     isSameDay(payment.date, startOfDay(new Date())),
@@ -403,23 +495,21 @@ export const usePOS = create<any>((set, get) => ({
             if (expectedSlice.length === 0) {
                 return {
                     status: 'success',
-                    message: __('Layaway defined'),
+                    message: 'Layaway defined',
                     data: { order: result.order },
                 };
             }
 
-            const firstSlice = expectedSlice[0].amount;
+            const firstInstalment = expectedSlice[0];
+            const firstSlice = firstInstalment.amount;
 
             if (firstSlice > 0) {
                 return new Promise((resolve, reject) => {
-                    toast.info(__('Initial Payment'), {
-                        description: __(
-                            `In order to proceed, an initial payment of {amount} is required for the selected payment type "{paymentType}". Would you like to proceed ?`,
-                        )
-                            .replace('{amount}', formatCurrency(firstSlice))
-                            .replace('{paymentType}', paymentType.label),
+                    toast.info('Initial Payment', {
+                        description:
+                            `In order to proceed, an initial payment of ${formatCurrency(firstSlice)} is required for the selected payment type "${paymentType.label}". Would you like to proceed?`,
                         action: {
-                            label: __('Proceed'),
+                            label: 'Proceed',
                             onClick: () => {
                                 const payment: Payment = {
                                     identifier: paymentType.identifier,
@@ -429,25 +519,25 @@ export const usePOS = create<any>((set, get) => ({
                                     selected: true,
                                 };
                                 get().addPayment(payment);
-                                expectedSlice[0].paid = true;
+                                const updatedInstalments = instalments.map((inst) =>
+                                    inst === firstInstalment ? { ...inst, paid: true } : inst,
+                                );
+                                const updatedOrder = { ...result.order, instalments: updatedInstalments };
                                 resolve({
                                     status: 'success',
-                                    message: __('Layaway defined'),
-                                    data: { order: result.order },
+                                    message: 'Layaway defined',
+                                    data: { order: updatedOrder },
                                 });
                             },
                         },
                         onDismiss: () =>
-                            reject({
-                                status: 'error',
-                                message: __('The request was canceled'),
-                            }),
+                            reject(new Error('The request was canceled')),
                     });
                 });
             } else {
                 return {
                     status: 'success',
-                    message: __('Layaway defined'),
+                    message: 'Layaway defined',
                     data: { order: result.order },
                 };
             }
@@ -466,15 +556,14 @@ export const usePOS = create<any>((set, get) => ({
                 order.total > order.tendered
             ) {
                 if (get().options.ns_orders_allow_partial === 'no') {
-                    const message = __('Partially paid orders are disabled.');
+                    const message = 'Partially paid orders are disabled.';
                     toast.error(message);
-                    throw { status: 'error', message };
+                    throw new Error(message);
                 } else if (get().options.ns_orders_allow_unpaid === 'no') {
-                    const message = __(
-                        'Unpaid orders are not allowed. Please add at least one payment.',
-                    );
+                    const message =
+                        'Unpaid orders are not allowed. Please add at least one payment.';
                     toast.error(message);
-                    throw { status: 'error', message };
+                    throw new Error(message);
                 } else if (minimalPayment >= 0) {
                     const result = await get().canProceedAsLaidAway(order);
                     order = result.data.order;
@@ -487,9 +576,9 @@ export const usePOS = create<any>((set, get) => ({
             return get().proceedSubmitting(order);
         }
 
-        const message = __('An order is currently being processed.');
+        const message = 'An order is currently being processed.';
         toast.error(message);
-        throw { status: 'error', message };
+        throw new Error(message);
     },
 
     proceedSubmitting: async (order: Order) => {
@@ -507,8 +596,11 @@ export const usePOS = create<any>((set, get) => ({
             set({ isSubmitting: false });
 
             const url = get().options.ns_jgrem_complete_sale_audio;
-            if (url.length > 0) {
-                new Audio(url).play();
+            if (url && url.length > 0) {
+                new Audio(url).play().catch((err: Error) => {
+                    // Autoplay may be blocked by browser policy — non-fatal
+                    console.warn('[POS] Sale audio playback blocked:', err.message);
+                });
             }
             return submittedOrder;
         } catch (error) {
@@ -572,7 +664,8 @@ export const usePOS = create<any>((set, get) => ({
 
         get().buildOrder(fullOrder);
         get().buildProducts(products);
-        await get().selectCustomer(fullOrder.customer);
+        // fullOrder.customer is guaranteed to be set by API at this point
+        await get().selectCustomer(fullOrder.customer as Customer);
 
         return fullOrder;
     },
@@ -581,54 +674,47 @@ export const usePOS = create<any>((set, get) => ({
     // Order field setters
     // ─────────────────────────────────────────────────────────────────────────
 
-    setHoldPopupEnabled: (status = true) => {
-        set({ holdPopupEnabled: status });
-    },
-
-    getHoldPopupEnabled: () => {
-        return get().holdPopupEnabled;
-    },
-
     setDiscount: (value: number, type: 'flat' | 'percentage' = 'flat') => {
-        const order = get().order;
-        order.discount = value;
-        order.discount_type = type;
-        if (type === 'percentage') {
-            order.discount_percentage = value;
-            order.discount = (value / 100) * order.subtotal;
-        }
+        // ✅ Always spread — never mutate the reference from get()
+        const current = get().order;
+        const order: Order = {
+            ...current,
+            discount: type === 'percentage' ? (value / 100) * current.subtotal : value,
+            discount_type: type,
+            discount_percentage: type === 'percentage' ? value : current.discount_percentage,
+        };
         set({ order });
         get().refreshCart();
     },
 
     setShipping: (value: number, shippingType: string = 'flat') => {
-        const order = get().order;
-        order.shipping = value;
-        order.shipping_type = shippingType as any;
+        // ✅ Spread first
+        const order: Order = { ...get().order, shipping: value, shipping_type: shippingType as any };
         set({ order });
         get().refreshCart();
     },
 
     setNote: (note: string, visibility: 'hidden' | 'visible' = 'hidden') => {
-        const order = get().order;
-        order.note = note;
-        order.note_visibility = visibility;
+        // ✅ Spread first
+        const order: Order = { ...get().order, note, note_visibility: visibility };
         set({ order });
     },
 
     setOrderType: (type: OrderType) => {
-        const order = get().order;
-        order.type = type;
-        if (type.identifier === 'takeaway') {
-            order.shipping = 0;
-        }
+        // ✅ Spread first
+        const order: Order = {
+            ...get().order,
+            type,
+            shipping: type.identifier === 'takeaway' ? 0 : get().order.shipping,
+        };
         set({ order });
         get().refreshCart();
     },
 
     updateAddress: (type: 'billing' | 'shipping', address: any) => {
-        const order = get().order;
-        order.addresses = { ...order.addresses, [type]: address };
+        // ✅ Spread first
+        const current = get().order;
+        const order: Order = { ...current, addresses: { ...current.addresses, [type]: address } };
         set({ order });
     },
 
@@ -646,9 +732,9 @@ export const usePOS = create<any>((set, get) => ({
         const shouldPrint =
             options.ns_jgrem_printing_enabled_for === 'all_orders' ||
             (options.ns_jgrem_printing_enabled_for === 'partially_paid_orders' &&
-                ['paid', 'partially_paid'].includes(order.payment_status)) ||
+                ['paid', 'partially_paid'].includes(order.payment_status as string)) ||
             (options.ns_jgrem_printing_enabled_for === 'only_paid_orders' &&
-                ['paid'].includes(order.payment_status));
+                ['paid'].includes(order.payment_status as string));
 
         if (!shouldPrint) return false;
 

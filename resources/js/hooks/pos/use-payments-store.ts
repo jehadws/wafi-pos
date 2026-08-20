@@ -14,7 +14,7 @@ import { PaymentType } from '@/interfaces/payment-type';
 import { StateCreator } from 'zustand';
 import { toast } from 'sonner';
 
-const __ = (ns: any) => ns;
+
 
 // ---------------------------------------------------------------------------
 // Types
@@ -48,9 +48,13 @@ export const createPaymentsSlice: StateCreator<any, [], [], PaymentsSlice> = (se
 
     addPayment: (payment) => {
         if (payment.value > 0) {
-            const order = get().order;
-            order.payments.push(payment);
-            set({ order });
+            // ✅ immutable — creates a new payments array so Zustand detects the change
+            set((state: any) => ({
+                order: {
+                    ...state.order,
+                    payments: [...state.order.payments, payment],
+                },
+            }));
             get().computePaid();
         } else {
             toast.error('Invalid amount.');
@@ -59,14 +63,17 @@ export const createPaymentsSlice: StateCreator<any, [], [], PaymentsSlice> = (se
 
     removePayment: (payment) => {
         if (payment.id !== undefined) {
-            toast.error(__('Unable to delete a payment attached to the order.'));
+            toast.error('Unable to delete a payment attached to the order.');
             return;
         }
 
-        const order = get().order;
-        const index = order.payments.indexOf(payment);
-        order.payments.splice(index, 1);
-        set({ order });
+        // ✅ immutable — filter creates a new array
+        set((state: any) => ({
+            order: {
+                ...state.order,
+                payments: state.order.payments.filter((p: Payment) => p !== payment),
+            },
+        }));
 
         get().updateCustomerAccount(payment);
         get().computePaid();
@@ -74,30 +81,35 @@ export const createPaymentsSlice: StateCreator<any, [], [], PaymentsSlice> = (se
 
     updateCustomerAccount: (payment) => {
         if (payment.identifier === 'account-payment') {
-            const customer = get().order.customer;
-            customer.account_amount += payment.value;
+            // ✅ Spread customer before mutating so Zustand sees a new reference
+            const customer = { ...get().order.customer, account_amount: (get().order.customer?.account_amount ?? 0) + payment.value };
             get().selectCustomer(customer);
         }
     },
 
     computePaid: () => {
         const order = get().order;
-        order.tendered = 0;
 
-        if (order.payments.length > 0) {
-            order.tendered = order.payments
-                .map((p: any) => p.value)
-                .reduce((b: number, a: number) => a + b);
-        }
+        const tendered =
+            order.payments.length > 0
+                ? order.payments
+                      .map((p: Payment) => p.value)
+                      .reduce((b: number, a: number) => a + b, 0)
+                : 0;
 
-        if (order.tendered >= order.total) {
-            order.payment_status = 'paid';
-        } else if (order.tendered > 0 && order.tendered < order.total) {
-            order.payment_status = 'partially_paid';
-        }
+        const payment_status: typeof order.payment_status =
+            tendered >= order.total
+                ? 'paid'
+                : tendered > 0
+                  ? 'partially_paid'
+                  : order.payment_status;
 
-        order.change = order.tendered - order.total;
-        set({ order });
+        const change = tendered - order.total;
+
+        // ✅ immutable — spread creates a new order object
+        set({
+            order: { ...order, tendered, payment_status, change },
+        });
     },
 
     setPaymentActive: (payment) => {

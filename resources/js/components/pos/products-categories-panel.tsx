@@ -38,6 +38,9 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
             setProducts(content.products);
             updateBreadCrumb(content.currentCategory);
         } catch (error) {
+            // Previously silent — now surfaces the failure to the user
+            toast.error(t('Failed to load categories. Please try again.'));
+            console.error('[POS] loadCategories error:', error);
         } finally {
             setLoading(false);
         }
@@ -88,12 +91,13 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
                 return toast.warning(t('The specified quantity exceed the available quantity.'));
             }
 
-            let quantityInCart = 0;
-            selectedProducts.map((product) => {
+            // ✅ .reduce() for accumulation, not .map()
+            const quantityInCart = selectedProducts.reduce((acc, product) => {
                 if (product.product_id === selectProduct?.id) {
-                    quantityInCart += product.quantity;
+                    return acc + product.quantity;
                 }
-            });
+                return acc;
+            }, 0);
 
             if (quantityInCart + parseInt(quantity) > selectedUnitQuantity?.quantity) {
                 return toast.warning(
@@ -213,7 +217,7 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
                                 >
                                     <div className="bg-muted relative aspect-video overflow-hidden rounded-t-lg">
                                         <img
-                                            src={product.preview_url || '/placeholder.svg'}
+                                            src={(product as any).preview_url || '/placeholder.svg'}
                                             alt={product.name}
                                             className="h-full w-full object-cover"
                                         />

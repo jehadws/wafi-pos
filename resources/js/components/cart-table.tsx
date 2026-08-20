@@ -3,14 +3,15 @@
 import CartItemComponent from '@/components/pos/cart-item';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { OrderProduct } from '@/interfaces/order-product';
 import { Trash2 } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
 
 interface CartTableProps {
-    cart: CartProduct[];
-    removeFromCart: (product: CartProduct) => void;
-    updateQuantity: (product: CartProduct, quantity: number) => void;
-    updatePrice: (product: CartProduct, price: number) => void;
+    cart: OrderProduct[];
+    removeFromCart: (product: OrderProduct) => void;
+    updateQuantity: (product: OrderProduct, quantity: number) => void;
+    updatePrice: (product: OrderProduct, price: number) => void;
     clearCart: () => void;
     removeSelectedItems: () => void;
     selectedItems: string[];
@@ -84,8 +85,8 @@ export default function CartTable({
                                 <div className="pl-2">
                                     <input
                                         type="checkbox"
-                                        checked={selectedItems.includes(item._uuid)}
-                                        onChange={() => toggleItemSelection(item._uuid)}
+                                        checked={selectedItems.includes(item._uuid ?? '')}
+                                        onChange={() => toggleItemSelection(item._uuid ?? '')}
                                         className="text-primary focus:ring-primary h-4 w-4 rounded border-gray-300"
                                     />
                                 </div>
@@ -96,7 +97,7 @@ export default function CartTable({
                                         removeFromCart={removeFromCart}
                                         updateQuantity={updateQuantity}
                                         updatePrice={updatePrice}
-                                        updateDiscountPercentage={(_product: CartProduct, _price: number) => {}}
+                                        updateDiscountPercentage={(_product: OrderProduct, _price: number) => {}}
                                     />
                                 </div>
                             </div>

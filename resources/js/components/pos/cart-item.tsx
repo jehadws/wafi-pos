@@ -217,7 +217,7 @@ export default function CartItem({ item, updateDiscountPercentage, updatePrice, 
           )}
         </div>
       )}
-      <div className="col-span-2 flex h-14 items-center justify-center border-l text-center">${item.total_price_without_tax.toFixed(2)}</div>
+      <div className="col-span-2 flex h-14 items-center justify-center border-l text-center">${(item.total_price_without_tax ?? 0).toFixed(2)}</div>
       <NumericKeypadDialog {...discountKeypad.keypadProps} />
       <NumericKeypadDialog {...priceKeypad.keypadProps} />
     </div>

@@ -12,7 +12,6 @@ import { customersApi } from '@/api';
 import { StateCreator } from 'zustand';
 import { toast } from 'sonner';
 
-const __ = (ns: any) => ns;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -68,25 +67,30 @@ export const createCustomerSlice: StateCreator<any, [], [], CustomerSlice> = (se
     pushCoupon: (coupon) => {
         const order = get().order;
 
-        order.coupons.forEach((_coupon: any) => {
-            if (_coupon.code === coupon.code) {
-                const message = __('This coupon is already added to the cart');
-                toast.error(message);
-                throw message;
-            }
-        });
+        const alreadyAdded = order.coupons.some((_coupon: any) => _coupon.code === coupon.code);
+        if (alreadyAdded) {
+            const message = 'This coupon is already added to the cart';
+            toast.error(message);
+            throw message;
+        }
 
-        order.coupons.push(coupon);
-        set({ order });
+        // ✅ immutable — spread creates new coupons array
+        set((state: any) => ({
+            order: {
+                ...state.order,
+                coupons: [...state.order.coupons, coupon],
+            },
+        }));
         get().refreshCart();
     },
 
     removeCoupon: (coupon) => {
-        const order = get().order;
-        const coupons = order.coupons;
-        const index = coupons.indexOf(coupon);
-        coupons.splice(index, 1);
-        order.coupons = coupons;
-        set({ order });
+        // ✅ immutable — filter creates new coupons array
+        set((state: any) => ({
+            order: {
+                ...state.order,
+                coupons: state.order.coupons.filter((c: any) => c !== coupon),
+            },
+        }));
     },
 });

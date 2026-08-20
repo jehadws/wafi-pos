@@ -108,52 +108,57 @@ export function getStockUsage(
 
 /**
  * Computes all derived fields (unit_price, total_price, tax fields) on a
- * single cart product, mutating it in-place.
+ * single cart product. Returns a new object — never mutates the input.
  *
  * @param product  - The cart product to compute
  * @param options  - POS options (ns_jgrem_price_with_tax, etc.)
  */
-export function computeProduct(product: OrderProduct, options: Record<string, any>): void {
-    if (product.product_type === 'product') {
-        if (product.mode === 'normal' && product.$quantities) {
-            product.unit_price = getSalePrice(product.$quantities(), options);
-        } else if (product.mode === 'wholesale' && product.$quantities) {
-            product.unit_price = getWholesalePrice(product.$quantities(), options);
+export function computeProduct(product: OrderProduct, options: Record<string, any>): OrderProduct {
+    const computed: OrderProduct = { ...product };
+
+    if (computed.product_type === 'product') {
+        if (computed.mode === 'normal' && computed.$quantities) {
+            computed.unit_price = getSalePrice(computed.$quantities(), options);
+        } else if (computed.mode === 'wholesale' && computed.$quantities) {
+            computed.unit_price = getWholesalePrice(computed.$quantities(), options);
         }
-        // For 'custom' mode: keep product.unit_price as-is (user-set price)
+        // For 'custom' mode: keep unit_price as-is (user-set price)
     }
 
-    computeProductTaxValue(product);
+    computeProductTaxValue(computed);
 
-    const unitPrice = product.unit_price;
-    product.total_price = math
+    const unitPrice = computed.unit_price;
+    computed.total_price = math
         .chain(unitPrice)
-        .multiply(product.quantity)
-        .subtract(product.discount || 0)
+        .multiply(computed.quantity)
+        .subtract(computed.discount || 0)
         .done();
 
-    if (product.total_tax_value === undefined) {
-        product.total_tax_value = math.chain(product.tax_value).multiply(product.quantity).done();
+    if (computed.total_tax_value === undefined) {
+        computed.total_tax_value = math.chain(computed.tax_value).multiply(computed.quantity).done();
     }
 
-    if (product.price_with_tax !== undefined && product.price_without_tax !== undefined) {
-        product.total_price_with_tax = math
-            .chain(product.price_with_tax)
-            .multiply(product.quantity)
+    if (computed.price_with_tax !== undefined && computed.price_without_tax !== undefined) {
+        computed.total_price_with_tax = math
+            .chain(computed.price_with_tax)
+            .multiply(computed.quantity)
             .done();
-        product.total_price_without_tax = math
-            .chain(product.price_without_tax)
-            .multiply(product.quantity)
+        computed.total_price_without_tax = math
+            .chain(computed.price_without_tax)
+            .multiply(computed.quantity)
             .done();
     }
+
+    return computed;
 }
 
 /**
  * Recomputes all derived fields for every product in the array.
+ * Returns a new array — never mutates the input.
  */
 export function recomputeProducts(
     products: OrderProduct[],
     options: Record<string, any>,
-): void {
-    products.forEach((product) => computeProduct(product, options));
+): OrderProduct[] {
+    return products.map((product) => computeProduct(product, options));
 }

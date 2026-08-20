@@ -17,7 +17,6 @@ import { recomputeProducts } from '@/services/order-builder';
 import { StateCreator } from 'zustand';
 import { toast } from 'sonner';
 
-const __ = (ns: any) => ns;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -42,7 +41,7 @@ export interface CartSliceActions {
     clearCart: () => void;
     setAutoMerge: (enabled: boolean) => void;
     checkCart: () => void;
-    recomputeProducts: (products?: OrderProduct[] | null) => void;
+    recomputeProducts: (products?: OrderProduct[] | null) => OrderProduct[];
 }
 
 export type CartSlice = CartSliceState & CartSliceActions;
@@ -123,13 +122,16 @@ export const createCartSlice: StateCreator<any, [], [], CartSlice> = (set, get) 
             newProducts = [cartProduct, ...products];
         }
 
-        get().recomputeProducts(newProducts);
-        set({ products: newProducts });
+        const recomputed = get().recomputeProducts(newProducts);
+        set({ products: recomputed });
         get().refreshCart();
 
         const url = get().options?.ns_jgrem_new_item_audio;
         if (url && url.length > 0) {
-            new Audio(url).play();
+            new Audio(url).play().catch((err: Error) => {
+                // Autoplay may be blocked by browser policy — non-fatal
+                console.warn('[POS] Add-to-cart audio blocked:', err.message);
+            });
         }
     },
 
@@ -149,8 +151,8 @@ export const createCartSlice: StateCreator<any, [], [], CartSlice> = (set, get) 
                 await usersApi.checkPermission('nexopos.pos.delete-order-product');
                 get().resumeRemovingProductUsingIndex(index, products);
             } catch {
-                toast.error(__('Forbidden Action'), {
-                    description: __('You are not allowed to remove this product.'),
+                toast.error('Forbidden Action', {
+                    description: 'You are not allowed to remove this product.',
                 });
             }
         } else {
@@ -161,6 +163,7 @@ export const createCartSlice: StateCreator<any, [], [], CartSlice> = (set, get) 
     resumeRemovingProductUsingIndex: (index, products) => {
         const newProducts = products.filter((_, i) => i !== index);
         set({ products: newProducts });
+        get().refreshCart();
     },
 
     updateProduct: (product, data, index = null) => {
@@ -170,8 +173,8 @@ export const createCartSlice: StateCreator<any, [], [], CartSlice> = (set, get) 
 
         const newProducts = products.map((p, i) => (i === finalIndex ? { ...p, ...data } : p));
 
-        get().recomputeProducts(newProducts);
-        set({ products: newProducts });
+        const recomputed = get().recomputeProducts(newProducts);
+        set({ products: recomputed });
         get().refreshCart();
     },
 
@@ -208,7 +211,7 @@ export const createCartSlice: StateCreator<any, [], [], CartSlice> = (set, get) 
                     products.filter((product: OrderProduct) =>
                         coupon.categories
                             .map((p: any) => p.category_id)
-                            .includes(product.$original().category_id),
+                            .includes(product.$original?.()?.category_id),
                     ).length > 0;
                 if (!isCategoryValid && unmatchedConditions.indexOf(coupon) === -1) {
                     unmatchedConditions.push(coupon);
@@ -218,9 +221,7 @@ export const createCartSlice: StateCreator<any, [], [], CartSlice> = (set, get) 
 
         unmatchedConditions.forEach((coupon) => {
             toast.error(
-                __(
-                    'The coupons "%s" has been removed from the cart, as it\'s required conditions are no more meet.',
-                ).replace('%s', coupon.name),
+                `The coupon "${coupon.name}" has been removed from the cart, as its required conditions are no longer met.`,
                 { duration: 6000 },
             );
             get().removeCoupon(coupon);
@@ -229,6 +230,6 @@ export const createCartSlice: StateCreator<any, [], [], CartSlice> = (set, get) 
 
     recomputeProducts: (products = null) => {
         const options = get().options ?? {};
-        recomputeProducts(products ?? get().products, options);
+        return recomputeProducts(products ?? get().products, options);
     },
 });

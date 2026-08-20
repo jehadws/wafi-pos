@@ -1,7 +1,9 @@
+import { Address } from './address';
 import { Customer } from './customer';
 import { OrderProduct } from './order-product';
 import { OrderType } from './order-type';
 import { Payment } from './payment';
+import { TaxGroup, TaxItem } from './tax';
 
 export interface Order {
     id?: number;
@@ -57,20 +59,16 @@ export interface Order {
     note_visibility: 'hidden' | 'visible';
     tax_group_id?: number;
     tax_type: 'inclusive' | 'exclusive' | undefined;
-    taxes: any[];
+    taxes: TaxItem[];
     final_payment_date?: string;
     total_instalments?: number;
     addresses: {
-        shipping: any;
-        billing: any;
+        shipping?: Address | Partial<Address>;
+        billing?: Address | Partial<Address>;
     };
     tax_value: number;
     products_tax_value: number;
-    tax_group: {
-        taxes?: any[];
-        name?: string;
-        id?: number;
-    };
+    tax_group: TaxGroup;
     shipping: number;
     shipping_rate: number;
     shipping_type: 'flat' | 'percentage' | undefined;

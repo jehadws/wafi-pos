@@ -19,5 +19,15 @@ export interface OrderProduct extends Product {
     quantity: number;
     product?: Product;
     $quantities?: () => ProductUnitQuantity;
+    $original?: () => any;
     _uuid?: string;
+    /** Present when this cart line is tied to a saved order product row */
+    order_id?: number | null;
+    /** Flat discount amount on this line */
+    discount?: number;
+    discount_percentage?: number;
+    discount_type?: 'percentage' | 'flat';
+    unit_quantity_id?: number;
+    /** Pricing mode: normal | wholesale | custom */
+    mode?: 'normal' | 'wholesale' | 'custom';
 }
