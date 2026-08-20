@@ -12,19 +12,13 @@ import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Barcode, Search, Shrink } from 'lucide-react';
 import { toast } from 'sonner';
+import { lazy, Suspense } from 'react';
 import ConfirmationDialog from '../confirmation-dialog';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { NumericKeypadDialog } from '../ui/numeric-keypad-dialog';
 import { CartCalculator } from '@/services/cart-calculator';
-import { CustomerDetailsDialog } from './customer-details-dialog';
-import { SelectCustomerDialog } from './customer-select-dialog';
-import { OrderTypeDialog } from './order-type-dialog';
-import { OrdersDialog } from './orders-dialog';
-import { PaymentGatewayDialog } from './payment-gateway-dialog';
 import ProductsCategoriesPanel from './products-categories-panel';
-import { SearchProductsDialog } from './search-products-dialog';
-import { ShippingDialog } from './shipping-dialog';
 import {
   useBarcodeSearch,
   useCartSelection,
@@ -32,6 +26,29 @@ import {
   usePosDialogCoordinator,
   validateStockAvailability,
 } from '@/features/pos';
+
+// Lazy-loaded dialogs for performance & smaller initial bundle
+const CustomerDetailsDialog = lazy(() =>
+  import('./customer-details-dialog').then((m) => ({ default: m.CustomerDetailsDialog })),
+);
+const SelectCustomerDialog = lazy(() =>
+  import('./customer-select-dialog').then((m) => ({ default: m.SelectCustomerDialog })),
+);
+const OrderTypeDialog = lazy(() =>
+  import('./order-type-dialog').then((m) => ({ default: m.OrderTypeDialog })),
+);
+const OrdersDialog = lazy(() =>
+  import('./orders-dialog').then((m) => ({ default: m.OrdersDialog })),
+);
+const PaymentGatewayDialog = lazy(() =>
+  import('./payment-gateway-dialog').then((m) => ({ default: m.PaymentGatewayDialog })),
+);
+const SearchProductsDialog = lazy(() =>
+  import('./search-products-dialog').then((m) => ({ default: m.SearchProductsDialog })),
+);
+const ShippingDialog = lazy(() =>
+  import('./shipping-dialog').then((m) => ({ default: m.ShippingDialog })),
+);
 
 export default function PosSystem() {
   const {
@@ -323,33 +340,72 @@ export default function PosSystem() {
         </div>
       </div>
 
-      {/* Dialogs orchestrated through coordinators */}
-      <SearchProductsDialog
-        open={dialogs.showSearchProductsDialog}
-        onOpenChange={dialogs.setShowSearchProductsDialog}
-        onProductSelected={addToCart}
-      />
+      {/* Lazy-loaded Dialogs */}
+      <Suspense fallback={null}>
+        {dialogs.showSearchProductsDialog && (
+          <SearchProductsDialog
+            open={dialogs.showSearchProductsDialog}
+            onOpenChange={dialogs.setShowSearchProductsDialog}
+            onProductSelected={addToCart}
+          />
+        )}
 
-      <SelectCustomerDialog
-        open={checkout.showSelectCustomerDialog}
-        onOpenChange={() => checkout.setShowSelectCustomerDialog(false)}
-        selectedCustomer={order.customer}
-        handleSelectCustomer={checkout.handleSelectCustomer as any}
-        onViewCustomer={checkout.openCustomerDetails}
-      />
+        {checkout.showSelectCustomerDialog && (
+          <SelectCustomerDialog
+            open={checkout.showSelectCustomerDialog}
+            onOpenChange={() => checkout.setShowSelectCustomerDialog(false)}
+            selectedCustomer={order.customer}
+            handleSelectCustomer={checkout.handleSelectCustomer as any}
+            onViewCustomer={checkout.openCustomerDetails}
+          />
+        )}
 
-      <OrderTypeDialog
-        open={checkout.showOrderTypeDialog}
-        onOpenChange={checkout.setShowOrderTypeDialog}
-        onSelectOrderType={checkout.handleSelectOrderType}
-        orderType={order.type ?? null}
-      />
+        {checkout.showOrderTypeDialog && (
+          <OrderTypeDialog
+            open={checkout.showOrderTypeDialog}
+            onOpenChange={checkout.setShowOrderTypeDialog}
+            onSelectOrderType={checkout.handleSelectOrderType}
+            orderType={order.type ?? null}
+          />
+        )}
 
-      <CustomerDetailsDialog
-        open={checkout.showSelectedCustomerDetailsDialog}
-        onOpenChange={checkout.setShowSelectedCustomerDetailsDialog}
-        customer={order.customer as any}
-      />
+        {checkout.showSelectedCustomerDetailsDialog && (
+          <CustomerDetailsDialog
+            open={checkout.showSelectedCustomerDetailsDialog}
+            onOpenChange={checkout.setShowSelectedCustomerDetailsDialog}
+            customer={order.customer as any}
+          />
+        )}
+
+        {checkout.showPaymentGatewayDialog && (
+          <PaymentGatewayDialog
+            open={checkout.showPaymentGatewayDialog}
+            onOpenChange={checkout.setShowPaymentGatewayDialog}
+            useBillingAddress={checkout.useBillingAddress}
+            useShippingAddress={checkout.useShippingAddress}
+            resetCart={resetCart}
+          />
+        )}
+
+        {dialogs.showOrderDialog && (
+          <OrdersDialog
+            open={dialogs.showOrderDialog}
+            onOpenChange={dialogs.setShowOrderDialog}
+          />
+        )}
+
+        {checkout.showShippingDialog && (
+          <ShippingDialog
+            open={checkout.showShippingDialog}
+            onOpenChange={checkout.setShowShippingDialog}
+            useBillingAddress={checkout.useBillingAddress}
+            useShippingAddress={checkout.useShippingAddress}
+            setUseBillingAddress={checkout.setUseBillingAddress}
+            setUseShippingAddress={checkout.setUseShippingAddress}
+            onOpenSelectCustomerDialog={() => checkout.setShowSelectCustomerDialog(true)}
+          />
+        )}
+      </Suspense>
 
       <NumericKeypadDialog {...dialogs.discountKeypad.keypadProps} />
       <NumericKeypadDialog {...dialogs.quantityKeypad.keypadProps} />
@@ -363,26 +419,6 @@ export default function PosSystem() {
         }}
         title={t('Clear All')}
         description={t('Would you like to clear all selected entries ?')}
-      />
-
-      <PaymentGatewayDialog
-        open={checkout.showPaymentGatewayDialog}
-        onOpenChange={checkout.setShowPaymentGatewayDialog}
-        useBillingAddress={checkout.useBillingAddress}
-        useShippingAddress={checkout.useShippingAddress}
-        resetCart={resetCart}
-      />
-
-      <OrdersDialog open={dialogs.showOrderDialog} onOpenChange={dialogs.setShowOrderDialog} />
-
-      <ShippingDialog
-        open={checkout.showShippingDialog}
-        onOpenChange={checkout.setShowShippingDialog}
-        useBillingAddress={checkout.useBillingAddress}
-        useShippingAddress={checkout.useShippingAddress}
-        setUseBillingAddress={checkout.setUseBillingAddress}
-        setUseShippingAddress={checkout.setUseShippingAddress}
-        onOpenSelectCustomerDialog={() => checkout.setShowSelectCustomerDialog(true)}
       />
     </div>
   );
