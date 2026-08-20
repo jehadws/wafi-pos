@@ -50,7 +50,6 @@ export default function Dashboard() {
         };
 
         form.transform(() => data);
-        console.log('Submitting data:', data);
 
         form.post('/api/crud/ns.payments-types', {
             showProgress: true,

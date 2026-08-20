@@ -18,7 +18,6 @@ import { Copy, Edit, List, MoreHorizontal } from 'lucide-react';
 
 export default function Dashboard() {
     const { title, products } = usePage<{ products: ProcurementProduct[]; title: string }>().props;
-    console.log(products);
     const { t } = useTranslation();
 
     const breadcrumbs = [

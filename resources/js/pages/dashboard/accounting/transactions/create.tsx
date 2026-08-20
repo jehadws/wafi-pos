@@ -49,8 +49,6 @@ export default function CreateProductPage({ infoMessage }: { infoMessage?: strin
         if (!validateForm()) {
             return;
         }
-
-        console.log('Form data:', form.data);
         form.post('/api/crud/ns.transactions', {
             preserveScroll: true,
             onError: (errors) => {
@@ -71,7 +69,6 @@ export default function CreateProductPage({ infoMessage }: { infoMessage?: strin
     };
 
     const validateForm = () => {
-        console.log('calling validation');
         let isValid = true;
         form.clearErrors();
 

@@ -42,8 +42,6 @@ export default function CreateProductPage() {
             return;
         }
 
-        console.log('Form data:', form.data);
-
         form.post('/api/crud/ns.transactions-accounts', {
             preserveScroll: true,
             onError: (errors) => {
@@ -64,7 +62,6 @@ export default function CreateProductPage() {
     };
 
     const validateForm = () => {
-        console.log('calling validtatio');
         let isValid = true;
         form.clearErrors();
 

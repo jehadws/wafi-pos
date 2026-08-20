@@ -42,7 +42,6 @@ export default function PermissionManager() {
     });
 
     const onSave = (matrix: PermissionMatrix) => {
-        console.log('Saving permission matrix:', matrix);
 
         // Convert matrix back to roles format
         const updatedRoles = roles.map((role) => ({
@@ -51,8 +50,6 @@ export default function PermissionManager() {
                 .filter(([_, granted]) => granted)
                 .map(([permissionId]) => Number.parseInt(permissionId)),
         }));
-
-        console.log('Updated roles:', updatedRoles);
 
         // Here you would typically send this to your API
         // await updateRolePermissions(updatedRoles)

@@ -50,8 +50,6 @@ export default function CreateProductPage() {
             },
         }));
 
-        console.log('Submitting data:', form.data);
-
         form.put(`/api/crud/ns.procurements-products/${product.id}`, {
             preserveScroll: true,
             onError: (errors) => {

@@ -169,7 +169,6 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
       resetCart();
       onOpenChange(false);
     } catch (error: any) {
-      console.log(error);
       toast.error(error?.message || t('An unexpected error occurred'));
     }
   };

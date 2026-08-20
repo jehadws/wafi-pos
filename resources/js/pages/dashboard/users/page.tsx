@@ -22,7 +22,6 @@ import { toast } from 'sonner';
 export default function Dashboard() {
     const { t } = useTranslation();
     const { title, users } = usePage<{ users: Customer[]; title: string }>().props;
-    console.log(users);
     const breadcrumbs = [
         { title: t('Dashboard'), href: '/dashboard' },
         { title: t('Users'), href: '/dashboard/users' },
@@ -38,7 +37,6 @@ export default function Dashboard() {
     });
 
     const handleDeleteConfirm = async () => {
-        console.log('delete', deleteDialog.customer);
 
         if (!deleteDialog.customer || deleteDialog.loading) return;
 

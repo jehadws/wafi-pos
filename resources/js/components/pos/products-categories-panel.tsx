@@ -38,7 +38,6 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
             setProducts(content.products);
             updateBreadCrumb(content.currentCategory);
         } catch (error) {
-            console.log('error', error);
         } finally {
             setLoading(false);
         }
@@ -142,7 +141,6 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
                 }
             }
         } catch (error) {
-            console.log(error);
             setSelectProduct(undefined);
             setSelectedUnitQuantity(undefined);
         } finally {

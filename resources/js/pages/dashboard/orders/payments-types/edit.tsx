@@ -51,7 +51,6 @@ export default function EditPaymentType() {
     };
 
     form.transform(() => data);
-    console.log('Submitting data:', data);
 
     form.put(`/api/crud/ns.payments-types/${paymentType.id}`, {
       showProgress: true,

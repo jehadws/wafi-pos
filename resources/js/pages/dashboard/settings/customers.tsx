@@ -42,7 +42,6 @@ type Options = {
 export default function SettingsGeneral() {
     const { options, payload } = usePage<{ options: Options; payload: General }>().props;
     const { t } = useTranslation();
-    console.log('payload', payload);
     const [isPending, startTransition] = useTransition();
 
     const form = useForm<Payload>({

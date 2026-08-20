@@ -84,8 +84,6 @@ export default function SettingsGeneral() {
     const [tab, setTab] = useState<'identification' | 'currency' | 'date' | 'registration'>('identification');
     const [isPending, startTransition] = useTransition();
     const { t } = useTranslation();
-    // console.log("settings", settings)
-    // console.log("options", options)
 
     const form = useForm<Payload>({
         identification: {

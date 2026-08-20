@@ -53,8 +53,6 @@ export default function CreateProductPage() {
       },
     }));
 
-    console.log('Submitting data:', form.data);
-
     // http://127.0.0.1:9973/api/?
     form.post('/api/crud/ns.providers', {
       preserveScroll: true,

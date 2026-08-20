@@ -67,7 +67,6 @@ export default function PaymentActions({
       setHoldTitle('');
       setIsOpen(false);
     } catch (error: any) {
-      console.log(error);
       toast.error(error?.message || t('Something went wrong. Please try again'));
     }
   };
@@ -83,7 +82,6 @@ export default function PaymentActions({
         setIsVoidOpen(false);
       }
     } catch (error) {
-      console.log(error);
       toast.error(t('Something went wrong. Please try again'));
     }
   };

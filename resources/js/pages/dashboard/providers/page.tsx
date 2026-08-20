@@ -37,7 +37,6 @@ export default function Dashboard() {
     });
 
     const handleDeleteConfirm = async () => {
-        console.log('delete', deleteDialog.provider);
 
         if (!deleteDialog.provider || deleteDialog.loading) return;
 

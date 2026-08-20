@@ -89,8 +89,6 @@ export default function CreateProductPage() {
             return;
         }
 
-        console.log('Form data', form.data);
-
         const data = {
             name: form.data.name,
             general: {
@@ -123,8 +121,6 @@ export default function CreateProductPage() {
             })),
         };
 
-        console.log('Form data transformed:', data);
-
         form.transform(() => data);
 
         form.post('/api/procurements', {
@@ -147,7 +143,6 @@ export default function CreateProductPage() {
     };
 
     const validateForm = () => {
-        console.log('calling validtatio');
         const isValid = true;
         form.clearErrors();
 
@@ -197,7 +192,6 @@ export default function CreateProductPage() {
     };
 
     const updateProduct = (id: number, field: keyof ProductAdd, value: string | number) => {
-        console.log(id, field, value);
         form.setData(
             'products',
             form.data.products.map((p) => {

@@ -247,7 +247,6 @@ export default function PosSystem() {
 
   const handleBarcodeScanned = async (barcode: string) => {
     // /api/products/search/using-barcode/123-466-498-9
-    // console.log(barcode);
     try {
       const product = await productsApi.searchByBarcode(barcode);
       if (product) {
@@ -255,7 +254,6 @@ export default function PosSystem() {
         quantityKeypad.openKeypad();
       }
     } catch (error) {
-      console.log(error);
       toast.error(t('An unexpected error has occurred.'));
     }
   };

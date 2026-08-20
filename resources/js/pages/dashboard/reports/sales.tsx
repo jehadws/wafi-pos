@@ -238,7 +238,6 @@ export default function SalesPage() {
 
             case 'products_report':
                 const allProducts = data.result as Product[];
-                console.log('all products', allProducts);
 
                 return (
                     <Table>

@@ -62,7 +62,6 @@ export default function CouponsDialog({
         toast.success(t('Coupon applied successfully'));
       }
     } catch (error) {
-      console.log(error);
       toast.error(t('Failed to apply coupon'));
     } finally {
       setLoading(false);
