@@ -2,19 +2,29 @@ import { useTranslation } from '@/lib/i18n';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
+interface MenuItem {
+  label: string;
+  href?: string;
+  icon?: string;
+  childrens?: Record<string, { label: string; href?: string }>;
+}
+
 export default function Sidebar() {
   const { t } = useTranslation();
-  const { menus, url } = usePage().props;
-  const [expandedMenus, setExpandedMenus] = useState({});
+  const { menus = {}, url = '' } = usePage().props as {
+    menus?: Record<string, MenuItem>;
+    url?: string;
+  };
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
 
-  const toggleMenu = (menuKey) => {
+  const toggleMenu = (menuKey: string) => {
     setExpandedMenus((prev) => ({
       ...prev,
       [menuKey]: !prev[menuKey],
     }));
   };
 
-  const isActive = (href) => {
+  const isActive = (href?: string) => {
     if (!href) return false;
     return url === href || url.startsWith(href);
   };
@@ -22,7 +32,9 @@ export default function Sidebar() {
   const renderMenuItems = () => {
     return Object.entries(menus).map(([key, menu]) => {
       const hasChildren = menu.childrens && Object.keys(menu.childrens).length > 0;
-      const isMenuActive = isActive(menu.href) || (hasChildren && Object.values(menu.childrens).some((child) => isActive(child.href)));
+      const isMenuActive =
+        isActive(menu.href) ||
+        (hasChildren && Object.values(menu.childrens || {}).some((child) => isActive(child.href)));
       const isExpanded = expandedMenus[key] || isMenuActive;
 
       return (
@@ -31,8 +43,9 @@ export default function Sidebar() {
           {hasChildren ? (
             <div
               onClick={() => toggleMenu(key)}
-              className={`flex cursor-pointer items-center rounded-md px-4 py-2 transition-colors ${isMenuActive ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'
-                }`}
+              className={`flex cursor-pointer items-center rounded-md px-4 py-2 transition-colors ${
+                isMenuActive ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'
+              }`}
             >
               {menu.icon && <i className={`las ${menu.icon} mr-3 text-xl`}></i>}
               <span className="font-medium">{menu.label}</span>
@@ -41,8 +54,9 @@ export default function Sidebar() {
           ) : (
             <Link
               href={menu.href || '#'}
-              className={`flex items-center rounded-md px-4 py-2 transition-colors ${isActive(menu.href) ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'
-                }`}
+              className={`flex items-center rounded-md px-4 py-2 transition-colors ${
+                isActive(menu.href) ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'
+              }`}
             >
               {menu.icon && <i className={`las ${menu.icon} mr-3 text-xl`}></i>}
               <span className="font-medium">{menu.label}</span>
@@ -50,14 +64,15 @@ export default function Sidebar() {
           )}
 
           {/* Submenu */}
-          {hasChildren && (
+          {hasChildren && menu.childrens && (
             <div className={`mt-1 space-y-1 pl-10 ${isExpanded ? 'block' : 'hidden'}`}>
               {Object.entries(menu.childrens).map(([childKey, child]) => (
                 <Link
                   key={childKey}
                   href={child.href || '#'}
-                  className={`block rounded-md px-4 py-2 text-sm transition-colors ${isActive(child.href) ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'
-                    }`}
+                  className={`block rounded-md px-4 py-2 text-sm transition-colors ${
+                    isActive(child.href) ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'
+                  }`}
                 >
                   {child.label}
                 </Link>

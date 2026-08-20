@@ -221,7 +221,6 @@ type Provider = {
 }
 
 type Customer = {
-  account_amount: string
   author: number
   email: string | null
   first_name: string
@@ -230,22 +229,20 @@ type Customer = {
   group_name: string
   id: number
   last_name: string
-  owed_amount: string
   phone: string | null
-  purchases_amount: string
   billing: Address
   shipping: Address
   created_at: string
   updated_at: string
   group: CustomerGroup
-  pobox: string | null,
-  total_sales_count: number,
-  total_sales: number,
-  birth_date: string,
-  purchases_amount: number,
-  owed_amount: number,
-  credit_limit_amount: number,
-  account_amount: number,
+  pobox: string | null
+  total_sales_count: number
+  total_sales: number
+  birth_date: string
+  purchases_amount: number
+  owed_amount: number
+  credit_limit_amount: number
+  account_amount: number
 }
 
 type OrderType = "takeaway" | "delivery"
