@@ -5,6 +5,8 @@
  */
 
 import axios from 'axios';
+import { Order } from '@/interfaces/order';
+import { formatCurrency, formatDate } from '@/utils/format';
 
 export interface WindowsPrinter {
     name: string;
@@ -251,6 +253,56 @@ class PrintAgentService {
         } catch (err: any) {
             throw new Error(this.formatErrorMessage(err));
         }
+    }
+
+    /**
+     * Print an order receipt.
+     * Maps the POS Order object to FormattedReceiptData and sends it to the agent.
+     *
+     * @param order   - The completed POS order
+     * @param mode    - Print mode: 'sale' | 'refund' | 'void'
+     * @param options - Override printer settings (optional)
+     */
+    public async printOrderReceipt(
+        order: Order,
+        mode: string = 'sale',
+        options: Partial<PrinterSettings> = {},
+    ): Promise<any> {
+        const receiptData: FormattedReceiptData = {
+            orderCode: order.code ?? String(order.id),
+            date: formatDate(order.created_at ?? new Date().toISOString()),
+            customer: order.customer
+                ? `${order.customer.first_name ?? ''} ${order.customer.last_name ?? ''}`.trim()
+                : undefined,
+            items: (order.products ?? []).map((p: any) => ({
+                name: p.name,
+                quantity: p.quantity,
+                price: formatCurrency(p.price_with_tax ?? p.unit_price ?? 0),
+                total: formatCurrency(p.total_price_with_tax ?? p.total_price ?? 0),
+            })),
+            subtotal: formatCurrency(order.subtotal ?? 0),
+            discount: order.discount ? formatCurrency(order.discount) : undefined,
+            tax: order.tax_value ? formatCurrency(order.tax_value) : undefined,
+            taxes: Array.isArray(order.taxes)
+                ? order.taxes.map((t: any) => ({
+                      name: t.name ?? 'Tax',
+                      rate: t.rate ?? 0,
+                      tax_value: t.tax_value ?? 0,
+                  }))
+                : undefined,
+            total: formatCurrency(order.total ?? 0),
+            tendered: order.tendered ? formatCurrency(order.tendered) : undefined,
+            change: order.change != null ? formatCurrency(order.change) : undefined,
+            payments: Array.isArray(order.payments)
+                ? order.payments.map((p: any) => ({
+                      name: p.label ?? p.identifier,
+                      value: formatCurrency(p.value),
+                  }))
+                : undefined,
+            barcode: order.code,
+        };
+
+        return this.printReceipt(receiptData, options);
     }
 
     private formatErrorMessage(err: any): string {
