@@ -29,6 +29,7 @@ import printAgentService from '@/services/print-agent-service';
 import { computeOrderTaxGroup, computeOrderTaxes } from '@/services/tax';
 import { sumProductsTotals } from '@/services/pricing';
 import { defineQuantities } from '@/services/order-builder';
+import { executeOrderSubmission } from '@/services/order-submission';
 
 // Slices
 import {
@@ -397,26 +398,10 @@ export const usePOS = create<POSStore>((set, get) => ({
     },
 
     proceedSubmitting: async (order: Order) => {
-        const orderToSubmit = {
-            ...order,
-            coupons: order.coupons?.map((c: any) => ({
-                ...c,
-                coupon_id: c.coupon_id || c.id,
-            })),
-        };
-
         try {
-            const submittedOrder = await ordersApi.submit(orderToSubmit);
+            const submittedOrder = await executeOrderSubmission(order, get().options);
             get().reset();
             set({ isSubmitting: false });
-
-            const url = get().options[POS_OPTION_KEYS.completeSaleAudio];
-            if (url && url.length > 0) {
-                new Audio(url).play().catch((err: Error) => {
-                    // Autoplay may be blocked by browser policy — non-fatal
-                    console.warn('[POS] Sale audio playback blocked:', err.message);
-                });
-            }
             return submittedOrder;
         } catch (error) {
             set({ isSubmitting: false });

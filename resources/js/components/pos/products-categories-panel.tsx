@@ -14,6 +14,8 @@ import { NumericKeypadDialog } from '../ui/numeric-keypad-dialog';
 import { ScrollArea } from '../ui/scroll-area';
 import SelectUnitQuantityDialog from './select-unit-quantity-dialog';
 
+import { validateStockAvailability } from '@/features/pos';
+
 type Props = {
     selectedProducts: OrderProduct[];
 };
@@ -83,36 +85,38 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
     };
 
     const handleQuantity = (quantity: string) => {
-        if (+quantity < 1) {
+        const qty = parseInt(quantity, 10);
+        if (isNaN(qty) || qty < 1) {
             return toast.warning(t('Please provide a quantity'));
         }
 
         if (selectedUnitQuantity && selectProduct) {
-            if (selectedUnitQuantity?.quantity < parseInt(quantity)) {
-                return toast.warning(t('The specified quantity exceed the available quantity.'));
-            }
-
-            // ✅ .reduce() for accumulation, not .map()
             const quantityInCart = selectedProducts.reduce((acc, product) => {
-                if (product.product_id === selectProduct?.id) {
+                if (
+                    product.product_id === selectProduct?.id &&
+                    product.unit_quantity_id === selectedUnitQuantity.id
+                ) {
                     return acc + product.quantity;
                 }
                 return acc;
             }, 0);
 
-            if (quantityInCart + parseInt(quantity) > selectedUnitQuantity?.quantity) {
-                return toast.warning(
-                    t(`Unable to add the product, there is not enough stock. Remaining ${selectedUnitQuantity?.quantity - quantityInCart}`, {
-                        remaining: selectedUnitQuantity?.quantity - quantityInCart,
-                    }),
-                );
+            const stockCheck = validateStockAvailability(
+                selectedUnitQuantity.quantity,
+                qty,
+                quantityInCart,
+            );
+
+            if (!stockCheck.allowed) {
+                return toast.warning(t(stockCheck.reason || 'Not enough stock.'));
             }
+
             const ProductData = {
                 ...selectProduct,
                 unit_quantity_id: selectedUnitQuantity.id,
                 unit_name: selectedUnitQuantity.type,
                 $quantities: () => selectedUnitQuantity,
-                quantity: parseInt(quantity),
+                quantity: qty,
             };
             addProductToCart(ProductData);
             setSelectProduct(undefined);

@@ -1,4 +1,5 @@
 import PosSystem from '@/components/pos/pos-system';
+import ErrorBoundary from '@/components/error-boundary';
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { usePOS } from '@/hooks/usePOS';
 import { usePosBeforeUnload } from '@/hooks/use-pos-before-unload';
@@ -60,7 +61,9 @@ export default function PosPage() {
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
       </Head>
       <main className="bg-background min-h-screen">
-        <PosSystem />
+        <ErrorBoundary fallbackTitle={t('Point of Sale Error')} onReset={() => usePOS.getState().reset()}>
+          <PosSystem />
+        </ErrorBoundary>
       </main>
       <Toaster />
     </>
