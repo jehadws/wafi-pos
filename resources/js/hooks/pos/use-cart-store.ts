@@ -15,6 +15,7 @@ import { OrderProduct } from '@/types/models/order-product';
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { usersApi } from '@/api';
 import { recomputeProducts } from '@/services/order-builder';
+import { playSound } from '@/utils/sound';
 import type { POSStore } from './pos-store-types';
 import { StateCreator } from 'zustand';
 import { toast } from 'sonner';
@@ -129,12 +130,7 @@ export const createCartSlice: StateCreator<POSStore, [], [], CartSlice> = (set, 
         get().refreshCart();
 
         const url = get().options?.[POS_OPTION_KEYS.newItemAudio];
-        if (url && url.length > 0) {
-            new Audio(url).play().catch((err: Error) => {
-                // Autoplay may be blocked by browser policy — non-fatal
-                console.warn('[POS] Add-to-cart audio blocked:', err.message);
-            });
-        }
+        playSound(url);
     },
 
     removeProduct: (product) => {

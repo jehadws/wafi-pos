@@ -6,6 +6,7 @@ import SecondaryNavigation from '@/components/pos/secondary-navigation';
 import { POS_OPTION_KEYS, isPriceWithTax } from '@/constants/pos-options';
 import { usePOSShortcuts } from '@/hooks/use-pos-shortcuts';
 import { useRTL } from '@/hooks/use-rtl';
+import { useShallow } from 'zustand/react/shallow';
 import { usePOS } from '@/hooks/usePOS';
 import { OrderProduct } from '@/types/models/order-product';
 import { useTranslation } from '@/lib/i18n';
@@ -67,7 +68,25 @@ export default function PosSystem() {
     buildProducts,
     refreshCart,
     reset,
-  } = usePOS();
+  } = usePOS(
+    useShallow((s) => ({
+      products: s.products,
+      options: s.options,
+      removeProduct: s.removeProduct,
+      updateProduct: s.updateProduct,
+      addToCart: s.addToCart,
+      order: s.order,
+      setDiscount: s.setDiscount,
+      selectCustomer: s.selectCustomer,
+      setOrderType: s.setOrderType,
+      setShipping: s.setShipping,
+      autoMerge: s.autoMerge,
+      setAutoMerge: s.setAutoMerge,
+      buildProducts: s.buildProducts,
+      refreshCart: s.refreshCart,
+      reset: s.reset,
+    })),
+  );
 
   const { t } = useTranslation();
   const { isRTL } = useRTL();

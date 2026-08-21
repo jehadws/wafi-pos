@@ -2,6 +2,13 @@ import { OrderProduct } from '@/types/models/order-product';
 
 export class CartCalculator {
   static calculateNewTaxValue(oldPriceWithoutTax: number, oldTaxValue: number, newPriceWithoutTax: number) {
+    if (!oldPriceWithoutTax || oldPriceWithoutTax <= 0 || isNaN(oldPriceWithoutTax)) {
+      return {
+        taxRate: 0,
+        newTaxValue: 0,
+      };
+    }
+
     const taxRate = oldTaxValue / oldPriceWithoutTax;
     const newTaxValue = newPriceWithoutTax * taxRate;
 
@@ -26,7 +33,7 @@ export class CartCalculator {
     } else if (product.tax_type === 'inclusive') {
       const taxMultiplier = 1 + taxRate;
       const priceWithTax = totalBeforeTax;
-      const priceWithoutTax = priceWithTax / taxMultiplier;
+      const priceWithoutTax = taxMultiplier > 0 ? priceWithTax / taxMultiplier : priceWithTax;
       totalTaxValue = priceWithTax - priceWithoutTax;
     }
 
@@ -66,14 +73,31 @@ export class CartCalculator {
   }
 
   static calculateTotalsForDiscountPercentageUpdate(product: OrderProduct, discountPercentage: number, isPriceWithTax: boolean) {
-    const total_price = product.price_without_tax * product.quantity;
-    const discount_value = (discountPercentage / 100) * total_price;
+    const lineSubtotal = (product.price_without_tax || product.unit_price) * product.quantity;
+    const discount_value = (discountPercentage / 100) * lineSubtotal;
+    const totalBeforeTax = lineSubtotal - discount_value;
+
+    let totalTaxValue = 0;
+    const taxRate = product.price_without_tax > 0 ? product.tax_value / product.price_without_tax : 0;
+
+    if (product.tax_type === 'exclusive') {
+      totalTaxValue = totalBeforeTax * taxRate;
+    } else if (product.tax_type === 'inclusive') {
+      const taxMultiplier = 1 + taxRate;
+      const priceWithTax = (product.price_with_tax * product.quantity) - discount_value;
+      const priceWithoutTax = taxMultiplier > 0 ? priceWithTax / taxMultiplier : priceWithTax;
+      totalTaxValue = priceWithTax - priceWithoutTax;
+    } else {
+      totalTaxValue = (product.tax_value || 0) * product.quantity;
+    }
+
     const total_price_with_tax = product.price_with_tax * product.quantity - discount_value;
-    const total_price_without_tax = total_price - discount_value;
+    const total_price_without_tax = totalBeforeTax;
 
     return {
       discount_percentage: discountPercentage,
       discount: discount_value,
+      total_tax_value: totalTaxValue,
       total_price: isPriceWithTax ? total_price_with_tax : total_price_without_tax,
       total_price_without_tax,
       total_price_with_tax,

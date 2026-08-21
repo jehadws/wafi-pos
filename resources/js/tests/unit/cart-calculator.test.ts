@@ -10,6 +10,13 @@ describe('services/cart-calculator.ts', () => {
             expect(result.taxRate).toBe(15);
             expect(result.newTaxValue).toBe(30);
         });
+
+        it('safely handles zero or negative old price without returning NaN', () => {
+            const result = CartCalculator.calculateNewTaxValue(0, 0, 150);
+            expect(result.taxRate).toBe(0);
+            expect(result.newTaxValue).toBe(0);
+            expect(Number.isNaN(result.newTaxValue)).toBe(false);
+        });
     });
 
     describe('calculateTotalsForQuantityUpdate', () => {
@@ -83,13 +90,17 @@ describe('services/cart-calculator.ts', () => {
                 quantity: 2,
                 price_without_tax: 100,
                 price_with_tax: 115,
+                tax_value: 15,
+                tax_type: 'exclusive',
             } as any;
 
             // Total pre-tax = 200, discount 20% = 40
             // Total without tax = 160
+            // Tax = 160 * 15% = 24
             // Total with tax = 230 - 40 = 190
             const totals = CartCalculator.calculateTotalsForDiscountPercentageUpdate(product, 20, true);
             expect(totals.discount).toBe(40);
+            expect(totals.total_tax_value).toBe(24);
             expect(totals.total_price_without_tax).toBe(160);
             expect(totals.total_price_with_tax).toBe(190);
         });
