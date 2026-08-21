@@ -31,7 +31,7 @@ export default function PosSettingsPage() {
                             
                             <div className="mt-4">
                                 <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
-                                    <TabsList className="flex w-full max-w-xl justify-start">
+                                    <TabsList className="flex w-full justify-start">
                                         <TabsTrigger value="layout">{t('Layout')}</TabsTrigger>
                                         <TabsTrigger value="printing">{t('Printing')}</TabsTrigger>
                                         <TabsTrigger value="registers">{t('Cash Registers')}</TabsTrigger>

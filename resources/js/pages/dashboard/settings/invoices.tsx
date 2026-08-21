@@ -242,7 +242,7 @@ export default function ReceiptSettings() {
                                     </CardHeader>
                                     <CardContent>
                                         <Tabs defaultValue="header" className="w-full">
-                                            <TabsList className="grid h-10 w-full grid-cols-2 border">
+                                            <TabsList className="grid w-full grid-cols-2 border">
                                                 <TabsTrigger
                                                     value="header"
                                                     className="data-[state=active]:bg-accent -mt-0.4 data-[state=active]:text-accent-foreground dark:data-[state=active]:text-accent-foreground dark:data-[state=active]:bg-accent"

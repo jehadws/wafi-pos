@@ -54,7 +54,7 @@ export function ProcurementItemModals({
 
                         <div>
                             <Label className="mb-2 block text-sm font-medium">{t('Barcode')}</Label>
-                            <div className="dark:bg-input/30 flex h-16 items-center justify-center rounded border bg-transparent">
+                            <div className="bg-muted/40 border-input flex h-16 items-center justify-center rounded border">
                                 <span className="text-muted-foreground text-sm">{t('Barcode will be generated')}</span>
                             </div>
                             <p className="text-muted-foreground mt-1 text-xs">
