@@ -27,6 +27,7 @@ export default function CreateProcurementPage() {
     const {
         form,
         searchQuery,
+        setSearchQuery,
         searchResults,
         units,
         setUnits,

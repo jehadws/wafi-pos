@@ -180,6 +180,7 @@ export function useProcurementForm() {
     return {
         form,
         searchQuery,
+        setSearchQuery,
         searchResults,
         units,
         setUnits,
