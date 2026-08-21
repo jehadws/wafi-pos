@@ -255,7 +255,7 @@ export default function PosSystem() {
   };
 
   return (
-    <div className="flex h-screen w-full flex-col">
+    <div className="touch-manipulation flex h-screen w-full select-none flex-col">
       <PrimaryNavigation
         resetCart={() => dialogs.setIsResetCartOpen(true)}
         handleOpenSelectCustomerDialog={checkout.setShowSelectCustomerDialog}
@@ -329,28 +329,31 @@ export default function PosSystem() {
               <Button
                 variant="outline"
                 size="icon"
+                className="active:scale-95 h-11 w-11"
                 onClick={barcodeSearch.toggleAutoFocus}
                 title={t('Barcode')}
               >
                 <Barcode
-                  className={cn('h-4 w-4', barcodeSearch.isAutoFocusOpen ? 'text-primary' : '')}
+                  className={cn('h-5 w-5', barcodeSearch.isAutoFocusOpen ? 'text-primary' : '')}
                 />
               </Button>
               <Button
                 variant="outline"
                 size="icon"
+                className="active:scale-95 h-11 w-11"
                 onClick={() => setAutoMerge(!autoMerge)}
                 title={t('Options')}
               >
-                <Shrink className={cn('h-4 w-4', autoMerge ? 'text-primary' : '')} />
+                <Shrink className={cn('h-5 w-5', autoMerge ? 'text-primary' : '')} />
               </Button>
               <Button
                 variant="outline"
                 size="icon"
+                className="active:scale-95 h-11 w-11"
                 onClick={() => dialogs.setShowSearchProductsDialog(true)}
                 title={t('Products')}
               >
-                <Search className="h-4 w-4" />
+                <Search className="h-5 w-5" />
               </Button>
             </div>
           </div>

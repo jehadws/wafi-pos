@@ -60,35 +60,37 @@ export default function CartTable({
                 {cart.length > 0 && (
                     <div className="bg-muted/20 flex items-center justify-between border-b p-2">
                         <div className="flex items-center space-x-2">
-                            <input
-                                type="checkbox"
-                                checked={allSelected}
-                                ref={(input) => {
-                                    if (input) {
-                                        input.indeterminate = someSelected;
-                                    }
-                                }}
-                                onChange={() => {
-                                    if (allSelected) {
-                                        deselectAllItems();
-                                    } else {
-                                        selectAllItems();
-                                    }
-                                }}
-                                className="text-primary focus:ring-primary h-4 w-4 rounded border-gray-300"
-                            />
+                            <label className="relative flex h-11 w-11 cursor-pointer items-center justify-center">
+                                <input
+                                    type="checkbox"
+                                    checked={allSelected}
+                                    ref={(input) => {
+                                        if (input) {
+                                            input.indeterminate = someSelected;
+                                        }
+                                    }}
+                                    onChange={() => {
+                                        if (allSelected) {
+                                            deselectAllItems();
+                                        } else {
+                                            selectAllItems();
+                                        }
+                                    }}
+                                    className="text-primary focus:ring-primary h-5 w-5 rounded border-gray-300"
+                                />
+                            </label>
                             <span className="text-sm font-medium">
                                 {selectedItems.length > 0 ? t('{entries} items selected', { entries: selectedItems.length }) : t('Select items')}
                             </span>
                         </div>
                         <div className="flex items-center space-x-2">
                             {selectedItems.length > 0 && (
-                                <Button variant="destructive" size="sm" className="h-7 text-xs" onClick={removeSelectedItems}>
+                                <Button variant="destructive" size="sm" className="active:scale-95 h-9 text-xs" onClick={removeSelectedItems}>
                                     <Trash2 className="mr-1 h-3 w-3" />
                                     {t('Delete Selected')}
                                 </Button>
                             )}
-                            <Button variant="outline" size="sm" className="h-7 text-xs" onClick={clearCart}>
+                            <Button variant="outline" size="sm" className="active:scale-95 h-9 text-xs" onClick={clearCart}>
                                 <Trash2 className="mr-1 h-3 w-3" />
                                 {t('Clear All')}
                             </Button>
@@ -101,13 +103,15 @@ export default function CartTable({
                         <div className="pb-12">
                             {cart.map((item) => (
                                 <div key={item._uuid || `${item.product_id}-${item.unit_id}`} className="flex items-center border-b">
-                                    <div className="pl-2">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedItems.includes(item._uuid || `${item.product_id}-${item.unit_id}`)}
-                                            onChange={() => toggleItemSelection(item._uuid || `${item.product_id}-${item.unit_id}`)}
-                                            className="text-primary focus:ring-primary h-4 w-4 rounded border-gray-300"
-                                        />
+                                    <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center pl-2">
+                                        <label className="relative flex h-11 w-11 cursor-pointer items-center justify-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedItems.includes(item._uuid || `${item.product_id}-${item.unit_id}`)}
+                                                onChange={() => toggleItemSelection(item._uuid || `${item.product_id}-${item.unit_id}`)}
+                                                className="text-primary focus:ring-primary h-5 w-5 rounded border-gray-300"
+                                            />
+                                        </label>
                                     </div>
                                     <div className="flex-1">
                                         <CartItemComponent

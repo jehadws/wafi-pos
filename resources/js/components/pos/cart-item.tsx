@@ -22,6 +22,8 @@ interface CartItemProps {
   showQuantity?: boolean;
 }
 
+const CART_ITEM_LINK_CLASSES = "text-muted-foreground hover:text-primary hover:decoration-primary active:bg-muted active:scale-95 rounded px-1 py-0.5 text-left underline decoration-dotted decoration-1 underline-offset-3";
+
 export default function CartItem({ item, updateDiscountPercentage, updatePrice, removeFromCart, updateQuantity, showQuantity = true }: CartItemProps) {
   const { t } = useTranslation();
   const { options } = usePOS();
@@ -130,38 +132,44 @@ export default function CartItem({ item, updateDiscountPercentage, updatePrice, 
             )}
           </p>
           <div className="flex flex-row gap-4">
-            <p
-              onClick={() => priceKeypad.openKeypad()}
-              className="text-muted-foreground hover:text-primary hover:decoration-primary underline decoration-dotted decoration-1 underline-offset-3"
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                priceKeypad.openKeypad();
+              }}
+              className={CART_ITEM_LINK_CLASSES}
             >
               {t('Price')}: {formatCurrency(item.price_without_tax)}
-            </p>
-            <p
-              onClick={() => discountKeypad.openKeypad()}
-              className="text-muted-foreground hover:text-primary hover:decoration-primary underline decoration-dotted decoration-1 underline-offset-3"
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                discountKeypad.openKeypad();
+              }}
+              className={CART_ITEM_LINK_CLASSES}
             >
               {t('Discount')} {item.discount_percentage || 0}%: {formatCurrency(item.discount || 0)}
-            </p>
+            </button>
           </div>
         </div>
         <div className="ml-auto flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
-            className="text-destructive hover:text-destructive/80 hover:bg-destructive/10 h-8 w-8"
+            className="text-destructive hover:text-destructive/80 hover:bg-destructive/10 active:scale-95 h-11 w-11"
             onClick={(e) => {
               e.stopPropagation();
               removeFromCart(item);
             }}
             aria-label={t('Remove from cart', { name: item.name || '' })}
           >
-            <Trash2 className="h-6 w-6" />
+            <Trash2 className="h-5 w-5" />
           </Button>
           {isPosOptionEnabled(options, POS_OPTION_KEYS.allowWholesalePrice) && (
             <Button
               variant="ghost"
               size="icon"
-              className={`h-8 w-8 ${item.mode === 'wholesale' ? 'bg-green-500/20 text-green-600' : 'hover:bg-green-500/10 hover:text-green-500/80'}`}
+              className={`active:scale-95 h-11 w-11 ${item.mode === 'wholesale' ? 'bg-green-500/20 text-green-600' : 'hover:bg-green-500/10 hover:text-green-500/80'}`}
               onClick={(e) => {
                 e.stopPropagation();
                 handleToggleWholesale();
@@ -169,7 +177,7 @@ export default function CartItem({ item, updateDiscountPercentage, updatePrice, 
               title={item.mode === 'wholesale' ? t('Switch to retail price') : t('Switch to wholesale price')}
               aria-label={t('Toggle wholesale price')}
             >
-              <Award className="h-6 w-6" />
+              <Award className="h-5 w-5" />
             </Button>
           )}
         </div>
@@ -191,14 +199,14 @@ export default function CartItem({ item, updateDiscountPercentage, updatePrice, 
               <Button
                 variant="outline"
                 size="icon"
-                className="h-6 w-6 rounded-full"
+                className="active:scale-95 h-10 w-10 rounded-full"
                 onClick={handleDecrement}
                 aria-label={t('Decrease quantity')}
               >
-                <Minus className="h-3 w-3" />
+                <Minus className="h-4 w-4" />
               </Button>
               <span
-                className="mx-2 min-w-[20px] cursor-pointer text-center"
+                className="mx-1 min-w-[28px] cursor-pointer rounded px-1 py-1 text-center active:bg-muted"
                 onClick={() => setIsEditing(true)}
                 title={t('Click to edit quantity')}
               >
@@ -207,11 +215,11 @@ export default function CartItem({ item, updateDiscountPercentage, updatePrice, 
               <Button
                 variant="outline"
                 size="icon"
-                className="h-6 w-6 rounded-full"
+                className="active:scale-95 h-10 w-10 rounded-full"
                 onClick={handleIncrement}
                 aria-label={t('Increase quantity')}
               >
-                <Plus className="h-3 w-3" />
+                <Plus className="h-4 w-4" />
               </Button>
             </div>
           )}

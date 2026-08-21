@@ -90,7 +90,7 @@ export default function PaymentActions({
     <>
       <div className="grid grid-cols-4">
         <Button
-          className={cn('rounded-none bg-green-500 py-6 text-white hover:bg-green-600')}
+          className={cn('active:scale-95 rounded-none bg-green-500 py-6 text-white hover:bg-green-600')}
           onClick={handleSubmit}
           variant="default"
           type="button"
@@ -115,19 +115,19 @@ export default function PaymentActions({
 
             setIsOpen(true);
           }}
-          className={cn('rounded-none bg-blue-500 py-6 text-white hover:bg-blue-600')}
+          className={cn('active:scale-95 rounded-none bg-blue-500 py-6 text-white hover:bg-blue-600')}
           variant="secondary"
           type="button"
         >
           <PauseCircle className="mr-2 h-5 w-5" />
           {t('Hold')}
         </Button>
-        <Button className="rounded-none border-0 py-6" variant="default" type="button" onClick={onOpenDiscountDialog}>
+        <Button className="active:scale-95 rounded-none border-0 py-6" variant="default" type="button" onClick={onOpenDiscountDialog}>
           <Percent className="mr-2 h-5 w-5" />
           {t('Discount')}
         </Button>
         <Button
-          className="rounded-none py-6"
+          className="active:scale-95 rounded-none py-6"
           variant="destructive"
           type="button"
           onClick={() => {

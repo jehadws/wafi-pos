@@ -184,7 +184,7 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
                         {categories.map((category) => (
                             <div
                                 key={category.id}
-                                className="bg-muted/30 hover:bg-muted flex cursor-pointer flex-col rounded-lg border shadow-sm transition-all hover:shadow-md"
+                                className="bg-muted/30 hover:bg-muted active:scale-95 flex cursor-pointer flex-col rounded-lg border shadow-sm transition-all hover:shadow-md"
                                 onClick={() => loadCategories(category)}
                             >
                                 <div className="bg-muted relative aspect-video overflow-hidden rounded-t-lg">
@@ -215,7 +215,7 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
                             return (
                                 <div
                                     key={product.id}
-                                    className={`bg-muted/30 flex flex-col rounded-lg border shadow-sm transition-all hover:shadow-md ${
+                                    className={`bg-muted/30 active:scale-95 flex flex-col rounded-lg border shadow-sm transition-all hover:shadow-md ${
                                         isAvailable ? 'hover:bg-muted cursor-pointer' : 'cursor-not-allowed opacity-50'
                                     }`}
                                     onClick={() => isAvailable && handleClickOnProduct(product)}

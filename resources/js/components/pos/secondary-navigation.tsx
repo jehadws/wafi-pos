@@ -56,29 +56,29 @@ export default function SecondaryNavigation({ setShowSelectCustomerDialog }: Pro
     <>
       <div className="bg-background border-b p-2.5">
         <div className="flex space-x-2">
-          <Button variant="outline" size="sm" className="flex items-center" onClick={() => setIsCommentsDialogOpen(true)}>
+          <Button variant="outline" size="sm" className="active:scale-95 flex h-11 items-center" onClick={() => setIsCommentsDialogOpen(true)}>
             <MessageSquare className="mr-2 h-4 w-4" />
             {t('Comments')}
             {order.note && <span className="bg-primary ml-2 h-2 w-2 rounded-full"></span>}
           </Button>
           {showTaxes && (
-            <Button variant="outline" size="sm" className="flex items-center" onClick={() => setIsTaxesDialogOpen(true)}>
+            <Button variant="outline" size="sm" className="active:scale-95 flex h-11 items-center" onClick={() => setIsTaxesDialogOpen(true)}>
               <Receipt className="mr-2 h-4 w-4" />
               {t('Taxes')}
               {order.tax_group_id && <span className="bg-primary ml-2 h-2 w-2 rounded-full"></span>}
             </Button>
           )}
-          <Button variant="outline" size="sm" className="flex items-center" onClick={() => setIsCouponsDialogOpen(true)}>
+          <Button variant="outline" size="sm" className="active:scale-95 flex h-11 items-center" onClick={() => setIsCouponsDialogOpen(true)}>
             <Ticket className="mr-2 h-4 w-4" />
             {t('Coupons')}
             {order.coupons.length > 0 && <span className="bg-primary ml-2 h-2 w-2 rounded-full"></span>}
           </Button>
-          <Button variant="outline" size="sm" className="flex items-center" onClick={() => setIsSettingsDialogOpen(true)}>
+          <Button variant="outline" size="sm" className="active:scale-95 flex h-11 items-center" onClick={() => setIsSettingsDialogOpen(true)}>
             <SettingsIcon className="mr-2 h-4 w-4" />
             {t('Settings')}
             {order.title && <span className="bg-primary ml-2 h-2 w-2 rounded-full"></span>}
           </Button>
-          <Button variant="outline" size="sm" className="flex items-center">
+          <Button variant="outline" size="sm" className="active:scale-95 flex h-11 items-center">
             <Package className="mr-2 h-4 w-4" />
             {t('Product')}
           </Button>
