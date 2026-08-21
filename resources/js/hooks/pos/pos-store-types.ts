@@ -5,10 +5,10 @@
  * Kept in a separate file so slices can type `get()` without circular imports.
  */
 
-import { Customer } from '@/interfaces/customer';
-import { Order } from '@/interfaces/order';
-import { OrderProduct } from '@/interfaces/order-product';
-import { OrderType } from '@/interfaces/order-type';
+import { Customer } from '@/types/models/customer';
+import { Order } from '@/types/models/order';
+import { OrderProduct } from '@/types/models/order-product';
+import { OrderType } from '@/types/models/order-type';
 
 import type { PosDialogsSlice } from './use-pos-dialogs';
 import type { CartSlice } from './use-cart-store';

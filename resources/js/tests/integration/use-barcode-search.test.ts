@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useBarcodeSearch } from '@/features/pos/application/use-barcode-search';
+import { useBarcodeSearch } from '@/hooks/pos/use-barcode-search';
 import { productsApi } from '@/api';
 
 // Mock translation and api
@@ -16,7 +16,7 @@ vi.mock('@/api', () => ({
     },
 }));
 
-describe('features/pos/application/use-barcode-search', () => {
+describe('hooks/pos/use-barcode-search', () => {
     it('initializes with default values', () => {
         const onProductFound = vi.fn();
         const { result } = renderHook(() => useBarcodeSearch({ onProductFound }));

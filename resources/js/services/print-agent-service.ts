@@ -5,7 +5,7 @@
  */
 
 import axios from 'axios';
-import { Order } from '@/interfaces/order';
+import { Order } from '@/types/models/order';
 import { formatCurrency, formatDate } from '@/utils/format';
 
 export interface WindowsPrinter {
@@ -84,6 +84,13 @@ export interface LabelItemData {
     storeName?: string;
 }
 
+export interface PrintResult {
+    success: boolean;
+    jobId?: string;
+    error?: string;
+    isOffline?: boolean;
+}
+
 const SETTINGS_KEY = 'pos_direct_printer_settings';
 
 const DEFAULT_SETTINGS: PrinterSettings = {
@@ -105,8 +112,10 @@ const DEFAULT_SETTINGS: PrinterSettings = {
     showSkuOnLabel: false,
 };
 
-class PrintAgentService {
+export class PrintAgentService {
     private settings: PrinterSettings;
+    private cachedStatus: { status: PrintAgentStatus; timestamp: number } | null = null;
+    private static STATUS_CACHE_TTL_MS = 3000;
 
     constructor() {
         this.settings = this.loadSettings();
@@ -145,14 +154,23 @@ class PrintAgentService {
     }
 
     /**
-     * Check if Print Agent is running
+     * Check if Print Agent is running with short timeout and caching
      */
-    public async checkStatus(): Promise<PrintAgentStatus> {
+    public async checkStatus(forceRefresh: boolean = false): Promise<PrintAgentStatus> {
+        const now = Date.now();
+        if (!forceRefresh && this.cachedStatus && now - this.cachedStatus.timestamp < PrintAgentService.STATUS_CACHE_TTL_MS) {
+            return this.cachedStatus.status;
+        }
+
         try {
-            const res = await axios.get(`${this.settings.agentUrl}/status`, { timeout: 2000 });
-            return res.data;
+            const res = await axios.get(`${this.settings.agentUrl}/status`, { timeout: 1500 });
+            const statusResult: PrintAgentStatus = res.data?.status ? res.data : { status: 'online', ...res.data };
+            this.cachedStatus = { status: statusResult, timestamp: now };
+            return statusResult;
         } catch {
-            return { status: 'offline' };
+            const offlineStatus: PrintAgentStatus = { status: 'offline' };
+            this.cachedStatus = { status: offlineStatus, timestamp: now };
+            return offlineStatus;
         }
     }
 
@@ -161,7 +179,7 @@ class PrintAgentService {
      */
     public async getPrinters(): Promise<WindowsPrinter[]> {
         try {
-            const res = await axios.get(`${this.settings.agentUrl}/printers`, { timeout: 8000 });
+            const res = await axios.get(`${this.settings.agentUrl}/printers`, { timeout: 5000 });
             if (res.data && Array.isArray(res.data.printers)) {
                 return res.data.printers;
             }
@@ -177,14 +195,18 @@ class PrintAgentService {
     public async testPrinter(printerName?: string, type: 'receipt' | 'label' = 'receipt'): Promise<any> {
         const targetPrinter = printerName || (type === 'label' ? this.settings.labelPrinter : this.settings.receiptPrinter);
         try {
-            const res = await axios.post(`${this.settings.agentUrl}/test`, {
-                printer: targetPrinter,
-                type,
-                lineWidth: this.settings.lineWidth,
-                cutPaper: this.settings.cutPaper,
-                openCashDrawer: this.settings.openCashDrawer,
-                protocol: this.settings.labelProtocol
-            }, { timeout: 12000 });
+            const res = await axios.post(
+                `${this.settings.agentUrl}/test`,
+                {
+                    printer: targetPrinter,
+                    type,
+                    lineWidth: this.settings.lineWidth,
+                    cutPaper: this.settings.cutPaper,
+                    openCashDrawer: this.settings.openCashDrawer,
+                    protocol: this.settings.labelProtocol,
+                },
+                { timeout: 6000 },
+            );
             return res.data;
         } catch (err: any) {
             throw new Error(this.formatErrorMessage(err));
@@ -194,12 +216,16 @@ class PrintAgentService {
     /**
      * Print receipt directly to thermal printer
      */
-    public async printReceipt(receiptData: FormattedReceiptData, options: Partial<PrinterSettings> = {}): Promise<any> {
+    public async printReceipt(receiptData: FormattedReceiptData, options: Partial<PrinterSettings> = {}): Promise<PrintResult> {
         const targetPrinter = options.receiptPrinter || this.settings.receiptPrinter;
         if (!targetPrinter) {
-            throw new Error('No receipt printer selected. Please configure your printer in POS Settings.');
+            return {
+                success: false,
+                error: 'No receipt printer selected. Please configure your printer in POS Settings.',
+            };
         }
 
+        const jobId = `rcpt_${receiptData.orderCode || Date.now()}_${Date.now()}`;
         const payload = {
             printer: targetPrinter,
             data: receiptData,
@@ -210,26 +236,41 @@ class PrintAgentService {
                 showTaxBreakdown: options.showTaxBreakdown ?? this.settings.showTaxBreakdown ?? true,
                 copies: options.copies || this.settings.copies || 1,
             },
-            jobId: `rcpt_${receiptData.orderCode || Date.now()}_${Date.now()}`
+            jobId,
         };
 
         try {
-            const res = await axios.post(`${this.settings.agentUrl}/print/receipt`, payload, { timeout: 15000 });
-            return res.data;
+            const res = await axios.post(`${this.settings.agentUrl}/print/receipt`, payload, { timeout: 5000 });
+            return {
+                success: true,
+                jobId,
+                ...res.data,
+            };
         } catch (err: any) {
-            throw new Error(this.formatErrorMessage(err));
+            const errorMsg = this.formatErrorMessage(err);
+            const isOffline = !err.response || err.code === 'ECONNABORTED';
+            return {
+                success: false,
+                jobId,
+                error: errorMsg,
+                isOffline,
+            };
         }
     }
 
     /**
      * Print product barcode labels directly to label printer
      */
-    public async printLabels(labels: LabelItemData[], options: Partial<PrinterSettings> = {}): Promise<any> {
+    public async printLabels(labels: LabelItemData[], options: Partial<PrinterSettings> = {}): Promise<PrintResult> {
         const targetPrinter = options.labelPrinter || this.settings.labelPrinter;
         if (!targetPrinter) {
-            throw new Error('No label printer selected. Please configure your label printer in POS Settings.');
+            return {
+                success: false,
+                error: 'No label printer selected. Please configure your label printer in POS Settings.',
+            };
         }
 
+        const jobId = `lbl_${Date.now()}`;
         const payload = {
             printer: targetPrinter,
             labels,
@@ -244,32 +285,38 @@ class PrintAgentService {
                 showSku: options.showSkuOnLabel ?? this.settings.showSkuOnLabel ?? false,
                 copies: options.copies || this.settings.copies || 1,
             },
-            jobId: `lbl_${Date.now()}`
+            jobId,
         };
 
         try {
-            const res = await axios.post(`${this.settings.agentUrl}/print/label`, payload, { timeout: 20000 });
-            return res.data;
+            const res = await axios.post(`${this.settings.agentUrl}/print/label`, payload, { timeout: 8000 });
+            return {
+                success: true,
+                jobId,
+                ...res.data,
+            };
         } catch (err: any) {
-            throw new Error(this.formatErrorMessage(err));
+            const errorMsg = this.formatErrorMessage(err);
+            return {
+                success: false,
+                jobId,
+                error: errorMsg,
+                isOffline: !err.response || err.code === 'ECONNABORTED',
+            };
         }
     }
 
     /**
      * Print an order receipt.
      * Maps the POS Order object to FormattedReceiptData and sends it to the agent.
-     *
-     * @param order   - The completed POS order
-     * @param mode    - Print mode: 'sale' | 'refund' | 'void'
-     * @param options - Override printer settings (optional)
      */
     public async printOrderReceipt(
         order: Order,
         mode: string = 'sale',
         options: Partial<PrinterSettings> = {},
-    ): Promise<any> {
+    ): Promise<PrintResult> {
         const receiptData: FormattedReceiptData = {
-            orderCode: order.code ?? String(order.id),
+            orderCode: order.code ?? String(order.id ?? Date.now()),
             date: formatDate(order.created_at ?? new Date().toISOString()),
             customer: order.customer
                 ? `${order.customer.first_name ?? ''} ${order.customer.last_name ?? ''}`.trim()
@@ -305,7 +352,10 @@ class PrintAgentService {
         return this.printReceipt(receiptData, options);
     }
 
-    private formatErrorMessage(err: any): string {
+    public formatErrorMessage(err: any): string {
+        if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+            return 'Print Agent timed out. Please check if your printer is powered on and responsive.';
+        }
         if (!err.response) {
             return 'Print Agent is not running. Please start the POS Print Agent (run "start.bat" in the print-agent folder).';
         }

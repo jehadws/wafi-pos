@@ -6,7 +6,7 @@
 
 import React from 'react';
 import FormField from '@/components/forms/shared/form-field';
-import { Tabs, TabsList, TabsTrigger } from '@/components/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

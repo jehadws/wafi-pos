@@ -7,10 +7,10 @@ import { cn } from '@/lib/utils';
 import { crudApi } from '@/api';
 import { Loader2, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import ConfirmationDialog from '../confirmation-dialog';
-import { Input } from '../ui/input';
-import { ScrollArea } from '../ui/scroll-area';
-import { Separator } from '../ui/separator';
+import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 import OrderCard from './order-card';
 
 interface Props {

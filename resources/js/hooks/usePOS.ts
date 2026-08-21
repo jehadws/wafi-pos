@@ -17,11 +17,11 @@
  *   hooks/pos/use-pos-session.ts   — init / settings / permissions slice
  */
 
-import { Customer } from '@/interfaces/customer';
-import { Order } from '@/interfaces/order';
-import { OrderProduct } from '@/interfaces/order-product';
-import { OrderType } from '@/interfaces/order-type';
-import { Payment } from '@/interfaces/payment';
+import { Customer } from '@/types/models/customer';
+import { Order } from '@/types/models/order';
+import { OrderProduct } from '@/types/models/order-product';
+import { OrderType } from '@/types/models/order-type';
+import { Payment } from '@/types/models/payment';
 
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { ordersApi, taxesApi } from '@/api';

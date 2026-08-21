@@ -6,10 +6,10 @@ import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import FormField from '../forms/shared/form-field';
 import ToggleButtons from '../forms/shared/toggle-buttons';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Props {
     open: boolean;

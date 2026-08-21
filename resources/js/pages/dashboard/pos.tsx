@@ -1,5 +1,5 @@
 import PosSystem from '@/components/pos/pos-system';
-import ErrorBoundary from '@/components/error-boundary';
+import ErrorBoundary from '@/components/feedback/error-boundary';
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { usePOS } from '@/hooks/usePOS';
 import { usePosBeforeUnload } from '@/hooks/use-pos-before-unload';

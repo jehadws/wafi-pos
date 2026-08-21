@@ -1,6 +1,6 @@
 import FormField from '@/components/forms/shared/form-field';
 import FormHeader from '@/components/forms/shared/form-header';
-import { RadioGroup } from '@/components/radio-group';
+import { RadioGroup } from '@/components/ui/radio-group';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroupItem } from '@/components/ui/radio-group';

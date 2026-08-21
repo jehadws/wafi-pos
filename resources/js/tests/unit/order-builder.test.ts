@@ -4,7 +4,7 @@ import {
     getStockUsage,
     recomputeProducts,
 } from '@/services/order-builder';
-import { OrderProduct } from '@/interfaces/order-product';
+import { OrderProduct } from '@/types/models/order-product';
 
 describe('services/order-builder.ts', () => {
     describe('getStockUsage', () => {

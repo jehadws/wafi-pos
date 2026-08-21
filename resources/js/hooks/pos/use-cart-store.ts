@@ -11,7 +11,7 @@
  *   setAutoMerge, checkCart, recomputeProducts
  */
 
-import { OrderProduct } from '@/interfaces/order-product';
+import { OrderProduct } from '@/types/models/order-product';
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { usersApi } from '@/api';
 import { recomputeProducts } from '@/services/order-builder';

@@ -1,6 +1,6 @@
 import FormField from '@/components/forms/shared/form-field';
 import FormHeader from '@/components/forms/shared/form-header';
-import { Tabs, TabsList, TabsTrigger } from '@/components/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TabsContent } from '@/components/ui/tabs';

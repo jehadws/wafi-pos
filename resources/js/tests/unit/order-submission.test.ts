@@ -3,7 +3,7 @@ import {
     prepareOrderPayload,
     validateOrderForSubmission,
 } from '@/services/order-submission';
-import { Order } from '@/interfaces/order';
+import { Order } from '@/types/models/order';
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
 
 describe('services/order-submission.ts', () => {

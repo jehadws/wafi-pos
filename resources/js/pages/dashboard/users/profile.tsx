@@ -1,7 +1,7 @@
 'use client';
 
-import ConfirmationDialog from '@/components/confirmation-dialog';
-import { TokenQrDialog } from '@/components/token-qr-dailog';
+import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
+import { TokenQrDialog } from '@/components/users/token-qr-dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';

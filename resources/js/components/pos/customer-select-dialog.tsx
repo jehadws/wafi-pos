@@ -3,14 +3,14 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Customer } from '@/interfaces/customer';
+import { Customer } from '@/types/models/customer';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/utils/format';
 import { customersApi } from '@/api';
 import { Eye, Loader2, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from '../../lib/i18n';
-import { ScrollArea } from '../ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface SelectCustomerDialogProps {
   open: boolean;

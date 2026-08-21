@@ -11,4 +11,21 @@ afterEach(() => {
 if (typeof window !== 'undefined') {
     window.HTMLMediaElement.prototype.play = vi.fn().mockImplementation(() => Promise.resolve());
     window.HTMLMediaElement.prototype.pause = vi.fn();
+
+    // Mock window.location to prevent "Not implemented: navigation to another Document" errors during tests
+    const originalLocation = window.location;
+    Object.defineProperty(window, 'location', {
+        writable: true,
+        value: {
+            ...originalLocation,
+            assign: vi.fn(),
+            replace: vi.fn(),
+            reload: vi.fn(),
+            href: 'http://localhost/',
+            pathname: '/',
+            search: '',
+            hash: '',
+        },
+    });
 }
+

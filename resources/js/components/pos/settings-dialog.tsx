@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,7 +9,6 @@ import { useTranslation } from '@/lib/i18n';
 import { format } from 'date-fns';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { DatePicker } from '../ui/date-picker';
 
 interface SettingsDialogProps {
     isOpen: boolean;
@@ -58,7 +58,10 @@ export default function SettingsDialog({
 
                     <div className="space-y-2">
                         <Label htmlFor="created-at">{t('Created At')}</Label>
-                        <DatePicker date={createdAt} onDateChange={(date) => setCreatedAt(format(date, 'MM-dd-yyyy'))} />
+                        <DatePicker
+                            date={createdAt ? new Date(createdAt) : undefined}
+                            onDateChange={(date) => date && setCreatedAt(format(date, 'MM-dd-yyyy'))}
+                        />
 
                         <p className="text-muted-foreground text-sm">{t('Define the date of creation of the order.')}</p>
                     </div>

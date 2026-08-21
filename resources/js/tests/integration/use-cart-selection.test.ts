@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useCartSelection } from '@/features/pos/application/use-cart-selection';
-import { OrderProduct } from '@/interfaces/order-product';
+import { useCartSelection } from '@/hooks/pos/use-cart-selection';
+import { OrderProduct } from '@/types/models/order-product';
 
 vi.mock('@/lib/i18n', () => ({
     useTranslation: () => ({
@@ -12,7 +12,7 @@ vi.mock('@/lib/i18n', () => ({
     }),
 }));
 
-describe('features/pos/application/use-cart-selection', () => {
+describe('hooks/pos/use-cart-selection', () => {
     const mockProducts: OrderProduct[] = [
         { _uuid: 'item-1', product_id: 1, unit_id: 1, name: 'Item 1' } as any,
         { _uuid: 'item-2', product_id: 2, unit_id: 1, name: 'Item 2' } as any,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { validateStockAvailability } from '@/features/pos/domain/stock';
+import { validateStockAvailability } from '@/services/stock';
 
-describe('features/pos/domain/stock.ts', () => {
+describe('services/stock.ts', () => {
     it('blocks 0 stock from being added or treated as unlimited', () => {
         const result = validateStockAvailability(0, 1, 0);
         expect(result.allowed).toBe(false);

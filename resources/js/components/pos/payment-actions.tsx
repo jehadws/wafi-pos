@@ -7,8 +7,8 @@ import { ordersApi } from '@/api';
 import { CreditCard, PauseCircle, Percent, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
-import { Input } from '../ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 
 type Props = {
   setShowPaymentGatewayDialog: (value: boolean) => void;

@@ -1,4 +1,4 @@
-import { PaymentType } from '@/interfaces/payment-type';
+import { PaymentType } from '@/types/models/payment-type';
 
 export type PaymentTypes = 'cash-payment' | 'bank-payment' | 'customer-payment';
 

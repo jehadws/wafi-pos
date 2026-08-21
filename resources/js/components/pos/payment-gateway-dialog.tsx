@@ -9,8 +9,8 @@ import { formatCurrency } from '@/utils/format';
 import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import ConfirmationDialog from '../confirmation-dialog';
-import { ScrollArea } from '../ui/scroll-area';
+import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { NumberPad } from './number-pad';
 import { PaymentMethodSidebar } from './payment-method-sidebar';
 import SummaryCard from './payment-summary-card';
@@ -138,7 +138,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
       const printerSettings = PrintAgentService.getSettings();
       if (printerSettings.autoPrintOnSale && paymentStatus === 'paid') {
         const orderCode = createdOrder?.data?.order?.code || (order as any).code || `ORD-${Date.now()}`;
-        PrintAgentService.printReceipt({
+        const receiptData = {
           storeName: 'JGREM POS',
           orderCode,
           date: new Date().toLocaleString(),
@@ -156,8 +156,29 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
           tendered: formatCurrency(order.tendered || 0),
           change: formatCurrency(order.change || 0),
           barcode: orderCode,
-        }).catch((err) => {
-          console.warn('Auto print failed:', err);
+        };
+
+        PrintAgentService.printReceipt(receiptData).then((res) => {
+          if (!res.success) {
+            toast.error(t('Order #{code} saved, but receipt failed to print: {error}', {
+              code: orderCode,
+              error: res.error || t('Printer unavailable'),
+            }), {
+              duration: 8000,
+              action: {
+                label: t('Retry Print'),
+                onClick: () => {
+                  PrintAgentService.printReceipt(receiptData).then((retryRes) => {
+                    if (retryRes.success) {
+                      toast.success(t('Receipt printed successfully.'));
+                    } else {
+                      toast.error(retryRes.error || t('Print retry failed.'));
+                    }
+                  });
+                },
+              },
+            });
+          }
         });
       }
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import FormField from '@/components/forms/shared/form-field';
-import { RadioGroup, RadioGroupItem } from '@/components/radio-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';

@@ -1,20 +1,20 @@
 import { useNumericKeypad } from '@/hooks/use-numeric-keypad';
 import { usePOS } from '@/hooks/usePOS';
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
-import { OrderProduct } from '@/interfaces/order-product';
+import { OrderProduct } from '@/types/models/order-product';
 import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
 import { categoriesApi } from '@/api';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import EmptyState from '../empty-state';
-import { Button } from '../ui/button';
-import { NumericKeypadDialog } from '../ui/numeric-keypad-dialog';
-import { ScrollArea } from '../ui/scroll-area';
+import EmptyState from '@/components/feedback/empty-state';
+import { Button } from '@/components/ui/button';
+import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import SelectUnitQuantityDialog from './select-unit-quantity-dialog';
 
-import { validateStockAvailability } from '@/features/pos';
+import { validateStockAvailability } from '@/services/stock';
 
 type Props = {
     selectedProducts: OrderProduct[];

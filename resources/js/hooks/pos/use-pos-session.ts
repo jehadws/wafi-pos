@@ -11,7 +11,7 @@
  *   changeVisibleSection
  */
 
-import { OrderType } from '@/interfaces/order-type';
+import { OrderType } from '@/types/models/order-type';
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { customersApi, usersApi } from '@/api';
 import type { POSStore } from './pos-store-types';

@@ -9,8 +9,8 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from '../../lib/i18n';
 import { formatCurrency } from '../../utils/format';
-import { Button } from '../ui/button';
-import { NumericKeypadDialog } from '../ui/numeric-keypad-dialog';
+import { Button } from '@/components/ui/button';
+import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
 import { usePage } from '@inertiajs/react';
 
 interface SearchProductsDialogProps {

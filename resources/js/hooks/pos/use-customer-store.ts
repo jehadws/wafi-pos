@@ -7,7 +7,7 @@
  *   selectCustomer, loadCustomer, pushCoupon, removeCoupon
  */
 
-import { Customer } from '@/interfaces/customer';
+import { Customer } from '@/types/models/customer';
 import { customersApi } from '@/api';
 import type { POSStore } from './pos-store-types';
 import { StateCreator } from 'zustand';

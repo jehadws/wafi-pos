@@ -10,7 +10,7 @@
 import React from 'react';
 import FormField from '@/components/forms/shared/form-field';
 import ToggleButtons from '@/components/forms/shared/toggle-buttons';
-import { Tabs, TabsList, TabsTrigger } from '@/components/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { MultiSelector } from '@/components/ui/multi-selector';

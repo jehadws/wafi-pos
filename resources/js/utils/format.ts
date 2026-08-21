@@ -5,15 +5,32 @@ import { format, toZonedTime } from 'date-fns-tz';
 import { parse } from "date-fns";
 
 export const formatCurrency = (amount: number) => {
-  const { currency } = Settings.get();
-  const { ns_currency_symbol, ns_currency_position, ns_currency_thousand_separator, ns_currency_decimal_separator, ns_currency_precision } = currency;
-  const formattedAmount = amount.toFixed(ns_currency_precision || 2).replace('.', ns_currency_decimal_separator || '.').replace(/\B(?=(\d{3})+(?!\d))/g, ns_currency_thousand_separator || ',');
+  let currency: any = {
+    ns_currency_symbol: '$',
+    ns_currency_position: 'before',
+    ns_currency_thousand_separator: ',',
+    ns_currency_decimal_separator: '.',
+    ns_currency_precision: 2,
+  };
 
-  if (ns_currency_position === 'before') {
-    return `${ns_currency_symbol}${formattedAmount}`;
+  try {
+    const settings = Settings.get();
+    if (settings?.currency) {
+      currency = settings.currency;
+    }
+  } catch {
+    // fallback to default currency formatting
   }
 
-  return `${formattedAmount}${ns_currency_symbol}`;
+  const { ns_currency_symbol, ns_currency_position, ns_currency_thousand_separator, ns_currency_decimal_separator, ns_currency_precision } = currency;
+  const num = typeof amount === 'number' && !isNaN(amount) ? amount : 0;
+  const formattedAmount = num.toFixed(ns_currency_precision || 2).replace('.', ns_currency_decimal_separator || '.').replace(/\B(?=(\d{3})+(?!\d))/g, ns_currency_thousand_separator || ',');
+
+  if (ns_currency_position === 'before') {
+    return `${ns_currency_symbol || '$'}${formattedAmount}`;
+  }
+
+  return `${formattedAmount}${ns_currency_symbol || '$'}`;
 }
 
 export const rawCurrency = (value: any) => {
@@ -68,8 +85,17 @@ const phpToDateFnsParseFormat = (phpFormat: string): string => {
 // }
 
 export const formatDate = (dateString: string) => {
-  const { date } = Settings.get();
-  const { ns_date_format, ns_datetime_timezone } = date;
+  let dateConfig: any = { ns_date_format: 'Y-m-d', ns_datetime_timezone: 'UTC' };
+  try {
+    const settings = Settings.get();
+    if (settings?.date) {
+      dateConfig = settings.date;
+    }
+  } catch {
+    // fallback
+  }
+
+  const { ns_date_format, ns_datetime_timezone } = dateConfig;
   if (!dateString) {
     return '';
   }
@@ -95,21 +121,18 @@ export const formatDate = (dateString: string) => {
   });
 }
 
-// export const formatDateTime = (dateString: string) => {
-//   const { date } = Settings.get();
-//   const { ns_datetime_format } = date;
-//   if (!dateString) {
-//     return '';
-//   }
-//
-//
-//   const dateFnsFormat = phpToDateFnsFormat(ns_datetime_format || 'Y-m-d H:i');
-//   return format(new Date(dateString), dateFnsFormat);
-// }
-
 export const formatDateTime = (dateString: string) => {
-  const { date } = Settings.get();
-  const { ns_datetime_format, ns_datetime_timezone } = date;
+  let dateConfig: any = { ns_datetime_format: 'Y-m-d H:i', ns_datetime_timezone: 'UTC' };
+  try {
+    const settings = Settings.get();
+    if (settings?.date) {
+      dateConfig = settings.date;
+    }
+  } catch {
+    // fallback
+  }
+
+  const { ns_datetime_format, ns_datetime_timezone } = dateConfig;
 
   if (!dateString) {
     return '';

@@ -1,4 +1,4 @@
-import ConfirmationDialog from '@/components/confirmation-dialog';
+import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
 import OrderOptionsDialog from '@/components/forms/orders/order-options-dialog';
 import OrdersFilterDialog from '@/components/forms/orders/orders-filter-dialog';
 import { Badge } from '@/components/ui/badge';

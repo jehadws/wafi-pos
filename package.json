@@ -9,11 +9,13 @@
         "format:check": "prettier --check resources/",
         "lint": "eslint . --max-warnings 0",
         "test": "vitest run",
+        "test:e2e": "playwright test",
         "test:watch": "vitest",
         "types": "tsc --noEmit"
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",
+        "@playwright/test": "^1.62.1",
         "@testing-library/react": "^16.3.2",
         "@testing-library/user-event": "^14.6.5",
         "@types/node": "^22.13.5",

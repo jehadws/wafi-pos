@@ -2,7 +2,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Head, usePage } from '@inertiajs/react';
 import FormField from '@/components/forms/shared/form-field';
 import FormHeader from '@/components/forms/shared/form-header';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';

@@ -8,8 +8,8 @@ import { customersApi } from '@/api';
 import { AlertCircle, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Alert, AlertDescription } from '../ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface SelectCustomerDialogProps {
   isOpen: boolean;

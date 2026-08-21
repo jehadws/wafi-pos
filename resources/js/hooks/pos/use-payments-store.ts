@@ -9,8 +9,8 @@
  *   computePaid, setPaymentActive, definedPaymentsType, runPaymentQueue
  */
 
-import { Payment } from '@/interfaces/payment';
-import { PaymentType } from '@/interfaces/payment-type';
+import { Payment } from '@/types/models/payment';
+import { PaymentType } from '@/types/models/payment-type';
 import { buildDefaultPaymentTypes } from '@/constants/payment-methods';
 import type { POSStore } from './pos-store-types';
 import { StateCreator } from 'zustand';

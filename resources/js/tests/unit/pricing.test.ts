@@ -7,8 +7,8 @@ import {
     getWholesalePrice,
     sumProductsTotals,
 } from '@/services/pricing';
-import { Order } from '@/interfaces/order';
-import { OrderProduct } from '@/interfaces/order-product';
+import { Order } from '@/types/models/order';
+import { OrderProduct } from '@/types/models/order-product';
 
 describe('services/pricing.ts', () => {
     describe('getSalePrice / getCustomPrice / getWholesalePrice', () => {

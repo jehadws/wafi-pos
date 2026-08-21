@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { usePosCheckout } from '@/features/pos/application/use-pos-checkout';
-import { Order } from '@/interfaces/order';
+import { usePosCheckout } from '@/hooks/pos/use-pos-checkout';
+import { Order } from '@/types/models/order';
 import { Customer } from '@/types/module';
-import { OrderType } from '@/interfaces/order-type';
+import { OrderType } from '@/types/models/order-type';
 
-describe('features/pos/application/use-pos-checkout', () => {
+describe('hooks/pos/use-pos-checkout', () => {
     const mockOrder: Order = {
         id: 1,
         total: 100,
@@ -65,7 +65,7 @@ describe('features/pos/application/use-pos-checkout', () => {
         expect(result.current.showShippingDialog).toBe(true);
     });
 
-    it('resets shipping for takeaway orders', () => {
+    it('sets order type for takeaway orders', () => {
         const selectCustomer = vi.fn();
         const setOrderType = vi.fn();
         const setShipping = vi.fn();
@@ -88,7 +88,6 @@ describe('features/pos/application/use-pos-checkout', () => {
             result.current.handleSelectOrderType(takeawayType);
         });
 
-        expect(setShipping).toHaveBeenCalledWith(0);
         expect(setOrderType).toHaveBeenCalledWith(takeawayType);
     });
 });

@@ -1,22 +1,22 @@
 import CartTable from '@/components/pos/cart-table';
 import PaymentActions from '@/components/pos/payment-actions';
 import TotalsSummary from '@/components/pos/totals-summary';
-import PrimaryNavigation from '@/components/primary-navigation';
-import SecondaryNavigation from '@/components/secondary-navigation';
+import PrimaryNavigation from '@/components/common/primary-navigation';
+import SecondaryNavigation from '@/components/pos/secondary-navigation';
 import { POS_OPTION_KEYS, isPriceWithTax } from '@/constants/pos-options';
 import { usePOSShortcuts } from '@/hooks/use-pos-shortcuts';
 import { useRTL } from '@/hooks/use-rtl';
 import { usePOS } from '@/hooks/usePOS';
-import { OrderProduct } from '@/interfaces/order-product';
+import { OrderProduct } from '@/types/models/order-product';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Barcode, Search, Shrink } from 'lucide-react';
 import { toast } from 'sonner';
 import { lazy, Suspense } from 'react';
-import ConfirmationDialog from '../confirmation-dialog';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { NumericKeypadDialog } from '../ui/numeric-keypad-dialog';
+import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
 import { CartCalculator } from '@/services/cart-calculator';
 import ProductsCategoriesPanel from './products-categories-panel';
 import {
@@ -24,8 +24,8 @@ import {
   useCartSelection,
   usePosCheckout,
   usePosDialogCoordinator,
-  validateStockAvailability,
-} from '@/features/pos';
+} from '@/hooks/pos';
+import { validateStockAvailability } from '@/services/stock';
 
 // Lazy-loaded dialogs for performance & smaller initial bundle
 const CustomerDetailsDialog = lazy(() =>

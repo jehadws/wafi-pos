@@ -8,7 +8,7 @@
  *   computeProduct, recomputeProducts, defineQuantities, getStockUsage
  */
 
-import { OrderProduct } from '@/interfaces/order-product';
+import { OrderProduct } from '@/types/models/order-product';
 import { taxesApi } from '@/api';
 import {
     computeProductTaxValue,

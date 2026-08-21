@@ -1,6 +1,6 @@
 'use client';
 
-import type React from 'react';
+import React, { useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n';
@@ -34,6 +34,34 @@ export function NumberPad({ onNumberClick, onBackspace, onConfirm, handleFullPay
     ['1', '2', '3'],
   ];
 
+  // Capture physical keyboard and numpad keys
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      // Do not intercept if user is typing inside an input or textarea
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return;
+      }
+
+      if (/^[0-9]$/.test(e.key)) {
+        e.preventDefault();
+        onNumberClick(e.key);
+      } else if (e.code && e.code.startsWith('Numpad') && /^\d$/.test(e.code.replace('Numpad', ''))) {
+        e.preventDefault();
+        onNumberClick(e.code.replace('Numpad', ''));
+      } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        e.preventDefault();
+        onBackspace();
+      } else if (e.key === 'Enter' || e.code === 'NumpadEnter') {
+        e.preventDefault();
+        onConfirm();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onNumberClick, onBackspace, onConfirm]);
+
   return (
     <div className="mx-auto grid max-w-md grid-cols-3 gap-3">
       {/* Number rows */}
@@ -56,7 +84,7 @@ export function NumberPad({ onNumberClick, onBackspace, onConfirm, handleFullPay
       <div className="col-span-3">
         <Button
           onClick={handleFullPayment}
-          className="h-16 w-full bg-green-500 text-lg font-semibold text-white hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700"
+          className="h-16 w-full bg-green-500 text-lg font-semibold text-white hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 focus-visible:ring-2 focus-visible:ring-offset-2"
         >
           {t('Full Payment')}
         </Button>

@@ -14,7 +14,7 @@ import ImagesTab from '@/components/forms/product-form/images-tab';
 import TaxesTab from '@/components/forms/product-form/taxes-tab';
 import UnitsTab from '@/components/forms/product-form/units-tab';
 import FormField from '@/components/forms/shared/form-field';
-import { Tabs, TabsList, TabsTrigger } from '@/components/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { TabsContent } from '@/components/ui/tabs';
 import { useTranslation } from '@/lib/i18n';

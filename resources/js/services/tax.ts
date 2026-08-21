@@ -13,8 +13,8 @@
  *                       computeProductTaxValue)
  */
 
-import { Order } from '@/interfaces/order';
-import { OrderProduct } from '@/interfaces/order-product';
+import { Order } from '@/types/models/order';
+import { OrderProduct } from '@/types/models/order-product';
 import * as math from 'mathjs';
 
 // ---------------------------------------------------------------------------

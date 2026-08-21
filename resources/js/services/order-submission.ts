@@ -4,7 +4,7 @@
  * Order submission pipeline, payload preparation, and validation.
  */
 
-import { Order } from '@/interfaces/order';
+import { Order } from '@/types/models/order';
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { ordersApi } from '@/api';
 import { toast } from 'sonner';

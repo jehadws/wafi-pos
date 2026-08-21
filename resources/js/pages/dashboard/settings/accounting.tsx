@@ -1,4 +1,4 @@
-import ConfirmationDialog from '@/components/confirmation-dialog';
+import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
 import FormField from '@/components/forms/shared/form-field';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';

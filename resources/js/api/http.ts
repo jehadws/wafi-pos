@@ -14,21 +14,103 @@ export const http = axios.create({
     },
 });
 
-// Global error interceptor — handles session and permission errors for
-// every API call made through this client.
+let isRefreshingCsrf = false;
+let failedQueue: Array<{
+    resolve: (value?: any) => void;
+    reject: (reason?: any) => void;
+    config: AxiosRequestConfig;
+}> = [];
+
+const processQueue = (error: any = null) => {
+    failedQueue.forEach((prom) => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(http(prom.config));
+        }
+    });
+    failedQueue = [];
+};
+
+/**
+ * Fetch a fresh CSRF cookie from Laravel Sanctum
+ */
+export async function refreshCsrfToken(): Promise<void> {
+    try {
+        await axios.get('/sanctum/csrf-cookie', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        });
+    } catch (e) {
+        console.warn('[HTTP] Failed to refresh CSRF token cookie:', e);
+        throw e;
+    }
+}
+
+/**
+ * Backup cart state snapshot before session teardown
+ */
+export function backupCartStateBeforeUnload(): void {
+    try {
+        if (typeof window !== 'undefined' && window.dispatchEvent) {
+            window.dispatchEvent(new CustomEvent('pos:session-expired'));
+        }
+    } catch {
+        // Safe fallback
+    }
+}
+
+// Global error interceptor — handles session, CSRF, and permission errors
 http.interceptors.response.use(
     (response) => response,
-    (error: AxiosError) => {
+    async (error: AxiosError) => {
+        const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
         const status = error.response?.status;
+        const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
 
-        if (status === 401 || status === 419) {
-            // Session expired or CSRF token expired → send to login.
-            window.location.href = '/login';
-        } else if (status === 403) {
-            // Authenticated but no permission → send to access-denied page.
-            // Pass the current URL as `back` so the "Go Back" button works.
-            const back = encodeURIComponent(window.location.href);
-            window.location.href = `/errors/access-denied?back=${back}`;
+        // 1. Handle CSRF Token Expiration (419) with background refresh & replay
+        if (status === 419 && originalRequest && !originalRequest._retry) {
+            if (isRefreshingCsrf) {
+                return new Promise((resolve, reject) => {
+                    failedQueue.push({ resolve, reject, config: originalRequest });
+                });
+            }
+
+            originalRequest._retry = true;
+            isRefreshingCsrf = true;
+
+            try {
+                await refreshCsrfToken();
+                isRefreshingCsrf = false;
+                processQueue(null);
+                return http(originalRequest);
+            } catch (refreshErr) {
+                isRefreshingCsrf = false;
+                processQueue(refreshErr);
+                backupCartStateBeforeUnload();
+                if (typeof window !== 'undefined' && currentPath !== '/login') {
+                    window.location.href = '/login';
+                }
+                return Promise.reject(refreshErr);
+            }
+        }
+
+        // 2. Handle 401 Unauthorized (Session Expired)
+        if (status === 401) {
+            backupCartStateBeforeUnload();
+            if (typeof window !== 'undefined' && currentPath !== '/login') {
+                const back = encodeURIComponent(window.location.pathname + window.location.search);
+                window.location.href = `/login?redirect=${back}`;
+            }
+            return Promise.reject(error);
+        }
+
+        // 3. Handle 403 Forbidden (Permission Denied) - Guard against infinite loop
+        if (status === 403) {
+            if (typeof window !== 'undefined' && !currentPath.startsWith('/errors/access-denied') && currentPath !== '/login') {
+                // Only redirect on full page context or if explicitly needed
+                console.warn('[HTTP] 403 Forbidden on API request:', originalRequest?.url);
+            }
+            return Promise.reject(error);
         }
 
         return Promise.reject(error);

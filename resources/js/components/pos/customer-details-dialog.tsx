@@ -7,7 +7,7 @@ import { customersApi } from '@/api';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from '../../lib/i18n';
-import { ScrollArea } from '../ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface CustomerDetailsDialogProps {
   open: boolean;

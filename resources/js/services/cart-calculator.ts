@@ -1,4 +1,4 @@
-import { OrderProduct } from '@/interfaces/order-product';
+import { OrderProduct } from '@/types/models/order-product';
 
 export class CartCalculator {
   static calculateNewTaxValue(oldPriceWithoutTax: number, oldTaxValue: number, newPriceWithoutTax: number) {

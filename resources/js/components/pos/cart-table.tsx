@@ -6,7 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRTL } from '@/hooks/use-rtl';
 import { usePOS } from '@/hooks/usePOS';
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
-import { OrderProduct } from '@/interfaces/order-product';
+import { OrderProduct } from '@/types/models/order-product';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Trash2 } from 'lucide-react';

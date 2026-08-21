@@ -1,4 +1,4 @@
-import ConfirmationDialog from '@/components/confirmation-dialog';
+import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';

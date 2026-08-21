@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CartCalculator } from '@/services/cart-calculator';
-import { OrderProduct } from '@/interfaces/order-product';
+import { OrderProduct } from '@/types/models/order-product';
 
 describe('services/cart-calculator.ts', () => {
     describe('calculateNewTaxValue', () => {

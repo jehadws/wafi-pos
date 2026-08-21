@@ -12,8 +12,8 @@ import {
     proceedProductTaxComputation,
     sumProductsTaxes,
 } from '@/services/tax';
-import { Order } from '@/interfaces/order';
-import { OrderProduct } from '@/interfaces/order-product';
+import { Order } from '@/types/models/order';
+import { OrderProduct } from '@/types/models/order-product';
 
 describe('services/tax.ts', () => {
     describe('Primitive tax calculations', () => {

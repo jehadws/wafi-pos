@@ -1,4 +1,4 @@
-import SalesSummary from '@/components/sales-summary';
+import SalesSummary from '@/components/pos/sales-summary';
 import { Button } from '@/components/ui/button';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';

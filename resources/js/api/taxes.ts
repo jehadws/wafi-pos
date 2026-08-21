@@ -1,4 +1,4 @@
-import { Tax } from '@/interfaces/tax';
+import { Tax } from '@/types/models/tax';
 import { get } from './http';
 
 /**

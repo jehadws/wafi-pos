@@ -5,13 +5,13 @@ import { Input } from '@/components/ui/input';
 import { useNumericKeypad } from '@/hooks/use-numeric-keypad';
 import { usePOS } from '@/hooks/usePOS';
 import { isPosOptionEnabled, POS_OPTION_KEYS } from '@/constants/pos-options';
-import { OrderProduct } from '@/interfaces/order-product';
+import { OrderProduct } from '@/types/models/order-product';
 import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
 import { Award, Minus, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { NumericKeypadDialog } from '../ui/numeric-keypad-dialog';
+import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
 
 interface CartItemProps {
   item: OrderProduct;

@@ -6,6 +6,10 @@
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/framework/lsp-*.php
+/node_modules
+/playwright-report
+/test-results
 /vendor
 .env
 .env.backup
