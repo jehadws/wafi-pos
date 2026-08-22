@@ -1,5 +1,19 @@
 import { Product } from './product';
 import { ProductUnitQuantity } from './product-unit-quantity';
+import { TaxGroup } from './tax';
+
+/**
+ * Serializable snapshot of the catalog product a cart line came from.
+ * Replaces the former `$original: () => any` closure so cart lines stay
+ * JSON-serializable (persistence, devtools, structured clone).
+ */
+export interface OrderProductSource {
+    id?: number;
+    /** Used by coupon category validation. */
+    category_id?: number;
+    tax_type?: string;
+    tax_group?: TaxGroup | null;
+}
 
 export interface OrderProduct extends Product {
     tax_value: number;
@@ -18,8 +32,13 @@ export interface OrderProduct extends Product {
     rate?: number;
     quantity: number;
     product?: Product;
-    $quantities?: () => ProductUnitQuantity;
-    $original?: () => any;
+    /**
+     * Serializable per-unit pricing data for this line (the unit quantity
+     * row it was added from). Replaces the former `$quantities()` closure.
+     */
+    quantities?: ProductUnitQuantity;
+    /** Serializable snapshot of the source catalog product. */
+    source?: OrderProductSource;
     _uuid?: string;
     /** Present when this cart line is tied to a saved order product row */
     order_id?: number | null;

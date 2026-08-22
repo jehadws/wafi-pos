@@ -88,8 +88,15 @@ export const createCartSlice: StateCreator<POSStore, [], [], CartSlice> = (set, 
             total_tax_value: product.total_tax_value || 0,
             mode: product.mode || 'normal',
             order_id: product.order_id || null,
-            $original: product.$original || (() => product),
-            $quantities: product.$quantities || undefined,
+            // Serializable snapshot of the catalog product (replaces the
+            // former $original closure); falls back to the incoming payload.
+            source: product.source ?? {
+                id: product.id,
+                category_id: product.category_id,
+                tax_type: product.tax_type,
+                tax_group: product.tax_group,
+            },
+            quantities: product.quantities,
             unit_quantity_id: product.unit_quantity_id || 0,
             _uuid:
                 product._uuid ||

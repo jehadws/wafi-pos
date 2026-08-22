@@ -423,21 +423,28 @@ export const usePOS = create<POSStore>((set, get) => ({
                 };
             }
 
-            orderProduct.$original = () => orderProduct.product;
-            orderProduct.$quantities = () => {
-                const unitQuantity = orderProduct.product.unit_quantities.filter(
-                    (uq: any) =>
-                        +uq.id === +orderProduct.unit_quantity_id || uq.id === undefined,
-                )[0];
+            // Serializable state replaces the former $original/$quantities
+            // closures: resolve the matching unit quantity once and sync the
+            // custom-mode price fields eagerly (the old closure did this on
+            // every call; unit_quantity_id is fixed after load, so a single
+            // eager pass is equivalent).
+            const unitQuantity = orderProduct.product.unit_quantities.filter(
+                (uq: any) => +uq.id === +orderProduct.unit_quantity_id || uq.id === undefined,
+            )[0];
 
-                if (orderProduct.mode === 'custom') {
-                    unitQuantity.custom_price_edit = orderProduct.unit_price;
-                    unitQuantity.custom_price_with_tax = orderProduct.price_with_tax;
-                    unitQuantity.custom_price_without_tax = orderProduct.price_without_tax;
-                    unitQuantity.custom_price_tax = orderProduct.tax_value;
-                }
+            if (orderProduct.mode === 'custom' && unitQuantity) {
+                unitQuantity.custom_price_edit = orderProduct.unit_price;
+                unitQuantity.custom_price_with_tax = orderProduct.price_with_tax;
+                unitQuantity.custom_price_without_tax = orderProduct.price_without_tax;
+                unitQuantity.custom_price_tax = orderProduct.tax_value;
+            }
 
-                return unitQuantity;
+            orderProduct.quantities = unitQuantity;
+            orderProduct.source = {
+                id: orderProduct.product.id,
+                category_id: orderProduct.product.category_id,
+                tax_type: orderProduct.product.tax_type,
+                tax_group: orderProduct.product.tax_group,
             };
             products.push(orderProduct);
         }

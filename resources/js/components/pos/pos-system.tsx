@@ -144,7 +144,7 @@ export default function PosSystem() {
       return;
     }
 
-    const quantities = product.$quantities ? product.$quantities() : null;
+    const quantities = product.quantities ?? null;
     const stockCheck = validateStockAvailability(quantities?.quantity, quantity, 0);
 
     if (!stockCheck.allowed) {
