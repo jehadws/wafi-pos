@@ -1,4 +1,5 @@
 import { Address } from './address';
+import { Coupon } from './coupon';
 import { Customer } from './customer';
 import { OrderProduct } from './order-product';
 import { OrderType } from './order-type';
@@ -20,38 +21,7 @@ export interface Order {
     change: number;
     total_products: number;
     customer: Customer | undefined;
-    coupons: {
-        code?: string;
-        type?: 'percentage_discount' | 'flat_discount';
-        name: string;
-        customer_coupon_id?: number;
-        limit_usage?: number;
-        minimum_cart_value?: number;
-        maximum_cart_value?: number;
-        customer_id?: number;
-        value?: number;
-        created_at?: string;
-        usage?: number;
-        active?: number;
-        author?: number;
-        products?: {
-            product_id?: number;
-            coupon_id?: number;
-            product?: {
-                name?: string;
-                id?: number;
-            };
-        }[];
-        categories?: {
-            category_id?: number;
-            coupon_id?: number;
-            category?: {
-                name?: string;
-                id?: number;
-            };
-        }[];
-        discount_value?: number;
-    }[];
+    coupons: Coupon[];
     total_coupons: number;
     type: OrderType | undefined;
     customer_id: number | undefined;
