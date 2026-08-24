@@ -19,10 +19,8 @@
  *   Order-level functions (`sumProductsTotals`, `computeOrderTaxGroup`,
  *   `computeOrderTaxes`) mutate the order object passed in, exactly as their
  *   predecessors did — callers must pass a fresh copy (`{ ...order }`).
- *   Product-level `computeProduct` returns a new object and never writes to
- *   its input. Replacing the `$quantities`/`$original` closures with
- *   serializable data is planned as a follow-up phase (see
- *   cart-engine-plan-validation.md).
+ *   Product-level `computeProduct` returns a new object (with a cloned
+ *   `quantities` object) and never writes to its input.
  *
  * Pure domain layer: no Zustand, no React, no DOM.
  */
@@ -276,10 +274,8 @@ export function proceedProductTaxComputation(
     product: OrderProduct,
     price: number,
 ): TaxComputationResult {
-    // Call-sites always attach $original (addToCart / loadOrder); the
-    // non-null assertion keeps runtime behavior identical to the legacy code.
-    const originalProduct = product.$original!();
-    const taxGroup = originalProduct.tax_group;
+    const source = product.source;
+    const taxGroup = source?.tax_group;
 
     let price_without_tax = price;
     let tax_value = 0;
@@ -293,7 +289,7 @@ export function proceedProductTaxComputation(
             .subtract(product.discount || 0)
             .done();
 
-        const result = computeTaxForGroup(lineAfterDiscount, taxGroup, originalProduct.tax_type);
+        const result = computeTaxForGroup(lineAfterDiscount, taxGroup, source?.tax_type || '');
 
         total_tax_value = result.tax_value;
         tax_value = math.chain(total_tax_value).divide(product.quantity).done();
@@ -308,7 +304,7 @@ export function proceedProductTaxComputation(
  * Computes and mutates tax fields on a custom-priced product.
  */
 export function computeCustomProductTax(product: OrderProduct): OrderProduct {
-    const quantities = product.$quantities?.();
+    const quantities = product.quantities;
     if (!quantities) return product;
 
     const result = proceedProductTaxComputation(product, quantities.custom_price_edit);
@@ -318,7 +314,6 @@ export function computeCustomProductTax(product: OrderProduct): OrderProduct {
     quantities.custom_price_tax = result.tax_value;
     product.tax_value = result.tax_value;
     product.total_tax_value = result.total_tax_value;
-    product.$quantities = () => quantities;
 
     return product;
 }
@@ -327,7 +322,7 @@ export function computeCustomProductTax(product: OrderProduct): OrderProduct {
  * Computes and mutates tax fields on a normal-priced product.
  */
 export function computeNormalProductTax(product: OrderProduct): OrderProduct {
-    const quantities = product.$quantities?.();
+    const quantities = product.quantities;
     if (!quantities) return product;
 
     const result = proceedProductTaxComputation(product, quantities.sale_price_edit);
@@ -337,7 +332,6 @@ export function computeNormalProductTax(product: OrderProduct): OrderProduct {
     quantities.sale_price_tax = result.tax_value;
     product.tax_value = result.tax_value;
     product.total_tax_value = result.total_tax_value;
-    product.$quantities = () => quantities;
 
     return product;
 }
@@ -346,7 +340,7 @@ export function computeNormalProductTax(product: OrderProduct): OrderProduct {
  * Computes and mutates tax fields on a wholesale-priced product.
  */
 export function computeWholesaleProductTax(product: OrderProduct): OrderProduct {
-    const quantities = product.$quantities?.();
+    const quantities = product.quantities;
     if (!quantities) return product;
 
     const result = proceedProductTaxComputation(product, quantities.wholesale_price_edit);
@@ -356,7 +350,6 @@ export function computeWholesaleProductTax(product: OrderProduct): OrderProduct 
     quantities.wholesale_price_tax = result.tax_value;
     product.tax_value = result.tax_value;
     product.total_tax_value = result.total_tax_value;
-    product.$quantities = () => quantities;
 
     return product;
 }
@@ -383,19 +376,19 @@ export function computeProductTax(product: OrderProduct): OrderProduct {
  * Writes only to the passed product object.
  */
 export function computeProductTaxValue(product: OrderProduct): void {
-    const tax_group = product.$original!().tax_group;
+    const tax_group = product.source?.tax_group;
     let unitPrice: number;
 
     if (product.mode === 'normal') {
         unitPrice =
             product.tax_type === 'inclusive'
-                ? (product.$quantities?.().sale_price_with_tax ?? 0)
-                : (product.$quantities?.().sale_price_without_tax ?? 0);
+                ? (product.quantities?.sale_price_with_tax ?? 0)
+                : (product.quantities?.sale_price_without_tax ?? 0);
     } else if (product.mode === 'wholesale') {
         unitPrice =
             product.tax_type === 'inclusive'
-                ? (product.$quantities?.().wholesale_price_with_tax ?? 0)
-                : (product.$quantities?.().wholesale_price_without_tax ?? 0);
+                ? (product.quantities?.wholesale_price_with_tax ?? 0)
+                : (product.quantities?.wholesale_price_without_tax ?? 0);
     } else {
         unitPrice = product.unit_price;
     }
@@ -430,11 +423,15 @@ export function computeProductTaxValue(product: OrderProduct): void {
 export function computeProduct(product: OrderProduct, options: POSOptions): OrderProduct {
     const computed: OrderProduct = { ...product };
 
+    // Clone the serializable quantities too, so nested writes on the computed
+    // line can never leak back into the input (the old closure was shared).
+    computed.quantities = computed.quantities ? { ...computed.quantities } : undefined;
+
     if (computed.product_type === 'product') {
-        if (computed.mode === 'normal' && computed.$quantities) {
-            computed.unit_price = getSalePrice(computed.$quantities(), options);
-        } else if (computed.mode === 'wholesale' && computed.$quantities) {
-            computed.unit_price = getWholesalePrice(computed.$quantities(), options);
+        if (computed.mode === 'normal' && computed.quantities) {
+            computed.unit_price = getSalePrice(computed.quantities, options);
+        } else if (computed.mode === 'wholesale' && computed.quantities) {
+            computed.unit_price = getWholesalePrice(computed.quantities, options);
         }
         // For 'custom' mode: keep unit_price as-is (user-set price)
     }
@@ -894,9 +891,7 @@ export function validateCoupons(
         const categoryMatch =
             !categoriesRequired ||
             products.some((product) =>
-                coupon.categories!.some(
-                    (cc) => cc.category_id === product.$original?.()?.category_id,
-                ),
+                coupon.categories!.some((cc) => cc.category_id === product.source?.category_id),
             );
 
         if (productMatch && categoryMatch) {

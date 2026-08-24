@@ -212,12 +212,12 @@ describe('services/cart-engine.ts', () => {
                 id: 1,
                 quantity: 2,
                 discount: 10, // 10 discount total
-                $original: () => ({
+                source: {
                     tax_group: {
                         taxes: [{ id: 1, rate: 15, name: 'VAT' }],
                     },
                     tax_type: 'exclusive',
-                }),
+                },
             } as any;
 
             // Unit price 100 * 2 = 200 - 10 = 190 taxable
@@ -462,16 +462,16 @@ describe('services/cart-engine.ts', () => {
                 mode: 'normal',
                 quantity: 2,
                 discount: 10,
-                $quantities: () => ({
+                quantities: {
                     sale_price_with_tax: 115,
                     sale_price_without_tax: 100,
-                }),
-                $original: () => ({
+                } as any,
+                source: {
                     tax_group: {
                         taxes: [{ id: 1, rate: 15, name: 'VAT' }],
                     },
                     tax_type: 'inclusive',
-                }),
+                },
             } as any;
 
             const options = {
@@ -494,8 +494,8 @@ describe('services/cart-engine.ts', () => {
                     mode: 'normal',
                     quantity: 1,
                     discount: 0,
-                    $quantities: () => ({ sale_price_with_tax: 50, sale_price_without_tax: 50 }),
-                    $original: () => ({ tax_group: null, tax_type: 'none' }),
+                    quantities: { sale_price_with_tax: 50, sale_price_without_tax: 50 } as any,
+                    source: { tax_group: null, tax_type: 'none' },
                 } as any,
             ];
 
@@ -517,7 +517,7 @@ describe('services/cart-engine.ts', () => {
                 product_id: 10,
                 product_type: 'product',
                 quantity: 1,
-                $original: () => ({ category_id: 77 }),
+                source: { category_id: 77 },
                 ...overrides,
             }) as any;
 
@@ -552,7 +552,7 @@ describe('services/cart-engine.ts', () => {
             expect(invalidCoupons).toHaveLength(0);
         });
 
-        it('matches category constraints through $original().category_id', () => {
+        it('matches category constraints through source.category_id', () => {
             const matchingCategory: Coupon = {
                 name: 'Cat match',
                 type: 'percentage_discount',
@@ -651,8 +651,8 @@ describe('services/cart-engine.ts', () => {
                 discount_percentage: 0,
                 discount_type: 'flat',
                 total_price: 0,
-                $quantities: () => ({ sale_price_with_tax: 115, sale_price_without_tax: 100 }),
-                $original: () => ({ tax_group: null, tax_type: 'inclusive' }),
+                quantities: { sale_price_with_tax: 115, sale_price_without_tax: 100 } as any,
+                source: { tax_group: null, tax_type: 'inclusive' },
                 ...overrides,
             }) as any;
 
@@ -748,6 +748,17 @@ describe('services/cart-engine.ts', () => {
             expect(result.order.total_coupons).toBeCloseTo(23, 6);
             expect(result.validCoupons).toEqual([validCoupon]);
             expect(result.invalidCoupons).toEqual([invalidCoupon]);
+        });
+
+        it('clones quantities so nested writes never leak into the input', () => {
+            const line = makeLine();
+            const computed = CartEngine.computeItem(line, options);
+
+            expect(computed).not.toBe(line);
+            expect(computed.quantities).not.toBe(line.quantities);
+
+            computed.quantities!.sale_price_with_tax = 999;
+            expect(line.quantities!.sale_price_with_tax).toBe(115);
         });
 
         it('does not mutate the draft inputs (immutability assertion)', () => {
