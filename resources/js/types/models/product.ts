@@ -9,6 +9,7 @@ export interface Product {
     discount_percentage?: number;
     total_price?: number;
     mode?: 'normal' | 'wholesale' | 'custom';
+    $original?: any;
     unit_quantity_id?: number;
     unit_quantities?: Array<{
         quantity: number;

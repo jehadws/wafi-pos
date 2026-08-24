@@ -6,7 +6,6 @@
 
 export * from './address';
 export * from './category';
-export * from './coupon';
 export * from './customer';
 export * from './http-crud-response';
 export * from './http-status-response';

@@ -18,7 +18,7 @@ import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
-import { CartEngine } from '@/services/cart-engine';
+import { CartCalculator } from '@/services/cart-calculator';
 import ProductsCategoriesPanel from './products-categories-panel';
 import {
   useBarcodeSearch,
@@ -144,7 +144,7 @@ export default function PosSystem() {
       return;
     }
 
-    const quantities = product.quantities ?? null;
+    const quantities = product.$quantities ? product.$quantities() : null;
     const stockCheck = validateStockAvailability(quantities?.quantity, quantity, 0);
 
     if (!stockCheck.allowed) {
@@ -153,7 +153,7 @@ export default function PosSystem() {
     }
 
     const isPriceWithTaxMode = isPriceWithTax(options);
-    const updatedValues = CartEngine.calculateTotalsForQuantityUpdate(
+    const updatedValues = CartCalculator.calculateTotalsForQuantityUpdate(
       product,
       quantity,
       isPriceWithTaxMode,
@@ -163,7 +163,7 @@ export default function PosSystem() {
 
   const updateProductPrice = (product: OrderProduct, price: number) => {
     const isPriceWithTaxMode = isPriceWithTax(options);
-    const updatedValues = CartEngine.calculateTotalsForPriceUpdate(
+    const updatedValues = CartCalculator.calculateTotalsForPriceUpdate(
       product,
       price,
       isPriceWithTaxMode,
@@ -173,7 +173,7 @@ export default function PosSystem() {
 
   const updateProductDiscountPercentage = (product: OrderProduct, discount: number) => {
     const isPriceWithTaxMode = isPriceWithTax(options);
-    const updatedValues = CartEngine.calculateTotalsForDiscountPercentageUpdate(
+    const updatedValues = CartCalculator.calculateTotalsForDiscountPercentageUpdate(
       product,
       discount,
       isPriceWithTaxMode,
