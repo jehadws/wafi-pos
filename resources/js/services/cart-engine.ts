@@ -227,7 +227,7 @@ export function computeTaxForGroup(
         };
     }
 
-    if (tax_group) {
+    if (tax_group && tax_group.taxes) {
         taxes = tax_group.taxes.map((tax: any) => ({
             ...tax,
             tax_value: getVatValue(price, tax.rate, tax_type),
@@ -292,9 +292,15 @@ export function proceedProductTaxComputation(
         const result = computeTaxForGroup(lineAfterDiscount, taxGroup, source?.tax_type || '');
 
         total_tax_value = result.tax_value;
-        tax_value = math.chain(total_tax_value).divide(product.quantity).done();
-        price_with_tax = math.chain(result.price_with_tax).divide(product.quantity).done();
-        price_without_tax = math.chain(result.price_without_tax).divide(product.quantity).done();
+        if (product.quantity > 0) {
+            tax_value = math.chain(total_tax_value).divide(product.quantity).done();
+            price_with_tax = math.chain(result.price_with_tax).divide(product.quantity).done();
+            price_without_tax = math.chain(result.price_without_tax).divide(product.quantity).done();
+        } else {
+            tax_value = 0;
+            price_with_tax = 0;
+            price_without_tax = 0;
+        }
     }
 
     return { price_without_tax, tax_value, price_with_tax, total_tax_value };
@@ -401,12 +407,18 @@ export function computeProductTaxValue(product: OrderProduct): void {
 
     const result = computeTaxForGroup(lineAfterDiscount, tax_group, product.tax_type || '');
 
-    product.tax_value = math.chain(result.tax_value).divide(product.quantity).done();
     product.total_tax_value = result.tax_value;
-    product.price_with_tax = math.chain(result.price_with_tax).divide(product.quantity).done();
-    product.price_without_tax = math.chain(result.price_without_tax).divide(product.quantity).done();
     product.total_price_with_tax = result.price_with_tax;
     product.total_price_without_tax = result.price_without_tax;
+    if (product.quantity > 0) {
+        product.tax_value = math.chain(result.tax_value).divide(product.quantity).done();
+        product.price_with_tax = math.chain(result.price_with_tax).divide(product.quantity).done();
+        product.price_without_tax = math.chain(result.price_without_tax).divide(product.quantity).done();
+    } else {
+        product.tax_value = 0;
+        product.price_with_tax = 0;
+        product.price_without_tax = 0;
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -647,8 +659,7 @@ export function sumProductsTaxes(
     order.total_products = products.length;
 
     if (['products_vat'].includes(posVat)) {
-        // Assertion keeps runtime identical when a line lacks total_tax_value.
-        const totalTaxValues = products.map((p: OrderProduct) => p.total_tax_value as number);
+        const totalTaxValues = products.map((p: OrderProduct) => p.total_tax_value ?? 0);
         if (totalTaxValues.length > 0) {
             order.products_tax_value = totalTaxValues.reduce(
                 (before: number, after: number) => before + after,
@@ -823,14 +834,14 @@ export function calculateTotalsForDiscountPercentageUpdate(
         totalTaxValue = totalBeforeTax * taxRate;
     } else if (product.tax_type === 'inclusive') {
         const taxMultiplier = 1 + taxRate;
-        const priceWithTax = (product.price_with_tax * product.quantity) - discount_value;
+        const priceWithTax = ((product.price_with_tax || product.unit_price) * product.quantity) - discount_value;
         const priceWithoutTax = taxMultiplier > 0 ? priceWithTax / taxMultiplier : priceWithTax;
         totalTaxValue = priceWithTax - priceWithoutTax;
     } else {
         totalTaxValue = (product.tax_value || 0) * product.quantity;
     }
 
-    const total_price_with_tax = product.price_with_tax * product.quantity - discount_value;
+    const total_price_with_tax = (product.price_with_tax || product.unit_price) * product.quantity - discount_value;
     const total_price_without_tax = totalBeforeTax;
 
     return {
@@ -874,6 +885,7 @@ export function computeCouponTotal(coupons: Coupon[], subtotal: number): number 
 export function validateCoupons(
     coupons: Coupon[],
     products: OrderProduct[],
+    subtotal: number,
 ): { validCoupons: Coupon[]; invalidCoupons: Coupon[] } {
     const validCoupons: Coupon[] = [];
     const invalidCoupons: Coupon[] = [];
@@ -894,7 +906,15 @@ export function validateCoupons(
                 coupon.categories!.some((cc) => cc.category_id === product.source?.category_id),
             );
 
-        if (productMatch && categoryMatch) {
+        const minimumCartValueMatch =
+            coupon.minimum_cart_value === undefined ||
+            subtotal >= coupon.minimum_cart_value;
+
+        const maximumCartValueMatch =
+            coupon.maximum_cart_value === undefined ||
+            subtotal <= coupon.maximum_cart_value;
+
+        if (productMatch && categoryMatch && minimumCartValueMatch && maximumCartValueMatch) {
             validCoupons.push(coupon);
         } else {
             invalidCoupons.push(coupon);
@@ -933,7 +953,7 @@ export const CartEngine = {
         //    production flow invalid coupons are removed before totals are
         //    computed (checkCart runs first), so only valid ones contribute.
         const coupons = draft.coupons ?? [];
-        const { validCoupons, invalidCoupons } = validateCoupons(coupons, products);
+        const { validCoupons, invalidCoupons } = validateCoupons(coupons, products, order.subtotal);
 
         // 4. Coupon totals (valid coupons only — mirrors the production flow)
         order = { ...order, total_coupons: computeCouponTotal(validCoupons, order.subtotal) };

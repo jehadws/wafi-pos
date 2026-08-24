@@ -551,7 +551,7 @@ describe('services/cart-engine.ts', () => {
 
         it('marks unconstrained coupons as valid', () => {
             const coupon: Coupon = { name: 'Any', type: 'flat_discount', discount_value: 5 };
-            const { validCoupons, invalidCoupons } = validateCoupons([coupon], []);
+            const { validCoupons, invalidCoupons } = validateCoupons([coupon], [], 100);
             expect(validCoupons).toHaveLength(1);
             expect(invalidCoupons).toHaveLength(0);
         });
@@ -563,7 +563,7 @@ describe('services/cart-engine.ts', () => {
                 discount_value: 5,
                 products: [{ product_id: 999 }],
             };
-            const { validCoupons, invalidCoupons } = validateCoupons([coupon], [cartLine()]);
+            const { validCoupons, invalidCoupons } = validateCoupons([coupon], [cartLine()], 100);
             expect(validCoupons).toHaveLength(0);
             expect(invalidCoupons).toEqual([coupon]);
         });
@@ -575,7 +575,7 @@ describe('services/cart-engine.ts', () => {
                 discount_value: 5,
                 products: [{ product_id: 10 }],
             };
-            const { validCoupons, invalidCoupons } = validateCoupons([coupon], [cartLine()]);
+            const { validCoupons, invalidCoupons } = validateCoupons([coupon], [cartLine()], 100);
             expect(validCoupons).toEqual([coupon]);
             expect(invalidCoupons).toHaveLength(0);
         });
@@ -597,6 +597,7 @@ describe('services/cart-engine.ts', () => {
             const { validCoupons, invalidCoupons } = validateCoupons(
                 [matchingCategory, otherCategory],
                 [cartLine()],
+                100,
             );
             expect(validCoupons).toEqual([matchingCategory]);
             expect(invalidCoupons).toEqual([otherCategory]);
@@ -619,6 +620,7 @@ describe('services/cart-engine.ts', () => {
             const { validCoupons, invalidCoupons } = validateCoupons(
                 [okProduct, badCategory],
                 [cartLine()],
+                100,
             );
             expect(validCoupons).toEqual([okProduct]);
             expect(invalidCoupons).toEqual([badCategory]);
