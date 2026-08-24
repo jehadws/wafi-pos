@@ -7,9 +7,7 @@
  * across the codebase continues to work without modification.
  *
  * Architecture:
- *   services/tax.ts          — pure tax math (no Zustand)
- *   services/pricing.ts      — pure pricing helpers (no Zustand)
- *   services/order-builder.ts— pure product computation (no Zustand)
+ *   services/cart-engine.ts  — consolidated cart & pricing math (no Zustand)
  *   hooks/pos/use-pos-dialogs.ts   — dialog open/close slice
  *   hooks/pos/use-cart-store.ts    — cart products slice
  *   hooks/pos/use-payments-store.ts— payments slice
@@ -26,9 +24,13 @@ import { Payment } from '@/types/models/payment';
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { ordersApi, taxesApi } from '@/api';
 import printAgentService from '@/services/print-agent-service';
-import { computeOrderTaxGroup, computeOrderTaxes } from '@/services/tax';
-import { sumProductsTotals } from '@/services/pricing';
-import { defineQuantities } from '@/services/order-builder';
+import {
+    computeCouponTotal,
+    computeOrderTaxGroup,
+    computeOrderTaxes,
+    defineQuantities,
+    sumProductsTotals,
+} from '@/services/cart-engine';
 import { executeOrderSubmission } from '@/services/order-submission';
 
 // Slices
@@ -151,20 +153,10 @@ export const usePOS = create<POSStore>((set, get) => ({
                     get().options,
                 );
 
-                // Compute coupon totals immutably
-                const totalValue = order.coupons.map((customerCoupon: any) => {
-                    if (customerCoupon.type === 'percentage_discount') {
-                        return (order.subtotal * customerCoupon.discount_value) / 100;
-                    }
-                    return customerCoupon.discount_value;
-                });
-
+                // Compute coupon totals immutably (delegated to the cart engine)
                 order = {
                     ...order,
-                    total_coupons:
-                        totalValue.length > 0
-                            ? totalValue.reduce((before: number, after: number) => before + after, 0)
-                            : 0,
+                    total_coupons: computeCouponTotal(order.coupons ?? [], order.subtotal),
                 };
 
                 if (order.discount_type === 'percentage') {
@@ -431,21 +423,28 @@ export const usePOS = create<POSStore>((set, get) => ({
                 };
             }
 
-            orderProduct.$original = () => orderProduct.product;
-            orderProduct.$quantities = () => {
-                const unitQuantity = orderProduct.product.unit_quantities.filter(
-                    (uq: any) =>
-                        +uq.id === +orderProduct.unit_quantity_id || uq.id === undefined,
-                )[0];
+            // Serializable state replaces the former $original/$quantities
+            // closures: resolve the matching unit quantity once and sync the
+            // custom-mode price fields eagerly (the old closure did this on
+            // every call; unit_quantity_id is fixed after load, so a single
+            // eager pass is equivalent).
+            const unitQuantity = orderProduct.product.unit_quantities.filter(
+                (uq: any) => +uq.id === +orderProduct.unit_quantity_id || uq.id === undefined,
+            )[0];
 
-                if (orderProduct.mode === 'custom') {
-                    unitQuantity.custom_price_edit = orderProduct.unit_price;
-                    unitQuantity.custom_price_with_tax = orderProduct.price_with_tax;
-                    unitQuantity.custom_price_without_tax = orderProduct.price_without_tax;
-                    unitQuantity.custom_price_tax = orderProduct.tax_value;
-                }
+            if (orderProduct.mode === 'custom' && unitQuantity) {
+                unitQuantity.custom_price_edit = orderProduct.unit_price;
+                unitQuantity.custom_price_with_tax = orderProduct.price_with_tax;
+                unitQuantity.custom_price_without_tax = orderProduct.price_without_tax;
+                unitQuantity.custom_price_tax = orderProduct.tax_value;
+            }
 
-                return unitQuantity;
+            orderProduct.quantities = unitQuantity;
+            orderProduct.source = {
+                id: orderProduct.product.id,
+                category_id: orderProduct.product.category_id,
+                tax_type: orderProduct.product.tax_type,
+                tax_group: orderProduct.product.tax_group,
             };
             products.push(orderProduct);
         }

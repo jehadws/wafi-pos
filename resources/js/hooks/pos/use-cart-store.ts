@@ -2,7 +2,7 @@
  * hooks/pos/use-cart-store.ts
  *
  * Zustand slice — cart products management.
- * Delegates all math to services/order-builder and services/pricing.
+ * Delegates all math to services/cart-engine.
  *
  * Extracted from usePOS.ts:
  *   products, autoMerge, processingAddQueue,
@@ -14,7 +14,7 @@
 import { OrderProduct } from '@/types/models/order-product';
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { usersApi } from '@/api';
-import { recomputeProducts } from '@/services/order-builder';
+import { CartEngine, recomputeProducts } from '@/services/cart-engine';
 import { playSound } from '@/utils/sound';
 import type { POSStore } from './pos-store-types';
 import { StateCreator } from 'zustand';
@@ -88,8 +88,15 @@ export const createCartSlice: StateCreator<POSStore, [], [], CartSlice> = (set, 
             total_tax_value: product.total_tax_value || 0,
             mode: product.mode || 'normal',
             order_id: product.order_id || null,
-            $original: product.$original || (() => product),
-            $quantities: product.$quantities || undefined,
+            // Serializable snapshot of the catalog product (replaces the
+            // former $original closure); falls back to the incoming payload.
+            source: product.source ?? {
+                id: product.id,
+                category_id: product.category_id,
+                tax_type: product.tax_type,
+                tax_group: product.tax_group,
+            },
+            quantities: product.quantities,
             unit_quantity_id: product.unit_quantity_id || 0,
             _uuid:
                 product._uuid ||
@@ -187,37 +194,11 @@ export const createCartSlice: StateCreator<POSStore, [], [], CartSlice> = (set, 
 
     checkCart: () => {
         const { order, products } = get();
-        const unmatchedConditions: any[] = [];
+        // Pure matching lives in the cart engine; this slice only handles
+        // the side effects (toast + removal).
+        const { invalidCoupons } = CartEngine.validateCoupons(order.coupons ?? [], products);
 
-        order.coupons.forEach((coupon: any) => {
-            let isProductValid = true;
-            if (coupon.products.length > 0) {
-                isProductValid =
-                    products.filter((product: OrderProduct) =>
-                        coupon.products
-                            .map((p: any) => p.product_id)
-                            .includes(product.product_id),
-                    ).length > 0;
-                if (!isProductValid && unmatchedConditions.indexOf(coupon) === -1) {
-                    unmatchedConditions.push(coupon);
-                }
-            }
-
-            let isCategoryValid = true;
-            if (coupon.categories.length > 0) {
-                isCategoryValid =
-                    products.filter((product: OrderProduct) =>
-                        coupon.categories
-                            .map((p: any) => p.category_id)
-                            .includes(product.$original?.()?.category_id),
-                    ).length > 0;
-                if (!isCategoryValid && unmatchedConditions.indexOf(coupon) === -1) {
-                    unmatchedConditions.push(coupon);
-                }
-            }
-        });
-
-        unmatchedConditions.forEach((coupon) => {
+        invalidCoupons.forEach((coupon) => {
             toast.error(
                 `The coupon "${coupon.name}" has been removed from the cart, as its required conditions are no longer met.`,
                 { duration: 6000 },
