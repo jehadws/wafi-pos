@@ -40,6 +40,35 @@ import {
 import { Coupon } from '@/types/models/coupon';
 import { Order } from '@/types/models/order';
 import { OrderProduct } from '@/types/models/order-product';
+import { ProductUnitQuantity } from '@/types/models/product-unit-quantity';
+
+/**
+ * Test fixture helper: creates a fully-typed ProductUnitQuantity with sensible defaults
+ * for all 19 required fields, allowing selective overrides.
+ */
+function makeUnitQuantity(overrides?: Partial<ProductUnitQuantity>): ProductUnitQuantity {
+    return {
+        quantity: 0,
+        sale_price_tax: 0,
+        wholesale_price_tax: 0,
+        custom_price_tax: 0,
+        expiration_date: '',
+        sale_price: 0,
+        sale_price_edit: 0,
+        sale_price_without_tax: 0,
+        sale_price_with_tax: 0,
+        wholesale_price: 0,
+        wholesale_price_edit: 0,
+        wholesale_price_with_tax: 0,
+        wholesale_price_without_tax: 0,
+        preview_url: '',
+        custom_price: 0,
+        custom_price_edit: 0,
+        custom_price_without_tax: 0,
+        custom_price_with_tax: 0,
+        ...overrides,
+    };
+}
 
 describe('services/cart-engine.ts', () => {
     // -----------------------------------------------------------------------
@@ -234,28 +263,27 @@ describe('services/cart-engine.ts', () => {
     // -----------------------------------------------------------------------
 
     describe('mode-aware pricing getters', () => {
-        const mockUnitQuantity = {
-            id: 1,
+        const mockUnitQuantity = makeUnitQuantity({
             sale_price_with_tax: 115,
             sale_price_without_tax: 100,
             wholesale_price_with_tax: 92,
             wholesale_price_without_tax: 80,
             custom_price_with_tax: 57.5,
             custom_price_without_tax: 50,
-        };
+        });
 
         it('returns with_tax price when ns_jgrem_price_with_tax is yes', () => {
             const options = { ns_jgrem_price_with_tax: 'yes' };
-            expect(getSalePrice(mockUnitQuantity as any, options)).toBe(115);
-            expect(getWholesalePrice(mockUnitQuantity as any, options)).toBe(92);
-            expect(getCustomPrice(mockUnitQuantity as any, options)).toBe(57.5);
+            expect(getSalePrice(mockUnitQuantity, options)).toBe(115);
+            expect(getWholesalePrice(mockUnitQuantity, options)).toBe(92);
+            expect(getCustomPrice(mockUnitQuantity, options)).toBe(57.5);
         });
 
         it('returns without_tax price when ns_jgrem_price_with_tax is no', () => {
             const options = { ns_jgrem_price_with_tax: 'no' };
-            expect(getSalePrice(mockUnitQuantity as any, options)).toBe(100);
-            expect(getWholesalePrice(mockUnitQuantity as any, options)).toBe(80);
-            expect(getCustomPrice(mockUnitQuantity as any, options)).toBe(50);
+            expect(getSalePrice(mockUnitQuantity, options)).toBe(100);
+            expect(getWholesalePrice(mockUnitQuantity, options)).toBe(80);
+            expect(getCustomPrice(mockUnitQuantity, options)).toBe(50);
         });
 
         it('handles undefined or null quantities gracefully', () => {
@@ -462,10 +490,10 @@ describe('services/cart-engine.ts', () => {
                 mode: 'normal',
                 quantity: 2,
                 discount: 10,
-                quantities: {
+                quantities: makeUnitQuantity({
                     sale_price_with_tax: 115,
                     sale_price_without_tax: 100,
-                } as any,
+                }),
                 source: {
                     tax_group: {
                         taxes: [{ id: 1, rate: 15, name: 'VAT' }],
@@ -494,7 +522,7 @@ describe('services/cart-engine.ts', () => {
                     mode: 'normal',
                     quantity: 1,
                     discount: 0,
-                    quantities: { sale_price_with_tax: 50, sale_price_without_tax: 50 } as any,
+                    quantities: makeUnitQuantity({ sale_price_with_tax: 50, sale_price_without_tax: 50 }),
                     source: { tax_group: null, tax_type: 'none' },
                 } as any,
             ];
@@ -651,7 +679,7 @@ describe('services/cart-engine.ts', () => {
                 discount_percentage: 0,
                 discount_type: 'flat',
                 total_price: 0,
-                quantities: { sale_price_with_tax: 115, sale_price_without_tax: 100 } as any,
+                quantities: makeUnitQuantity({ sale_price_with_tax: 115, sale_price_without_tax: 100 }),
                 source: { tax_group: null, tax_type: 'inclusive' },
                 ...overrides,
             }) as any;
