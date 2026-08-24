@@ -57,7 +57,7 @@ export default function CartItem({ item, updateDiscountPercentage, updatePrice, 
   };
 
   const handleToggleWholesale = () => {
-    const quantities = item.quantities ?? null;
+    const quantities = item.$quantities ? item.$quantities() : null;
 
     if (item.mode === 'wholesale') {
       // Switch back to normal — use $quantities if available, else keep current price

@@ -115,7 +115,7 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
                 ...selectProduct,
                 unit_quantity_id: selectedUnitQuantity.id,
                 unit_name: selectedUnitQuantity.type,
-                quantities: selectedUnitQuantity,
+                $quantities: () => selectedUnitQuantity,
                 quantity: qty,
             };
             addProductToCart(ProductData);
