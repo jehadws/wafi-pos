@@ -177,6 +177,7 @@
     "Options": "Opciones",
     "The product already exists on the table.": "El producto ya existe sobre la mesa.",
     "The specified quantity exceed the available quantity.": "La cantidad especificada excede la cantidad disponible.",
+    "The specified quantity exceeds the available quantity.": "La cantidad especificada excede la cantidad disponible.",
     "Unable to proceed as the table is empty.": "No se puede continuar porque la mesa est\u00e1 vac\u00eda.",
     "The stock adjustment is about to be made. Would you like to confirm ?": "El ajuste de existencias est\u00e1 a punto de realizarse. \u00bfQuieres confirmar?",
     "More Details": "M\u00e1s detalles",

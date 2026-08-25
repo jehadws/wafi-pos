@@ -1902,6 +1902,7 @@
     "Ok": "D'accord",
     "The product already exists on the table.": "Le produit existe d\u00e9j\u00e0 sur la table.",
     "The specified quantity exceed the available quantity.": "La quantit\u00e9 sp\u00e9cifi\u00e9e d\u00e9passe la quantit\u00e9 disponible.",
+    "The specified quantity exceeds the available quantity.": "La quantit\u00e9 sp\u00e9cifi\u00e9e d\u00e9passe la quantit\u00e9 disponible.",
     "Unable to proceed as the table is empty.": "Impossible de continuer car la table est vide.",
     "The stock adjustment is about to be made. Would you like to confirm ?": "L'ajustement des stocks est sur le point d'\u00eatre effectu\u00e9. Souhaitez-vous confirmer ?",
     "More Details": "Plus de d\u00e9tails",

@@ -1586,6 +1586,7 @@
     "Ok": "Ok",
     "The product already exists on the table.": "The product already exists on the table.",
     "The specified quantity exceed the available quantity.": "The specified quantity exceed the available quantity.",
+    "The specified quantity exceeds the available quantity.": "The specified quantity exceeds the available quantity.",
     "Unable to proceed as the table is empty.": "Unable to proceed as the table is empty.",
     "The stock adjustment is about to be made. Would you like to confirm ?": "The stock adjustment is about to be made. Would you like to confirm ?",
     "More Details": "Me shume Detaje",

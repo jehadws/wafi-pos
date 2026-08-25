@@ -75,10 +75,7 @@ export default function Dashboard() {
         item: null,
     });
 
-    const [optionsDialog, setOptionsDialog] = useState<{ isOpen: boolean; id: number | null }>({
-        isOpen: false,
-        id: null,
-    });
+    const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
     const handleDeleteConfirm = async () => {
         if (!deleteDialog.item || deleteDialog.loading) return;
@@ -197,7 +194,7 @@ export default function Dashboard() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => setOptionsDialog({ isOpen: true, id: row.original.id })}>
+                            <DropdownMenuItem onClick={() => setSelectedOrderId(row.original.id)}>
                                 <List className="mr-2 h-4 w-4" />
                                 {t('Options')}
                             </DropdownMenuItem>
@@ -344,7 +341,13 @@ export default function Dashboard() {
                 handleResetFilters={handleResetFilters}
                 handleFilter={handleFilter}
             />
-            <OrderOptionsDialog options={optionsDialog} setOptions={setOptionsDialog} />
+            <OrderOptionsDialog
+                open={selectedOrderId !== null}
+                orderId={selectedOrderId}
+                onOpenChange={(open) => {
+                    if (!open) setSelectedOrderId(null);
+                }}
+            />
         </AppLayout>
     );
 }

@@ -44,6 +44,11 @@ type Product = {
   unit_quantities: UnitQuantity[],
   created_at: string
   updated_at: string
+  quantity?: number
+  unit_price?: number | string
+  price_with_tax?: number
+  condition?: string
+  unit?: { name?: string }
 }
 
 
@@ -573,6 +578,8 @@ type Order = {
   customer: Customer,
   customer_first_name: string,
   instalments?: OrderInstalment[];
+  products?: Product[];
+  payments?: { label?: string; identifier?: string; value: number }[];
 }
 
 

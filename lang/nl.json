@@ -75,6 +75,7 @@
     "Looks like no products matched the searched term.": "Het lijkt erop dat er geen producten overeenkomen met de gezochte term.",
     "The product already exists on the table.": "Het product bestaat al in de tabel.",
     "The specified quantity exceed the available quantity.": "De opgegeven hoeveelheid overschrijdt de beschikbare hoeveelheid.",
+    "The specified quantity exceeds the available quantity.": "De opgegeven hoeveelheid overschrijdt de beschikbare hoeveelheid.",
     "Unable to proceed as the table is empty.": "Kan niet doorgaan omdat de tabel leeg is.",
     "More Details": "Meer Details",
     "Useful to describe better what are the reasons that leaded to this adjustment.": "Beschrijf wat de redenen zijn die tot deze aanpassing hebben geleid.",

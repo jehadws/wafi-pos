@@ -17,11 +17,11 @@ type Props = {
     selectedProduct: Product | null | undefined;
     onProductChange: (product: Product) => void;
     onConfirm: () => void;
-    errors?: Record<string, string>;
+    conditionError?: string;
     conditions: Condition[];
 };
 
-export default function ProductConditionDialog({ open, onOpenChange, selectedProduct, onProductChange, onConfirm, errors, conditions }: Props) {
+export default function ProductConditionDialog({ open, onOpenChange, selectedProduct, onProductChange, onConfirm, conditionError, conditions }: Props) {
     const { t } = useTranslation();
 
     return (
@@ -46,13 +46,13 @@ export default function ProductConditionDialog({ open, onOpenChange, selectedPro
                     label={t('Condition')}
                     htmlFor="condition"
                     description={t('Determine in which condition the product is returned.')}
-                    error={errors?.[`product.condition-${selectedProduct?.id}`]}
+                    error={conditionError}
                 >
                     <Select
-                        value={selectedProduct?.condition || '0'}
+                        value={selectedProduct?.condition || undefined}
                         onValueChange={(value) => onProductChange({ ...selectedProduct, condition: value } as Product)}
                     >
-                        <SelectTrigger className={errors?.[`product.condition-${selectedProduct?.id}`] ? 'w-full border-red-500' : 'w-full'}>
+                        <SelectTrigger className={conditionError ? 'w-full border-red-500' : 'w-full'}>
                             <SelectValue placeholder={t('Choose an option')} />
                         </SelectTrigger>
                         <SelectContent>

@@ -1614,6 +1614,7 @@
     "Ok": "Ok",
     "The product already exists on the table.": "Das Produkt liegt bereits auf dem Tisch.",
     "The specified quantity exceed the available quantity.": "Die angegebene Menge \u00fcberschreitet die verf\u00fcgbare Menge.",
+    "The specified quantity exceeds the available quantity.": "Die angegebene Menge \u00fcberschreitet die verf\u00fcgbare Menge.",
     "Unable to proceed as the table is empty.": "Kann nicht fortfahren, da die Tabelle leer ist.",
     "The stock adjustment is about to be made. Would you like to confirm ?": "Die Bestandsanpassung ist im Begriff, vorgenommen zu werden. M\u00f6chten Sie best\u00e4tigen ?",
     "More Details": "Weitere Details",

@@ -70,6 +70,7 @@
     "Barcode": "Barkod (Bo\u015f B\u0131rak\u0131labilir)",
     "The product already exists on the table.": "\u00dcr\u00fcn masada zaten var.",
     "The specified quantity exceed the available quantity.": "Belirtilen miktar mevcut miktar\u0131 a\u015f\u0131yor.",
+    "The specified quantity exceeds the available quantity.": "Belirtilen miktar mevcut miktar\u0131 a\u015f\u0131yor.",
     "Unable to proceed as the table is empty.": "Masa bo\u015f oldu\u011fu i\u00e7in devam edilemiyor.",
     "More Details": "Daha fazla detay",
     "Useful to describe better what are the reasons that leaded to this adjustment.": "Bu ayarlamaya neden olan sebeplerin neler oldu\u011funu daha iyi anlatmakta fayda var.",

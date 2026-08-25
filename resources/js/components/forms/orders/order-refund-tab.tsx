@@ -4,49 +4,38 @@ import { Input } from '@/components/ui/input';
 import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { formatCurrency } from '@/utils/format';
 import { ordersApi } from '@/api';
+import axios from 'axios';
+import { formatCurrency } from '@/utils/format';
+import { useForm } from '@inertiajs/react';
 import { Delete, LoaderCircle, Search } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { useTranslation } from '../../../lib/i18n';
+import { useTranslation } from '@/lib/i18n';
+import ProductConditionDialog from './product-condition-dialog';
 import RefundProductItem from './refund-product-item';
-
-type Condition = {
-    value: string;
-    label: string;
-};
 
 type Payment = {
     identifier: string;
     label: string;
 };
 
-type Props = {
-    order: Order | null;
-    form: any;
-    conditions: Condition[];
-    selectedProduct: Product | null | undefined;
-    isSubmitting: boolean;
-    onSelectChange: (id: string) => void;
-    onAddProductClick: (product: Product | null | undefined) => void;
-    onEditProduct: (product: Product) => void;
-    onRemoveProduct: (product: Product) => void;
-    onSubmitRefund: (total: string) => void;
+type Condition = {
+    value: string;
+    label: string;
 };
 
-export default function OrderRefundTab({
-    order,
-    form,
-    conditions,
-    selectedProduct,
-    isSubmitting,
-    onSelectChange,
-    onAddProductClick,
-    onEditProduct,
-    onRemoveProduct,
-    onSubmitRefund,
-}: Props) {
+export const productConditions: Condition[] = [
+    { value: 'damaged', label: 'Damaged' },
+    { value: 'unspoiled', label: 'Unspoiled' },
+];
+
+type Props = {
+    order: Order | null;
+    onSuccess?: () => void;
+};
+
+export default function OrderRefundTab({ order, onSuccess }: Props) {
     const { t } = useTranslation();
     const [rawValue, setRawValue] = useState(0);
     const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
@@ -54,6 +43,18 @@ export default function OrderRefundTab({
     const [loadingPayments, setLoadingPayments] = useState(false);
     const [paymentSearchQuery, setPaymentSearchQuery] = useState('');
     const [editingQtyProduct, setEditingQtyProduct] = useState<Product | null>(null);
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [isEditingProduct, setIsEditingProduct] = useState(false);
+    const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
+    const [conditionError, setConditionError] = useState<string>();
+
+    const form = useForm({
+        payment: { identifier: '' },
+        total: '',
+        products: [] as Product[],
+    });
 
     const screenValue = (rawValue / 100).toFixed(2);
 
@@ -71,7 +72,89 @@ export default function OrderRefundTab({
     const handleConfirm = () => {
         if (screenValue === '0.00') return;
         if (!form.data.payment?.identifier) return toast.warning(t('Please select a payment gateway before proceeding.'));
-        onSubmitRefund(screenValue);
+        handleSubmitRefund(screenValue);
+    };
+
+    const handleSelectChange = (id: string) => {
+        const product = order?.products?.find((product) => product.id.toString() === id);
+        if (product) {
+            setSelectedProduct({ ...product, condition: undefined, description: '' });
+            setIsEditingProduct(false);
+            setConditionError(undefined);
+        }
+    };
+
+    const handleConfirmProduct = () => {
+        if (!selectedProduct) return;
+
+        if (!selectedProduct.condition) return setConditionError(t('This field is required.'));
+        setConditionError(undefined);
+
+        const existingProduct = form.data.products.find((p) => p.id === selectedProduct.id);
+
+        if (existingProduct && isEditingProduct) {
+            form.setData(
+                'products',
+                form.data.products.map((p) =>
+                    p.id === selectedProduct.id
+                        ? {
+                              ...p,
+                              condition: selectedProduct.condition,
+                              description: selectedProduct.description,
+                              unit_price: selectedProduct.unit_price,
+                          }
+                        : p,
+                ),
+            );
+        } else if (existingProduct) {
+            const originalQuantity = order?.products?.find((p) => p.id === selectedProduct.id)?.quantity || 0;
+            if ((existingProduct.quantity || 0) + 1 > originalQuantity) {
+                return toast.warning(t('The specified quantity exceeds the available quantity.'));
+            }
+            form.setData(
+                'products',
+                form.data.products.map((p) => (p.id === existingProduct.id ? { ...p, quantity: (p.quantity || 0) + 1 } : p)),
+            );
+        } else {
+            form.setData('products', [{ ...selectedProduct, quantity: 1 }, ...form.data.products]);
+        }
+
+        setIsProductDialogOpen(false);
+        setSelectedProduct(null);
+        setIsEditingProduct(false);
+    };
+
+    const handleEditProduct = (product: Product) => {
+        setSelectedProduct(product);
+        setIsEditingProduct(true);
+        setIsProductDialogOpen(true);
+    };
+
+    const handleRemoveProduct = (product: Product) => {
+        form.setData('products', form.data.products.filter((p) => p.id !== product.id));
+    };
+
+    const handleSubmitRefund = async (total: string) => {
+        if (isSubmitting || !order?.id) return;
+        setIsSubmitting(true);
+        try {
+            await ordersApi.refund(order.id, { ...form.data, total });
+            toast.success(t('The order has been successfully refunded.'));
+            form.reset();
+            setSelectedProduct(null);
+            setIsEditingProduct(false);
+            setRawValue(0);
+            onSuccess?.();
+        } catch (error) {
+            const description = axios.isAxiosError(error)
+                ? error.response?.data?.message || error.message
+                : error instanceof Error
+                  ? error.message
+                  : undefined;
+            toast.error(t('Unable to proceed'), { description });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handlePaymentGatewayClick = async () => {
@@ -104,12 +187,14 @@ export default function OrderRefundTab({
         if (isNaN(newQty) || newQty <= 0) return;
 
         const originalProduct = order?.products?.find((p) => p.id === editingQtyProduct.id);
-        if (originalProduct && newQty > originalProduct.quantity) {
-            return toast.warning(t('The specified quantity exceed the available quantity.'));
+        if (originalProduct?.quantity != null && newQty > originalProduct.quantity) {
+            return toast.warning(t('The specified quantity exceeds the available quantity.'));
         }
 
-        const updatedProducts = form.data.products.map((p: Product) => (p.id === editingQtyProduct.id ? { ...p, quantity: newQty } : p));
-        form.setData({ ...form.data, products: updatedProducts });
+        form.setData(
+            'products',
+            form.data.products.map((p) => (p.id === editingQtyProduct.id ? { ...p, quantity: newQty } : p)),
+        );
         setEditingQtyProduct(null);
     };
 
@@ -118,7 +203,7 @@ export default function OrderRefundTab({
     };
 
     const filteredPayments = payments.filter(
-        (p: any) => !paymentSearchQuery || t(p.identifier).toLowerCase().includes(paymentSearchQuery.toLowerCase()),
+        (p) => !paymentSearchQuery || t(p.identifier).toLowerCase().includes(paymentSearchQuery.toLowerCase()),
     );
 
     const numbers = [
@@ -136,14 +221,14 @@ export default function OrderRefundTab({
                         <Separator />
 
                         <div className="flex flex-row items-center gap-2" dir="ltr">
-                            <Select value={selectedProduct?.id.toString() || '0'} onValueChange={(value) => onSelectChange(value)}>
+                            <Select
+                                value={selectedProduct ? selectedProduct.id?.toString() : undefined}
+                                onValueChange={handleSelectChange}
+                            >
                                 <SelectTrigger className="w-full">
                                     <SelectValue placeholder={t('Choose an option')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem key="0" value="0">
-                                        {t('Choose an option')}
-                                    </SelectItem>
                                     {order?.products?.map((product: Product, i) => (
                                         <SelectItem key={product.id.toString() + i} value={product.id.toString()} disabled={product?.quantity === 0}>
                                             {product.name} (x{product?.quantity})
@@ -151,7 +236,15 @@ export default function OrderRefundTab({
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <Button onClick={() => onAddProductClick(selectedProduct)}>{t('Add')}</Button>
+                            <Button
+                                onClick={() => {
+                                    setIsEditingProduct(false);
+                                    setIsProductDialogOpen(true);
+                                }}
+                                disabled={!selectedProduct}
+                            >
+                                {t('Add')}
+                            </Button>
                         </div>
 
                         <div className="mt-4">{t('Products')}</div>
@@ -162,10 +255,10 @@ export default function OrderRefundTab({
                                 <RefundProductItem
                                     key={product.id?.toString() + i}
                                     product={product}
-                                    conditions={conditions}
+                                    conditions={productConditions}
                                     onQuantityClick={() => handleQuantityClick(product)}
-                                    onEdit={() => onEditProduct(product)}
-                                    onDelete={() => onRemoveProduct(product)}
+                                    onEdit={() => handleEditProduct(product)}
+                                    onDelete={() => handleRemoveProduct(product)}
                                 />
                             ))}
                         </div>
@@ -180,7 +273,7 @@ export default function OrderRefundTab({
                                 <span className="font-medium">{t('Total')}</span>
                                 <span className="font-semibold">
                                     {formatCurrency(
-                                        form.data.products?.reduce((sum: number, p: Product) => sum + (p.unit_price || 0) * (p.quantity || 0), 0) ||
+                                        form.data.products?.reduce((sum: number, p: Product) => sum + Number(p.unit_price || 0) * (p.quantity || 0), 0) ||
                                             0,
                                     )}
                                 </span>
@@ -302,6 +395,23 @@ export default function OrderRefundTab({
                 onConfirm={handleQuantityConfirm}
                 onCancel={handleQuantityCancel}
                 maxLength={6}
+            />
+
+            <ProductConditionDialog
+                open={isProductDialogOpen}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setIsProductDialogOpen(false);
+                        setSelectedProduct(null);
+                        setIsEditingProduct(false);
+                        setConditionError(undefined);
+                    }
+                }}
+                selectedProduct={selectedProduct}
+                onProductChange={setSelectedProduct}
+                onConfirm={handleConfirmProduct}
+                conditionError={conditionError}
+                conditions={productConditions}
             />
         </>
     );

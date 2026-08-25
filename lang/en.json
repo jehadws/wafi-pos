@@ -72,6 +72,7 @@
     "Barcode": "Barcode",
     "The product already exists on the table.": "The product already exists on the table.",
     "The specified quantity exceed the available quantity.": "The specified quantity exceed the available quantity.",
+    "The specified quantity exceeds the available quantity.": "The specified quantity exceeds the available quantity.",
     "Unable to proceed as the table is empty.": "Unable to proceed as the table is empty.",
     "More Details": "More Details",
     "Useful to describe better what are the reasons that leaded to this adjustment.": "Useful to describe better what are the reasons that leaded to this adjustment.",

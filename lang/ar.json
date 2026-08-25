@@ -192,6 +192,7 @@
     "Options": "خيارات",
     "The product already exists on the table.": "المنتج موجود بالفعل على الطاولة.",
     "The specified quantity exceed the available quantity.": "الكمية المحددة تتجاوز الكمية المتاحة.",
+    "The specified quantity exceeds the available quantity.": "الكمية المحددة تتجاوز الكمية المتاحة.",
     "Unable to proceed as the table is empty.": "غير قادر على المتابعة لأن الجدول فارغ.",
     "The stock adjustment is about to be made. Would you like to confirm ?": "تعديل المخزون على وشك أن يتم. هل تود التأكيد؟",
     "More Details": "المزيد من التفاصيل",
