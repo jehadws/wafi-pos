@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\View;
+use Inertia\Inertia;
 
 class CashRegistersController extends DashboardController
 {
@@ -36,12 +36,16 @@ class CashRegistersController extends DashboardController
 
     public function listRegisters()
     {
-        return RegisterCrud::table();
+        return Inertia::render('dashboard/cash-registers', [
+            'title' => __('Cash Registers'),
+        ]);
     }
 
     public function createRegister()
     {
-        return RegisterCrud::form();
+        return Inertia::render('dashboard/cash-registers/create', [
+            'title' => __('Create Cash Register'),
+        ]);
     }
 
     public function editRegister( Register $register )

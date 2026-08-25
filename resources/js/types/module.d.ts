@@ -489,6 +489,15 @@ type CustomerOrder = {
   updated_at: string,
 }
 
+type OrderInstalment = {
+  id: number;
+  order_id: number;
+  amount: number;
+  date: string; // ISO date string e.g. '2025-08-26'
+  paid: boolean;
+  payment_id: number | null;
+};
+
 type PaymentStatus =
   | 'paid'
   | 'partially_paid'
@@ -563,6 +572,7 @@ type Order = {
   author_name: string,
   customer: Customer,
   customer_first_name: string,
+  instalments?: OrderInstalment[];
 }
 
 

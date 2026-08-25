@@ -373,7 +373,10 @@ class OrdersController extends DashboardController
 
   public function listInstalments()
   {
-    return OrderInstalmentCrud::table();
+    return Inertia::render('dashboard/orders/instalments/page', [
+      'title' => __('Order Instalments'),
+      'description' => __('List of all scheduled instalments across orders.'),
+    ]);
   }
 
   public function getOrderInstalments(Order $order)

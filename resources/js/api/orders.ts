@@ -1,5 +1,5 @@
 import { AxiosRequestConfig } from 'axios';
-import { get, post, put } from './http';
+import { del, get, post, put } from './http';
 
 /**
  * Orders API — `/api/orders/*`
@@ -38,4 +38,30 @@ export const ordersApi = {
      */
     submit: (order: { id?: number | string } & Record<string, unknown>) =>
         order.id !== undefined ? put(`/orders/${order.id}`, order) : post('/orders', order),
+
+    /** Instalment sub-API — maps 1-to-1 with `/api/orders/{order}/instalments/*` */
+    instalments: {
+        /** Fetch all instalments for an order. */
+        list: (orderId: number | string) =>
+            get<OrderInstalment[]>(`/orders/${orderId}/instalments`),
+
+        /** Create a new instalment. */
+        create: (orderId: number | string, payload: { amount: number; date: string }) =>
+            post(`/orders/${orderId}/instalments`, { instalment: payload }),
+
+        /** Update an existing instalment (date / amount). */
+        update: (
+            orderId: number | string,
+            instalmentId: number | string,
+            payload: { amount: number; date: string },
+        ) => put(`/orders/${orderId}/instalments/${instalmentId}`, { instalment: payload }),
+
+        /** Delete an instalment. */
+        delete: (orderId: number | string, instalmentId: number | string) =>
+            del(`/orders/${orderId}/instalments/${instalmentId}`),
+
+        /** Mark an instalment as paid, optionally with a payment type identifier. */
+        pay: (orderId: number | string, instalmentId: number | string, payment_type?: string) =>
+            post(`/orders/${orderId}/instalments/${instalmentId}/pay`, { payment_type }),
+    },
 };
