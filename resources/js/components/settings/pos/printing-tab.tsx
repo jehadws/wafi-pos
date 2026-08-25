@@ -110,6 +110,30 @@ export function PrintingTab({ form, options }: PrintingTabProps) {
                         </SelectContent>
                     </Select>
                 </FormField>
+
+                <FormField
+                    label={t('Automatic Printing')}
+                    description={t(
+                        "If disabled, the receipt won't print automatically after a sale. It can still be printed manually from the order page.",
+                    )}
+                >
+                    <div className="flex gap-2">
+                        <Button
+                            type="button"
+                            variant={(form.data.printing.ns_jgrem_printing_auto ?? 'yes') === 'yes' ? 'default' : 'outline'}
+                            onClick={() => form.setData('printing.ns_jgrem_printing_auto', 'yes')}
+                        >
+                            {t('Yes')}
+                        </Button>
+                        <Button
+                            type="button"
+                            variant={(form.data.printing.ns_jgrem_printing_auto ?? 'yes') === 'no' ? 'default' : 'outline'}
+                            onClick={() => form.setData('printing.ns_jgrem_printing_auto', 'no')}
+                        >
+                            {t('No')}
+                        </Button>
+                    </div>
+                </FormField>
             </div>
         </div>
     );

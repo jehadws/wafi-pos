@@ -19,6 +19,9 @@ export type { CustomerSlice, CustomerSliceActions } from './use-customer-store';
 export { createSessionSlice } from './use-pos-session';
 export type { SessionSlice, SessionSliceState, SessionSliceActions } from './use-pos-session';
 
+export { useRegisterStore } from './use-register-store';
+export type { RegisterStore } from './use-register-store';
+
 export type { POSStore, POSStoreCoreState, POSStoreOrchestration } from './pos-store-types';
 
 // Application hooks

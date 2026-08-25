@@ -37,6 +37,16 @@ return [
                 'default' => __( 'Default Printing (web)' ),
             ] ),
             'description' => __( 'Determine what is the gateway used for printing.' ),
+        ], [
+            'name' => 'ns_jgrem_printing_auto',
+            'value' => ns()->option->get( 'ns_jgrem_printing_auto', 'yes' ),
+            'label' => __( 'Automatic Printing' ),
+            'type' => 'select',
+            'options' => Helper::kvToJsOptions( [
+                'yes' => __( 'Yes' ),
+                'no' => __( 'No' ),
+            ] ),
+            'description' => __( 'If disabled, the receipt won\'t print automatically after a sale. It can still be printed manually from the order page.' ),
         ],
     ] ),
 ];

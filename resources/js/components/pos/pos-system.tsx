@@ -4,6 +4,7 @@ import TotalsSummary from '@/components/pos/totals-summary';
 import PrimaryNavigation from '@/components/common/primary-navigation';
 import SecondaryNavigation from '@/components/pos/secondary-navigation';
 import { POS_OPTION_KEYS, isPriceWithTax } from '@/constants/pos-options';
+import { useRegisterStore } from '@/hooks/pos/use-register-store';
 import { usePOSShortcuts } from '@/hooks/use-pos-shortcuts';
 import { useRTL } from '@/hooks/use-rtl';
 import { useShallow } from 'zustand/react/shallow';
@@ -94,6 +95,7 @@ export default function PosSystem() {
 
   const { t } = useTranslation();
   const { isRTL } = useRTL();
+  const registersEnabled = options[POS_OPTION_KEYS.registersEnabled] === 'yes';
 
   // ─── Application Orchestration Hooks ─────────────────────────────────
   const checkout = usePosCheckout({
@@ -265,6 +267,9 @@ export default function PosSystem() {
         handleOpenSelectCustomerDialog={checkout.setShowSelectCustomerDialog}
         handleOpenOrderTypeDialog={checkout.setShowOrderTypeDialog}
         handleOpenOrderDialog={dialogs.setShowOrderDialog}
+        handleOpenRegisterSession={
+          registersEnabled ? () => useRegisterStore.getState().openSessionDialog() : undefined
+        }
       />
 
       {/* Main Content */}

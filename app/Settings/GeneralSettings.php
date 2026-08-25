@@ -184,7 +184,7 @@ class GeneralSettings extends SettingsPage
         ),
         FormInput::select(
           name: 'ns_currency_precision',
-          value: ns()->option->get('ns_currency_precision', '0'),
+          value: ns()->option->get('ns_currency_precision', '2'),
           options: collect([0, 1, 2, 3, 4, 5])->map(function ($index) {
             return [
               'label' => sprintf(__('%s numbers after the decimal'), $index),

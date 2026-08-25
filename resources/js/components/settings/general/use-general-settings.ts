@@ -3,6 +3,7 @@ import { useForm } from '@inertiajs/react';
 import { useTranslation } from '@/lib/i18n';
 import { settingsApi } from '@/api';
 import { toast } from 'sonner';
+import { applyTheme } from '@/hooks/use-appearance';
 import type { GeneralSettingsPayload } from './types';
 
 export function useGeneralSettings(initialSettings: GeneralSettingsPayload) {
@@ -65,6 +66,12 @@ export function useGeneralSettings(initialSettings: GeneralSettingsPayload) {
                     },
                 };
                 await settingsApi.update('general', data);
+                // Apply the default theme immediately so the admin sees
+                // the change without a reload.
+                const theme = data.identification.ns_default_theme;
+                if (theme === 'dark' || theme === 'light') {
+                    applyTheme(theme);
+                }
                 toast.success(t('The settings was saved successfully.'));
             } catch (e: any) {
                 toast.error(e?.message || t('An unexpected error occurred.'));

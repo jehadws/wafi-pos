@@ -32,8 +32,18 @@ export const POS_OPTION_KEYS = {
     // Customers
     defaultCustomer: 'ns_customers_default',
 
+    // Cash registers
+    registersEnabled: 'ns_jgrem_registers_enabled',
+    idleCounter: 'ns_jgrem_idle_counter',
+    disbursement: 'ns_jgrem_disbursement',
+    registerChangePaymentType: 'ns_jgrem_registers_default_change_payment_type',
+
+    // Layout
+    layout: 'ns_jgrem_layout',
+
     // Printing
     printingEnabledFor: 'ns_jgrem_printing_enabled_for',
+    printingDocument: 'ns_jgrem_printing_document',
     printingAuto: 'ns_jgrem_printing_auto',
 } as const;
 

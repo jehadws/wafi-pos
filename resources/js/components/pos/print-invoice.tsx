@@ -58,6 +58,10 @@ export function SimplePrintInvoice({ invoice }: SimplePrintInvoiceProps) {
     const storeName = generalSettings?.identification?.ns_store_name || 'JGREM POS';
     const storeAddress = generalSettings?.identification?.ns_store_address || '';
     const storePhone = generalSettings?.identification?.ns_store_phone || '';
+    const storeLogo =
+        generalSettings?.identification?.ns_store_square_logo ||
+        (options?.ns_invoice_receipt_logo as string | undefined) ||
+        '';
     const receiptFooter = options?.ns_invoice_receipt_footer || '';
 
     // Build standard receipt data payload
@@ -65,6 +69,7 @@ export function SimplePrintInvoice({ invoice }: SimplePrintInvoiceProps) {
         storeName,
         storeAddress,
         storePhone,
+        storeLogo: storeLogo || undefined,
         orderCode: invoice.orderReceipt,
         date: invoice.date ? new Date(invoice.date).toLocaleString() : new Date().toLocaleString(),
         items: invoice.items.map((item) => ({

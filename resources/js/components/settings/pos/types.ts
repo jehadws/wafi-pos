@@ -84,6 +84,7 @@ export interface PosSettingsOptions {
     ns_jgrem_printing_document: SelectOption[];
     ns_jgrem_printing_enabled_for: SelectOption[];
     ns_jgrem_printing_gateway: SelectOption[];
+    ns_jgrem_printing_auto: SelectOption[];
     ns_jgrem_registers_enabled: SelectOption[];
     ns_jgrem_idle_counter: SelectOption[];
     ns_jgrem_disbursement: SelectOption[];

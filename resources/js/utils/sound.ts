@@ -5,6 +5,7 @@ const audioCache = new Map<string, HTMLAudioElement>();
 
 export function playSound(url: string | undefined | null): void {
     if (!url || typeof window === 'undefined' || url.trim().length === 0) return;
+    if (url === 'disabled') return; // settings sentinel — audio disabled
 
     try {
         let audio = audioCache.get(url);

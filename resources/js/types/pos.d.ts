@@ -129,8 +129,6 @@ interface NsPosOptions {
   ns_orders_allow_partial: 'yes' | 'no';
   ns_orders_allow_unpaid: 'yes' | 'no';
   ns_jgrem_order_types: string[]; // from OrdersService::getTypeLabels()
-  ns_jgrem_order_sms: 'yes' | 'no';
-  ns_jgrem_sound_enabled: 'yes' | 'no';
   ns_jgrem_quick_product: 'yes' | 'no';
   ns_jgrem_quick_product_default_unit: number; // Unit id
   ns_jgrem_price_with_tax: 'yes' | 'no';
@@ -148,6 +146,7 @@ interface NsPosOptions {
   ns_jgrem_tax_group: number | string | null; // TaxGroup id
   ns_jgrem_tax_type: 'inclusive' | 'exclusive' | false;
   ns_jgrem_printing_gateway: 'default';
+  ns_jgrem_printing_auto: 'yes' | 'no';
   ns_jgrem_show_quantity: boolean;
   ns_jgrem_new_item_audio: '' | 'disabled' | string; // '' or audio URL
   ns_jgrem_complete_sale_audio: '' | 'disabled' | string;
@@ -155,6 +154,8 @@ interface NsPosOptions {
   ns_jgrem_allow_wholesale_price: boolean;
   ns_jgrem_allow_decimal_quantities: boolean;
   ns_jgrem_force_autofocus: boolean;
+  ns_jgrem_items_merge: 'yes' | 'no' | boolean;
+  ns_jgrem_layout: 'grocery_shop' | 'clothing_shop' | string;
 }
 
 

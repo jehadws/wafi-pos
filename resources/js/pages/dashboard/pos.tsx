@@ -1,8 +1,11 @@
 import PosSystem from '@/components/pos/pos-system';
 import ErrorBoundary from '@/components/feedback/error-boundary';
+import { OpenRegisterDialog } from '@/components/pos/open-register-dialog';
+import { RegisterSessionDialog } from '@/components/pos/register-session-dialog';
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { usePOS } from '@/hooks/usePOS';
 import { usePosBeforeUnload } from '@/hooks/use-pos-before-unload';
+import { useRegisterSession } from '@/hooks/pos/use-register-session';
 import { useTranslation } from '@/lib/i18n';
 import { Head, usePage } from '@inertiajs/react';
 import { useEffect } from 'react';
@@ -16,10 +19,13 @@ const ORDER_TYPE_MAP: Record<string, Omit<OrderTypeObj, 'selected'>> = {
 
 export default function PosPage() {
   const { t } = useTranslation();
-  const { settings, options } = usePage().props as { settings: any; options: NsPosOptions };
+  const { settings, options } = usePage().props as unknown as { settings: any; options: NsPosOptions };
   const { defineOptions, defineSettings, initialize, processInitialQueue, setAutoMerge, setOrderType, order } = usePOS();
 
   usePosBeforeUnload();
+
+  // Cash-register session: gate, idle auto-lock and order register stamping.
+  const registerSession = useRegisterSession(options);
 
   // Sync options & settings into the store whenever they change (e.g. Inertia navigation).
   useEffect(() => {
@@ -61,10 +67,12 @@ export default function PosPage() {
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
       </Head>
       <main className="bg-background min-h-screen">
+        {registerSession.requiresOpenRegister && <OpenRegisterDialog onOpened={() => undefined} />}
         <ErrorBoundary fallbackTitle={t('Point of Sale Error')} onReset={() => usePOS.getState().reset()}>
           <PosSystem />
         </ErrorBoundary>
       </main>
+      <RegisterSessionDialog onClosed={() => undefined} />
       <Toaster />
     </>
   );

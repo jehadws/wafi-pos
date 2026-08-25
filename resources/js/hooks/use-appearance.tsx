@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import Settings from '@/lib/settings';
 
 export type Appearance = 'light' | 'dark' | 'system';
 
@@ -19,7 +20,7 @@ const setCookie = (name: string, value: string, days = 365) => {
   document.cookie = `${name}=${value};path=/;max-age=${maxAge};SameSite=Lax`;
 };
 
-const applyTheme = (appearance: Appearance) => {
+export const applyTheme = (appearance: Appearance) => {
   const isDark = appearance === 'dark' || (appearance === 'system' && prefersDark());
 
   document.documentElement.classList.toggle('dark', isDark);
@@ -38,8 +39,26 @@ const handleSystemThemeChange = () => {
   applyTheme(currentAppearance || 'system');
 };
 
+/**
+ * Reads the admin-configured default theme (General settings →
+ * "ns_default_theme"). Falls back to 'system' when unset.
+ */
+const getConfiguredTheme = (): Appearance => {
+  try {
+    const configured = Settings.get()?.identification?.ns_default_theme;
+    if (configured === 'dark' || configured === 'light') {
+      return configured;
+    }
+  } catch {
+    // Settings singleton not initialized yet — fall through
+  }
+  return 'system';
+};
+
 export function initializeTheme() {
-  const savedAppearance = (localStorage.getItem('appearance') as Appearance) || 'system';
+  // An explicit per-device choice (toggle button) wins over the
+  // admin-configured default theme.
+  const savedAppearance = (localStorage.getItem('appearance') as Appearance) || getConfiguredTheme();
 
   applyTheme(savedAppearance);
 

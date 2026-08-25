@@ -1,13 +1,16 @@
 import { Button } from '@/components/ui/button';
+import { useRegisterStore } from '@/hooks/pos/use-register-store';
 import { useTranslation } from '@/lib/i18n';
 import { router } from '@inertiajs/react';
-import { LayoutDashboard, RotateCcw, ShoppingCart, Truck, Users } from 'lucide-react';
+import { Banknote, LayoutDashboard, RotateCcw, ShoppingCart, Truck, Users } from 'lucide-react';
 
 interface PrimaryNavigationProps {
     resetCart: () => void;
     handleOpenSelectCustomerDialog: (open: boolean) => void;
     handleOpenOrderDialog: (open: boolean) => void;
     handleOpenOrderTypeDialog: (open: boolean) => void;
+    /** Opens the cash-register session dialog (registers enabled only). */
+    handleOpenRegisterSession?: () => void;
 }
 
 export default function PrimaryNavigation({
@@ -15,8 +18,10 @@ export default function PrimaryNavigation({
     handleOpenOrderTypeDialog,
     handleOpenSelectCustomerDialog,
     handleOpenOrderDialog,
+    handleOpenRegisterSession,
 }: PrimaryNavigationProps) {
     const { t } = useTranslation();
+    const currentRegister = useRegisterStore((s) => s.currentRegister);
     return (
         <div className="bg-background border-b p-2">
             <div className="flex space-x-2">
@@ -36,6 +41,12 @@ export default function PrimaryNavigation({
                     <Users className="mr-2 h-4 w-4" />
                     {t('Customers')}
                 </Button>
+                {handleOpenRegisterSession && currentRegister && (
+                    <Button variant={'outline'} className="flex items-center" onClick={handleOpenRegisterSession}>
+                        <Banknote className="mr-2 h-4 w-4" />
+                        {currentRegister.name}
+                    </Button>
+                )}
                 <Button variant="destructive" onClick={resetCart} className="ml-auto flex items-center">
                     <RotateCcw className="mr-2 h-4 w-4" />
                     {t('Reset')}

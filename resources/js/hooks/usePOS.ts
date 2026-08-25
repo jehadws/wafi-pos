@@ -530,12 +530,16 @@ export const usePOS = create<POSStore>((set, get) => ({
     // Receipt printing (stub — wired to print-agent-service in Step 3)
     // ─────────────────────────────────────────────────────────────────────────
 
-    printOrderReceipt: (order: Order, mode: string) => {
+    printOrderReceipt: (order: Order, mode?: string) => {
         const { options } = get();
 
         if (options[POS_OPTION_KEYS.printingEnabledFor] === 'disabled') {
             return false;
         }
+
+        // Fall back to the configured printed document when the caller
+        // doesn't explicitly request a mode.
+        const resolvedMode = mode || (options[POS_OPTION_KEYS.printingDocument] as string) || 'sale';
 
         const shouldPrint =
             options[POS_OPTION_KEYS.printingEnabledFor] === 'all_orders' ||
@@ -548,7 +552,7 @@ export const usePOS = create<POSStore>((set, get) => ({
 
         // Delegate to PrintAgentService — maps Order → FormattedReceiptData internally
         printAgentService
-            .printOrderReceipt(order, mode, {
+            .printOrderReceipt(order, resolvedMode, {
                 autoPrintOnSale: options[POS_OPTION_KEYS.printingAuto] ?? true,
             })
             .catch((err: Error) => {

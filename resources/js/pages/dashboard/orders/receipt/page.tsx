@@ -9,7 +9,7 @@ export default function OrderReceiptPage({ order, optionsService, title }: any) 
     const { t } = useTranslation();
     const generalSettings = Settings.get();
     const storeName = generalSettings?.identification?.ns_store_name || 'JGREM POS';
-    const receiptLogo = optionsService?.ns_invoice_receipt_logo || '';
+    const receiptLogo = optionsService?.ns_invoice_receipt_logo || generalSettings?.identification?.ns_store_square_logo || '';
     const receiptFooter = optionsService?.ns_invoice_receipt_footer || '';
     const showTaxBreakdown = optionsService?.ns_invoice_display_tax_breakdown === 'yes';
 

@@ -49,6 +49,7 @@ export interface FormattedReceiptData {
     storeAddress?: string;
     storePhone?: string;
     storeEmail?: string;
+    storeLogo?: string;
     orderCode?: string;
     date?: string;
     cashier?: string;

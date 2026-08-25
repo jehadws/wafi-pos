@@ -8,6 +8,8 @@
 export { http } from './http';
 export { categoriesApi } from './categories';
 export { crudApi } from './crud';
+export { cashRegistersApi } from './cash-registers';
+export type { ApiRegister, ApiRegisterHistory, SessionSummaryEntry } from './cash-registers';
 export { customersApi } from './customers';
 export { mediasApi } from './medias';
 export { ordersApi } from './orders';

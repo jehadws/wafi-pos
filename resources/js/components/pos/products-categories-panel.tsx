@@ -23,6 +23,8 @@ type Props = {
 export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
     const { t } = useTranslation();
     const { addToCart: addProductToCart, openDialog, options, processingAddQueue } = usePOS();
+    // `clothing_shop` layout: products show a badge-style name + price below the image.
+    const isClothingLayout = options[POS_OPTION_KEYS.layout] === 'clothing_shop';
     const [categories, setCategories] = useState<CategoryProduct[]>([]);
     const [breadcrumb, setBreadcrumb] = useState<CategoryProduct[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
@@ -180,22 +182,30 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
 
             {hasCategories() ? (
                 <ScrollArea className="min-h-0 w-full flex-1">
-                    <div className="grid grid-cols-2 gap-3 p-3 md:grid-cols-3 lg:grid-cols-5">
+                    <div className={isClothingLayout
+                        ? 'grid grid-cols-3 gap-2 p-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
+                        : 'grid grid-cols-2 gap-3 p-3 md:grid-cols-3 lg:grid-cols-5'}>
                         {categories.map((category) => (
                             <div
                                 key={category.id}
-                                className="bg-muted/30 hover:bg-muted active:scale-95 flex cursor-pointer flex-col rounded-lg border shadow-sm transition-all hover:shadow-md"
+                                className={`bg-muted/30 hover:bg-muted active:scale-95 flex cursor-pointer rounded-lg border shadow-sm transition-all hover:shadow-md ${
+                                    isClothingLayout
+                                        ? 'flex-col p-1 pb-0'
+                                        : 'flex-col'
+                                }`}
                                 onClick={() => loadCategories(category)}
                             >
-                                <div className="bg-muted relative aspect-video overflow-hidden rounded-t-lg">
+                                <div className={isClothingLayout
+                                    ? 'relative aspect-square overflow-hidden rounded-lg'
+                                    : 'bg-muted relative aspect-video overflow-hidden rounded-t-lg'}>
                                     <img
                                         src={category.preview_url || '/placeholder.svg'}
                                         alt={category.name}
                                         className="h-full w-full object-cover"
                                     />
                                 </div>
-                                <div className="p-3">
-                                    <h1 className="text-center text-sm leading-tight font-semibold">{category.name}</h1>
+                                <div className={isClothingLayout ? 'p-2 text-center' : 'p-3'}>
+                                    <h1 className={`text-center leading-tight font-semibold ${isClothingLayout ? 'text-xs' : 'text-sm'}`}>{category.name}</h1>
                                 </div>
                             </div>
                         ))}
@@ -205,7 +215,9 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
                 <EmptyState onCreateCategories={() => {}} />
             ) : (
                 <ScrollArea className="min-h-0 w-full flex-1">
-                    <div className="grid grid-cols-2 gap-3 p-3 md:grid-cols-3 lg:grid-cols-4">
+                    <div className={isClothingLayout
+                        ? 'grid grid-cols-3 gap-2 p-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
+                        : 'grid grid-cols-2 gap-3 p-3 md:grid-cols-3 lg:grid-cols-4'}>
                         {products.map((product) => {
                             const unitQuantity = product.unit_quantities?.[0];
                             const available = unitQuantity?.quantity ?? 0;
@@ -215,27 +227,43 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
                             return (
                                 <div
                                     key={product.id}
-                                    className={`bg-muted/30 active:scale-95 flex flex-col rounded-lg border shadow-sm transition-all hover:shadow-md ${
+                                    className={`bg-muted/30 active:scale-95 flex rounded-lg border shadow-sm transition-all hover:shadow-md ${
                                         isAvailable ? 'hover:bg-muted cursor-pointer' : 'cursor-not-allowed opacity-50'
+                                    } ${
+                                        isClothingLayout
+                                            ? 'flex-col p-1 pb-0'
+                                            : 'flex-col'
                                     }`}
                                     onClick={() => isAvailable && handleClickOnProduct(product)}
                                 >
-                                    <div className="bg-muted relative aspect-video overflow-hidden rounded-t-lg">
+                                    <div className={isClothingLayout
+                                        ? 'relative aspect-square overflow-hidden rounded-lg'
+                                        : 'bg-muted relative aspect-video overflow-hidden rounded-t-lg'}>
                                         <img
                                             src={(product as any).preview_url || '/placeholder.svg'}
                                             alt={product.name}
                                             className="h-full w-full object-cover"
                                         />
                                     </div>
-                                    <div className="flex flex-1 flex-col justify-between p-3">
-                                        <h1 className="text-center text-sm leading-tight font-semibold">{product.name}</h1>
-                                        <div className="mt-2 flex items-center justify-between text-xs">
-                                            <span className="font-semibold text-green-600 dark:text-green-400">{formatCurrency(price)}</span>
-                                            <span className={`${isAvailable ? 'text-muted-foreground' : 'text-red-500'}`}>
-                                                {available} {t('available')}
-                                            </span>
+                                    {isClothingLayout ? (
+                                        <div className="flex flex-1 flex-col items-center p-2 text-center">
+                                            <h1 className="text-xs leading-tight font-medium break-words">{product.name}</h1>
+                                            <span className="text-xs font-semibold text-primary">{formatCurrency(price)}</span>
+                                            {!isAvailable && (
+                                                <span className="text-red-500 text-xs">{t('Out of stock')}</span>
+                                            )}
                                         </div>
-                                    </div>
+                                    ) : (
+                                        <div className="flex flex-1 flex-col justify-between p-3">
+                                            <h1 className="text-center text-sm leading-tight font-semibold">{product.name}</h1>
+                                            <div className="mt-2 flex items-center justify-between text-xs">
+                                                <span className="font-semibold text-green-600 dark:text-green-400">{formatCurrency(price)}</span>
+                                                <span className={`${isAvailable ? 'text-muted-foreground' : 'text-red-500'}`}>
+                                                    {available} {t('available')}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}

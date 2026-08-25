@@ -159,7 +159,9 @@ export default function SettingsGeneral() {
                                 </FormField>
                                 <FormField
                                     label={t('Quotation Expiration')}
-                                    description={t('Quotations will get deleted after they defined they has reached.')}
+                                    description={t(
+                                        'Hold orders older than the selected period will be cleared automatically.',
+                                    )}
                                 >
                                     <Select
                                         value={form.data.general.ns_orders_quotation_expiration || ''}

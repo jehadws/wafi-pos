@@ -79,6 +79,14 @@ export function ThermalReceiptPreview({ data, onClose, autoPrint = false }: Ther
             >
                 {/* Store Header */}
                 <div className="text-center font-bold">
+                    {data.storeLogo && (
+                        <img
+                            src={data.storeLogo}
+                            alt={data.storeName || 'Store logo'}
+                            className="mx-auto mb-1 object-contain"
+                            style={{ maxHeight: '60px', maxWidth: '140px' }}
+                        />
+                    )}
                     <div className="text-lg uppercase tracking-wider">{data.storeName || 'JGREM POS'}</div>
                     {data.storeAddress && <div className="text-xs font-normal text-neutral-600 dark:text-neutral-400">{data.storeAddress}</div>}
                     {data.storePhone && <div className="text-xs font-normal text-neutral-600 dark:text-neutral-400">Tel: {data.storePhone}</div>}

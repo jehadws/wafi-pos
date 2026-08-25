@@ -48,6 +48,7 @@ class PosSettings extends SettingsPage
         'ns_jgrem_printing_document' => ns()->option->get('ns_jgrem_printing_document'),
         'ns_jgrem_printing_enabled_for' => ns()->option->get('ns_jgrem_printing_enabled_for'),
         'ns_jgrem_printing_gateway' => ns()->option->get('ns_jgrem_printing_gateway'),
+        'ns_jgrem_printing_auto' => ns()->option->get('ns_jgrem_printing_auto'),
       ],
       'registers' => [
         'ns_jgrem_registers_enabled' => ns()->option->get('ns_jgrem_registers_enabled'),
@@ -459,6 +460,10 @@ class PosSettings extends SettingsPage
       ]),
       'ns_jgrem_printing_gateway' => Helper::kvToJsOptions([
         'default' => __('Default Printing (web)'),
+      ]),
+      'ns_jgrem_printing_auto' => Helper::kvToJsOptions([
+        'yes' => __('Yes'),
+        'no' => __('No'),
       ]),
       'ns_jgrem_registers_enabled' => Helper::kvToJsOptions([
         'yes' => __('Yes'),

@@ -820,7 +820,7 @@ class OrdersService
          * We should check if the order allow instalments. This is only done if
          * we've enabled strict instalments.
          */
-        if ( $order->instalments->count() > 0 && $order->support_instalments && ns()->option->get( 'ns_orders_strict_instalments', 'no' ) === true ) {
+        if ( $order->instalments->count() > 0 && $order->support_instalments && ns()->option->get( 'ns_orders_strict_instalments', 'no' ) === 'yes' ) {
             $paymentToday = $order->instalments()
                 ->where( 'paid', false )
                 ->where( 'date', '>=', ns()->date->copy()->startOfDay()->toDateTimeString() )
@@ -965,12 +965,12 @@ class OrdersService
          */
         if ( $totalPayments < $total ) {
             if (
-                $this->optionsService->get( 'ns_orders_allow_partial', true ) === false &&
+                $this->optionsService->get( 'ns_orders_allow_partial', 'yes' ) !== 'yes' &&
                 $totalPayments > 0
             ) {
                 throw new NotAllowedException( __( 'Unable to proceed. Partially paid orders aren\'t allowed. This option could be changed on the settings.' ) );
             } elseif (
-                $this->optionsService->get( 'ns_orders_allow_incomplete', true ) === false &&
+                $this->optionsService->get( 'ns_orders_allow_unpaid', 'yes' ) !== 'yes' &&
                 $totalPayments === 0
             ) {
                 throw new NotAllowedException( __( 'Unable to proceed. Unpaid orders aren\'t allowed. This option could be changed on the settings.' ) );
@@ -1483,10 +1483,50 @@ class OrdersService
     }
 
     /**
-     * @todo we need to be able to
-     * change the code format
+     * Generates the order code according to the
+     * "ns_orders_code_type" defined on the orders settings.
      */
     public function generateOrderCode( $order )
+    {
+        switch ( ns()->option->get( 'ns_orders_code_type', 'date_sequential' ) ) {
+            case 'random_code':
+                return strtoupper( Str::random( 8 ) );
+            case 'number_sequential':
+                return $this->__nextGlobalSequentialCode();
+            default:
+                return $this->__nextDateSequentialCode( $order );
+        }
+    }
+
+    /**
+     * Returns a globally incremented sequential code.
+     */
+    protected function __nextGlobalSequentialCode(): string
+    {
+        $today = ns()->date->toDateString();
+        $row = DB::table( 'jgrem_orders_count' )
+            ->where( 'date', 'global' );
+
+        if ( ! $row->exists() ) {
+            DB::table( 'jgrem_orders_count' )
+                ->insert( [
+                    'date' => 'global',
+                    'count' => 0,
+                ] );
+        }
+
+        $row->increment( 'count' );
+        $count = (int) ( DB::table( 'jgrem_orders_count' )
+            ->where( 'date', 'global' )
+            ->value( 'count' ) );
+
+        return str_pad( (string) $count, 6, '0', STR_PAD_LEFT );
+    }
+
+    /**
+     * Returns a daily sequential code prefixed by the order date.
+     */
+    protected function __nextDateSequentialCode( $order ): string
     {
         $now = Carbon::parse( $order->created_at );
         $today = $now->toDateString();
