@@ -14,7 +14,7 @@
 import { OrderProduct } from '@/types/models/order-product';
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { usersApi } from '@/api';
-import { recomputeProducts } from '@/services/order-builder';
+import { computeItem } from '@/services/cart-engine';
 import { playSound } from '@/utils/sound';
 import type { POSStore } from './pos-store-types';
 import { StateCreator } from 'zustand';
@@ -88,8 +88,13 @@ export const createCartSlice: StateCreator<POSStore, [], [], CartSlice> = (set, 
             total_tax_value: product.total_tax_value || 0,
             mode: product.mode || 'normal',
             order_id: product.order_id || null,
-            $original: product.$original || (() => product),
-            $quantities: product.$quantities || undefined,
+            quantities: product.quantities,
+            source: product.source ?? {
+                id: product.id || product.product_id || 0,
+                category_id: (product as any).category_id,
+                tax_type: (product as any).tax_type,
+                tax_group: (product as any).tax_group ?? null,
+            },
             unit_quantity_id: product.unit_quantity_id || 0,
             _uuid:
                 product._uuid ||
@@ -209,7 +214,7 @@ export const createCartSlice: StateCreator<POSStore, [], [], CartSlice> = (set, 
                     products.filter((product: OrderProduct) =>
                         coupon.categories
                             .map((p: any) => p.category_id)
-                            .includes(product.$original?.()?.category_id),
+                            .includes(product.source?.category_id),
                     ).length > 0;
                 if (!isCategoryValid && unmatchedConditions.indexOf(coupon) === -1) {
                     unmatchedConditions.push(coupon);
@@ -227,7 +232,8 @@ export const createCartSlice: StateCreator<POSStore, [], [], CartSlice> = (set, 
     },
 
     recomputeProducts: (products = null) => {
-        const options = get().options ?? {};
-        return recomputeProducts(products ?? get().products, options);
+        const options = (get().options ?? {}) as any;
+        const items = products ?? get().products;
+        return items.map(item => computeItem(item, options));
     },
 });

@@ -26,9 +26,9 @@ import { Payment } from '@/types/models/payment';
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { ordersApi, taxesApi } from '@/api';
 import printAgentService from '@/services/print-agent-service';
-import { computeOrderTaxGroup, computeOrderTaxes } from '@/services/tax';
-import { sumProductsTotals } from '@/services/pricing';
-import { defineQuantities } from '@/services/order-builder';
+import { computeOrderTaxes, computeOrderTaxGroup } from '@/services/cart-engine';
+import { sumProductsTotals } from '@/services/cart-engine';
+import { defineQuantities } from '@/services/order-quantities';
 import { executeOrderSubmission } from '@/services/order-submission';
 
 // Slices
@@ -148,7 +148,7 @@ export const usePOS = create<POSStore>((set, get) => ({
                 let order: Order = sumProductsTotals(
                     { ...get().order },
                     get().products,
-                    get().options,
+                    (get().options ?? {}) as any,
                 );
 
                 // Compute coupon totals immutably
@@ -229,7 +229,7 @@ export const usePOS = create<POSStore>((set, get) => ({
 
     computeTaxes: async () => {
         let order: Order = get().order;
-        const options = get().options;
+        const options = (get().options ?? {}) as any;
 
         if (order.tax_group_id === undefined || order.tax_group_id === null) {
             order = computeOrderTaxes(order, options);
@@ -431,22 +431,30 @@ export const usePOS = create<POSStore>((set, get) => ({
                 };
             }
 
-            orderProduct.$original = () => orderProduct.product;
-            orderProduct.$quantities = () => {
-                const unitQuantity = orderProduct.product.unit_quantities.filter(
-                    (uq: any) =>
-                        +uq.id === +orderProduct.unit_quantity_id || uq.id === undefined,
-                )[0];
-
-                if (orderProduct.mode === 'custom') {
-                    unitQuantity.custom_price_edit = orderProduct.unit_price;
-                    unitQuantity.custom_price_with_tax = orderProduct.price_with_tax;
-                    unitQuantity.custom_price_without_tax = orderProduct.price_without_tax;
-                    unitQuantity.custom_price_tax = orderProduct.tax_value;
-                }
-
-                return unitQuantity;
+            // Serializable source snapshot (replaces $original closure)
+            orderProduct.source = {
+                id: orderProduct.product?.id ?? orderProduct.product_id ?? 0,
+                category_id: orderProduct.product?.category_id ?? 0,
+                tax_type: orderProduct.product?.tax_type ?? orderProduct.tax_type ?? '',
+                tax_group: orderProduct.product?.tax_group ?? null,
             };
+
+            // Serializable quantities snapshot (replaces $quantities closure)
+            const unitQuantity = (orderProduct.product?.unit_quantities ?? []).filter(
+                (uq: any) =>
+                    +uq.id === +orderProduct.unit_quantity_id || uq.id === undefined,
+            )[0];
+
+            if (unitQuantity) {
+                const uq = { ...unitQuantity };
+                if (orderProduct.mode === 'custom') {
+                    uq.custom_price_edit = orderProduct.unit_price;
+                    uq.custom_price_with_tax = orderProduct.price_with_tax;
+                    uq.custom_price_without_tax = orderProduct.price_without_tax;
+                    uq.custom_price_tax = orderProduct.tax_value;
+                }
+                orderProduct.quantities = uq;
+            }
             products.push(orderProduct);
         }
 

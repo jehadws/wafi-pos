@@ -57,10 +57,10 @@ export default function CartItem({ item, updateDiscountPercentage, updatePrice, 
   };
 
   const handleToggleWholesale = () => {
-    const quantities = item.$quantities ? item.$quantities() : null;
+    const quantities = item.quantities ?? null;
 
     if (item.mode === 'wholesale') {
-      // Switch back to normal — use $quantities if available, else keep current price
+      // Switch back to normal — use quantities snapshot if available, else keep current price
       const salePrice = quantities
         ? quantities.sale_price_without_tax || quantities.sale_price || item.unit_price
         : item.unit_price;
@@ -69,7 +69,7 @@ export default function CartItem({ item, updateDiscountPercentage, updatePrice, 
       usePOS.getState().updateProduct(item, { mode: 'normal' });
       toast.info(t('Switched to retail price'));
     } else {
-      // Switch to wholesale — use $quantities if available
+      // Switch to wholesale — use quantities snapshot if available
       const wholesalePrice = quantities
         ? quantities.wholesale_price_without_tax || quantities.wholesale_price || 0
         : 0;

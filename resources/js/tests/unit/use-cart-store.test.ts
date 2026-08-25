@@ -96,4 +96,42 @@ describe('use-cart-store (Zustand Cart Slice)', () => {
         usePOS.getState().clearCart();
         expect(usePOS.getState().products).toHaveLength(0);
     });
+
+    it('cart product state is JSON-serializable after add and update', async () => {
+        const store = usePOS.getState();
+        await store.addToCart({
+            id: 7,
+            name: 'Serializable Item',
+            unit_price: 25,
+            price_with_tax: 25,
+            price_without_tax: 25,
+            total_price: 25,
+            quantity: 1,
+            category_id: 3,
+            tax_type: 'inclusive',
+            quantities: { sale_price_edit: 25 },
+        });
+
+        usePOS.getState().updateProduct(usePOS.getState().products[0], { quantity: 4 });
+
+        const products = usePOS.getState().products;
+        expect(products).toHaveLength(1);
+
+        // No function properties may exist anywhere in the cart line
+        const findFunctions = (obj: any): string[] =>
+            Object.entries(obj).flatMap(([key, value]) =>
+                typeof value === 'function'
+                    ? [key]
+                    : value !== null && typeof value === 'object'
+                      ? findFunctions(value)
+                      : [],
+            );
+        expect(findFunctions(products[0])).toEqual([]);
+
+        // Round-trip must preserve computed values
+        const revived = JSON.parse(JSON.stringify(products[0]));
+        expect(revived.quantity).toBe(4);
+        expect(revived.unit_price).toBe(products[0].unit_price);
+        expect(revived.source.category_id).toBe(3);
+    });
 });
