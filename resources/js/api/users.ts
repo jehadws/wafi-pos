@@ -1,4 +1,4 @@
-import { del, get, post } from './http';
+import { del, get, post, put } from './http';
 
 /**
  * Users API — `/api/users/*`
@@ -12,6 +12,13 @@ export const usersApi = {
 
     /** Check whether the current user holds a given permission. */
     checkPermission: (permission: string) => post('/users/check-permission/', { permission }),
+
+    /**
+     * Update role permissions.
+     * Payload is keyed by role namespace, with inner keys being permission namespaces:
+     * { [roleNamespace]: { [permissionNamespace]: boolean } }
+     */
+    updateRoles: (payload: Record<string, Record<string, boolean>>) => put('/users/roles', payload),
 
     /** Generate a personal API token. */
     createToken: (name: string) => post('/users/create-token', { name }),

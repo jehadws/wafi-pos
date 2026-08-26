@@ -36,7 +36,7 @@ class CashRegistersController extends DashboardController
 
     public function listRegisters()
     {
-        return Inertia::render('dashboard/cash-registers', [
+        return Inertia::render('dashboard/cash-registers/page', [
             'title' => __('Cash Registers'),
         ]);
     }
@@ -54,7 +54,9 @@ class CashRegistersController extends DashboardController
             throw new NotAllowedException( __( 'Unable to edit a register that is currently in use' ) );
         }
 
-        return RegisterCrud::form( $register );
+        return Inertia::render('dashboard/cash-registers/edit', [
+            'register' => $register,
+        ]);
     }
 
     public function getRegisters( $register_id = null )
@@ -219,29 +221,22 @@ class CashRegistersController extends DashboardController
 
                 $totalCashChange = $history->where( 'action', RegisterHistory::ACTION_ORDER_CHANGE )->sum( 'value' );
 
-                $totalPaymentTypeSummary = $historyRequest
-                    ->whereIn( 'action', [
-                        RegisterHistory::ACTION_ORDER_PAYMENT,
-                    ] )
+                $totalPaymentTypeSummary = $register->history()
+                    ->leftJoin( 'jgrem_payments_types', 'jgrem_registers_history.payment_type_id', '=', 'jgrem_payments_types.id' )
+                    ->where( 'jgrem_registers_history.id', '>=', $lastOpening->id )
+                    ->where( 'jgrem_registers_history.action', RegisterHistory::ACTION_ORDER_PAYMENT )
                     ->select( [
-                        DB::raw( 'SUM(value) as value' ),
+                        DB::raw( 'SUM(jgrem_registers_history.value) as value' ),
                         'jgrem_payments_types.label as label',
-                        'action',
-                        'jgrem_registers_history.description as description',
+                        'jgrem_registers_history.action as action',
                     ] )
-                    ->groupBy( [ 'action', 'jgrem_payments_types.label', 'description' ] )
+                    ->groupBy( [ 'jgrem_registers_history.action', 'jgrem_payments_types.label' ] )
                     ->get()
                     ->map( function ( $group ) {
-                        $color = 'info';
-
-                        if ( $group->action === RegisterHistory::ACTION_ORDER_PAYMENT ) {
-                            $color = 'success';
-                        }
-
                         return [
                             'label' => sprintf( __( 'Total %s' ), $group->label ),
-                            'value' => $group->value,
-                            'color' => $color,
+                            'value' => (float) $group->value,
+                            'color' => 'success',
                         ];
                     } );
 

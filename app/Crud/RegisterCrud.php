@@ -45,6 +45,12 @@ class RegisterCrud extends CrudService
     protected $namespace = 'ns.cash-registers';
 
     /**
+     * Route to redirect after
+     * a crud submission
+     */
+    public $to_route = 'ns.dashboard.registers-list';
+
+    /**
      * Model Used
      *
      * @param  string

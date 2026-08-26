@@ -1,142 +1,213 @@
-import PermissionMatrixComponent from '@/components/permissions-manager/permission-matrix';
+import PermissionMatrix from '@/components/permissions-manager/permission-matrix';
 import PermissionSearch from '@/components/permissions-manager/permission-search';
-import { Button } from '@/components/ui/button';
+import { buildInitialMatrix } from '@/components/permissions-manager/types';
+import type { PermissionMatrix as PermissionMatrixData } from '@/components/permissions-manager/types';
+import { usersApi } from '@/api/users';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { Head, usePage } from '@inertiajs/react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-interface PermissionManagerProps {
-    permissions: Permission[];
-    roles: RoleWithPermissions[];
-}
-
-
-
-type PermissionMatrix = {
-    [roleId: number]: {
-        [permissionId: number]: boolean;
-    };
-};
-
 export default function PermissionManager() {
-    const { title, permissions, roles } = usePage<PermissionManagerProps>().props;
+    const { title, permissions, roles } = usePage<{
+        title?: string;
+        permissions: Permission[];
+        roles: RoleWithPermissions[];
+    }>().props;
     const { t } = useTranslation();
 
     const breadcrumbs = [
         { title: t('Dashboard'), href: '/dashboard' },
         { title: t('Roles'), href: '/dashboard/roles' },
     ];
+
     const [searchQuery, setSearchQuery] = useState('');
-    const [matrix, setMatrix] = useState<PermissionMatrix>(() => {
-        // Initialize matrix from roles data
-        const initialMatrix: PermissionMatrix = {};
-        roles.forEach((role) => {
-            initialMatrix[role.id] = {};
-            role.permissions.forEach((permissionId) => {
-                initialMatrix[role.id][permissionId] = true;
-            });
-        });
-        return initialMatrix;
-    });
+    const [matrix, setMatrix] = useState<PermissionMatrixData>(() => buildInitialMatrix(roles));
 
-    const onSave = (matrix: PermissionMatrix) => {
+    /**
+     * Track which role IDs have local unsaved changes.
+     */
+    const [dirtyRoles, setDirtyRoles] = useState<Set<number>>(new Set());
 
-        // Convert matrix back to roles format
-        const updatedRoles = roles.map((role) => ({
-            ...role,
-            permissions: Object.entries(matrix[role.id] || {})
-                .filter(([_, granted]) => granted)
-                .map(([permissionId]) => Number.parseInt(permissionId)),
-        }));
+    /**
+     * Track which role IDs are currently being saved (for loading state).
+     */
+    const [savingRoles, setSavingRoles] = useState<Set<number>>(new Set());
 
-        // Here you would typically send this to your API
-        // await updateRolePermissions(updatedRoles)
-    };
+    /**
+     * The role currently displayed in the right panel.
+     * Default to the first role so the UI is never blank.
+     */
+    const [selectedRoleId, setSelectedRoleId] = useState<number | null>(
+        roles.length > 0 ? roles[0].id : null,
+    );
 
-    // Filter permissions based on search query
+    // ─── Search filtering ────────────────────────────────────────────────────
+
     const filteredPermissions = useMemo(() => {
-        if (!searchQuery.trim()) return permissions;
+        const query = searchQuery.trim().toLowerCase();
+        if (!query) return permissions;
 
-        const query = searchQuery.toLowerCase();
         return permissions.filter(
-            (permission) =>
-                permission.name.toLowerCase().includes(query) ||
-                permission.namespace.toLowerCase().includes(query) ||
-                permission.description.toLowerCase().includes(query),
+            (p) =>
+                p.name.toLowerCase().includes(query) ||
+                p.namespace.toLowerCase().includes(query) ||
+                p.description.toLowerCase().includes(query),
         );
     }, [permissions, searchQuery]);
 
-    const handlePermissionToggle = (roleId: number, permissionId: number) => {
-        setMatrix((prev) => ({
-            ...prev,
-            [roleId]: {
-                ...prev[roleId],
-                [permissionId]: !prev[roleId]?.[permissionId],
-            },
-        }));
-    };
+    // ─── Handlers ────────────────────────────────────────────────────────────
 
-    const handleSave = () => {
-        onSave?.(matrix);
-        toast.success(t('Permissions updated successfully!'));
-    };
+    const markDirty = useCallback((roleId: number) => {
+        setDirtyRoles((prev) => new Set(prev).add(roleId));
+    }, []);
 
-    const handleReset = () => {
-        // Reset to original state
-        const resetMatrix: PermissionMatrix = {};
-        roles.forEach((role) => {
-            resetMatrix[role.id] = {};
-            role.permissions.forEach((permissionId) => {
-                resetMatrix[role.id][permissionId] = true;
-            });
+    const markClean = useCallback((roleId: number) => {
+        setDirtyRoles((prev) => {
+            const next = new Set(prev);
+            next.delete(roleId);
+            return next;
         });
-        setMatrix(resetMatrix);
-        toast.info(t('Permissions reset to original state'));
-    };
+    }, []);
+
+    /** Toggle a single permission for a role. */
+    const handlePermissionToggle = useCallback(
+        (roleId: number, permissionId: number) => {
+            setMatrix((prev) => ({
+                ...prev,
+                [roleId]: {
+                    ...prev[roleId],
+                    [permissionId]: !(prev[roleId]?.[permissionId] ?? false),
+                },
+            }));
+            markDirty(roleId);
+        },
+        [markDirty],
+    );
+
+    /**
+     * Toggle a group of permissions for a role.
+     *
+     * Bug fix: we only update the provided permissionIds; all other
+     * permissions in the role's matrix are preserved. This prevents the
+     * previous bug where filtering + "toggle all" would wipe non-filtered
+     * permissions when saving.
+     */
+    const handleToggleGroup = useCallback(
+        (roleId: number, permissionIds: number[], granted: boolean) => {
+            setMatrix((prev) => ({
+                ...prev,
+                [roleId]: {
+                    ...prev[roleId],
+                    ...Object.fromEntries(permissionIds.map((id) => [id, granted])),
+                },
+            }));
+            markDirty(roleId);
+        },
+        [markDirty],
+    );
+
+    /**
+     * Save a single role's permissions.
+     * Maps permission IDs to permission namespaces as required by the backend API.
+     */
+    const handleSaveRole = useCallback(
+        async (roleId: number) => {
+            const role = roles.find((r) => r.id === roleId);
+            if (!role) return;
+
+            setSavingRoles((prev) => new Set(prev).add(roleId));
+
+            const roleMatrix = matrix[roleId] ?? {};
+            const rolePermissionsPayload: Record<string, boolean> = {};
+
+            // Backend requires permission namespaces as dictionary keys
+            for (const permission of permissions) {
+                rolePermissionsPayload[permission.namespace] = Boolean(roleMatrix[permission.id]);
+            }
+
+            const payload: Record<string, Record<string, boolean>> = {
+                [role.namespace]: rolePermissionsPayload,
+            };
+
+            try {
+                await usersApi.updateRoles(payload);
+                markClean(roleId);
+                toast.success(
+                    t('{role} permissions saved successfully!', { role: role.name }),
+                );
+            } catch {
+                toast.error(
+                    t('An error occurred while updating {role} permissions', { role: role.name }),
+                );
+            } finally {
+                setSavingRoles((prev) => {
+                    const next = new Set(prev);
+                    next.delete(roleId);
+                    return next;
+                });
+            }
+        },
+        [roles, permissions, matrix, markClean, t],
+    );
+
+    /**
+     * Reset a single role's permissions to the last saved server state.
+     */
+    const handleResetRole = useCallback(
+        (roleId: number) => {
+            const role = roles.find((r) => r.id === roleId);
+            if (!role) return;
+
+            const original = buildInitialMatrix([role]);
+            setMatrix((prev) => ({
+                ...prev,
+                [roleId]: original[roleId] ?? {},
+            }));
+            markClean(roleId);
+            toast.info(t('{role} permissions reset to saved state', { role: role.name }));
+        },
+        [roles, markClean, t],
+    );
+
+    // ─── Render ──────────────────────────────────────────────────────────────
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={title || t('Category Products')} />
-            <div className="flex h-full w-full flex-1 overflow-x-hidden p-4">
-                <div className="flex h-full flex-col space-y-6">
-                    {/* Header */}
-                    <div className="flex-none">
-                        <h1 className="text-3xl font-bold">{t('Permission Manager')}</h1>
-                        <p className="text-muted-foreground mt-1">{t('Manage all permissions and roles')}</p>
-                    </div>
+            {/* Bug fix #1: was t('Category Products') — wrong title */}
+            <Head title={title || t('Permission Manager')} />
 
-                    {/* Search */}
-                    <div className="flex-none">
-                        <PermissionSearch onSearch={setSearchQuery} />
-                    </div>
+            <div className="flex h-full w-full flex-1 flex-col overflow-hidden p-2 sm:p-4">
+                {/* Header */}
+                <div className="flex-none">
+                    <h1 className="text-2xl font-bold sm:text-3xl">{t('Permission Manager')}</h1>
+                    <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+                        {t('Manage permissions for each role independently')}
+                    </p>
+                </div>
 
-                    {/* Matrix - takes remaining space */}
-                    <div className="min-h-0 w-full max-w-7xl">
-                        <PermissionMatrixComponent
-                            permissions={filteredPermissions}
-                            roles={roles}
-                            matrix={matrix}
-                            onPermissionToggle={handlePermissionToggle}
-                        />
-                    </div>
+                {/* Search */}
+                <div className="mt-3 flex-none sm:mt-4">
+                    <PermissionSearch onSearch={setSearchQuery} />
+                </div>
 
-                    {/* Actions */}
-                    <div className="flex flex-none items-center justify-between pt-4">
-                        <div className="text-muted-foreground text-sm">
-                            {t('Showing {filteredPermissions.length} of {permissions.length} permissions', {
-                                filteredPermissions: filteredPermissions.length,
-                                permissions: permissions.length,
-                            })}
-                        </div>
-                        <div className="flex space-x-2">
-                            <Button variant="outline" onClick={handleReset}>
-                                {t('Reset')}
-                            </Button>
-                            <Button onClick={handleSave}>{t('Save Changes')}</Button>
-                        </div>
-                    </div>
+                {/* Matrix — fills remaining height */}
+                <div className="mt-3 min-h-0 flex-1 w-full overflow-hidden sm:mt-4">
+                    <PermissionMatrix
+                        permissions={filteredPermissions}
+                        allPermissions={permissions}
+                        roles={roles}
+                        matrix={matrix}
+                        selectedRoleId={selectedRoleId}
+                        dirtyRoles={dirtyRoles}
+                        savingRoles={savingRoles}
+                        onSelectRole={setSelectedRoleId}
+                        onPermissionToggle={handlePermissionToggle}
+                        onToggleGroup={handleToggleGroup}
+                        onSaveRole={handleSaveRole}
+                        onResetRole={handleResetRole}
+                    />
                 </div>
             </div>
         </AppLayout>

@@ -205,7 +205,7 @@ type RoleWithPermissions = {
   namespace: string
   updated_at: string
   uuid: null | string
-  permissions: number[] // Array of permission IDs
+  permissions: (Permission | number)[] // Array of permissions or permission IDs
 }
 
 type Provider = {

@@ -1,91 +1,115 @@
-'use client';
-
-import { Checkbox } from '@/components/ui/checkbox';
+import RolePermissionsPanel from './role-permissions-panel';
+import RoleSidebar from './role-sidebar';
 import { useTranslation } from '@/lib/i18n';
-import type { Permission, PermissionMatrix, Role } from './types';
+import { cn } from '@/lib/utils';
+import { Shield } from 'lucide-react';
+import type { PermissionMatrix } from './types';
 
 interface PermissionMatrixProps {
     permissions: Permission[];
-    roles: Role[];
+    allPermissions: Permission[];
+    roles: RoleWithPermissions[];
     matrix: PermissionMatrix;
+    selectedRoleId: number | null;
+    dirtyRoles: Set<number>;
+    savingRoles: Set<number>;
+    onSelectRole: (roleId: number) => void;
     onPermissionToggle: (roleId: number, permissionId: number) => void;
+    onToggleGroup: (roleId: number, permissionIds: number[], granted: boolean) => void;
+    onSaveRole: (roleId: number) => void;
+    onResetRole: (roleId: number) => void;
 }
 
-export default function PermissionMatrixComponent({ permissions, roles, matrix, onPermissionToggle }: PermissionMatrixProps) {
+export default function PermissionMatrix({
+    permissions,
+    allPermissions,
+    roles,
+    matrix,
+    selectedRoleId,
+    dirtyRoles,
+    savingRoles,
+    onSelectRole,
+    onPermissionToggle,
+    onToggleGroup,
+    onSaveRole,
+    onResetRole,
+}: PermissionMatrixProps) {
     const { t } = useTranslation();
-    const handleToggle = (roleId: number, permissionId: number) => {
-        onPermissionToggle(roleId, permissionId);
-    };
 
-    const isPermissionGranted = (roleId: number, permissionId: number): boolean => {
-        return matrix[roleId]?.[permissionId] || false;
-    };
+    const selectedRole = roles.find((r) => r.id === selectedRoleId) ?? null;
 
     return (
-        <div className="flex h-full w-full flex-1 flex-col overflow-x-auto rounded-lg border">
-            {/* Fixed Header with Roles */}
-            <div className="border-b">
-                <div className="flex">
-                    {/* Empty space for permissions sidebar */}
-                    <div className="flex w-64 max-w-64 min-w-64 items-center border-r p-4">
-                        <div className="flex w-full items-center justify-between">
-                            <h3 className="font-medium text-white">{t('Permissions')}</h3>
-                            <div className="ml-2 flex h-6 w-6 items-center justify-center rounded-full bg-slate-600 text-xs">
-                                {permissions.length}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Roles Header */}
-                    <div className="flex flex-1">
-                        {roles.map((role) => (
-                            <div
+        <div className="flex h-full w-full flex-col overflow-hidden rounded-lg border bg-background md:flex-row">
+            {/* ── Mobile: horizontal role selector bar ─────────────────────── */}
+            <div className="flex-none overflow-x-auto border-b bg-card p-2 md:hidden">
+                <div className="flex items-center gap-1.5 min-w-max">
+                    {roles.map((role) => {
+                        const isSelected = selectedRoleId === role.id;
+                        const isDirty = dirtyRoles.has(role.id);
+                        return (
+                            <button
                                 key={role.id}
-                                className="bg-muted/30 flex max-w-[150px] min-w-[150px] flex-1 flex-col items-center justify-center border-r p-4 text-center last:border-r-0"
+                                onClick={() => onSelectRole(role.id)}
+                                className={cn(
+                                    'relative flex shrink-0 items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                                    isSelected
+                                        ? 'bg-primary text-primary-foreground shadow-sm'
+                                        : 'bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground',
+                                )}
+                                aria-pressed={isSelected}
                             >
-                                <div className="mb-2 text-sm font-medium">{role.name}</div>
-                                <Checkbox className="h-4 w-4" />
-                            </div>
-                        ))}
+                                {isDirty && (
+                                    <span className="absolute top-1 end-1 h-2 w-2 rounded-full bg-orange-500 ring-2 ring-background" />
+                                )}
+                                <span className="font-semibold">{role.name}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* ── Desktop: sidebar (always visible on md+, fixed width, no collapse) ── */}
+            <RoleSidebar
+                className="hidden md:flex"
+                roles={roles}
+                matrix={matrix}
+                totalPermissions={allPermissions.length}
+                selectedRoleId={selectedRoleId}
+                dirtyRoles={dirtyRoles}
+                onSelectRole={onSelectRole}
+            />
+
+            {/* ── Permissions panel (fills remaining space) ────────────────── */}
+            <main className="flex h-full min-w-0 flex-1 flex-col overflow-hidden bg-background">
+                {selectedRole ? (
+                    <RolePermissionsPanel
+                        role={selectedRole}
+                        permissions={permissions}
+                        allPermissions={allPermissions}
+                        matrix={matrix[selectedRole.id] ?? {}}
+                        isDirty={dirtyRoles.has(selectedRole.id)}
+                        isSaving={savingRoles.has(selectedRole.id)}
+                        onToggle={(permissionId) => onPermissionToggle(selectedRole.id, permissionId)}
+                        onToggleGroup={(permissionIds, granted) =>
+                            onToggleGroup(selectedRole.id, permissionIds, granted)
+                        }
+                        onSave={() => onSaveRole(selectedRole.id)}
+                        onReset={() => onResetRole(selectedRole.id)}
+                    />
+                ) : (
+                    <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
+                        <div className="bg-muted flex h-16 w-16 items-center justify-center rounded-full">
+                            <Shield className="text-muted-foreground h-8 w-8" />
+                        </div>
+                        <div>
+                            <p className="font-medium">{t('Select a role')}</p>
+                            <p className="text-muted-foreground mt-1 text-sm">
+                                {t('Choose a role from the sidebar to manage its permissions')}
+                            </p>
+                        </div>
                     </div>
-                </div>
-            </div>
-
-            {/* Scrollable content area */}
-            <div className="flex">
-                {/* Permissions Sidebar */}
-                <div className="w-64 max-w-64 min-w-64 border-r">
-                    {permissions.map((permission) => (
-                        <div
-                            key={permission.id}
-                            className="flex min-h-[57px] cursor-pointer items-center border-b p-2 text-sm transition-colors last:border-b-0"
-                            title={permission.description}
-                        >
-                            {permission.name}
-                        </div>
-                    ))}
-                </div>
-
-                {/* Matrix Grid */}
-                <div className="flex flex-1 flex-col">
-                    {permissions.map((permission) => (
-                        <div key={permission.id} className="hover:bg-muted/20 flex min-h-[57px] border-r border-b">
-                            {roles.map((role) => (
-                                <div
-                                    key={`${role.id}-${permission.id}`}
-                                    className="flex min-w-[150px] flex-1 items-center justify-center border-r p-4 last:border-r-0"
-                                >
-                                    <Checkbox
-                                        checked={isPermissionGranted(role.id, permission.id)}
-                                        onCheckedChange={() => handleToggle(role.id, permission.id)}
-                                        className="h-5 w-5"
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    ))}
-                </div>
-            </div>
+                )}
+            </main>
         </div>
     );
 }
