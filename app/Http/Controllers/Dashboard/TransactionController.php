@@ -86,14 +86,17 @@ class TransactionController extends DashboardController
 
   public function editTransaction(Transaction $transaction)
   {
+    $infoMessage = session()->get('infoMessage');
+
     if (! ns()->canPerformAsynchronousOperations()) {
-      session()->flash('infoMessage', __('Unable to use Scheduled, Recurring and Entity Transactions as Queues aren\'t configured correctly.'));
+      $infoMessage = __('Unable to use Scheduled, Recurring and Entity Transactions as Queues aren\'t configured correctly.');
     }
 
-    return View::make('pages.dashboard.transactions.update', [
+    return Inertia::render('dashboard/accounting/transactions/edit', [
       'title' => __('Update Transaction'),
-      'transaction' => $transaction,
       'description' => __('Set direct, scheduled transactions.'),
+      'transaction' => $transaction->load('account'),
+      'infoMessage' => $infoMessage,
     ]);
   }
 

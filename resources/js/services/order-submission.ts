@@ -28,8 +28,8 @@ export function validateOrderForSubmission(order: Order, options: Record<string,
         throw new Error(msg);
     }
 
-    const isUnpaid = order.payments.length === 0 || order.tendered <= 0;
-    const isPartial = order.total > order.tendered && order.tendered > 0;
+    const isUnpaid = order.total > 0 && (order.payments.length === 0 || order.tendered <= 0);
+    const isPartial = order.total > 0 && order.total > order.tendered && order.tendered > 0;
 
     if (isUnpaid && options[POS_OPTION_KEYS.allowUnpaid] === 'no') {
         const msg = 'Unpaid orders are not allowed. Please add at least one payment.';

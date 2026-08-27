@@ -296,11 +296,22 @@ class ProcurementController extends DashboardController
       throw new NotAllowedException(__('Unable to edit a procurement that is stocked. Consider performing an adjustment or either delete the procurement.'));
     }
 
-    return View::make('pages.dashboard.procurements.edit', Hook::filter('ns-update-procurement-labels', [
+    $tax_groups = TaxGroup::get(['id', 'name']);
+    $providers = Provider::get(['id', 'first_name', 'last_name']);
+    $providers = $providers->map(function ($provider) {
+      return [
+        'id' => $provider->id,
+        'name' => $provider->name,
+      ];
+    });
+
+    return Inertia::render('dashboard/procurements/edit', [
       'title' => __('Edit Procurement'),
       'description' => __('Perform adjustment on existing procurement.'),
-      'procurement' => $procurement,
-    ]));
+      'procurement' => $procurement->load('products'),
+      'providers' => $providers,
+      'tax_groups' => $tax_groups,
+    ]);
   }
 
   public function procurementInvoice(Procurement $procurement)

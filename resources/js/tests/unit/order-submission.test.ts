@@ -50,6 +50,20 @@ describe('services/order-submission.ts', () => {
             ).toThrow('Unpaid orders are not allowed');
         });
 
+        it('allows zero-total orders (fully discounted) even when allowUnpaid is no', () => {
+            const fullyDiscountedOrder: Order = {
+                payment_status: 'unpaid',
+                products: [{ id: 1 }] as any,
+                payments: [],
+                total: 0,      // $5 product - $5 discount = $0
+                tendered: 0,
+            } as any;
+
+            expect(() =>
+                validateOrderForSubmission(fullyDiscountedOrder, { [POS_OPTION_KEYS.allowUnpaid]: 'no' }),
+            ).not.toThrow();
+        });
+
         it('blocks partially paid orders when allowPartial is no', () => {
             const partialOrder: Order = {
                 payment_status: 'partially_paid',

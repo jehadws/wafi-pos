@@ -27,7 +27,20 @@ export type ProcurementModalState = {
     group_id: number | null;
 };
 
-export function useProcurementForm() {
+export interface ProcurementInitialData {
+    id: number;
+    name: string;
+    automatic_approval: number;
+    delivery_status: string;
+    delivery_time: any;
+    invoice_date: any;
+    invoice_reference: string;
+    payment_status: string;
+    provider_id: string | number;
+    products: ProcurementProductItem[];
+}
+
+export function useProcurementForm(initialData?: ProcurementInitialData) {
     const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -39,15 +52,15 @@ export function useProcurementForm() {
     });
 
     const form = useForm<ProcurementFormData>({
-        name: '',
-        general_automatic_approval: 1,
-        general_delivery_status: 'delivered',
-        general_delivery_time: '2025-06-14',
-        general_invoice_date: '2025-06-14',
-        general_invoice_reference: '',
-        general_payment_status: 'paid',
-        general_provider_id: '',
-        products: [],
+        name: initialData?.name ?? '',
+        general_automatic_approval: initialData?.automatic_approval ?? 1,
+        general_delivery_status: initialData?.delivery_status ?? 'delivered',
+        general_delivery_time: initialData?.delivery_time ?? '2025-06-14',
+        general_invoice_date: initialData?.invoice_date ?? '2025-06-14',
+        general_invoice_reference: initialData?.invoice_reference ?? '',
+        general_payment_status: initialData?.payment_status ?? 'paid',
+        general_provider_id: initialData?.provider_id ?? '',
+        products: initialData?.products ?? [],
     });
 
     const handleInputChange = (name: keyof ProcurementFormData, value: any) => {
@@ -158,23 +171,43 @@ export function useProcurementForm() {
 
         form.transform(() => payload);
 
-        form.post('/api/procurements', {
-            preserveScroll: true,
-            onError: (errors) => {
-                form.clearErrors();
-                for (const key in errors) {
-                    const flatKey = key.replace(/\./g, '_') as keyof ProcurementFormData;
-                    if (flatKey in form.data) {
-                        form.setError(flatKey, errors[key]);
+        if (initialData?.id) {
+            form.put(`/api/procurements/${initialData.id}`, {
+                preserveScroll: true,
+                onError: (errors) => {
+                    form.clearErrors();
+                    for (const key in errors) {
+                        const flatKey = key.replace(/\./g, '_') as keyof ProcurementFormData;
+                        if (flatKey in form.data) {
+                            form.setError(flatKey, errors[key]);
+                        }
                     }
-                }
-                toast.error(t('Please fix the validation errors'));
-                console.error('Validation errors:', errors);
-            },
-            onSuccess: () => {
-                toast.success(t('Procurement created successfully'));
-            },
-        });
+                    toast.error(t('Please fix the validation errors'));
+                    console.error('Validation errors:', errors);
+                },
+                onSuccess: () => {
+                    toast.success(t('Procurement updated successfully'));
+                },
+            });
+        } else {
+            form.post('/api/procurements', {
+                preserveScroll: true,
+                onError: (errors) => {
+                    form.clearErrors();
+                    for (const key in errors) {
+                        const flatKey = key.replace(/\./g, '_') as keyof ProcurementFormData;
+                        if (flatKey in form.data) {
+                            form.setError(flatKey, errors[key]);
+                        }
+                    }
+                    toast.error(t('Please fix the validation errors'));
+                    console.error('Validation errors:', errors);
+                },
+                onSuccess: () => {
+                    toast.success(t('Procurement created successfully'));
+                },
+            });
+        }
     };
 
     return {
