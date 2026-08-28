@@ -1,9 +1,9 @@
 @echo off
-title JGREM POS Print Agent
+title Wafi POS Print Agent
 cd /d "%~dp0"
 
 echo ====================================================
-echo   Starting JGREM POS Windows Print Agent...
+echo   Starting Wafi POS Windows Print Agent...
 echo ====================================================
 
 :: Check if port 8189 is already in use and free it if needed
