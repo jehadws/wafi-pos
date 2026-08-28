@@ -286,7 +286,7 @@ function buildReceiptEscPos(receiptData, config = {}) {
     builder.setAlign('center');
     builder.setBold(true);
     builder.setTextSize(2, 2);
-    builder.line(receiptData.storeName || 'JGREM POS');
+    builder.line(receiptData.storeName || 'Wafi POS');
     builder.resetTextFormat();
 
     builder.setAlign('center');
@@ -390,7 +390,7 @@ function buildReceiptEscPos(receiptData, config = {}) {
     } else {
         builder.line('Thank you for your business!');
     }
-    builder.line('Powered by JGREM POS');
+    builder.line('Powered by Wafi POS');
 
     // 9. Cut Paper
     if (config.cutPaper !== false) {

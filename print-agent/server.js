@@ -82,7 +82,7 @@ const server = http.createServer(async (req, res) => {
         if (req.method === 'GET' && (pathname === '/status' || pathname === '/health' || pathname === '/')) {
             return sendJson(res, 200, {
                 status: 'online',
-                service: 'JGREM POS Windows Print Agent',
+                service: 'Wafi POS Windows Print Agent',
                 version: VERSION,
                 platform: process.platform,
                 uptimeSeconds: Math.floor((Date.now() - START_TIME) / 1000),
@@ -113,7 +113,7 @@ const server = http.createServer(async (req, res) => {
             let buffer;
             if (type === 'label') {
                 buffer = LabelBuilder.buildLabel({
-                    storeName: body.storeName || 'JGREM POS',
+                    storeName: body.storeName || 'Wafi POS',
                     name: 'TEST PRODUCT 500ML',
                     price: '$9.99',
                     barcode: '123456789012',
@@ -125,7 +125,7 @@ const server = http.createServer(async (req, res) => {
                 });
             } else {
                 buffer = buildReceiptEscPos({
-                    storeName: body.storeName || 'JGREM POS',
+                    storeName: body.storeName || 'Wafi POS',
                     storeAddress: '123 Test Street, Suite 100',
                     storePhone: '+1 234 567 8900',
                     orderCode: 'TEST-ORDER-001',
@@ -296,7 +296,7 @@ server.on('error', (err) => {
 
 server.listen(PORT, HOST, () => {
     console.log('====================================================');
-    console.log(`  JGREM POS Direct Thermal Print Agent (Windows)`);
+    console.log(`  Wafi POS Direct Thermal Print Agent (Windows)`);
     console.log(`  Version: ${VERSION}`);
     console.log(`  Listening on: http://${HOST}:${PORT}`);
     console.log('====================================================');
