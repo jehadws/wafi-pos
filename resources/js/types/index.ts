@@ -5,3 +5,6 @@
  */
 
 export * from './models';
+export * from './payment';
+export * from './pos';
+export * from './index.d';

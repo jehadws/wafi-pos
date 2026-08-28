@@ -17,6 +17,7 @@ use App\Models\Role;
 use App\Services\DateService;
 use Carbon\Carbon;
 // use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -59,11 +60,14 @@ class DashboardController extends Controller
 
   public function getBestCashiers()
   {
-    return Role::namespace('jgrem.store.cashier')
-      ->users()
-      ->orderBy('total_sales', 'desc')
-      ->limit(10)
-      ->get();
+    $role = Role::namespace('jgrem.store.cashier');
+    return $role
+      ? $role->users()
+          ->select('jgrem_users.id', 'jgrem_users.username', 'jgrem_users.email', 'jgrem_users.total_sales', 'jgrem_users.total_sales_count')
+          ->orderBy('total_sales', 'desc')
+          ->limit(10)
+          ->get()
+      : [];
   }
 
   /**
@@ -81,55 +85,107 @@ class DashboardController extends Controller
     }, 15);
   }
 
+  /**
+   * Determines whether the currently authenticated user holds at least one
+   * of the elevated roles that should see full financial & customer data.
+   */
+  private function isElevated(): bool
+  {
+    return ns()->hasRole(Role::ADMIN) || ns()->hasRole(Role::STOREADMIN);
+  }
+
   public function getAllDashboardData()
   {
     $todayStarts = $this->dateService->copy()->startOfDay()->toDateTimeString();
     $todayEnds = $this->dateService->copy()->endOfDay()->toDateTimeString();
 
-    $cards = DashboardDay::from($todayStarts)->to($todayEnds)->first() ?: [];
-    $bestCustomers = Customer::orderBy('purchases_amount', 'desc')->limit(5)->get();
-    $recentOrders = Order::orderBy('created_at', 'desc')->with('user')->limit(10)->get();
-    $bestCashiers = Role::namespace('jgrem.store.cashier')->users()->orderBy('total_sales', 'desc')->limit(10)->get();
+    $isElevated = $this->isElevated();
+    $userId = Auth::id();
 
-    $weekMap = [
-      0 => ['label' => __('Sunday'), 'value' => 'SU'],
-      1 => ['label' => __('Monday'), 'value' => 'MO'],
-      2 => ['label' => __('Tuesday'), 'value' => 'TU'],
-      3 => ['label' => __('Wednesday'), 'value' => 'WE'],
-      4 => ['label' => __('Thursday'), 'value' => 'TH'],
-      5 => ['label' => __('Friday'), 'value' => 'FR'],
-      6 => ['label' => __('Saturday'), 'value' => 'SA'],
-    ];
+    // --- Stats cards ---
+    // Elevated roles get the full DashboardDay aggregate; cashiers get null
+    // so the frontend can hide financial metrics entirely.
+    $cards = $isElevated
+      ? (DashboardDay::from($todayStarts)->to($todayEnds)->first() ?: [])
+      : null;
 
-    $currentWeekStarts = $this->dateService->copy()->startOfWeek();
-    $currentWeekEnds = $this->dateService->copy()->endOfWeek();
-    $lastWeekStarts = $currentWeekStarts->copy()->subDay()->startOfWeek();
-    $lastWeekEnds = $currentWeekStarts->copy()->subDay()->endOfWeek();
+    // --- Best customers (admin/store-admin only) ---
+    $bestCustomers = $isElevated
+      ? Customer::orderBy('purchases_amount', 'desc')
+          ->limit(5)
+          ->get(['jgrem_users.id', 'jgrem_users.username', 'jgrem_users.email', 'jgrem_users.purchases_amount'])
+      : [];
 
-    DashboardDay::from($currentWeekStarts->toDateTimeString())->to($currentWeekEnds->toDateTimeString())->get()->each(function ($report) use (&$weekMap) {
-      if (!isset($weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['current']['entries'])) {
-        $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['current']['entries'] = [];
-      }
-      $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['current']['entries'][] = $report;
-    });
+    // --- Recent orders ---
+    // Cashiers only see their own orders (author = current user id).
+    $recentOrdersQuery = Order::orderBy('created_at', 'desc')
+      ->with('user')
+      ->limit(10);
 
-    DashboardDay::from($lastWeekStarts->toDateTimeString())->to($lastWeekEnds->toDateTimeString())->get()->each(function ($report) use (&$weekMap) {
-      if (!isset($weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['previous']['entries'])) {
-        $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['previous']['entries'] = [];
-      }
-      $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['previous']['entries'][] = $report;
-    });
+    if (!$isElevated) {
+      $recentOrdersQuery->where('author', $userId);
+    }
+
+    $recentOrders = $recentOrdersQuery->get([
+      'id', 'code', 'total', 'payment_status', 'author', 'created_at',
+    ]);
+
+    // --- Best cashiers (admin/store-admin only) ---
+    $cashierRole = Role::namespace(Role::STORECASHIER);
+    $bestCashiers = $isElevated && $cashierRole
+      ? $cashierRole->users()
+          ->select('jgrem_users.id', 'jgrem_users.username', 'jgrem_users.email', 'jgrem_users.total_sales', 'jgrem_users.total_sales_count')
+          ->orderBy('total_sales', 'desc')
+          ->limit(10)
+          ->get()
+      : [];
+
+    // --- Weekly chart (admin/store-admin only) ---
+    $weeks = null;
+    if ($isElevated) {
+      $weekMap = [
+        0 => ['label' => __('Sunday'), 'value' => 'SU'],
+        1 => ['label' => __('Monday'), 'value' => 'MO'],
+        2 => ['label' => __('Tuesday'), 'value' => 'TU'],
+        3 => ['label' => __('Wednesday'), 'value' => 'WE'],
+        4 => ['label' => __('Thursday'), 'value' => 'TH'],
+        5 => ['label' => __('Friday'), 'value' => 'FR'],
+        6 => ['label' => __('Saturday'), 'value' => 'SA'],
+      ];
+
+      $currentWeekStarts = $this->dateService->copy()->startOfWeek();
+      $currentWeekEnds = $this->dateService->copy()->endOfWeek();
+      $lastWeekStarts = $currentWeekStarts->copy()->subDay()->startOfWeek();
+      $lastWeekEnds = $currentWeekStarts->copy()->subDay()->endOfWeek();
+
+      DashboardDay::from($currentWeekStarts->toDateTimeString())->to($currentWeekEnds->toDateTimeString())->get()->each(function ($report) use (&$weekMap) {
+        if (!isset($weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['current']['entries'])) {
+          $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['current']['entries'] = [];
+        }
+        $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['current']['entries'][] = $report;
+      });
+
+      DashboardDay::from($lastWeekStarts->toDateTimeString())->to($lastWeekEnds->toDateTimeString())->get()->each(function ($report) use (&$weekMap) {
+        if (!isset($weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['previous']['entries'])) {
+          $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['previous']['entries'] = [];
+        }
+        $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['previous']['entries'][] = $report;
+      });
+
+      $weeks = [
+        'range_starts' => $lastWeekStarts->toDateTimeString(),
+        'range_ends'   => $currentWeekEnds->toDateTimeString(),
+        'result'       => $weekMap,
+      ];
+    }
 
     return [
-      'cards' => $cards,
+      'cards'         => $cards,
       'bestCustomers' => $bestCustomers,
-      'recentOrders' => $recentOrders,
-      'bestCashiers' => $bestCashiers,
-      'weeks' => [
-        'range_starts' => $lastWeekStarts->toDateTimeString(),
-        'range_ends' => $currentWeekEnds->toDateTimeString(),
-        'result' => $weekMap,
-      ],
+      'recentOrders'  => $recentOrders,
+      'bestCashiers'  => $bestCashiers,
+      'weeks'         => $weeks,
+      'isElevated'    => $isElevated,
     ];
   }
 }
