@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web'])->group(function () {
   Route::get('/', [HomeController::class, 'welcome'])->name('home');
+  Route::get('/activate', [\App\Http\Controllers\ActivationController::class, 'show'])->name('license.activate');
+  Route::post('/activate', [\App\Http\Controllers\ActivationController::class, 'activate'])->name('license.activate.post');
 });
 
 // require dirname(__FILE__) . '/intermediate.php';
