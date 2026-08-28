@@ -36,22 +36,25 @@ export default function Dashboard() {
         customer: null,
     });
 
-    const handleDeleteConfirm = async () => {
-
+    const handleDeleteConfirm = () => {
         if (!deleteDialog.customer || deleteDialog.loading) return;
 
-        try {
-            router.delete(`/api/crud/ns.users/${deleteDialog.customer.id}`);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setDeleteDialog({
-                ...deleteDialog,
-                loading: false,
-                isOpen: false,
-                customer: null,
-            });
-        }
+        setDeleteDialog(prev => ({ ...prev, loading: true }));
+
+        router.delete(`/api/crud/ns.users/${deleteDialog.customer.id}`, {
+            onSuccess: () => {
+                toast.success(t('User deleted successfully'));
+                setDeleteDialog({ isOpen: false, loading: false, customer: null });
+            },
+            onError: (err) => {
+                toast.error(t('Failed to delete user'));
+                console.error(err);
+                setDeleteDialog(prev => ({ ...prev, loading: false }));
+            },
+            onFinish: () => {
+                setDeleteDialog(prev => ({ ...prev, loading: false }));
+            },
+        });
     };
 
     const columns: ColumnDef<Customer>[] = [
