@@ -19,7 +19,11 @@ const ORDER_TYPE_MAP: Record<string, Omit<OrderTypeObj, 'selected'>> = {
 
 export default function PosPage() {
   const { t } = useTranslation();
-  const { settings, options } = usePage().props as unknown as { settings: any; options: NsPosOptions };
+  const { settings, options, license } = usePage().props as unknown as { 
+    settings: any; 
+    options: NsPosOptions;
+    license?: { isValid: boolean; isRestricted: boolean; hwid: string };
+  };
   const { defineOptions, defineSettings, initialize, processInitialQueue, setAutoMerge, setOrderType, order } = usePOS();
 
   usePosBeforeUnload();
@@ -37,10 +41,6 @@ export default function PosPage() {
   }, [options, settings]);
 
   // Run the initialization queue exactly once on mount.
-  // initialize() has its own guard inside the Zustand store (the `initialized` flag),
-  // so it is safe against React Strict Mode double-invocations and re-renders.
-  // This effect intentionally has an empty dependency array.
-   
   useEffect(() => {
     initialize();
     processInitialQueue().catch((err) => {
@@ -60,12 +60,42 @@ export default function PosPage() {
     }
   }, [options[POS_OPTION_KEYS.orderTypes]]);
 
+  if (license && (license.isRestricted || !license.isValid)) {
+    return (
+      <>
+        <Head title={t('License Required — Wafi POS')} />
+        <main className="bg-background min-h-screen flex items-center justify-center p-6">
+          <div className="max-w-md w-full bg-card border border-border shadow-xl rounded-xl p-8 text-center space-y-6">
+            <div className="w-16 h-16 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mx-auto">
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-foreground">{t('POS Terminal Locked')}</h2>
+              <p className="text-sm text-muted-foreground mt-2">
+                {t('This POS terminal requires an active, cryptographically signed offline license key to operate.')}
+              </p>
+            </div>
+            <div className="bg-muted/50 rounded-lg p-3 text-left space-y-1 text-xs">
+              <span className="text-muted-foreground font-medium">{t('Hardware Fingerprint (HWID):')}</span>
+              <p className="font-mono break-all select-all text-foreground font-semibold">{license.hwid}</p>
+            </div>
+            <a
+              href="/activate"
+              className="inline-flex items-center justify-center w-full px-5 py-3 text-sm font-semibold text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-all shadow-md"
+            >
+              {t('Activate License Key')} &rarr;
+            </a>
+          </div>
+        </main>
+      </>
+    );
+  }
+
   return (
     <>
-      <Head title={t('Point of Sale')}>
-        <link rel="preconnect" href="https://fonts.bunny.net" />
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
-      </Head>
+      <Head title={t('Point of Sale')} />
       <main className="bg-background min-h-screen">
         {registerSession.requiresOpenRegister && <OpenRegisterDialog onOpened={() => undefined} />}
         <ErrorBoundary fallbackTitle={t('Point of Sale Error')} onReset={() => usePOS.getState().reset()}>

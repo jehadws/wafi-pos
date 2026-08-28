@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\LicenseMiddleware;
 use App\Http\Middleware\LoadLangMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -24,10 +25,25 @@ return Application::configure(basePath: dirname(__DIR__))
       LoadLangMiddleware::class,
       HandleInertiaRequests::class,
       AddLinkHeadersForPreloadedAssets::class,
+      LicenseMiddleware::class,
     ]);
-    // $middleware->api(append: [
-    //   HandleInertiaRequests::class,
-    //   AddLinkHeadersForPreloadedAssets::class,
-    // ]);
   })
-  ->withExceptions(function (Exceptions $exceptions) {})->create();
+  ->withExceptions(function (Exceptions $exceptions) {
+    /**
+     * For any request that expects JSON (all /api/* routes from Sanctum/axios),
+     * return a standardised error envelope instead of a Laravel HTML error page.
+     * This keeps the React frontend from parsing unexpected HTML responses.
+     */
+    $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
+      if ($request->expectsJson()) {
+        $status = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
+
+        return response()->json([
+          'success' => false,
+          'data'    => null,
+          'message' => $e->getMessage() ?: 'An unexpected error occurred.',
+        ], $status);
+      }
+    });
+  })->create();
+
