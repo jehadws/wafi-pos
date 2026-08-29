@@ -4,6 +4,7 @@ import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import PrintAgentService from '@/services/print-agent-service';
+import { Order } from '@/types/models/order';
 import { formatCurrency } from '@/utils/format';
 import { InvoiceTemplate } from '@/utils/print';
 import { ordersApi } from '@/api';
@@ -138,30 +139,16 @@ export default function OrderCard({ order, onOpenChange }: Props) {
     try {
       const productsList = (await ordersApi.getProducts(order.id)) || [];
 
-      // Format for direct ESC/POS thermal printing
-      await PrintAgentService.printReceipt({
-        storeName: 'JGREM POS',
-        orderCode: order.code,
-        date: order.created_at,
-        cashier: order.user_username,
-        customer: `${order.customer_first_name || ''} ${order.customer_last_name || ''}`.trim() || undefined,
-        orderType: order.type,
-        items: productsList.map((p: any) => ({
-          name: p.name,
-          quantity: p.quantity,
-          price: formatCurrency(p.price_with_tax || p.unit_price),
-          total: formatCurrency(p.total_price_with_tax || p.total_price),
-        })),
-        subtotal: formatCurrency(order.subtotal),
-        discount: order.discount > 0 ? formatCurrency(order.discount) : undefined,
-        tax: order.tax_value > 0 ? formatCurrency(order.tax_value) : undefined,
-        total: formatCurrency(order.total),
-        tendered: formatCurrency(order.tendered),
-        change: formatCurrency(order.change),
-        barcode: order.code,
-      });
+      // Canonical receipt path — Order → FormattedReceiptData mapping and
+      // printer configuration live in PrintAgentService (Wafi POS branding).
+      const receiptOrder = { ...order, products: productsList } as unknown as Order;
+      const result = await PrintAgentService.printOrderReceipt(receiptOrder);
 
-      toast.success(t('Receipt sent to thermal printer.'));
+      if (result.success) {
+        toast.success(t('Receipt sent to thermal printer.'));
+      } else {
+        toast.error(result.error || t('Failed to send print job to Print Agent.'));
+      }
     } catch (error: any) {
       console.error('Direct print failed, showing browser fallback:', error);
       toast.error(error?.message || t('Failed to send print job to Print Agent.'));

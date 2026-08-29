@@ -8,7 +8,7 @@ const http = require('http');
 const { URL } = require('url');
 const crypto = require('crypto');
 const RawPrinter = require('./raw-printer');
-const { buildReceiptEscPos } = require('./escpos-builder');
+const { buildReceiptEscPos, buildDrawerKick } = require('./escpos-builder');
 const LabelBuilder = require('./label-builder');
 const jobTracker = require('./job-tracker');
 
@@ -266,6 +266,26 @@ const server = http.createServer(async (req, res) => {
             });
         }
 
+        // POST /drawer/open — pulse the cash drawer without printing
+        if (req.method === 'POST' && pathname === '/drawer/open') {
+            const body = await parseBody(req);
+            const printerName = body.printer;
+            const pin = body.pin === 1 ? 1 : 0;
+
+            if (!printerName) {
+                return sendJson(res, 400, { error: 'Printer name is required in "printer" parameter.' });
+            }
+
+            const result = await RawPrinter.printRaw(printerName, buildDrawerKick(pin), 'POS Cash Drawer Kick');
+
+            return sendJson(res, 200, {
+                success: true,
+                printer: printerName,
+                message: `Cash drawer pulse sent to "${printerName}".`,
+                result
+            });
+        }
+
         // 404
         return sendJson(res, 404, { error: `Endpoint not found: ${req.method} ${pathname}` });
 
@@ -306,6 +326,7 @@ server.listen(PORT, HOST, () => {
     console.log('  POST /test            - Send test print');
     console.log('  POST /print/receipt   - Print ESC/POS receipt');
     console.log('  POST /print/label     - Print product barcode label');
+    console.log('  POST /drawer/open     - Pulse the cash drawer (ESC p)');
     console.log('====================================================');
 });
 

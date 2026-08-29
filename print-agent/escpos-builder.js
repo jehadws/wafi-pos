@@ -402,7 +402,19 @@ function buildReceiptEscPos(receiptData, config = {}) {
     return builder.toBuffer();
 }
 
+/**
+ * Builds a minimal ESC/POS cash drawer kick buffer (no paper output).
+ * Used by the /drawer/open endpoint to pulse the drawer without printing.
+ */
+function buildDrawerKick(pin = 0) {
+    const builder = new EscPosBuilder({});
+    builder.init();
+    builder.cashDrawer(pin);
+    return builder.toBuffer();
+}
+
 module.exports = {
     EscPosBuilder,
-    buildReceiptEscPos
+    buildReceiptEscPos,
+    buildDrawerKick
 };

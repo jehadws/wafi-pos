@@ -23,7 +23,6 @@ createInertiaApp({
   setup({ el, App, props }) {
     const root = createRoot(el);
     Settings.set(props.initialPage.props.settings);
-    
     const Root = () => {
       const [locale, setLocale] = useState((props.initialPage.props.locale as any) || 'en');
 

@@ -5,6 +5,8 @@ import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import PrintAgentService from '@/services/print-agent-service';
+import type { PrintResult } from '@/services/print-agent-service';
+import { Order } from '@/types/models/order';
 import { formatCurrency } from '@/utils/format';
 import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -34,7 +36,7 @@ interface PaymentGatewayProps {
 }
 
 export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, useBillingAddress, resetCart }: PaymentGatewayProps) {
-  const { order, products, submitOrder, addPayment, removePayment, reset, options } = usePOS();
+  const { order, products, submitOrder, addPayment, removePayment, options } = usePOS();
   const { t } = useTranslation();
   const [tab, setTab] = useState<PaymentTypes | 'payment-list'>('cash-payment');
   const [screenValue, setScreenValue] = useState('0.00');
@@ -134,52 +136,71 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
       const createdOrder = await submitOrder(orderData);
       toast.success(t('The operation was successful.'));
 
-      // Check if auto-print is enabled in PrintAgent settings
+      const savedOrder = (createdOrder?.data?.order ?? {}) as Record<string, unknown>;
+      const orderRecord = order as unknown as Record<string, unknown>;
       const printerSettings = PrintAgentService.getSettings();
-      if (printerSettings.autoPrintOnSale && paymentStatus === 'paid') {
-        const orderCode = createdOrder?.data?.order?.code || (order as any).code || `ORD-${Date.now()}`;
-        const receiptData = {
-          storeName: 'JGREM POS',
-          orderCode,
-          date: new Date().toLocaleString(),
-          customer: order.customer ? `${order.customer.first_name || ''} ${order.customer.last_name || ''}`.trim() : undefined,
-          items: products.map((p) => ({
-            name: p.name || 'Item',
-            quantity: p.quantity || 1,
-            price: formatCurrency(p.unit_price || 0),
-            total: formatCurrency(p.total_price || 0),
-          })),
-          subtotal: formatCurrency(order.subtotal || 0),
-          discount: order.discount > 0 ? formatCurrency(order.discount) : undefined,
-          tax: order.tax_value > 0 ? formatCurrency(order.tax_value) : undefined,
-          total: formatCurrency(order.total || 0),
-          tendered: formatCurrency(order.tendered || 0),
-          change: formatCurrency(order.change || 0),
-          barcode: orderCode,
-        };
 
-        PrintAgentService.printReceipt(receiptData).then((res) => {
-          if (!res.success) {
-            toast.error(t('Order #{code} saved, but receipt failed to print: {error}', {
-              code: orderCode,
-              error: res.error || t('Printer unavailable'),
-            }), {
-              duration: 8000,
-              action: {
-                label: t('Retry Print'),
-                onClick: () => {
-                  PrintAgentService.printReceipt(receiptData).then((retryRes) => {
-                    if (retryRes.success) {
-                      toast.success(t('Receipt printed successfully.'));
-                    } else {
-                      toast.error(retryRes.error || t('Print retry failed.'));
-                    }
-                  });
-                },
+      /**
+       * Receipt source of truth: the local cart state (items, payments,
+       * totals, customer) enriched with the server-assigned identity.
+       */
+      const receiptOrder = {
+        ...order,
+        ...orderData,
+        products: products,
+        change: order.tendered > paid ? order.tendered - total : 0,
+        id: savedOrder.id ?? orderRecord.id,
+        code: savedOrder.code ?? orderRecord.code,
+        payment_status: paymentStatus,
+      } as unknown as Order;
+
+      const hasCashPayment = (orderData.payments ?? []).some(
+        (p) => p.identifier === 'cash-payment',
+      );
+
+      /**
+       * Canonical auto-print path — honours the printingEnabledFor /
+       * printingDocument POS options and reuses the Order → receipt mapping
+       * from PrintAgentService. A successful receipt print carries its own
+       * cash-drawer kick (ESC p) when "Open Cash Drawer" is enabled.
+       */
+      let printResult: PrintResult | false = false;
+      if (paymentStatus === 'paid' || paymentStatus === 'partially_paid') {
+        printResult = await usePOS.getState().printOrderReceipt(receiptOrder);
+      }
+
+      if (printResult === false) {
+        // Printing disabled by policy — still pulse the drawer for cash sales.
+        if (printerSettings.openCashDrawer && hasCashPayment) {
+          await PrintAgentService.openCashDrawer();
+        }
+      } else if (!printResult.success) {
+        toast.error(
+          t('Order #{code} saved, but receipt failed to print: {error}', {
+            code: String(receiptOrder.code ?? ''),
+            error: printResult.error || t('Printer unavailable'),
+          }),
+          {
+            duration: 8000,
+            action: {
+              label: t('Retry Print'),
+              onClick: () => {
+                PrintAgentService.printOrderReceipt(receiptOrder).then((retryRes) => {
+                  if (retryRes.success) {
+                    toast.success(t('Receipt printed successfully.'));
+                  } else {
+                    toast.error(retryRes.error || t('Print retry failed.'));
+                  }
+                });
               },
-            });
-          }
-        });
+            },
+          },
+        );
+
+        // The receipt (which carries the drawer kick) failed — pulse the drawer directly.
+        if (printerSettings.openCashDrawer && hasCashPayment) {
+          PrintAgentService.openCashDrawer();
+        }
       }
 
       resetCart();

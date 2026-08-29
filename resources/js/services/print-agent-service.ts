@@ -260,6 +260,38 @@ export class PrintAgentService {
     }
 
     /**
+     * Pulse the cash drawer (ESC p kick) without printing a receipt.
+     * Uses the receipt printer, which is typically wired to the drawer.
+     */
+    public async openCashDrawer(printerName?: string): Promise<PrintResult> {
+        const targetPrinter = printerName || this.settings.receiptPrinter;
+        if (!targetPrinter) {
+            return {
+                success: false,
+                error: 'No receipt printer selected. Please configure your printer in POS Settings.',
+            };
+        }
+
+        try {
+            const res = await axios.post(
+                `${this.settings.agentUrl}/drawer/open`,
+                { printer: targetPrinter },
+                { timeout: 4000 },
+            );
+            return {
+                success: true,
+                ...res.data,
+            };
+        } catch (err: any) {
+            return {
+                success: false,
+                error: this.formatErrorMessage(err),
+                isOffline: !err.response || err.code === 'ECONNABORTED',
+            };
+        }
+    }
+
+    /**
      * Print product barcode labels directly to label printer
      */
     public async printLabels(labels: LabelItemData[], options: Partial<PrinterSettings> = {}): Promise<PrintResult> {
@@ -316,12 +348,14 @@ export class PrintAgentService {
         mode: string = 'sale',
         options: Partial<PrinterSettings> = {},
     ): Promise<PrintResult> {
+        const orderRecord = order as unknown as Record<string, unknown>;
         const receiptData: FormattedReceiptData = {
             orderCode: order.code ?? String(order.id ?? Date.now()),
             date: formatDate(order.created_at ?? new Date().toISOString()),
             customer: order.customer
                 ? `${order.customer.first_name ?? ''} ${order.customer.last_name ?? ''}`.trim()
                 : undefined,
+            cashier: (orderRecord.user_username as string | undefined) ?? (orderRecord.cashier as string | undefined),
             items: (order.products ?? []).map((p: any) => ({
                 name: p.name,
                 quantity: p.quantity,

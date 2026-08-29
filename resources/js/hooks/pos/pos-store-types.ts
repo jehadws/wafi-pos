@@ -9,6 +9,7 @@ import { Customer } from '@/types/models/customer';
 import { Order } from '@/types/models/order';
 import { OrderProduct } from '@/types/models/order-product';
 import { OrderType } from '@/types/models/order-type';
+import type { PrintResult } from '@/services/print-agent-service';
 
 import type { PosDialogsSlice } from './use-pos-dialogs';
 import type { CartSlice } from './use-cart-store';
@@ -44,7 +45,7 @@ export type POSStoreOrchestration = {
     setNote: (note: string, visibility?: 'hidden' | 'visible') => void;
     setOrderType: (type: OrderType) => void;
     updateAddress: (type: 'billing' | 'shipping', address: any) => void;
-    printOrderReceipt: (order: Order, mode?: string) => void;
+    printOrderReceipt: (order: Order, mode?: string) => Promise<PrintResult | false>;
 };
 
 export type POSStore = POSStoreCoreState &

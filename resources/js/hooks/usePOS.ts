@@ -26,6 +26,7 @@ import { Payment } from '@/types/models/payment';
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { ordersApi, taxesApi } from '@/api';
 import printAgentService from '@/services/print-agent-service';
+import type { PrintResult } from '@/services/print-agent-service';
 import { computeOrderTaxes, computeOrderTaxGroup } from '@/services/cart-engine';
 import { sumProductsTotals } from '@/services/cart-engine';
 import { defineQuantities } from '@/services/order-quantities';
@@ -530,11 +531,11 @@ export const usePOS = create<POSStore>((set, get) => ({
     // Receipt printing (stub — wired to print-agent-service in Step 3)
     // ─────────────────────────────────────────────────────────────────────────
 
-    printOrderReceipt: (order: Order, mode?: string) => {
+    printOrderReceipt: (order: Order, mode?: string): Promise<PrintResult | false> => {
         const { options } = get();
 
         if (options[POS_OPTION_KEYS.printingEnabledFor] === 'disabled') {
-            return false;
+            return Promise.resolve(false);
         }
 
         // Fall back to the configured printed document when the caller
@@ -548,16 +549,13 @@ export const usePOS = create<POSStore>((set, get) => ({
             (options[POS_OPTION_KEYS.printingEnabledFor] === 'only_paid_orders' &&
                 ['paid'].includes(order.payment_status as string));
 
-        if (!shouldPrint) return false;
+        if (!shouldPrint) return Promise.resolve(false);
 
-        // Delegate to PrintAgentService — maps Order → FormattedReceiptData internally
-        printAgentService
-            .printOrderReceipt(order, resolvedMode, {
-                autoPrintOnSale: options[POS_OPTION_KEYS.printingAuto] ?? true,
-            })
-            .catch((err: Error) => {
-                // Non-blocking: print failures should not interrupt the sale flow
-                console.error('[POS] Receipt print failed:', err.message);
-            });
+        // Delegate to PrintAgentService — maps Order → FormattedReceiptData internally.
+        // Resolves with the print result so callers can surface retry affordances;
+        // never rejects (print failures resolve with { success: false }).
+        return printAgentService.printOrderReceipt(order, resolvedMode, {
+            autoPrintOnSale: options[POS_OPTION_KEYS.printingAuto] ?? true,
+        });
     },
 }));
