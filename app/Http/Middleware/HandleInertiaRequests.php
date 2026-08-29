@@ -27,28 +27,31 @@ class HandleInertiaRequests extends Middleware
      * When session expires, Inertia gets a 409 Conflict which triggers a full
      * page reload to the login page instead of a broken partial state.
      */
-    /**
-     * Handle the incoming request.
-     * Override to handle session expiry gracefully for Inertia XHR requests.
-     * When the session expires, Inertia gets a 409 Conflict which triggers a full
-     * page reload to the login page instead of a broken partial state.
-     */
     public function handle(Request $request, Closure $next): Response
     {
-        $response = $next($request);
+        // Run the controller exactly once, inside the parent middleware so that
+        // Inertia::share() (which injects the `ziggy` route config) and the
+        // root view are configured *before* the response is rendered. Wrapping
+        // $next lets us inspect the result for a session-expiry redirect to
+        // /login and convert it to the 409 Inertia expects — without executing
+        // the controller a second time or skipping the `ziggy` shared prop
+        // (which would leave `route` undefined during SSR).
+        return parent::handle($request, function ($request) use ($next) {
+            $response = $next($request);
 
-        // Detect a redirect to the login page on an Inertia XHR request
-        // (session expired or unauthenticated)
-        if (
-            $request->header('X-Inertia') &&
-            $response->isRedirect() &&
-            in_array($response->getStatusCode(), [301, 302, 303, 307, 308]) &&
-            str_contains($response->headers->get('Location', ''), '/login')
-        ) {
-            return response('', 409)->header('X-Inertia-Location', $response->headers->get('Location'));
-        }
+            // Detect a redirect to the login page on an Inertia XHR request
+            // (session expired or unauthenticated)
+            if (
+                $request->header('X-Inertia') &&
+                $response->isRedirect() &&
+                in_array($response->getStatusCode(), [301, 302, 303, 307, 308]) &&
+                str_contains($response->headers->get('Location', ''), '/login')
+            ) {
+                return response('', 409)->header('X-Inertia-Location', $response->headers->get('Location'));
+            }
 
-        return parent::handle($request, $next);
+            return $response;
+        });
     }
 
     /**
