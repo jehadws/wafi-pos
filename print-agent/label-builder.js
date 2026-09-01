@@ -1,10 +1,11 @@
 /**
  * Direct Thermal Label Command Generator
  * Supports 203 DPI Direct Thermal printers (50x30 mm, 60x40 mm, 76x50 mm).
- * Generates both ESC/POS Thermal Label and TSPL label formats.
+ * Generates both ESC/POS Thermal Label and TSPL label formats with Arabic support.
  */
 
 const { EscPosBuilder } = require('./escpos-builder');
+const { processArabicLine, hasArabic, cleanCurrencyForCp437 } = require('./arabic-helper');
 
 class LabelBuilder {
     /**
@@ -29,13 +30,19 @@ class LabelBuilder {
 
         // Store Name
         if (config.showStoreName !== false && labelData.storeName) {
-            tspl += `TEXT ${Math.floor(totalDotsW / 2)},${y},"1",0,1,1,[C]"${labelData.storeName.replace(/"/g, '')}"\r\n`;
+            const cleanStore = hasArabic(labelData.storeName)
+                ? processArabicLine(labelData.storeName)
+                : labelData.storeName;
+            tspl += `TEXT ${Math.floor(totalDotsW / 2)},${y},"1",0,1,1,[C]"${cleanStore.replace(/"/g, '')}"\r\n`;
             y += 24;
         }
 
         // Product Name
         if (labelData.name) {
-            const shortName = String(labelData.name).substring(0, 32).replace(/"/g, '');
+            const cleanName = hasArabic(labelData.name)
+                ? processArabicLine(labelData.name)
+                : labelData.name;
+            const shortName = String(cleanName).substring(0, 32).replace(/"/g, '');
             tspl += `TEXT ${Math.floor(totalDotsW / 2)},${y},"2",0,1,1,[C]"${shortName}"\r\n`;
             y += 30;
         }
@@ -44,14 +51,14 @@ class LabelBuilder {
         if (labelData.barcode) {
             const barcodeHeight = config.barcodeHeight || 48;
             const barcodeReadable = config.showBarcodeText !== false ? 1 : 0;
-            // BARCODE X, Y, "128", height, human_readable, rotation, narrow, wide, "data"
             tspl += `BARCODE ${Math.floor(totalDotsW * 0.15)},${y},"128",${barcodeHeight},${barcodeReadable},0,2,4,"${labelData.barcode}"\r\n`;
             y += barcodeHeight + (barcodeReadable ? 28 : 10);
         }
 
         // Price & SKU
         if (labelData.price !== undefined && config.showPrice !== false) {
-            tspl += `TEXT ${Math.floor(totalDotsW / 2)},${y},"3",0,1,1,[C]"PRICE: ${labelData.price}"\r\n`;
+            const cleanPrice = cleanCurrencyForCp437(labelData.price, config.encoding || 'cp864');
+            tspl += `TEXT ${Math.floor(totalDotsW / 2)},${y},"3",0,1,1,[C]"PRICE: ${cleanPrice}"\r\n`;
             y += 30;
         }
 
@@ -70,10 +77,15 @@ class LabelBuilder {
     static buildEscPosLabel(labelData, config = {}) {
         const builder = new EscPosBuilder({
             lineWidth: config.lineWidth || 36, // Centered safe label width
+            encoding: config.encoding || config.codePage || 'cp864',
         });
 
         builder.init();
-        builder.setCompactLineSpacing();
+        if (config.lineSpacing !== undefined && config.lineSpacing !== null) {
+            builder.setCompactLineSpacing(Number(config.lineSpacing));
+        } else {
+            builder.setDefaultLineSpacing();
+        }
 
         // Top margin
         builder.feed(1);

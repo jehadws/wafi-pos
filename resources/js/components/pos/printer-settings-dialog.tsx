@@ -74,10 +74,11 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
         PrintAgentService.saveSettings(updated);
     };
 
-    const handleTestReceipt = async () => {
+    const handleTestReceipt = async (sample?: 'arabic' | 'english') => {
         setIsTestingReceipt(true);
         try {
-            const res = await PrintAgentService.testPrinter(settings.receiptPrinter, 'receipt');
+            PrintAgentService.saveSettings(settings);
+            const res = await PrintAgentService.testPrinter(settings.receiptPrinter, 'receipt', sample);
             toast.success(res.message || t('Test receipt sent to printer!'));
         } catch (err: any) {
             toast.error(err.message || t('Failed to test printer.'));
@@ -89,6 +90,7 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
     const handleTestLabel = async () => {
         setIsTestingLabel(true);
         try {
+            PrintAgentService.saveSettings(settings);
             const res = await PrintAgentService.testPrinter(settings.labelPrinter, 'label');
             toast.success(res.message || t('Test label sent to printer!'));
         } catch (err: any) {
@@ -211,9 +213,9 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
                                 </p>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-3 gap-4">
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="lineWidth">{t('Printable Width (Characters per line)')}</Label>
+                                    <Label htmlFor="lineWidth">{t('Printable Width')}</Label>
                                     <Select
                                         value={String(settings.lineWidth)}
                                         onValueChange={(val) => handleSettingChange('lineWidth', parseInt(val, 10))}
@@ -222,10 +224,28 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="42">42 {t('Chars (Safe 76mm / 80mm - Recommended)')}</SelectItem>
-                                            <SelectItem value="46">46 {t('Chars (Standard 80mm)')}</SelectItem>
-                                            <SelectItem value="48">48 {t('Chars (Full 80mm width)')}</SelectItem>
-                                            <SelectItem value="32">32 {t('Chars (58mm thermal)')}</SelectItem>
+                                            <SelectItem value="42">42 {t('Chars (76mm/80mm)')}</SelectItem>
+                                            <SelectItem value="46">46 {t('Chars (80mm)')}</SelectItem>
+                                            <SelectItem value="48">48 {t('Chars (Wide 80mm)')}</SelectItem>
+                                            <SelectItem value="32">32 {t('Chars (58mm)')}</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="encoding">{t('Arabic / Code Page')}</Label>
+                                    <Select
+                                        value={settings.encoding || 'cp864'}
+                                        onValueChange={(val: any) => handleSettingChange('encoding', val)}
+                                    >
+                                        <SelectTrigger id="encoding">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="cp864">CP864 (Arabic ESC/POS)</SelectItem>
+                                            <SelectItem value="cp1256">CP1256 (Windows Arabic)</SelectItem>
+                                            <SelectItem value="utf8">UTF-8 (Modern POS)</SelectItem>
+                                            <SelectItem value="cp437">CP437 (Safe ASCII)</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -290,16 +310,25 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
                                 </div>
                             </div>
 
-                            {/* Test Button */}
-                            <div className="flex justify-end pt-2">
+                            {/* Test Buttons */}
+                            <div className="flex flex-wrap justify-end gap-2 pt-2">
                                 <Button
                                     variant="secondary"
-                                    onClick={handleTestReceipt}
+                                    onClick={() => handleTestReceipt('arabic')}
                                     disabled={isTestingReceipt || agentStatus !== 'online'}
                                     className="gap-2"
                                 >
                                     {isTestingReceipt ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-                                    {t('Send Test Receipt Print')}
+                                    {t('Test Arabic Receipt')}
+                                </Button>
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => handleTestReceipt('english')}
+                                    disabled={isTestingReceipt || agentStatus !== 'online'}
+                                    className="gap-2"
+                                >
+                                    {isTestingReceipt ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+                                    {t('Test English Receipt')}
                                 </Button>
                             </div>
                         </div>

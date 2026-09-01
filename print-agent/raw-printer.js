@@ -11,7 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-// PowerShell script with inline C# RawPrinterHelper for direct spooler writing
+// PowerShell script with inline C# RawPrinterHelper using Unicode Win32 Spooler APIs (OpenPrinterW, DOCINFOW)
 const RAW_PRINT_SCRIPT = `
 param(
     [string]$PrinterName,
@@ -26,22 +26,22 @@ using System.Runtime.InteropServices;
 
 public class RawPrinterHelper
 {
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public class DOCINFOA
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public class DOCINFOW
     {
-        [MarshalAs(UnmanagedType.LPStr)] public string pDocName;
-        [MarshalAs(UnmanagedType.LPStr)] public string pOutputFile;
-        [MarshalAs(UnmanagedType.LPStr)] public string pDataType;
+        [MarshalAs(UnmanagedType.LPWStr)] public string pDocName;
+        [MarshalAs(UnmanagedType.LPWStr)] public string pOutputFile;
+        [MarshalAs(UnmanagedType.LPWStr)] public string pDataType;
     }
 
-    [DllImport("winspool.drv", EntryPoint = "OpenPrinterA", SetLastError = true, CharSet = CharSet.Ansi, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
-    public static extern bool OpenPrinter([MarshalAs(UnmanagedType.LPStr)] string szPrinter, out IntPtr hPrinter, IntPtr pd);
+    [DllImport("winspool.drv", EntryPoint = "OpenPrinterW", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
+    public static extern bool OpenPrinter(string szPrinter, out IntPtr hPrinter, IntPtr pd);
 
     [DllImport("winspool.drv", EntryPoint = "ClosePrinter", SetLastError = true, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
     public static extern bool ClosePrinter(IntPtr hPrinter);
 
-    [DllImport("winspool.drv", EntryPoint = "StartDocPrinterA", SetLastError = true, CharSet = CharSet.Ansi, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
-    public static extern bool StartDocPrinter(IntPtr hPrinter, Int32 level, [In, MarshalAs(UnmanagedType.LPStruct)] DOCINFOA di);
+    [DllImport("winspool.drv", EntryPoint = "StartDocPrinterW", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
+    public static extern bool StartDocPrinter(IntPtr hPrinter, Int32 level, [In, MarshalAs(UnmanagedType.LPStruct)] DOCINFOW di);
 
     [DllImport("winspool.drv", EntryPoint = "EndDocPrinter", SetLastError = true, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
     public static extern bool EndDocPrinter(IntPtr hPrinter);
@@ -57,8 +57,8 @@ public class RawPrinterHelper
 
     public static bool SendBytesToPrinter(string szPrinterName, byte[] bytes, string docName)
     {
-        IntPtr hPrinter = new IntPtr(0);
-        DOCINFOA di = new DOCINFOA();
+        IntPtr hPrinter = IntPtr.Zero;
+        DOCINFOW di = new DOCINFOW();
         bool bSuccess = false;
 
         di.pDocName = docName;
@@ -104,12 +104,13 @@ try {
 }
 `;
 
-// Save script file once in temp
-const scriptPath = path.join(os.tmpdir(), 'pos_raw_printer.ps1');
+// Save script file in print-agent directory or temp
+const scriptPath = path.join(__dirname, 'pos_raw_printer.ps1');
 try {
     fs.writeFileSync(scriptPath, RAW_PRINT_SCRIPT, 'utf8');
-} catch (e) {
-    console.error('Failed to write raw printer script template:', e);
+} catch {
+    const fallbackPath = path.join(os.tmpdir(), 'pos_raw_printer.ps1');
+    fs.writeFileSync(fallbackPath, RAW_PRINT_SCRIPT, 'utf8');
 }
 
 class RawPrinter {
@@ -224,16 +225,16 @@ class RawPrinter {
 
         // 2. Windows Spooler RAW printing
         return new Promise((resolve, reject) => {
-            // Ensure script exists
-            if (!fs.existsSync(scriptPath)) {
-                fs.writeFileSync(scriptPath, RAW_PRINT_SCRIPT, 'utf8');
+            const activeScript = fs.existsSync(scriptPath) ? scriptPath : path.join(os.tmpdir(), 'pos_raw_printer.ps1');
+            if (!fs.existsSync(activeScript)) {
+                fs.writeFileSync(activeScript, RAW_PRINT_SCRIPT, 'utf8');
             }
 
             const base64Data = dataBuffer.toString('base64');
             const args = [
                 '-NoProfile',
                 '-ExecutionPolicy', 'Bypass',
-                '-File', scriptPath,
+                '-File', activeScript,
                 '-PrinterName', printerName,
                 '-Base64Data', base64Data,
                 '-DocName', docName

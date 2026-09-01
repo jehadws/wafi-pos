@@ -2,13 +2,62 @@
  * ESC/POS Command Generator for Direct Thermal Receipt Printers
  * Supports 203 DPI Direct Thermal printers (58mm, 76mm, 80mm).
  * Configurable character width (default 42-46 chars/line for 76mm/80mm).
+ * Full Arabic language support with glyph shaping, BiDi reordering, and multi-codepage handling.
  */
+
+const iconv = require('iconv-lite');
+const { encodeEscPosString, cleanCurrencyForCp437, processArabicLine, hasArabic } = require('./arabic-helper');
+
+// Map of character-code-table names to the numeric value used by the
+// ESC/POS "Select character code table" command (ESC t n).
+const CODEPAGE_CODES = {
+    cp437: 0, // USA / Standard Europe (Default on almost all printers)
+    katakana: 1,
+    cp850: 2, // Multilingual (Latin-1)
+    cp860: 3, // Portuguese
+    cp863: 4, // Canadian French
+    cp865: 5, // Nordic
+    cp1252: 16, // Windows-1252 (Western)
+    cp866: 17, // Cyrillic #2
+    cp852: 18, // Latin-2
+    cp858: 19, // Euro Latin-1
+    cp864: 40, // Arabic DOS / IBM864 (Standard Epson/ESC-POS table)
+    cp1256: 36, // Windows-1256 (Arabic)
+    cp1255: 35, // Windows-1255 (Hebrew)
+    cp1254: 34, // Windows-1254 (Turkish)
+    cp1257: 37, // Windows-1257 (Baltic)
+    cp1258: 38, // Windows-1258 (Vietnamese)
+    cp1251: 17, // Windows-1251 (Cyrillic)
+};
+
+function codepageCommand(name) {
+    const key = String(name || '').toLowerCase().replace('-', '');
+    if (key === 'utf8' || key === 'utf-8') {
+        return []; // UTF-8 mode does not use standard 8-bit ESC t table
+    }
+    const code = CODEPAGE_CODES[key];
+    if (code === undefined) {
+        return [0x1B, 0x74, 0]; // Default fallback to table 0 (cp437)
+    }
+    return [0x1B, 0x74, code]; // ESC t n
+}
 
 class EscPosBuilder {
     constructor(options = {}) {
         this.buffer = [];
         this.lineWidth = options.lineWidth || 42; // Safe default for 76mm (203 DPI)
-        this.encoding = options.encoding || 'cp437'; // 'cp437', 'cp850', 'cp1252', 'cp1256'
+        // Default to cp864 for standard ESC/POS Arabic hardware printers,
+        // or cp1256 / utf8 / cp437 based on config.
+        this.encoding = options.encoding || options.codePage || 'cp864';
+    }
+
+    // Select the active character code table on the printer
+    selectCodePage(name = this.encoding) {
+        const cmd = codepageCommand(name);
+        if (cmd && cmd.length > 0) {
+            this._appendBytes(cmd);
+        }
+        return this;
     }
 
     // Low-level buffer helpers
@@ -24,14 +73,18 @@ class EscPosBuilder {
     }
 
     _appendString(text) {
-        const buf = Buffer.from(text, 'utf-8');
+        // Route through arabic-helper so Arabic gets glyph shaping (joined forms)
+        // and BiDi reordering (correct right-to-left reading order) before encoding.
+        const buf = encodeEscPosString(String(text), this.encoding);
         for (const b of buf) this.buffer.push(b);
         return this;
     }
 
     // Initialize printer
     init() {
-        return this._appendBytes([0x1B, 0x40]); // ESC @
+        this._appendBytes([0x1B, 0x40]); // ESC @ (Reset/Initialize)
+        this.selectCodePage(this.encoding);
+        return this;
     }
 
     // Text formatting
@@ -73,11 +126,11 @@ class EscPosBuilder {
 
     // Line spacing
     setDefaultLineSpacing() {
-        return this._appendBytes([0x1B, 0x32]); // ESC 2
+        return this._appendBytes([0x1B, 0x32]); // ESC 2 (1/6 inch, universally supported)
     }
 
-    setCompactLineSpacing() {
-        return this._appendBytes([0x1B, 0x33, 24]); // ESC 3 24 (24 dots compact spacing)
+    setCompactLineSpacing(dots = 24) {
+        return this._appendBytes([0x1B, 0x33, dots]); // ESC 3 n
     }
 
     // Feed lines
@@ -111,16 +164,27 @@ class EscPosBuilder {
 
     // Print two-column key-value aligned line (e.g. Subtotal ....... $10.00)
     twoColumns(leftText, rightText, fillChar = ' ') {
-        const left = String(leftText);
-        const right = String(rightText);
-        const spacesNeeded = this.lineWidth - left.length - right.length;
+        const leftFormatted = cleanCurrencyForCp437(String(leftText), this.encoding);
+        const rightFormatted = cleanCurrencyForCp437(String(rightText), this.encoding);
+
+        const leftProcessed = processArabicLine(leftFormatted);
+        const rightProcessed = processArabicLine(rightFormatted);
+
+        const leftLen = leftProcessed.length;
+        const rightLen = rightProcessed.length;
+        const spacesNeeded = this.lineWidth - leftLen - rightLen;
+
         if (spacesNeeded <= 0) {
-            this.line(left);
+            this._appendBytes(encodeEscPosString(leftProcessed, this.encoding));
+            this._appendBytes([0x0A]);
             this.setAlign('right');
-            this.line(right);
+            this._appendBytes(encodeEscPosString(rightProcessed, this.encoding));
+            this._appendBytes([0x0A]);
             this.setAlign('left');
         } else {
-            this.line(left + fillChar.repeat(spacesNeeded) + right);
+            const composite = leftProcessed + fillChar.repeat(spacesNeeded) + rightProcessed;
+            this._appendBytes(encodeEscPosString(composite, this.encoding));
+            this._appendBytes([0x0A]);
         }
         return this;
     }
@@ -131,11 +195,14 @@ class EscPosBuilder {
         const w2 = Math.floor(this.lineWidth * widths[1]);
         const w3 = this.lineWidth - w1 - w2;
 
-        const c1 = String(col1).padEnd(w1);
-        const c2 = String(col2).padStart(Math.floor(w2 / 2)).padEnd(w2);
-        const c3 = String(col3).padStart(w3);
+        const c1 = processArabicLine(cleanCurrencyForCp437(String(col1), this.encoding)).substring(0, w1).padEnd(w1);
+        const c2 = processArabicLine(cleanCurrencyForCp437(String(col2), this.encoding)).substring(0, w2).padStart(Math.floor(w2 / 2)).padEnd(w2);
+        const c3 = processArabicLine(cleanCurrencyForCp437(String(col3), this.encoding)).substring(0, w3).padStart(w3);
 
-        return this.line(c1 + c2 + c3);
+        const composite = c1 + c2 + c3;
+        this._appendBytes(encodeEscPosString(composite, this.encoding));
+        this._appendBytes([0x0A]);
+        return this;
     }
 
     /**
@@ -145,11 +212,15 @@ class EscPosBuilder {
      *   Coffee Latte
      */
     productRow(name, qty, unitPrice, total) {
-        const qtyColWidth = 6;  // e.g. " 2x "
-        const totalColWidth = 10; // e.g. " 120.00"
+        const qtyColWidth = 6;
+        const totalColWidth = 14;
         const nameColWidth = this.lineWidth - qtyColWidth - totalColWidth;
 
-        const words = String(name).split(' ');
+        const cleanName = String(name || 'Item');
+        const cleanUnitPrice = unitPrice ? cleanCurrencyForCp437(unitPrice, this.encoding) : null;
+        const cleanTotal = cleanCurrencyForCp437(total, this.encoding);
+
+        const words = cleanName.split(' ');
         const nameLines = [];
         let currentLine = '';
 
@@ -158,7 +229,6 @@ class EscPosBuilder {
                 currentLine += (currentLine ? ' ' : '') + word;
             } else {
                 if (currentLine) nameLines.push(currentLine);
-                // If a single word is longer than column width, force break it
                 if (word.length > nameColWidth) {
                     let rem = word;
                     while (rem.length > nameColWidth) {
@@ -174,20 +244,27 @@ class EscPosBuilder {
         if (currentLine) nameLines.push(currentLine);
         if (nameLines.length === 0) nameLines.push('');
 
-        const qtyStr = String(qty).padStart(qtyColWidth);
-        const totalStr = String(total).padStart(totalColWidth);
+        const qtyProcessed = String(qty).padStart(qtyColWidth);
+        const totalProcessed = processArabicLine(cleanTotal).padStart(totalColWidth);
+        const firstLineNameProcessed = processArabicLine(nameLines[0]).padEnd(nameColWidth);
 
         // First line contains first line of name + Qty + Total
-        this.line(nameLines[0].padEnd(nameColWidth) + qtyStr + totalStr);
+        const firstLineComposite = firstLineNameProcessed + qtyProcessed + totalProcessed;
+        this._appendBytes(encodeEscPosString(firstLineComposite, this.encoding));
+        this._appendBytes([0x0A]);
 
-        // Remaining lines of name
+        // Remaining lines of product name
         for (let i = 1; i < nameLines.length; i++) {
-            this.line(nameLines[i].padEnd(nameColWidth));
+            const nextLineProcessed = processArabicLine(nameLines[i]).padEnd(nameColWidth);
+            this._appendBytes(encodeEscPosString(nextLineProcessed, this.encoding));
+            this._appendBytes([0x0A]);
         }
 
         // If unit price is given, print subtle detail line
-        if (unitPrice) {
-            this.line(`  @ ${unitPrice}`);
+        if (cleanUnitPrice) {
+            const unitPriceProcessed = `  @ ${processArabicLine(cleanUnitPrice)}`;
+            this._appendBytes(encodeEscPosString(unitPriceProcessed, this.encoding));
+            this._appendBytes([0x0A]);
         }
 
         return this;
@@ -199,16 +276,11 @@ class EscPosBuilder {
         if (!text) return this;
 
         this.setAlign('center');
-        // Set barcode height (GS h n)
         this._appendBytes([0x1D, 0x68, Math.min(255, Math.max(20, height))]);
-        // Set barcode width (GS w n) 2-6
         this._appendBytes([0x1D, 0x77, Math.min(6, Math.max(1, width))]);
-        // Set HRI text position (GS H n) 0: none, 2: below
         this._appendBytes([0x1D, 0x48, showText ? 2 : 0]);
-        // Set HRI font (GS f 0: Font A)
         this._appendBytes([0x1D, 0x66, 0]);
 
-        // Code 128 (GS k 73 len data)
         const textBytes = Buffer.from(text, 'ascii');
         this._appendBytes([0x1D, 0x6B, 73, textBytes.length]);
         this._appendBytes(textBytes);
@@ -226,36 +298,24 @@ class EscPosBuilder {
         const pH = Math.floor(len / 256);
 
         this.setAlign('center');
-
-        // Function 165: Select QR Model 2 (GS ( k 4 0 49 65 50 0)
         this._appendBytes([0x1D, 0x28, 0x6B, 4, 0, 49, 65, 50, 0]);
-
-        // Function 167: Set QR Module Size (GS ( k 3 0 49 67 size)
         this._appendBytes([0x1D, 0x28, 0x6B, 3, 0, 49, 67, Math.max(1, Math.min(16, size))]);
-
-        // Function 169: Set Error Correction Level M (GS ( k 3 0 49 69 49)
         this._appendBytes([0x1D, 0x28, 0x6B, 3, 0, 49, 69, 49]);
-
-        // Function 180: Store QR Data (GS ( k pL pH 49 80 48 data)
         this._appendBytes([0x1D, 0x28, 0x6B, pL, pH, 49, 80, 48]);
         this._appendBytes(textBytes);
-
-        // Function 181: Print QR Code (GS ( k 3 0 49 81 48)
         this._appendBytes([0x1D, 0x28, 0x6B, 3, 0, 49, 81, 48]);
         this.feed(1);
         this.setAlign('left');
         return this;
     }
 
-    // Cash Drawer Kick
+    // Cash Drawer Kick (ESC p m t1 t2)
     cashDrawer(pin = 0) {
-        // ESC p m t1 t2 (m: 0 or 1, t1: 25, t2: 250)
         return this._appendBytes([0x1B, 0x70, pin ? 1 : 0, 25, 250]);
     }
 
     // Paper Cut
     cut(partial = true) {
-        // Feed 3 lines then cut
         this._appendBytes([0x1D, 0x56, partial ? 66 : 65, 3]);
         return this;
     }
@@ -272,17 +332,16 @@ class EscPosBuilder {
 function buildReceiptEscPos(receiptData, config = {}) {
     const builder = new EscPosBuilder({
         lineWidth: config.lineWidth || 42,
+        encoding: config.encoding || config.codePage || 'cp864',
     });
 
     builder.init();
-    builder.setCompactLineSpacing();
 
-    // 1. Kick Cash Drawer if requested
-    if (config.openCashDrawer) {
-        builder.cashDrawer();
+    if (config.lineSpacing !== undefined && config.lineSpacing !== null) {
+        builder.setCompactLineSpacing(Number(config.lineSpacing));
     }
 
-    // 2. Store Header
+    // 1. Store Header
     builder.setAlign('center');
     builder.setBold(true);
     builder.setTextSize(2, 2);
@@ -296,7 +355,7 @@ function buildReceiptEscPos(receiptData, config = {}) {
 
     builder.dashedDivider();
 
-    // 3. Order Info
+    // 2. Order Info
     builder.setAlign('left');
     if (receiptData.orderCode) builder.twoColumns('Order:', receiptData.orderCode);
     if (receiptData.date) builder.twoColumns('Date:', receiptData.date);
@@ -306,10 +365,9 @@ function buildReceiptEscPos(receiptData, config = {}) {
 
     builder.dashedDivider();
 
-    // 4. Products Table
-    // Header
+    // 3. Products Table
     const qtyCol = 6;
-    const totalCol = 10;
+    const totalCol = 14;
     const nameCol = (config.lineWidth || 42) - qtyCol - totalCol;
     builder.setBold(true);
     builder.line('ITEM'.padEnd(nameCol) + 'QTY'.padStart(qtyCol) + 'TOTAL'.padStart(totalCol));
@@ -329,7 +387,7 @@ function buildReceiptEscPos(receiptData, config = {}) {
 
     builder.dashedDivider();
 
-    // 5. Summary Section
+    // 4. Summary Section
     if (receiptData.subtotal !== undefined) {
         builder.twoColumns('Subtotal', String(receiptData.subtotal));
     }
@@ -357,7 +415,7 @@ function buildReceiptEscPos(receiptData, config = {}) {
 
     builder.divider('-');
 
-    // 6. Payment Info
+    // 5. Payment Info
     if (receiptData.payments && Array.isArray(receiptData.payments) && receiptData.payments.length > 0) {
         for (const p of receiptData.payments) {
             builder.twoColumns(p.name || 'Paid', String(p.value || p.amount));
@@ -376,14 +434,14 @@ function buildReceiptEscPos(receiptData, config = {}) {
 
     builder.dashedDivider();
 
-    // 7. Optional Barcode / QR
+    // 6. Optional Barcode / QR
     if (receiptData.barcode) {
         builder.barcode128(receiptData.barcode, 50, 2, true);
     } else if (receiptData.qrCode) {
         builder.qrCode(receiptData.qrCode, 4);
     }
 
-    // 8. Footer Message
+    // 7. Footer Message
     builder.setAlign('center');
     if (receiptData.footer) {
         builder.line(receiptData.footer);
@@ -391,6 +449,11 @@ function buildReceiptEscPos(receiptData, config = {}) {
         builder.line('Thank you for your business!');
     }
     builder.line('Powered by Wafi POS');
+
+    // 8. Kick Cash Drawer if requested (placed at end of print to avoid corrupting header on virtual/unsupported printers)
+    if (config.openCashDrawer === true) {
+        builder.cashDrawer();
+    }
 
     // 9. Cut Paper
     if (config.cutPaper !== false) {
@@ -404,7 +467,6 @@ function buildReceiptEscPos(receiptData, config = {}) {
 
 /**
  * Builds a minimal ESC/POS cash drawer kick buffer (no paper output).
- * Used by the /drawer/open endpoint to pulse the drawer without printing.
  */
 function buildDrawerKick(pin = 0) {
     const builder = new EscPosBuilder({});

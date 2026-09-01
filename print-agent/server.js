@@ -12,6 +12,85 @@ const { buildReceiptEscPos, buildDrawerKick } = require('./escpos-builder');
 const LabelBuilder = require('./label-builder');
 const jobTracker = require('./job-tracker');
 
+/**
+ * Build a sample receipt data set for the "/test" endpoint.
+ * @param {'arabic'|'english'|'mixed'} sample
+ */
+function buildTestReceiptData(sample) {
+    if (sample === 'arabic') {
+        return {
+            storeName: 'متجر الخير للتجزئة',
+            storeAddress: 'طريق الملك فهد، مجمع ٤٠٠، الرياض',
+            storePhone: 'هاتف: 0501234567',
+            storeEmail: 'info@wafipos.sa',
+            orderCode: 'TEST-ORDER-001',
+            date: new Date().toLocaleString('ar-SA', { dateStyle: 'medium', timeStyle: 'short' }),
+            cashier: 'أحمد',
+            orderType: 'تيك أواي',
+            customer: 'خالد المنصور',
+            items: [
+                { name: 'قهوة عربية', quantity: 2, price: '5.00', total: '10.00' },
+                { name: 'كرك صغير', quantity: 1, price: '3.50', total: '3.50' },
+                { name: 'شاي أخضر', quantity: 3, price: '2.00', total: '6.00' },
+            ],
+            subtotal: '19.50',
+            tax: '2.93',
+            total: '22.43',
+            tendered: '50.00',
+            change: '27.57',
+            barcode: 'TEST123456',
+            footer: 'شكراً لزيارتكم!',
+        };
+    }
+
+    if (sample === 'english') {
+        return {
+            storeName: 'Wafi POS',
+            storeAddress: '123 Test Street, Suite 100',
+            storePhone: 'Tel: +1 234 567 8900',
+            storeEmail: 'info@wafipos.com',
+            orderCode: 'TEST-ORDER-001',
+            date: new Date().toLocaleString('en-US'),
+            cashier: 'System Test',
+            orderType: 'Takeaway',
+            customer: 'John Doe',
+            items: [
+                { name: 'Espresso Double Shot', quantity: 2, price: '5.00', total: '10.00' },
+                { name: 'Butter Croissant', quantity: 1, price: '3.50', total: '3.50' },
+                { name: 'Iced Tea', quantity: 3, price: '2.00', total: '6.00' },
+            ],
+            subtotal: '19.50',
+            tax: '2.93',
+            total: '22.43',
+            tendered: '50.00',
+            change: '27.57',
+            barcode: 'TEST123456',
+            footer: 'Thank you for your visit!',
+        };
+    }
+
+    // Mixed fallback (Arabic + English on the same receipt)
+    return {
+        storeName: 'متجر الاختبار | Wafi POS',
+        storeAddress: '123 Test Street, Suite 100',
+        storePhone: '+1 234 567 8900',
+        orderCode: 'TEST-ORDER-001',
+        date: new Date().toLocaleString(),
+        cashier: 'System Test',
+        orderType: 'takeaway',
+        items: [
+            { name: 'Thermal Direct Test Item', quantity: 1, price: '5.00', total: '5.00' },
+            { name: 'قهوة عربية | Arabic Coffee', quantity: 2, price: '2.50', total: '5.00' },
+        ],
+        subtotal: '10.00',
+        total: '10.00',
+        tendered: '20.00',
+        change: '10.00',
+        barcode: 'TEST123456',
+        footer: 'شكراً لزيارتكم! | Thank you for your visit!',
+    };
+}
+
 const PORT = process.env.POS_PRINT_AGENT_PORT || 8189;
 const HOST = '127.0.0.1'; // Strictly local
 const VERSION = '1.0.0';
@@ -113,37 +192,25 @@ const server = http.createServer(async (req, res) => {
             let buffer;
             if (type === 'label') {
                 buffer = LabelBuilder.buildLabel({
-                    storeName: body.storeName || 'Wafi POS',
-                    name: 'TEST PRODUCT 500ML',
+                    storeName: body.storeName || 'متجر الاختبار',
+                    name: 'TEST PRODUCT 500ML | منتج تجريبي',
                     price: '$9.99',
                     barcode: '123456789012',
                     sku: 'TEST-001',
                     unit: 'pcs'
                 }, {
                     lineWidth: body.lineWidth || 36,
-                    protocol: body.protocol || 'escpos'
+                    protocol: body.protocol || 'escpos',
+                    encoding: body.encoding || body.codePage || 'cp864',
+                    lineSpacing: body.lineSpacing
                 });
             } else {
-                buffer = buildReceiptEscPos({
-                    storeName: body.storeName || 'Wafi POS',
-                    storeAddress: '123 Test Street, Suite 100',
-                    storePhone: '+1 234 567 8900',
-                    orderCode: 'TEST-ORDER-001',
-                    date: new Date().toLocaleString(),
-                    cashier: 'System Test',
-                    orderType: 'takeaway',
-                    items: [
-                        { name: 'Thermal Direct Test Item', quantity: 1, price: '5.00', total: '5.00' },
-                        { name: 'Direct ESC/POS 203 DPI', quantity: 2, price: '2.50', total: '5.00' }
-                    ],
-                    subtotal: '10.00',
-                    total: '10.00',
-                    tendered: '20.00',
-                    change: '10.00',
-                    barcode: 'TEST123456',
-                    footer: 'Test print completed successfully!'
-                }, {
+                const sample = body.sample === 'arabic' || body.sample === 'english' ? body.sample : 'mixed';
+                const testData = buildTestReceiptData(sample);
+                buffer = buildReceiptEscPos(testData, {
                     lineWidth: body.lineWidth || 42,
+                    encoding: body.encoding || body.codePage || 'cp864',
+                    lineSpacing: body.lineSpacing,
                     cutPaper: body.cutPaper !== false,
                     openCashDrawer: body.openCashDrawer === true,
                 });
@@ -186,6 +253,8 @@ const server = http.createServer(async (req, res) => {
 
             const buffer = buildReceiptEscPos(receiptData, {
                 lineWidth: config.lineWidth || 42,
+                encoding: config.encoding || config.codePage || body.encoding || body.codePage || 'cp864',
+                lineSpacing: config.lineSpacing,
                 cutPaper: config.cutPaper !== false,
                 openCashDrawer: config.openCashDrawer === true,
                 showTaxBreakdown: config.showTaxBreakdown === true,
@@ -240,6 +309,8 @@ const server = http.createServer(async (req, res) => {
                     heightMm: config.heightMm || 30,
                     lineWidth: config.lineWidth || 36,
                     protocol: config.protocol || 'escpos',
+                    encoding: config.encoding || config.codePage || 'cp864',
+                    lineSpacing: config.lineSpacing,
                     barcodeHeight: config.barcodeHeight || 45,
                     showStoreName: config.showStoreName !== false,
                     showBarcodeText: config.showBarcodeText !== false,
@@ -328,6 +399,15 @@ server.listen(PORT, HOST, () => {
     console.log('  POST /print/label     - Print product barcode label');
     console.log('  POST /drawer/open     - Pulse the cash drawer (ESC p)');
     console.log('====================================================');
+});
+
+// Process safety guards
+process.on('uncaughtException', (err) => {
+    console.error('[Print Agent Uncaught Exception]:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[Print Agent Unhandled Rejection]:', reason);
 });
 
 // Handle graceful shutdown

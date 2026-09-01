@@ -30,6 +30,7 @@ export interface PrinterSettings {
     receiptPrinter: string;
     labelPrinter: string;
     lineWidth: number; // 42 or 46 for 76mm/80mm 203 DPI
+    encoding?: 'cp864' | 'cp1256' | 'utf8' | 'cp437';
     cutPaper: boolean;
     openCashDrawer: boolean;
     showTaxBreakdown: boolean;
@@ -42,6 +43,7 @@ export interface PrinterSettings {
     showStoreNameOnLabel: boolean;
     showPriceOnLabel: boolean;
     showSkuOnLabel: boolean;
+    lineSpacing?: number | null;
 }
 
 export interface FormattedReceiptData {
@@ -88,17 +90,20 @@ export interface LabelItemData {
 export interface PrintResult {
     success: boolean;
     jobId?: string;
+    message?: string;
     error?: string;
     isOffline?: boolean;
 }
 
 const SETTINGS_KEY = 'pos_direct_printer_settings';
+const DEFAULT_ENCODING = 'cp864';
 
 const DEFAULT_SETTINGS: PrinterSettings = {
     agentUrl: 'http://127.0.0.1:8189',
     receiptPrinter: 'XP-80C',
     labelPrinter: 'XP-80C',
     lineWidth: 42, // Safe 76mm 203 DPI width
+    encoding: DEFAULT_ENCODING,
     cutPaper: true,
     openCashDrawer: false,
     showTaxBreakdown: true,
@@ -111,6 +116,7 @@ const DEFAULT_SETTINGS: PrinterSettings = {
     showStoreNameOnLabel: true,
     showPriceOnLabel: true,
     showSkuOnLabel: false,
+    lineSpacing: null,
 };
 
 export class PrintAgentService {
@@ -193,7 +199,11 @@ export class PrintAgentService {
     /**
      * Send test receipt or test label
      */
-    public async testPrinter(printerName?: string, type: 'receipt' | 'label' = 'receipt'): Promise<any> {
+    public async testPrinter(
+        printerName?: string,
+        type: 'receipt' | 'label' = 'receipt',
+        sample?: 'arabic' | 'english' | 'mixed',
+    ): Promise<any> {
         const targetPrinter = printerName || (type === 'label' ? this.settings.labelPrinter : this.settings.receiptPrinter);
         try {
             const res = await axios.post(
@@ -201,7 +211,10 @@ export class PrintAgentService {
                 {
                     printer: targetPrinter,
                     type,
+                    sample: sample || 'mixed',
                     lineWidth: this.settings.lineWidth,
+                    encoding: this.settings.encoding || DEFAULT_ENCODING,
+                    lineSpacing: this.settings.lineSpacing,
                     cutPaper: this.settings.cutPaper,
                     openCashDrawer: this.settings.openCashDrawer,
                     protocol: this.settings.labelProtocol,
@@ -232,6 +245,7 @@ export class PrintAgentService {
             data: receiptData,
             config: {
                 lineWidth: options.lineWidth || this.settings.lineWidth || 42,
+                encoding: options.encoding || this.settings.encoding || DEFAULT_ENCODING,
                 cutPaper: options.cutPaper ?? this.settings.cutPaper ?? true,
                 openCashDrawer: options.openCashDrawer ?? this.settings.openCashDrawer ?? false,
                 showTaxBreakdown: options.showTaxBreakdown ?? this.settings.showTaxBreakdown ?? true,
@@ -311,6 +325,7 @@ export class PrintAgentService {
                 widthMm: options.labelWidthMm || this.settings.labelWidthMm || 50,
                 heightMm: options.labelHeightMm || this.settings.labelHeightMm || 30,
                 lineWidth: options.lineWidth || this.settings.lineWidth || 36,
+                encoding: options.encoding || this.settings.encoding || DEFAULT_ENCODING,
                 protocol: options.labelProtocol || this.settings.labelProtocol || 'escpos',
                 barcodeHeight: options.barcodeHeight || this.settings.barcodeHeight || 45,
                 showStoreName: options.showStoreNameOnLabel ?? this.settings.showStoreNameOnLabel ?? true,

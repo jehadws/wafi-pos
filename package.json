@@ -80,7 +80,7 @@
         "input-otp": "^1.4.2",
         "laravel-vite-plugin": "^1.0",
         "lucide-react": "^0.475.0",
-        "mathjs": "^14.6.0",
+        "mathjs": "^15.2.0",
         "next-themes": "^0.4.6",
         "numeral": "^2.0.6",
         "qrious": "^4.0.2",

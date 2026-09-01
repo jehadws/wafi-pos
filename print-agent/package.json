@@ -6,8 +6,18 @@
   "scripts": {
     "start": "node server.js"
   },
-  "keywords": ["pos", "escpos", "thermal-printer", "print-agent", "nexopos"],
+  "keywords": [
+    "pos",
+    "escpos",
+    "thermal-printer",
+    "print-agent",
+    "nexopos"
+  ],
   "author": "JGREM POS",
   "license": "MIT",
-  "dependencies": {}
+  "dependencies": {
+    "bidi-js": "^1.0.3",
+    "iconv-lite": "^0.7.3",
+    "js-arabic-reshaper": "^1.0.0"
+  }
 }

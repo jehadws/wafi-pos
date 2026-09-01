@@ -195,6 +195,8 @@ The agent listens on `http://127.0.0.1:8189` and only accepts connections origin
   },
   "config": {
     "lineWidth": 42,
+    "encoding": "cp1256",
+    "lineSpacing": null,
     "cutPaper": true,
     "openCashDrawer": false,
     "showTaxBreakdown": true,
@@ -289,9 +291,49 @@ The agent listens on `http://127.0.0.1:8189` and only accepts connections origin
 
 ---
 
+---
+
+## 🌐 Character Encoding & Arabic Support
+
+The agent builds ESC/POS byte streams with a configurable character code page so
+that non-Latin scripts (e.g. Arabic) print as correct glyphs instead of UTF-8
+mojibake.
+
+- By default the receipt/label builder selects **Windows-1256 (`cp1256`)** via the
+  `ESC t 36` command and re-encodes all text from UTF-8 into that single-byte
+  code page. ASCII/Latin characters pass through unchanged, so English labels and
+  numbers stay correct.
+- Set `config.encoding` (or `config.codePage`) per request to switch code pages.
+  Supported values include: `cp437`, `cp850`, `cp1252`, **`cp1256`** (Arabic,
+  default), **`cp864`** (Arabic DOS), `cp1255` (Hebrew), `cp1254` (Turkish),
+  `cp852`, `cp858`, `cp866`, `cp1257`, `cp1258`, `cp1251`.
+- For mixed/legacy environments, send Arabic text in the printer's expected
+  code page (most modern ESC/POS printers and emulators prefer `cp1256`;
+  older DOS-based ones may require `cp864`).
+
+> **Note on shaping & direction:** All code pages apply BiDi reordering so Arabic
+> reads correctly right-to-left. On top of that, `cp864` uses `js-arabic-reshaper`
+> to emit **connected (joined) letterforms** and gives the best Arabic rendering.
+> `utf8` also emits joined forms when the emulator/printer uses a Unicode Arabic
+> font. `cp1256` (Windows-1256) is reordered correctly but its code page contains
+> **no joined glyphs**, so letters render isolated — this is a limitation of the
+> code page itself, not a bug. The encoding fix above removes the garbled-boxes /
+> mojibake problem regardless of code page.
+
+### Line Spacing
+
+- The builder uses the default line spacing (`ESC 2`), which is universally
+  supported by printers and emulators.
+- To use compact spacing, pass `config.lineSpacing` as a number of dots
+  (0–255), e.g. `24`. This emits `ESC 3 n`. Omit it (or pass `null`) to keep the
+  safe default — some emulators flag `ESC 3` as an unsupported command, so it is
+  opt-in rather than on by default.
+
+---
+
 ## 🔒 Security & Reliability Features
 
 1. **Localhost Isolation**: The agent rejects any requests whose remote address is not `127.0.0.1` or `::1`.
 2. **Double-Print Prevention (Idempotency)**: Print jobs are cached by `jobId` for 10 minutes in memory. Rapid double clicks by cashiers will safely reject duplicate jobs with HTTP 409.
-3. **No Heavy Dependencies**: Built using pure Node.js standard libraries (`http`, `crypto`, `child_process`) and Windows `winspool.drv` via PowerShell. Zero `node-gyp` C++ compilation required.
+3. **No Native Dependencies**: Built using pure Node.js standard libraries (`http`, `crypto`, `child_process`) and Windows `winspool.drv` via PowerShell. The only third-party module is `iconv-lite` (pure JavaScript, zero `node-gyp`/C++ compilation) used for single-byte code-page encoding (e.g. Arabic).
 4. **Smart Word Wrapping**: Table item descriptions automatically wrap to the next line without shifting or misaligning the Quantity and Total price columns.

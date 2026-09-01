@@ -1,13 +1,20 @@
 /**
  * Job Tracker & Idempotency Cache
  * Prevents accidental double printing caused by rapid double clicks on cashier UI.
- * Retains job status and print history in memory.
+ * Retains job status and print history in memory with automated memory bounds.
  */
 
 class JobTracker {
-    constructor(ttlMs = 10 * 60 * 1000) { // 10 minutes cache
+    constructor(ttlMs = 10 * 60 * 1000, maxEntries = 1000) {
         this.jobs = new Map();
         this.ttlMs = ttlMs;
+        this.maxEntries = maxEntries;
+
+        // Periodic background cleanup every 5 minutes
+        if (typeof setInterval !== 'undefined') {
+            const timer = setInterval(() => this.cleanExpired(), 5 * 60 * 1000);
+            if (timer.unref) timer.unref();
+        }
     }
 
     /**
@@ -32,13 +39,19 @@ class JobTracker {
      */
     register(jobId, details = {}) {
         if (!jobId) return;
+
+        // Enforce maximum cache bounds (evict oldest)
+        if (this.jobs.size >= this.maxEntries) {
+            const oldestKey = this.jobs.keys().next().value;
+            if (oldestKey) this.jobs.delete(oldestKey);
+        }
+
         this.jobs.set(jobId, {
             id: jobId,
             timestamp: Date.now(),
             status: 'processing',
             details
         });
-        this.cleanExpired();
     }
 
     /**
