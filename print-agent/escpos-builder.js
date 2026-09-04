@@ -345,7 +345,7 @@ function buildReceiptEscPos(receiptData, config = {}) {
     builder.setAlign('center');
     builder.setBold(true);
     builder.setTextSize(2, 2);
-    builder.line(receiptData.storeName || 'Wafi POS');
+    builder.line(receiptData.storeName || 'Subul');
     builder.resetTextFormat();
 
     builder.setAlign('center');
@@ -448,7 +448,7 @@ function buildReceiptEscPos(receiptData, config = {}) {
     } else {
         builder.line('Thank you for your business!');
     }
-    builder.line('Powered by Wafi POS');
+    builder.line('Powered by Subul');
 
     // 8. Kick Cash Drawer if requested (placed at end of print to avoid corrupting header on virtual/unsupported printers)
     if (config.openCashDrawer === true) {

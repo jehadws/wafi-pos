@@ -1,6 +1,6 @@
 @echo off
 echo ====================================================
-echo   Stopping JGREM POS Windows Print Agent...
+echo   Stopping Subul POS Windows Print Agent...
 echo ====================================================
 
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8189" ^| findstr "LISTENING"') do (

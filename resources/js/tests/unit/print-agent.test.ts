@@ -17,7 +17,7 @@ describe('PrintAgentService', () => {
     describe('checkStatus', () => {
         it('returns online status when agent responds', async () => {
             mockedAxios.get.mockResolvedValueOnce({
-                data: { status: 'online', version: '1.0.0', service: 'wafi-print-agent' },
+                data: { status: 'online', version: '1.0.0', service: 'Subul Windows Print Agent' },
             });
 
             const status = await service.checkStatus(true);

@@ -1,9 +1,9 @@
 @echo off
-title Wafi POS Print Agent
+title Subul Print Agent
 cd /d "%~dp0"
 
 echo ====================================================
-echo   Starting Wafi POS Windows Print Agent...
+echo   Starting Subul Windows Print Agent...
 echo ====================================================
 
 :: Check if port 8189 is already in use and free it if needed

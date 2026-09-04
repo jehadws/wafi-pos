@@ -1,4 +1,4 @@
-# JGREM POS Windows Direct Thermal Print Agent
+# Subul POS Windows Direct Thermal Print Agent
 
 A lightweight, dedicated Windows background Print Agent designed for point-of-sale systems. It provides direct, fast thermal printing via native ESC/POS and TSPL command generation without relying on the web browser's `window.print()` dialog.
 
@@ -109,7 +109,7 @@ The agent listens on `http://127.0.0.1:8189` and only accepts connections origin
 ```json
 {
   "status": "online",
-  "service": "JGREM POS Windows Print Agent",
+  "service": "Subul Windows Print Agent",
   "version": "1.0.0",
   "platform": "win32",
   "uptimeSeconds": 142,
@@ -159,7 +159,7 @@ The agent listens on `http://127.0.0.1:8189` and only accepts connections origin
   "printer": "XP-80C",
   "jobId": "rcpt_ORD-1002_1771460000",
   "data": {
-    "storeName": "JGREM POS",
+    "storeName": "Subul POS",
     "storeAddress": "King Fahd Road, Suite 400",
     "storePhone": "+966 50 123 4567",
     "orderCode": "ORD-2026-0042",
@@ -234,7 +234,7 @@ The agent listens on `http://127.0.0.1:8189` and only accepts connections origin
       "sku": "COF-ARA-250",
       "unit": "Bag",
       "copies": 2,
-      "storeName": "JGREM POS"
+      "storeName": "Subul POS"
     }
   ],
   "config": {

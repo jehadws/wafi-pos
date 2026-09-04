@@ -1,7 +1,7 @@
 @echo off
 setlocal
 echo =======================================================
-echo   Wafi POS Print Agent - Windows Startup Installer
+echo   Subul Print Agent - Windows Startup Installer
 echo =======================================================
 echo.
 
@@ -13,7 +13,7 @@ echo Creating startup shortcut at:
 echo %SHORTCUT_PATH%
 echo.
 
-powershell -NoProfile -Command "$WshShell = New-Object -ComObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%SHORTCUT_PATH%'); $Shortcut.TargetPath = 'wscript.exe'; $Shortcut.Arguments = '\"%VBS_TARGET%\"'; $Shortcut.WorkingDirectory = '%AGENT_DIR%'; $Shortcut.Description = 'Wafi POS Print Agent'; $Shortcut.Save()"
+powershell -NoProfile -Command "$WshShell = New-Object -ComObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%SHORTCUT_PATH%'); $Shortcut.TargetPath = 'wscript.exe'; $Shortcut.Arguments = '\"%VBS_TARGET%\"'; $Shortcut.WorkingDirectory = '%AGENT_DIR%'; $Shortcut.Description = 'Subul Print Agent'; $Shortcut.Save()"
 
 if %ERRORLEVEL% EQU 0 (
     echo [SUCCESS] POS Print Agent is now configured to start automatically with Windows!

@@ -11,9 +11,9 @@
     "escpos",
     "thermal-printer",
     "print-agent",
-    "nexopos"
+    "subul"
   ],
-  "author": "JGREM POS",
+  "author": "Subul POS",
   "license": "MIT",
   "dependencies": {
     "bidi-js": "^1.0.3",

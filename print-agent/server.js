@@ -22,7 +22,7 @@ function buildTestReceiptData(sample) {
             storeName: 'متجر الخير للتجزئة',
             storeAddress: 'طريق الملك فهد، مجمع ٤٠٠، الرياض',
             storePhone: 'هاتف: 0501234567',
-            storeEmail: 'info@wafipos.sa',
+            storeEmail: 'info@subul.sa',
             orderCode: 'TEST-ORDER-001',
             date: new Date().toLocaleString('ar-SA', { dateStyle: 'medium', timeStyle: 'short' }),
             cashier: 'أحمد',
@@ -45,10 +45,10 @@ function buildTestReceiptData(sample) {
 
     if (sample === 'english') {
         return {
-            storeName: 'Wafi POS',
+            storeName: 'Subul',
             storeAddress: '123 Test Street, Suite 100',
             storePhone: 'Tel: +1 234 567 8900',
-            storeEmail: 'info@wafipos.com',
+            storeEmail: 'info@subul.com',
             orderCode: 'TEST-ORDER-001',
             date: new Date().toLocaleString('en-US'),
             cashier: 'System Test',
@@ -71,7 +71,7 @@ function buildTestReceiptData(sample) {
 
     // Mixed fallback (Arabic + English on the same receipt)
     return {
-        storeName: 'متجر الاختبار | Wafi POS',
+        storeName: 'متجر الاختبار | Subul',
         storeAddress: '123 Test Street, Suite 100',
         storePhone: '+1 234 567 8900',
         orderCode: 'TEST-ORDER-001',
@@ -161,7 +161,7 @@ const server = http.createServer(async (req, res) => {
         if (req.method === 'GET' && (pathname === '/status' || pathname === '/health' || pathname === '/')) {
             return sendJson(res, 200, {
                 status: 'online',
-                service: 'Wafi POS Windows Print Agent',
+                service: 'Subul Windows Print Agent',
                 version: VERSION,
                 platform: process.platform,
                 uptimeSeconds: Math.floor((Date.now() - START_TIME) / 1000),
@@ -387,7 +387,7 @@ server.on('error', (err) => {
 
 server.listen(PORT, HOST, () => {
     console.log('====================================================');
-    console.log(`  Wafi POS Direct Thermal Print Agent (Windows)`);
+    console.log(`  Subul Direct Thermal Print Agent (Windows)`);
     console.log(`  Version: ${VERSION}`);
     console.log(`  Listening on: http://${HOST}:${PORT}`);
     console.log('====================================================');
