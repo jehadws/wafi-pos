@@ -14,8 +14,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table( 'jgrem_products_histories', function ( Blueprint $table ) {
-            if ( ! Schema::hasColumn( 'jgrem_products_histories', 'order_product_id' ) ) {
+        Schema::table( 'subul_products_histories', function ( Blueprint $table ) {
+            if ( ! Schema::hasColumn( 'subul_products_histories', 'order_product_id' ) ) {
                 $table->integer( 'order_product_id' )->nullable();
             }
         } );

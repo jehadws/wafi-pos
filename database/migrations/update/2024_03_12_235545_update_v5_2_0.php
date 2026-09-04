@@ -10,9 +10,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        ns()->envEditor->set( 'REVERB_APP_ID', 'app-key-' . Str::random( 10 ) );
-        ns()->envEditor->set( 'REVERB_APP_KEY', 'app-key-' . Str::random( 10 ) );
-        ns()->envEditor->set( 'REVERB_APP_SECRET', Str::uuid() );
+        sb()->envEditor->set( 'REVERB_APP_ID', 'app-key-' . Str::random( 10 ) );
+        sb()->envEditor->set( 'REVERB_APP_KEY', 'app-key-' . Str::random( 10 ) );
+        sb()->envEditor->set( 'REVERB_APP_SECRET', Str::uuid() );
     }
 
     /**

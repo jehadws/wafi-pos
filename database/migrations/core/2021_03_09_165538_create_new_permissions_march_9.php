@@ -23,13 +23,13 @@ return new class extends Migration
      */
     public function up()
     {
-        $permission = Permission::firstOrNew( [ 'namespace' => 'jgrem.create.products-labels' ] );
+        $permission = Permission::firstOrNew( [ 'namespace' => 'subul.create.products-labels' ] );
         $permission->name = __( 'Create Products Labels' );
         $permission->description = __( 'Allow the user to create products labels' );
         $permission->save();
 
         Role::namespace( 'admin' )->addPermissions( $permission );
-        Role::namespace( 'jgrem.store.administrator' )->addPermissions( $permission );
+        Role::namespace( 'subul.store.administrator' )->addPermissions( $permission );
     }
 
     /**
@@ -39,7 +39,7 @@ return new class extends Migration
      */
     public function down()
     {
-        $permission = Permission::namespace( 'jgrem.create.products-labels' );
+        $permission = Permission::namespace( 'subul.create.products-labels' );
         $permission->removeFromRoles();
         $permission->delete();
     }

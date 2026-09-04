@@ -11,7 +11,7 @@ $widgetService = app()->make( WidgetService::class );
 
 $widgets = $widgetService->getAllWidgets();
 
-if ( defined( 'JG_CREATE_PERMISSIONS' ) ) {
+if ( defined( 'SB_CREATE_PERMISSIONS' ) ) {
     $widgets->each( function ( $widget ) {
         /**
          * The permission is created only

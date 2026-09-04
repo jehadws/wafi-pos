@@ -17,8 +17,8 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_products_histories' ) ) {
-            Schema::createIfMissing( 'jgrem_products_histories', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_products_histories' ) ) {
+            Schema::createIfMissing( 'subul_products_histories', function ( Blueprint $table ) {
                 $table->bigIncrements( 'id' );
                 $table->integer( 'product_id' );
                 $table->integer( 'procurement_id' )->nullable();
@@ -47,8 +47,8 @@ return new class extends Migration
      */
     public function down()
     {
-        if ( Schema::hasTable( 'jgrem_products_histories' ) ) {
-            Schema::dropIfExists( 'jgrem_products_histories' );
+        if ( Schema::hasTable( 'subul_products_histories' ) ) {
+            Schema::dropIfExists( 'subul_products_histories' );
         }
     }
 };

@@ -49,8 +49,8 @@ return new class extends Migration
          */
         $coreService = app()->make( CoreService::class );
 
-        Schema::table( 'jgrem_roles', function ( Blueprint $table ) {
-            if ( ! Schema::hasColumn( 'jgrem_roles', 'dashid' ) ) {
+        Schema::table( 'subul_roles', function ( Blueprint $table ) {
+            if ( ! Schema::hasColumn( 'subul_roles', 'dashid' ) ) {
                 $table->removeColumn( 'dashid' );
             }
         } );
@@ -59,8 +59,8 @@ return new class extends Migration
          * let's create a constant which will allow the creation,
          * since these files are included as migration file
          */
-        if ( ! defined( 'JG_CREATE_PERMISSIONS' ) ) {
-            define( 'JG_CREATE_PERMISSIONS', true );
+        if ( ! defined( 'SB_CREATE_PERMISSIONS' ) ) {
+            define( 'SB_CREATE_PERMISSIONS', true );
         }
 
         /**
@@ -124,38 +124,38 @@ return new class extends Migration
         /**
          * We're make the users table to be able to receive customers
          */
-        CoreSchema::table( 'jgrem_users', function ( Blueprint $table ) {
-            if ( ! CoreSchema::hasColumn( 'jgrem_users', 'birth_date' ) ) {
+        CoreSchema::table( 'subul_users', function ( Blueprint $table ) {
+            if ( ! CoreSchema::hasColumn( 'subul_users', 'birth_date' ) ) {
                 $table->datetime( 'birth_date' )->nullable();
             }
-            if ( ! CoreSchema::hasColumn( 'jgrem_users', 'purchases_amount' ) ) {
+            if ( ! CoreSchema::hasColumn( 'subul_users', 'purchases_amount' ) ) {
                 $table->float( 'purchases_amount' )->default( 0 );
             }
-            if ( ! CoreSchema::hasColumn( 'jgrem_users', 'owed_amount' ) ) {
+            if ( ! CoreSchema::hasColumn( 'subul_users', 'owed_amount' ) ) {
                 $table->float( 'owed_amount' )->default( 0 );
             }
-            if ( ! CoreSchema::hasColumn( 'jgrem_users', 'credit_limit_amount' ) ) {
+            if ( ! CoreSchema::hasColumn( 'subul_users', 'credit_limit_amount' ) ) {
                 $table->float( 'credit_limit_amount' )->default( 0 );
             }
-            if ( ! CoreSchema::hasColumn( 'jgrem_users', 'account_amount' ) ) {
+            if ( ! CoreSchema::hasColumn( 'subul_users', 'account_amount' ) ) {
                 $table->float( 'account_amount' )->default( 0 );
             }
-            if ( ! CoreSchema::hasColumn( 'jgrem_users', 'first_name' ) ) {
+            if ( ! CoreSchema::hasColumn( 'subul_users', 'first_name' ) ) {
                 $table->string( 'first_name' )->nullable();
             }
-            if ( ! CoreSchema::hasColumn( 'jgrem_users', 'last_name' ) ) {
+            if ( ! CoreSchema::hasColumn( 'subul_users', 'last_name' ) ) {
                 $table->string( 'last_name' )->nullable();
             }
-            if ( ! CoreSchema::hasColumn( 'jgrem_users', 'gender' ) ) {
+            if ( ! CoreSchema::hasColumn( 'subul_users', 'gender' ) ) {
                 $table->string( 'gender' )->nullable();
             }
-            if ( ! CoreSchema::hasColumn( 'jgrem_users', 'phone' ) ) {
+            if ( ! CoreSchema::hasColumn( 'subul_users', 'phone' ) ) {
                 $table->string( 'phone' )->nullable();
             }
-            if ( ! CoreSchema::hasColumn( 'jgrem_users', 'pobox' ) ) {
+            if ( ! CoreSchema::hasColumn( 'subul_users', 'pobox' ) ) {
                 $table->string( 'pobox' )->nullable();
             }
-            if ( ! CoreSchema::hasColumn( 'jgrem_users', 'group_id' ) ) {
+            if ( ! CoreSchema::hasColumn( 'subul_users', 'group_id' ) ) {
                 $table->integer( 'group_id' )->nullable();
             }
         } );
@@ -164,26 +164,26 @@ return new class extends Migration
          * Coupons can now be added to
          * customer groups.
          */
-        Schema::table( 'jgrem_coupons', function ( Blueprint $table ) {
-            if ( ! Schema::hasColumn( 'jgrem_coupons', 'groups_id' ) ) {
+        Schema::table( 'subul_coupons', function ( Blueprint $table ) {
+            if ( ! Schema::hasColumn( 'subul_coupons', 'groups_id' ) ) {
                 $table->string( 'groups_id' )->nullable();
             }
 
-            if ( ! Schema::hasColumn( 'jgrem_coupons', 'customers_id' ) ) {
+            if ( ! Schema::hasColumn( 'subul_coupons', 'customers_id' ) ) {
                 $table->string( 'customers_id' )->nullable();
             }
         } );
 
-        if ( ! Schema::hasTable( 'jgrem_coupons_customers' ) ) {
-            Schema::create( 'jgrem_coupons_customers', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_coupons_customers' ) ) {
+            Schema::create( 'subul_coupons_customers', function ( Blueprint $table ) {
                 $table->id();
                 $table->integer( 'coupon_id' );
                 $table->integer( 'customer_id' );
             } );
         }
 
-        if ( ! Schema::hasTable( 'jgrem_coupons_customers_groups' ) ) {
-            Schema::create( 'jgrem_coupons_customers_groups', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_coupons_customers_groups' ) ) {
+            Schema::create( 'subul_coupons_customers_groups', function ( Blueprint $table ) {
                 $table->id();
                 $table->integer( 'coupon_id' );
                 $table->integer( 'group_id' );
@@ -193,73 +193,73 @@ return new class extends Migration
         /**
          * rename the provider columns
          */
-        Schema::table( 'jgrem_providers', function ( Blueprint $table ) {
-            if ( Schema::hasColumn( 'jgrem_providers', 'name' ) ) {
+        Schema::table( 'subul_providers', function ( Blueprint $table ) {
+            if ( Schema::hasColumn( 'subul_providers', 'name' ) ) {
                 $table->renameColumn( 'name', 'first_name' );
             }
-            if ( Schema::hasColumn( 'jgrem_providers', 'surname' ) ) {
+            if ( Schema::hasColumn( 'subul_providers', 'surname' ) ) {
                 $table->renameColumn( 'surname', 'last_name' );
             }
         } );
 
-        Schema::table( 'jgrem_cash_flow', function ( Blueprint $table ) {
-            if ( Schema::hasColumn( 'jgrem_cash_flow', 'order_refund_product_id' ) ) {
+        Schema::table( 'subul_cash_flow', function ( Blueprint $table ) {
+            if ( Schema::hasColumn( 'subul_cash_flow', 'order_refund_product_id' ) ) {
                 $table->integer( 'order_refund_product_id' );
             }
-            if ( Schema::hasColumn( 'jgrem_cash_flow', 'order_product_id' ) ) {
+            if ( Schema::hasColumn( 'subul_cash_flow', 'order_product_id' ) ) {
                 $table->integer( 'order_product_id' );
             }
-            if ( Schema::hasColumn( 'jgrem_cash_flow', 'transaction_id' ) ) {
+            if ( Schema::hasColumn( 'subul_cash_flow', 'transaction_id' ) ) {
                 $table->renameColumn( 'transaction_id', 'transaction_id' );
             }
         } );
 
-        Schema::table( 'jgrem_procurements_products', function ( Blueprint $table ) {
-            if ( ! Schema::hasColumn( 'jgrem_procurements_products', 'convert_unit_id' ) ) {
+        Schema::table( 'subul_procurements_products', function ( Blueprint $table ) {
+            if ( ! Schema::hasColumn( 'subul_procurements_products', 'convert_unit_id' ) ) {
                 $table->integer( 'convert_unit_id' )->nullable();
             }
         } );
 
-        Schema::table( 'jgrem_customers_addresses', function ( Blueprint $table ) {
-            if ( Schema::hasColumn( 'jgrem_customers_addresses', 'name' ) ) {
+        Schema::table( 'subul_customers_addresses', function ( Blueprint $table ) {
+            if ( Schema::hasColumn( 'subul_customers_addresses', 'name' ) ) {
                 $table->renameColumn( 'name', 'first_name' );
             }
-            if ( Schema::hasColumn( 'jgrem_customers_addresses', 'surname' ) ) {
+            if ( Schema::hasColumn( 'subul_customers_addresses', 'surname' ) ) {
                 $table->renameColumn( 'surname', 'last_name' );
             }
         } );
 
-        Schema::table( 'jgrem_orders_coupons', function ( Blueprint $table ) {
-            if ( ! Schema::hasColumn( 'jgrem_orders_coupons', 'counted' ) ) {
+        Schema::table( 'subul_orders_coupons', function ( Blueprint $table ) {
+            if ( ! Schema::hasColumn( 'subul_orders_coupons', 'counted' ) ) {
                 $table->boolean( 'counted' )->default( false );
             }
         } );
 
-        Schema::table( 'jgrem_orders_addresses', function ( Blueprint $table ) {
-            if ( Schema::hasColumn( 'jgrem_orders_addresses', 'name' ) ) {
+        Schema::table( 'subul_orders_addresses', function ( Blueprint $table ) {
+            if ( Schema::hasColumn( 'subul_orders_addresses', 'name' ) ) {
                 $table->renameColumn( 'name', 'first_name' );
             }
-            if ( Schema::hasColumn( 'jgrem_orders_addresses', 'surname' ) ) {
+            if ( Schema::hasColumn( 'subul_orders_addresses', 'surname' ) ) {
                 $table->renameColumn( 'surname', 'last_name' );
             }
         } );
 
-        Schema::table( 'jgrem_products_unit_quantities', function ( Blueprint $table ) {
-            if ( ! Schema::hasColumn( 'jgrem_products_unit_quantities', 'convert_unit_id' ) ) {
+        Schema::table( 'subul_products_unit_quantities', function ( Blueprint $table ) {
+            if ( ! Schema::hasColumn( 'subul_products_unit_quantities', 'convert_unit_id' ) ) {
                 $table->integer( 'convert_unit_id' )->nullable();
             }
 
-            if ( ! Schema::hasColumn( 'jgrem_products_unit_quantities', 'visible' ) ) {
+            if ( ! Schema::hasColumn( 'subul_products_unit_quantities', 'visible' ) ) {
                 $table->integer( 'visible' )->nullable();
             }
 
-            if ( ! Schema::hasColumn( 'jgrem_products_unit_quantities', 'cogs' ) ) {
+            if ( ! Schema::hasColumn( 'subul_products_unit_quantities', 'cogs' ) ) {
                 $table->integer( 'cogs' )->nullable();
             }
         } );
 
-        Schema::table( 'jgrem_products', function ( Blueprint $table ) {
-            if ( ! Schema::hasColumn( 'jgrem_products', 'auto_cogs' ) ) {
+        Schema::table( 'subul_products', function ( Blueprint $table ) {
+            if ( ! Schema::hasColumn( 'subul_products', 'auto_cogs' ) ) {
                 $table->boolean( 'auto_cogs' )->default( true );
             }
         } );
@@ -270,15 +270,15 @@ return new class extends Migration
         $firstAdministrator = Role::namespace( Role::ADMIN )->users()->first();
         $faker = ( new Factory )->create();
 
-        if ( Schema::hasTable( 'jgrem_customers' ) ) {
-            $users = DB::table( 'jgrem_customers' )->get( '*' )->map( function ( $customer ) use ( $faker, $usersService, $doctorService, $firstAdministrator ) {
+        if ( Schema::hasTable( 'subul_customers' ) ) {
+            $users = DB::table( 'subul_customers' )->get( '*' )->map( function ( $customer ) use ( $faker, $usersService, $doctorService, $firstAdministrator ) {
                 $user = User::where( 'email', $customer->email )
                     ->orWhere( 'username', $customer->email )
                     ->firstOrNew();
 
                 $user->birth_date = $customer->birth_date;
                 $user->username = ( $customer->email ?? 'user-' ) . $faker->randomNumber( 5 );
-                $user->email = ( $customer->email ?? $user->username ) . '@jgrem.com';
+                $user->email = ( $customer->email ?? $user->username ) . '@subul.com';
                 $user->purchases_amount = $customer->purchases_amount ?: 0;
                 $user->owed_amount = $customer->owed_amount ?: 0;
                 $user->credit_limit_amount = $customer->credit_limit_amount ?: 0;
@@ -321,8 +321,8 @@ return new class extends Migration
                 }
             } );
 
-            Schema::drop( 'jgrem_customers' );
-            Schema::drop( 'jgrem_customers_metas' );
+            Schema::drop( 'subul_customers' );
+            Schema::drop( 'subul_customers_metas' );
         }
 
         /**
@@ -340,9 +340,9 @@ return new class extends Migration
 
         /**
          * 1: This permission is a duplicate one, and can easilly be confused
-         * with "jgrem.customers.manage-account-history"
+         * with "subul.customers.manage-account-history"
          */
-        $permission = Permission::namespace( 'jgrem.customers.manage-account' );
+        $permission = Permission::namespace( 'subul.customers.manage-account' );
 
         if ( $permission instanceof Permission ) {
             RolePermission::where( 'permission_id', $permission->id )->delete();
@@ -354,7 +354,7 @@ return new class extends Migration
          */
         $options = Option::get();
 
-        $options->each( function ( $option ) {
+        $optiosb->each( function ( $option ) {
             $json = json_decode( $option->value, true );
 
             if ( preg_match( '/^[0-9]{1,}$/', $option->value ) ) {

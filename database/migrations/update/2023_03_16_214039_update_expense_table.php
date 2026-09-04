@@ -13,12 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( Schema::hasTable( 'jgrem_expenses' ) ) {
-            Schema::table( 'jgrem_expenses', function ( Blueprint $table ) {
-                if ( Schema::hasColumn( 'jgrem_expenses', 'occurence' ) ) {
+        if ( Schema::hasTable( 'subul_expenses' ) ) {
+            Schema::table( 'subul_expenses', function ( Blueprint $table ) {
+                if ( Schema::hasColumn( 'subul_expenses', 'occurence' ) ) {
                     $table->renameColumn( 'occurence', 'occurrence' );
                 }
-                if ( Schema::hasColumn( 'jgrem_expenses', 'occurence_value' ) ) {
+                if ( Schema::hasColumn( 'subul_expenses', 'occurence_value' ) ) {
                     $table->renameColumn( 'occurence_value', 'occurrence_value' );
                 }
             } );

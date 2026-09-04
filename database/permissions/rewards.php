@@ -2,28 +2,28 @@
 
 use App\Models\Permission;
 
-if ( defined( 'JG_CREATE_PERMISSIONS' ) ) {
-    $reward = Permission::firstOrNew( [ 'namespace' => 'jgrem.create.rewards' ] );
+if ( defined( 'SB_CREATE_PERMISSIONS' ) ) {
+    $reward = Permission::firstOrNew( [ 'namespace' => 'subul.create.rewards' ] );
     $reward->name = __( 'Create Rewards' );
-    $reward->namespace = 'jgrem.create.rewards';
+    $reward->namespace = 'subul.create.rewards';
     $reward->description = __( 'Let the user create Rewards' );
     $reward->save();
 
-    $reward = Permission::firstOrNew( [ 'namespace' => 'jgrem.delete.rewards' ] );
+    $reward = Permission::firstOrNew( [ 'namespace' => 'subul.delete.rewards' ] );
     $reward->name = __( 'Delete Rewards' );
-    $reward->namespace = 'jgrem.delete.rewards';
+    $reward->namespace = 'subul.delete.rewards';
     $reward->description = __( 'Let the user delete Rewards' );
     $reward->save();
 
-    $reward = Permission::firstOrNew( [ 'namespace' => 'jgrem.update.rewards' ] );
+    $reward = Permission::firstOrNew( [ 'namespace' => 'subul.update.rewards' ] );
     $reward->name = __( 'Update Rewards' );
-    $reward->namespace = 'jgrem.update.rewards';
+    $reward->namespace = 'subul.update.rewards';
     $reward->description = __( 'Let the user update Rewards' );
     $reward->save();
 
-    $reward = Permission::firstOrNew( [ 'namespace' => 'jgrem.read.rewards' ] );
+    $reward = Permission::firstOrNew( [ 'namespace' => 'subul.read.rewards' ] );
     $reward->name = __( 'Read Rewards' );
-    $reward->namespace = 'jgrem.read.rewards';
+    $reward->namespace = 'subul.read.rewards';
     $reward->description = __( 'Let the user read Rewards' );
     $reward->save();
 }

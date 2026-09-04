@@ -17,8 +17,8 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_units' ) ) {
-            Schema::createIfMissing( 'jgrem_units', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_units' ) ) {
+            Schema::createIfMissing( 'subul_units', function ( Blueprint $table ) {
                 $table->bigIncrements( 'id' );
                 $table->string( 'name' );
                 $table->string( 'identifier' )->unique();
@@ -41,8 +41,8 @@ return new class extends Migration
      */
     public function down()
     {
-        if ( Schema::hasTable( 'jgrem_units' ) ) {
-            Schema::dropIfExists( 'jgrem_units' );
+        if ( Schema::hasTable( 'subul_units' ) ) {
+            Schema::dropIfExists( 'subul_units' );
         }
     }
 };

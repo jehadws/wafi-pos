@@ -23,18 +23,18 @@ return new class extends Migration
      */
     public function up()
     {
-        $permission = Permission::namespace( 'jgrem.reports.products-report' );
+        $permission = Permission::namespace( 'subul.reports.products-report' );
 
         if ( ! $permission instanceof Permission ) {
-            $permission = Permission::firstOrNew( [ 'namespace' => 'jgrem.reports.products-report' ] );
+            $permission = Permission::firstOrNew( [ 'namespace' => 'subul.reports.products-report' ] );
             $permission->name = __( 'See Products Report' );
-            $permission->namespace = 'jgrem.reports.products-report';
+            $permission->namespace = 'subul.reports.products-report';
             $permission->description = __( 'Let you see the Products report' );
             $permission->save();
         }
 
         Role::namespace( 'admin' )->addPermissions( $permission );
-        Role::namespace( 'jgrem.store.administrator' )->addPermissions( $permission );
+        Role::namespace( 'subul.store.administrator' )->addPermissions( $permission );
     }
 
     /**

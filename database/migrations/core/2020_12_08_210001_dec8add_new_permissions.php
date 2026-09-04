@@ -23,15 +23,15 @@ return new class extends Migration
      */
     public function up()
     {
-        $readHistory = Permission::withNamespaceOrNew( 'jgrem.read.cash-flow-history' );
+        $readHistory = Permission::withNamespaceOrNew( 'subul.read.cash-flow-history' );
         $readHistory->name = __( 'Read Cash Flow History' );
-        $readHistory->namespace = 'jgrem.read.cash-flow-history';
+        $readHistory->namespace = 'subul.read.cash-flow-history';
         $readHistory->description = __( 'Allow to the Cash Flow History.' );
         $readHistory->save();
 
-        $deleteHistory = Permission::withNamespaceOrNew( 'jgrem.delete.cash-flow-history' );
+        $deleteHistory = Permission::withNamespaceOrNew( 'subul.delete.cash-flow-history' );
         $deleteHistory->name = __( 'Delete Expense History' );
-        $deleteHistory->namespace = 'jgrem.delete.cash-flow-history';
+        $deleteHistory->namespace = 'subul.delete.cash-flow-history';
         $deleteHistory->description = __( 'Allow to delete an expense history.' );
         $deleteHistory->save();
 
@@ -40,7 +40,7 @@ return new class extends Migration
             $deleteHistory,
         ] );
 
-        Role::namespace( 'jgrem.store.administrator' )->addPermissions( [
+        Role::namespace( 'subul.store.administrator' )->addPermissions( [
             $readHistory,
             $deleteHistory,
         ] );

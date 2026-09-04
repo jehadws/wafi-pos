@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::createIfMissing( 'jgrem_dashboard_months', function ( Blueprint $table ) {
+        Schema::createIfMissing( 'subul_dashboard_months', function ( Blueprint $table ) {
             $table->id();
             $table->float( 'month_taxes', 18, 5 )->default( 0 );
             $table->float( 'month_unpaid_orders', 18, 5 )->default( 0 );
@@ -53,6 +53,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists( 'jgrem_dashboard_months' );
+        Schema::dropIfExists( 'subul_dashboard_months' );
     }
 };

@@ -25,18 +25,18 @@ return new class extends Migration
      */
     public function up()
     {
-        $permission = Permission::namespace( 'jgrem.manage-payments-types' );
+        $permission = Permission::namespace( 'subul.manage-payments-types' );
 
         if ( ! $permission instanceof Permission ) {
-            $permission = Permission::firstOrNew( [ 'namespace' => 'jgrem.manage-payments-types' ] );
-            $permission->namespace = 'jgrem.manage-payments-types';
+            $permission = Permission::firstOrNew( [ 'namespace' => 'subul.manage-payments-types' ] );
+            $permission->namespace = 'subul.manage-payments-types';
             $permission->name = __( 'Manage Order Payment Types' );
             $permission->description = __( 'Allow to create, update and delete payments type.' );
             $permission->save();
         }
 
         Role::namespace( 'admin' )->addPermissions( $permission );
-        Role::namespace( 'jgrem.store.administrator' )->addPermissions( $permission );
+        Role::namespace( 'subul.store.administrator' )->addPermissions( $permission );
     }
 
     /**
@@ -46,8 +46,8 @@ return new class extends Migration
      */
     public function down()
     {
-        if ( Schema::hasTable( 'jgrem_permissions' ) ) {
-            $permission = Permission::namespace( 'jgrem.manage-payments-types' );
+        if ( Schema::hasTable( 'subul_permissions' ) ) {
+            $permission = Permission::namespace( 'subul.manage-payments-types' );
 
             if ( $permission instanceof Permission ) {
                 RolePermission::where( 'permission_id', $permission->id )->delete();

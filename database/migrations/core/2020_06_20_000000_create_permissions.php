@@ -37,8 +37,8 @@ return new class extends Migration
          * let's create a constant which will allow the creation,
          * since these files are included as migration file
          */
-        if ( ! defined( 'JG_CREATE_PERMISSIONS' ) ) {
-            define( 'JG_CREATE_PERMISSIONS', true );
+        if ( ! defined( 'SB_CREATE_PERMISSIONS' ) ) {
+            define( 'SB_CREATE_PERMISSIONS', true );
         }
 
         /**
@@ -91,24 +91,24 @@ return new class extends Migration
         $this->permission->description = __( 'Can access the dashboard and see metrics' );
         $this->permission->save();
 
-        include_once dirname( __FILE__ ) . '/../../permissions/medias.php';
-        include_once dirname( __FILE__ ) . '/../../permissions/categories.php';
-        include_once dirname( __FILE__ ) . '/../../permissions/customers.php';
-        include_once dirname( __FILE__ ) . '/../../permissions/customers-groups.php';
-        include_once dirname( __FILE__ ) . '/../../permissions/coupons.php';
-        include_once dirname( __FILE__ ) . '/../../permissions/transactions-accounts.php';
-        include_once dirname( __FILE__ ) . '/../../permissions/transactions.php';
-        include_once dirname( __FILE__ ) . '/../../permissions/orders.php';
-        include_once dirname( __FILE__ ) . '/../../permissions/procurements.php';
-        include_once dirname( __FILE__ ) . '/../../permissions/providers.php';
-        include_once dirname( __FILE__ ) . '/../../permissions/products.php';
-        include_once dirname( __FILE__ ) . '/../../permissions/registers.php';
-        include_once dirname( __FILE__ ) . '/../../permissions/rewards.php';
-        include_once dirname( __FILE__ ) . '/../../permissions/taxes.php';
-        include_once dirname( __FILE__ ) . '/../../permissions/reports.php';
-        include_once dirname( __FILE__ ) . '/../../permissions/payments-types.php';
-        include_once dirname( __FILE__ ) . '/../../permissions/pos.php';
-        include_once dirname( __FILE__ ) . '/../../permissions/widgets.php';
+        include dirname( __FILE__ ) . '/../../permissions/medias.php';
+        include dirname( __FILE__ ) . '/../../permissions/categories.php';
+        include dirname( __FILE__ ) . '/../../permissions/customers.php';
+        include dirname( __FILE__ ) . '/../../permissions/customers-groups.php';
+        include dirname( __FILE__ ) . '/../../permissions/coupons.php';
+        include dirname( __FILE__ ) . '/../../permissions/transactions-accounts.php';
+        include dirname( __FILE__ ) . '/../../permissions/transactions.php';
+        include dirname( __FILE__ ) . '/../../permissions/orders.php';
+        include dirname( __FILE__ ) . '/../../permissions/procurements.php';
+        include dirname( __FILE__ ) . '/../../permissions/providers.php';
+        include dirname( __FILE__ ) . '/../../permissions/products.php';
+        include dirname( __FILE__ ) . '/../../permissions/registers.php';
+        include dirname( __FILE__ ) . '/../../permissions/rewards.php';
+        include dirname( __FILE__ ) . '/../../permissions/taxes.php';
+        include dirname( __FILE__ ) . '/../../permissions/reports.php';
+        include dirname( __FILE__ ) . '/../../permissions/payments-types.php';
+        include dirname( __FILE__ ) . '/../../permissions/pos.php';
+        include dirname( __FILE__ ) . '/../../permissions/widgets.php';
     }
 
     /**
@@ -118,6 +118,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Permission::where( 'namespace', 'like', '%jgrem.%' )->delete();
+        Permission::where( 'namespace', 'like', '%subul.%' )->delete();
     }
 };

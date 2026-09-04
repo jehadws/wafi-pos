@@ -13,21 +13,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if ( Schema::hasTable( 'jgrem_transactions_histories' ) ) {
-            Schema::table( 'jgrem_transactions_histories', function ( Blueprint $table ) {
-                if ( ! Schema::hasColumn( 'jgrem_transactions_histories', 'type' ) ) {
+        if ( Schema::hasTable( 'subul_transactions_histories' ) ) {
+            Schema::table( 'subul_transactions_histories', function ( Blueprint $table ) {
+                if ( ! Schema::hasColumn( 'subul_transactions_histories', 'type' ) ) {
                     $table->string( 'type' )->nullable();
                 }
-                if ( ! Schema::hasColumn( 'jgrem_transactions_histories', 'trigger_date' ) ) {
+                if ( ! Schema::hasColumn( 'subul_transactions_histories', 'trigger_date' ) ) {
                     $table->datetime( 'trigger_date' )->nullable();
                 }
-                if ( Schema::hasColumn( 'jgrem_transactions_histories', 'status' ) ) {
+                if ( Schema::hasColumn( 'subul_transactions_histories', 'status' ) ) {
                     $table->string( 'status' )->default( TransactionHistory::STATUS_PENDING )->change();
                 }
             } );
 
             TransactionHistory::query()->update( [
-                'trigger_date' => ns()->date->toDateTimeString(),
+                'trigger_date' => sb()->date->toDateTimeString(),
                 'status' => TransactionHistory::STATUS_ACTIVE,
                 'type' => Transaction::TYPE_DIRECT,
             ] );

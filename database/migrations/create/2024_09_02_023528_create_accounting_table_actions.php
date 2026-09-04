@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::createIfMissing( 'jgrem_transactions_actions_rules', function ( Blueprint $table ) {
+        Schema::createIfMissing( 'subul_transactions_actions_rules', function ( Blueprint $table ) {
             $table->id();
             $table->string( 'on' );
             $table->enum( 'action', [ 'increase', 'decrease' ] );
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists( 'jgrem_transactions_actions_rules' );
+        Schema::dropIfExists( 'subul_transactions_actions_rules' );
     }
 };

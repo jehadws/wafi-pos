@@ -23,8 +23,8 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_permissions' ) ) {
-            Schema::create( 'jgrem_permissions', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_permissions' ) ) {
+            Schema::create( 'subul_permissions', function ( Blueprint $table ) {
                 $table->increments( 'id' );
                 $table->string( 'name' )->unique();
                 $table->string( 'namespace' )->unique();
@@ -41,6 +41,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists( 'jgrem_permissions' );
+        Schema::dropIfExists( 'subul_permissions' );
     }
 };

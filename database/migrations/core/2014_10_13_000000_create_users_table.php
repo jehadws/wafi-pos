@@ -23,8 +23,8 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_users' ) ) {
-            Schema::create( 'jgrem_users', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_users' ) ) {
+            Schema::create( 'subul_users', function ( Blueprint $table ) {
                 $table->increments( 'id' );
                 $table->string( 'username' );
                 $table->boolean( 'active' )->default( false );
@@ -59,6 +59,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists( 'jgrem_users' );
+        Schema::dropIfExists( 'subul_users' );
     }
 };

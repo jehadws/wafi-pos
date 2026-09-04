@@ -17,8 +17,8 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_orders' ) ) {
-            Schema::createIfMissing( 'jgrem_orders', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_orders' ) ) {
+            Schema::createIfMissing( 'subul_orders', function ( Blueprint $table ) {
                 $table->bigIncrements( 'id' );
                 $table->text( 'description' )->nullable();
                 $table->string( 'code' );
@@ -59,16 +59,16 @@ return new class extends Migration
             } );
         }
 
-        if ( ! Schema::hasTable( 'jgrem_orders_count' ) ) {
-            Schema::createIfMissing( 'jgrem_orders_count', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_orders_count' ) ) {
+            Schema::createIfMissing( 'subul_orders_count', function ( Blueprint $table ) {
                 $table->bigIncrements( 'id' );
                 $table->integer( 'count' );
                 $table->datetime( 'date' );
             } );
         }
 
-        if ( ! Schema::hasTable( 'jgrem_orders_taxes' ) ) {
-            Schema::createIfMissing( 'jgrem_orders_taxes', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_orders_taxes' ) ) {
+            Schema::createIfMissing( 'subul_orders_taxes', function ( Blueprint $table ) {
                 $table->bigIncrements( 'id' );
                 $table->integer( 'tax_id' )->nullable();
                 $table->integer( 'order_id' )->nullable();
@@ -86,16 +86,16 @@ return new class extends Migration
      */
     public function down()
     {
-        if ( Schema::hasTable( 'jgrem_orders' ) ) {
-            Schema::dropIfExists( 'jgrem_orders' );
+        if ( Schema::hasTable( 'subul_orders' ) ) {
+            Schema::dropIfExists( 'subul_orders' );
         }
 
-        if ( Schema::hasTable( 'jgrem_orders_count' ) ) {
-            Schema::dropIfExists( 'jgrem_orders_count' );
+        if ( Schema::hasTable( 'subul_orders_count' ) ) {
+            Schema::dropIfExists( 'subul_orders_count' );
         }
 
-        if ( Schema::hasTable( 'jgrem_orders_taxes' ) ) {
-            Schema::dropIfExists( 'jgrem_orders_taxes' );
+        if ( Schema::hasTable( 'subul_orders_taxes' ) ) {
+            Schema::dropIfExists( 'subul_orders_taxes' );
         }
     }
 };

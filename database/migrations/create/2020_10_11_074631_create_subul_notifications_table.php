@@ -22,8 +22,8 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_notifications' ) ) {
-            Schema::createIfMissing( 'jgrem_notifications', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_notifications' ) ) {
+            Schema::createIfMissing( 'subul_notifications', function ( Blueprint $table ) {
                 $table->id();
                 $table->integer( 'user_id' );
                 $table->string( 'identifier' );
@@ -44,6 +44,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists( 'jgrem_notifications' );
+        Schema::dropIfExists( 'subul_notifications' );
     }
 };

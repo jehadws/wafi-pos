@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if ( Schema::hasTable( 'jgrem_registers_history' ) ) {
-            Schema::table( 'jgrem_registers_history', function ( Blueprint $table ) {
-                if ( ! Schema::hasColumn( 'jgrem_registers_history', 'transaction_account_id' ) ) {
+        if ( Schema::hasTable( 'subul_registers_history' ) ) {
+            Schema::table( 'subul_registers_history', function ( Blueprint $table ) {
+                if ( ! Schema::hasColumn( 'subul_registers_history', 'transaction_account_id' ) ) {
                     $table->integer( 'transaction_account_id' )->nullable();
                 }
             } );
@@ -25,8 +25,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if ( Schema::hasTable( 'jgrem_registers_history' ) ) {
-            Schema::table( 'jgrem_registers_history', function ( Blueprint $table ) {
+        if ( Schema::hasTable( 'subul_registers_history' ) ) {
+            Schema::table( 'subul_registers_history', function ( Blueprint $table ) {
                 $table->dropColumn( 'transaction_account_id' );
             } );
         }

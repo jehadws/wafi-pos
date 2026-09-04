@@ -11,31 +11,31 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table( 'jgrem_transactions_histories', function ( Blueprint $table ) {
-            if ( Schema::hasColumn( 'jgrem_transactions_histories', 'expense_category_id' ) ) {
+        Schema::table( 'subul_transactions_histories', function ( Blueprint $table ) {
+            if ( Schema::hasColumn( 'subul_transactions_histories', 'expense_category_id' ) ) {
                 $table->integer( 'expense_category_id' )->nullable()->default( 0 )->change();
             }
-            if ( Schema::hasColumn( 'jgrem_transactions_histories', 'expense_category_id' ) ) {
+            if ( Schema::hasColumn( 'subul_transactions_histories', 'expense_category_id' ) ) {
                 $table->renameColumn( 'expense_category_id', 'transaction_account_id' );
             }
 
-            if ( Schema::hasColumn( 'jgrem_transactions_histories', 'expense_id' ) ) {
+            if ( Schema::hasColumn( 'subul_transactions_histories', 'expense_id' ) ) {
                 $table->integer( 'expense_id' )->nullable()->default( 0 )->change();
             }
-            if ( Schema::hasColumn( 'jgrem_transactions_histories', 'expense_id' ) ) {
+            if ( Schema::hasColumn( 'subul_transactions_histories', 'expense_id' ) ) {
                 $table->renameColumn( 'expense_id', 'transaction_id' );
             }
 
-            if ( ! Schema::hasColumn( 'jgrem_transactions_histories', 'order_product_id' ) ) {
+            if ( ! Schema::hasColumn( 'subul_transactions_histories', 'order_product_id' ) ) {
                 $table->integer( 'order_product_id' )->nullable();
             }
-            if ( ! Schema::hasColumn( 'jgrem_transactions_histories', 'order_refund_product_id' ) ) {
+            if ( ! Schema::hasColumn( 'subul_transactions_histories', 'order_refund_product_id' ) ) {
                 $table->integer( 'order_refund_product_id' )->nullable();
             }
         } );
 
-        Schema::table( 'jgrem_procurements_products', function ( Blueprint $table ) {
-            if ( Schema::hasColumn( 'jgrem_procurements_products', 'tax_group_id' ) ) {
+        Schema::table( 'subul_procurements_products', function ( Blueprint $table ) {
+            if ( Schema::hasColumn( 'subul_procurements_products', 'tax_group_id' ) ) {
                 $table->unsignedBigInteger( 'tax_group_id' )->nullable()->change();
             }
         } );

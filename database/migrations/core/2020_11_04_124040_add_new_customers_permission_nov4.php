@@ -18,7 +18,7 @@ return new class extends Migration
         return false;
     }
 
-    private $permission = 'jgrem.customers.manage-account-history';
+    private $permission = 'subul.customers.manage-account-history';
 
     /**
      * Run the migrations.
@@ -38,8 +38,8 @@ return new class extends Migration
         }
 
         Role::namespace( 'admin' )->addPermissions( $this->permission );
-        Role::namespace( 'jgrem.store.administrator' )->addPermissions( $this->permission );
-        Role::namespace( 'jgrem.store.cashier' )->addPermissions( $this->permission );
+        Role::namespace( 'subul.store.administrator' )->addPermissions( $this->permission );
+        Role::namespace( 'subul.store.cashier' )->addPermissions( $this->permission );
     }
 
     /**
@@ -49,7 +49,7 @@ return new class extends Migration
      */
     public function down()
     {
-        if ( Schema::hasTable( 'jgrem_permissions' ) ) {
+        if ( Schema::hasTable( 'subul_permissions' ) ) {
             $permission = Permission::namespace( $this->permission );
 
             if ( $permission instanceof Permission ) {

@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::createIfMissing( 'jgrem_orders_refunds', function ( Blueprint $table ) {
+        Schema::createIfMissing( 'subul_orders_refunds', function ( Blueprint $table ) {
             $table->bigIncrements( 'id' );
             $table->integer( 'order_id' );
             $table->integer( 'author' );
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->timestamps();
         } );
 
-        Schema::createIfMissing( 'jgrem_orders_products_refunds', function ( Blueprint $table ) {
+        Schema::createIfMissing( 'subul_orders_products_refunds', function ( Blueprint $table ) {
             $table->bigIncrements( 'id' );
             $table->integer( 'order_id' );
             $table->integer( 'order_refund_id' );
@@ -49,7 +49,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists( 'jgrem_orders_products_refunds' );
-        Schema::dropIfExists( 'jgrem_orders_refunds' );
+        Schema::dropIfExists( 'subul_orders_products_refunds' );
+        Schema::dropIfExists( 'subul_orders_refunds' );
     }
 };

@@ -17,8 +17,8 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_rewards_system_rules' ) ) {
-            Schema::createIfMissing( 'jgrem_rewards_system_rules', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_rewards_system_rules' ) ) {
+            Schema::createIfMissing( 'subul_rewards_system_rules', function ( Blueprint $table ) {
                 $table->bigIncrements( 'id' );
                 $table->float( 'from', 18, 5 );
                 $table->float( 'to', 18, 5 );
@@ -38,8 +38,8 @@ return new class extends Migration
      */
     public function down()
     {
-        if ( Schema::hasTable( 'jgrem_rewards_system_rules' ) ) {
-            Schema::dropIfExists( 'jgrem_rewards_system_rules' );
+        if ( Schema::hasTable( 'subul_rewards_system_rules' ) ) {
+            Schema::dropIfExists( 'subul_rewards_system_rules' );
         }
     }
 };

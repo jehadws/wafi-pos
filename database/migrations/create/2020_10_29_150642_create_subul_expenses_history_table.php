@@ -14,7 +14,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::createIfMissing( 'jgrem_transactions_histories', function ( Blueprint $table ) {
+        Schema::createIfMissing( 'subul_transactions_histories', function ( Blueprint $table ) {
             $table->id();
             $table->integer( 'transaction_id' )->nullable();
             $table->string( 'operation' ); // credit or debit
@@ -47,6 +47,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists( 'jgrem_transactions_histories' );
+        Schema::dropIfExists( 'subul_transactions_histories' );
     }
 };

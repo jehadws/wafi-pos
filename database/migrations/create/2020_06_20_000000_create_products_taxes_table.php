@@ -17,8 +17,8 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_products_taxes' ) ) {
-            Schema::createIfMissing( 'jgrem_products_taxes', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_products_taxes' ) ) {
+            Schema::createIfMissing( 'subul_products_taxes', function ( Blueprint $table ) {
                 $table->bigIncrements( 'id' );
                 $table->integer( 'product_id' );
                 $table->integer( 'unit_quantity_id' );
@@ -40,8 +40,8 @@ return new class extends Migration
      */
     public function down()
     {
-        if ( Schema::hasTable( 'jgrem_products_taxes' ) ) {
-            Schema::dropIfExists( 'jgrem_products_taxes' );
+        if ( Schema::hasTable( 'subul_products_taxes' ) ) {
+            Schema::dropIfExists( 'subul_products_taxes' );
         }
     }
 };

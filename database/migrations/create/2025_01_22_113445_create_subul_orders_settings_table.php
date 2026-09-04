@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if ( ! Schema::hasTable( 'jgrem_orders_settings' ) ) {
-            Schema::create( 'jgrem_orders_settings', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_orders_settings' ) ) {
+            Schema::create( 'subul_orders_settings', function ( Blueprint $table ) {
                 $table->id();
                 $table->integer( 'order_id' );
                 $table->string( 'key' );
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists( 'jgrem_orders_settings' );
+        Schema::dropIfExists( 'subul_orders_settings' );
     }
 };

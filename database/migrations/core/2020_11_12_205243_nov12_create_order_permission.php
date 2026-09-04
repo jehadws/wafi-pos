@@ -17,7 +17,7 @@ return new class extends Migration
         return false;
     }
 
-    const permissionName = 'jgrem.make-payment.orders';
+    const permissionName = 'subul.make-payment.orders';
 
     /**
      * Run the migrations.
@@ -37,7 +37,7 @@ return new class extends Migration
         }
 
         Role::namespace( 'admin' )->addPermissions( $permission );
-        Role::namespace( 'jgrem.store.administrator' )->addPermissions( $permission );
+        Role::namespace( 'subul.store.administrator' )->addPermissions( $permission );
     }
 
     /**
@@ -47,7 +47,7 @@ return new class extends Migration
      */
     public function down()
     {
-        if ( Schema::hasTable( 'jgrem_permissions' ) ) {
+        if ( Schema::hasTable( 'subul_permissions' ) ) {
             $permission = Permission::namespace( self::permissionName );
             $permission->removeFromRoles();
         }

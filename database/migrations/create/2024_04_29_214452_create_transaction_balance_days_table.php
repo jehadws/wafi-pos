@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::createIfMissing( 'jgrem_transactions_balance_days', function ( Blueprint $table ) {
+        Schema::createIfMissing( 'subul_transactions_balance_days', function ( Blueprint $table ) {
             $table->id();
             $table->float( 'opening_balance' )->default( 0 );
             $table->float( 'income' )->default( 0 );
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists( 'jgrem_transactions_balance_days' );
+        Schema::dropIfExists( 'subul_transactions_balance_days' );
     }
 };

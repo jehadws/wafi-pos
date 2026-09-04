@@ -3,11 +3,11 @@
 use App\Models\Permission;
 use App\Models\Role;
 
-$storeAdmin = Role::firstOrNew( [ 'namespace' => 'jgrem.store.administrator' ] );
+$storeAdmin = Role::firstOrNew( [ 'namespace' => 'subul.store.administrator' ] );
 $storeAdmin->name = __( 'Store Administrator' );
-$storeAdmin->namespace = 'jgrem.store.administrator';
+$storeAdmin->namespace = 'subul.store.administrator';
 $storeAdmin->locked = true;
-$storeAdmin->description = __( 'Has a control over an entire store of JgremPOS.' );
+$storeAdmin->description = __( 'Has a control over an entire store of Subul.' );
 $storeAdmin->save();
 
 $storeAdmin->addPermissions( [ 'read.dashboard' ] );

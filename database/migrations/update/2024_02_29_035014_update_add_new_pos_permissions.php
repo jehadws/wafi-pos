@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if ( ! Permission::namespace( 'jgrem.pos.delete-order-product' ) instanceof Permission ) {
-            $pos = Permission::firstOrNew( [ 'namespace' => 'jgrem.pos.delete-order-product' ] );
+        if ( ! Permission::namespace( 'subul.pos.delete-order-product' ) instanceof Permission ) {
+            $pos = Permission::firstOrNew( [ 'namespace' => 'subul.pos.delete-order-product' ] );
             $pos->name = __( 'POS: Delete Order Product' );
-            $pos->namespace = 'jgrem.pos.delete-order-product';
+            $pos->namespace = 'subul.pos.delete-order-product';
             $pos->description = __( 'Let the user delete order products on POS.' );
             $pos->save();
 
@@ -38,7 +38,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $permission = Permission::namespace( 'jgrem.pos.delete-order-product' );
+        $permission = Permission::namespace( 'subul.pos.delete-order-product' );
         $permission->removeFromRoles();
         $permission->delete();
     }

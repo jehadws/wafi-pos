@@ -17,8 +17,8 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_products_galleries' ) ) {
-            Schema::createIfMissing( 'jgrem_products_galleries', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_products_galleries' ) ) {
+            Schema::createIfMissing( 'subul_products_galleries', function ( Blueprint $table ) {
                 $table->bigIncrements( 'id' );
                 $table->string( 'name' )->nullable();
                 $table->integer( 'product_id' );
@@ -40,8 +40,8 @@ return new class extends Migration
      */
     public function down()
     {
-        if ( Schema::hasTable( 'jgrem_products_galleries' ) ) {
-            Schema::dropIfExists( 'jgrem_products_galleries' );
+        if ( Schema::hasTable( 'subul_products_galleries' ) ) {
+            Schema::dropIfExists( 'subul_products_galleries' );
         }
     }
 };

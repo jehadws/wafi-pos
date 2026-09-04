@@ -13,8 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_products_subitems' ) ) {
-            Schema::create( 'jgrem_products_subitems', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_products_subitems' ) ) {
+            Schema::create( 'subul_products_subitems', function ( Blueprint $table ) {
                 $table->id();
                 $table->integer( 'parent_id' );
                 $table->integer( 'product_id' );
@@ -36,6 +36,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists( 'jgrem_products_subitems' );
+        Schema::dropIfExists( 'subul_products_subitems' );
     }
 };

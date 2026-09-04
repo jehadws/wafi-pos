@@ -17,8 +17,8 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_orders_addresses' ) ) {
-            Schema::createIfMissing( 'jgrem_orders_addresses', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_orders_addresses' ) ) {
+            Schema::createIfMissing( 'subul_orders_addresses', function ( Blueprint $table ) {
                 $table->bigIncrements( 'id' );
                 $table->integer( 'order_id' );
                 $table->string( 'type' ); // either "billing" or "shipping"
@@ -46,8 +46,8 @@ return new class extends Migration
      */
     public function down()
     {
-        if ( Schema::hasTable( 'jgrem_orders_addresses' ) ) {
-            Schema::drop( 'jgrem_orders_addresses' );
+        if ( Schema::hasTable( 'subul_orders_addresses' ) ) {
+            Schema::drop( 'subul_orders_addresses' );
         }
     }
 };

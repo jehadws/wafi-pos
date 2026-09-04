@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::createIfMissing( 'jgrem_customers_rewards', function ( Blueprint $table ) {
+        Schema::createIfMissing( 'subul_customers_rewards', function ( Blueprint $table ) {
             $table->id();
             $table->integer( 'customer_id' );
             $table->integer( 'reward_id' );
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists( 'jgrem_customers_rewards' );
+        Schema::dropIfExists( 'subul_customers_rewards' );
     }
 };

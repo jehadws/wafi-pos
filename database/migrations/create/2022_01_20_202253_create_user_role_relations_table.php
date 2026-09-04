@@ -26,8 +26,8 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_users_roles_relations' ) ) {
-            Schema::create( 'jgrem_users_roles_relations', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_users_roles_relations' ) ) {
+            Schema::create( 'subul_users_roles_relations', function ( Blueprint $table ) {
                 $table->id();
                 $table->integer( 'role_id' );
                 $table->integer( 'user_id' );
@@ -35,7 +35,7 @@ return new class extends Migration
             } );
         }
 
-        if ( Schema::hasColumn( 'jgrem_users', 'role_id' ) ) {
+        if ( Schema::hasColumn( 'subul_users', 'role_id' ) ) {
             Role::get()->each( function ( $role ) {
                 User::where( 'role_id', $role->id )
                     ->get()
@@ -56,6 +56,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists( 'jgrem_users_roles_relations' );
+        Schema::dropIfExists( 'subul_users_roles_relations' );
     }
 };

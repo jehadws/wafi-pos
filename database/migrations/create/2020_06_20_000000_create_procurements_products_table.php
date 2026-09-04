@@ -17,8 +17,8 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_procurements_products' ) ) {
-            Schema::createIfMissing( 'jgrem_procurements_products', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_procurements_products' ) ) {
+            Schema::createIfMissing( 'subul_procurements_products', function ( Blueprint $table ) {
                 $table->bigIncrements( 'id' );
                 $table->string( 'name' );
                 $table->float( 'gross_purchase_price', 18, 5 )->default( 0 );
@@ -50,8 +50,8 @@ return new class extends Migration
      */
     public function down()
     {
-        if ( Schema::hasTable( 'jgrem_procurements_products' ) ) {
-            Schema::dropIfExists( 'jgrem_procurements_products' );
+        if ( Schema::hasTable( 'subul_procurements_products' ) ) {
+            Schema::dropIfExists( 'subul_procurements_products' );
         }
     }
 };

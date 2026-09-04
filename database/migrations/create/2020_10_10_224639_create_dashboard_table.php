@@ -13,17 +13,17 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_dashboard_days' ) ) {
-            Schema::createIfMissing( 'jgrem_dashboard_days', function ( Blueprint $table ) {
-                if ( ! Schema::hasColumn( 'jgrem_dashboard_days', 'id' ) ) {
+        if ( ! Schema::hasTable( 'subul_dashboard_days' ) ) {
+            Schema::createIfMissing( 'subul_dashboard_days', function ( Blueprint $table ) {
+                if ( ! Schema::hasColumn( 'subul_dashboard_days', 'id' ) ) {
                     $table->bigIncrements( 'id' );
                 }
             } );
         }
 
-        if ( Schema::hasTable( 'jgrem_dashboard_days' ) ) {
-            Schema::table( 'jgrem_dashboard_days', function ( Blueprint $table ) {
-                if ( ! Schema::hasColumn( 'jgrem_dashboard_days', 'id' ) ) {
+        if ( Schema::hasTable( 'subul_dashboard_days' ) ) {
+            Schema::table( 'subul_dashboard_days', function ( Blueprint $table ) {
+                if ( ! Schema::hasColumn( 'subul_dashboard_days', 'id' ) ) {
                     $table->bigIncrements( 'id' );
                 }
 
@@ -64,55 +64,55 @@ return new class extends Migration
                     'total_expenses',
                     'day_expenses',
                 ] as $column ) {
-                    if ( ! Schema::hasColumn( 'jgrem_dashboard_days', $column ) ) {
+                    if ( ! Schema::hasColumn( 'subul_dashboard_days', $column ) ) {
                         $table->float( $column, 18, 5 )->default( 0 );
                     }
                 }
 
-                if ( ! Schema::hasColumn( 'jgrem_dashboard_days', 'day_of_year' ) ) {
+                if ( ! Schema::hasColumn( 'subul_dashboard_days', 'day_of_year' ) ) {
                     $table->integer( 'day_of_year' )->default( 0 );
                 }
 
-                if ( ! Schema::hasColumn( 'jgrem_dashboard_days', 'range_starts' ) ) {
+                if ( ! Schema::hasColumn( 'subul_dashboard_days', 'range_starts' ) ) {
                     $table->datetime( 'range_starts' )->nullable();
                 }
 
-                if ( ! Schema::hasColumn( 'jgrem_dashboard_days', 'range_ends' ) ) {
+                if ( ! Schema::hasColumn( 'subul_dashboard_days', 'range_ends' ) ) {
                     $table->datetime( 'range_ends' )->nullable();
                 }
             } );
         }
 
-        if ( ! Schema::hasTable( 'jgrem_dashboard_weeks' ) ) {
-            Schema::createIfMissing( 'jgrem_dashboard_weeks', function ( Blueprint $table ) {
-                if ( ! Schema::hasColumn( 'jgrem_dashboard_weeks', 'id' ) ) {
+        if ( ! Schema::hasTable( 'subul_dashboard_weeks' ) ) {
+            Schema::createIfMissing( 'subul_dashboard_weeks', function ( Blueprint $table ) {
+                if ( ! Schema::hasColumn( 'subul_dashboard_weeks', 'id' ) ) {
                     $table->bigIncrements( 'id' );
                 }
             } );
         }
 
-        if ( Schema::hasTable( 'jgrem_dashboard_weeks' ) ) {
-            Schema::table( 'jgrem_dashboard_weeks', function ( Blueprint $table ) {
+        if ( Schema::hasTable( 'subul_dashboard_weeks' ) ) {
+            Schema::table( 'subul_dashboard_weeks', function ( Blueprint $table ) {
                 foreach ( [
                     'total_gross_income',
                     'total_taxes',
                     'total_expenses',
                     'total_net_income',
                 ] as $column ) {
-                    if ( ! Schema::hasColumn( 'jgrem_dashboard_weeks', $column ) ) {
+                    if ( ! Schema::hasColumn( 'subul_dashboard_weeks', $column ) ) {
                         $table->float( $column, 18, 5 )->default( 0 );
                     }
                 }
 
-                if ( ! Schema::hasColumn( 'jgrem_dashboard_weeks', 'week_number' ) ) {
+                if ( ! Schema::hasColumn( 'subul_dashboard_weeks', 'week_number' ) ) {
                     $table->integer( 'week_number' )->default( 0 );
                 }
 
-                if ( ! Schema::hasColumn( 'jgrem_dashboard_weeks', 'range_starts' ) ) {
+                if ( ! Schema::hasColumn( 'subul_dashboard_weeks', 'range_starts' ) ) {
                     $table->datetime( 'range_starts' )->nullable();
                 }
 
-                if ( ! Schema::hasColumn( 'jgrem_dashboard_weeks', 'range_ends' ) ) {
+                if ( ! Schema::hasColumn( 'subul_dashboard_weeks', 'range_ends' ) ) {
                     $table->datetime( 'range_ends' )->nullable();
                 }
             } );
@@ -126,7 +126,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists( 'jgrem_dashboard_days' );
-        Schema::dropIfExists( 'jgrem_dashboard_weeks' );
+        Schema::dropIfExists( 'subul_dashboard_days' );
+        Schema::dropIfExists( 'subul_dashboard_weeks' );
     }
 };

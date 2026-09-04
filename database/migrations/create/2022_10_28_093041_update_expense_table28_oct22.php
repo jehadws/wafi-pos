@@ -14,17 +14,17 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( Schema::hasTable( 'jgrem_transacations' ) ) {
-            Schema::table( 'jgrem_transactions', function ( Blueprint $table ) {
-                if ( ! Schema::hasColumn( 'jgrem_transactions', 'type' ) ) {
+        if ( Schema::hasTable( 'subul_transacations' ) ) {
+            Schema::table( 'subul_transactions', function ( Blueprint $table ) {
+                if ( ! Schema::hasColumn( 'subul_transactions', 'type' ) ) {
                     $table->string( 'type' )->nullable();
                 }
 
-                if ( ! Schema::hasColumn( 'jgrem_transactions', 'scheduled_date' ) ) {
+                if ( ! Schema::hasColumn( 'subul_transactions', 'scheduled_date' ) ) {
                     $table->dateTime( 'scheduled_date' )->nullable();
                 }
 
-                if ( ! Schema::hasColumn( 'jgrem_transactions', 'account_id' ) ) {
+                if ( ! Schema::hasColumn( 'subul_transactions', 'account_id' ) ) {
                     $table->integer( 'account_id' )->nullable();
                 }
             } );
@@ -50,8 +50,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table( 'jgrem_transactions', function ( Blueprint $table ) {
-            if ( Schema::hasColumn( 'jgrem_transactions', 'type' ) ) {
+        Schema::table( 'subul_transactions', function ( Blueprint $table ) {
+            if ( Schema::hasColumn( 'subul_transactions', 'type' ) ) {
                 $table->dropColumn( 'type' );
             }
         } );

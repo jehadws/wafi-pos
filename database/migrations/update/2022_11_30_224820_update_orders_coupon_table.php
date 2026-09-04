@@ -13,8 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table( 'jgrem_orders_coupons', function ( Blueprint $table ) {
-            if ( ! Schema::hasColumn( 'jgrem_orders_coupons', 'coupon_id' ) ) {
+        Schema::table( 'subul_orders_coupons', function ( Blueprint $table ) {
+            if ( ! Schema::hasColumn( 'subul_orders_coupons', 'coupon_id' ) ) {
                 $table->integer( 'coupon_id' )->nullable();
             }
         } );
@@ -27,8 +27,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table( 'jgrem_orders_coupons', function ( Blueprint $table ) {
-            if ( Schema::hasColumn( 'jgrem_orders_coupons', 'coupon_id' ) ) {
+        Schema::table( 'subul_orders_coupons', function ( Blueprint $table ) {
+            if ( Schema::hasColumn( 'subul_orders_coupons', 'coupon_id' ) ) {
                 $table->dropColumn( 'coupon_id' );
             }
         } );

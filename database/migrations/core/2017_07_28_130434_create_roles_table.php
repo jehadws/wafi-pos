@@ -23,8 +23,8 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_roles' ) ) {
-            Schema::create( 'jgrem_roles', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_roles' ) ) {
+            Schema::create( 'subul_roles', function ( Blueprint $table ) {
                 $table->increments( 'id' );
                 $table->string( 'name' )->unique();
                 $table->string( 'namespace' )->unique();
@@ -38,8 +38,8 @@ return new class extends Migration
         }
 
         // Permissions Relation with Roles
-        if ( ! Schema::hasTable( 'jgrem_role_permission' ) ) {
-            Schema::create( 'jgrem_role_permission', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_role_permission' ) ) {
+            Schema::create( 'subul_role_permission', function ( Blueprint $table ) {
                 $table->integer( 'permission_id' );
                 $table->integer( 'role_id' );
                 $table->primary( [ 'permission_id', 'role_id' ] );
@@ -54,7 +54,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists( 'jgrem_roles' );
-        Schema::dropIfExists( 'jgrem_role_permission' );
+        Schema::dropIfExists( 'subul_roles' );
+        Schema::dropIfExists( 'subul_role_permission' );
     }
 };

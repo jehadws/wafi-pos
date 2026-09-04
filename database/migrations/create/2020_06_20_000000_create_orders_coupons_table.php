@@ -17,8 +17,8 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_orders_coupons' ) ) {
-            Schema::createIfMissing( 'jgrem_orders_coupons', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_orders_coupons' ) ) {
+            Schema::createIfMissing( 'subul_orders_coupons', function ( Blueprint $table ) {
                 $table->bigIncrements( 'id' );
                 $table->string( 'code' );
                 $table->string( 'name' );
@@ -46,8 +46,8 @@ return new class extends Migration
      */
     public function down()
     {
-        if ( Schema::hasTable( 'jgrem_orders_coupons' ) ) {
-            Schema::dropIfExists( 'jgrem_orders_coupons' );
+        if ( Schema::hasTable( 'subul_orders_coupons' ) ) {
+            Schema::dropIfExists( 'subul_orders_coupons' );
         }
     }
 };

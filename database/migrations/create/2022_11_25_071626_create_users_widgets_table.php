@@ -13,8 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_users_widgets' ) ) {
-            Schema::create( 'jgrem_users_widgets', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_users_widgets' ) ) {
+            Schema::create( 'subul_users_widgets', function ( Blueprint $table ) {
                 $table->uuid( 'id' )->primary();
                 $table->string( 'identifier' );
                 $table->string( 'column' );
@@ -33,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists( 'jgrem_users_widgets' );
+        Schema::dropIfExists( 'subul_users_widgets' );
     }
 };

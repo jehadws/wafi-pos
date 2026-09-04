@@ -4,9 +4,9 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Widgets\ProfileWidget;
 
-$storeCustomer = Role::firstOrNew( [ 'namespace' => 'jgrem.store.customer' ] );
+$storeCustomer = Role::firstOrNew( [ 'namespace' => 'subul.store.customer' ] );
 $storeCustomer->name = __( 'Store Customer' );
-$storeCustomer->namespace = 'jgrem.store.customer';
+$storeCustomer->namespace = 'subul.store.customer';
 $storeCustomer->locked = true;
 $storeCustomer->description = __( 'Can purchase orders and manage his profile.' );
 $storeCustomer->save();

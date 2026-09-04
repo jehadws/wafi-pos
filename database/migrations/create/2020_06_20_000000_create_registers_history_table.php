@@ -17,8 +17,8 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_registers_history' ) ) {
-            Schema::createIfMissing( 'jgrem_registers_history', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_registers_history' ) ) {
+            Schema::createIfMissing( 'subul_registers_history', function ( Blueprint $table ) {
                 $table->bigIncrements( 'id' );
                 $table->integer( 'register_id' );
                 $table->integer( 'payment_id' )->nullable();
@@ -44,8 +44,8 @@ return new class extends Migration
      */
     public function down()
     {
-        if ( Schema::hasTable( 'jgrem_registers_history' ) ) {
-            Schema::dropIfExists( 'jgrem_registers_history' );
+        if ( Schema::hasTable( 'subul_registers_history' ) ) {
+            Schema::dropIfExists( 'subul_registers_history' );
         }
     }
 };

@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::createIfMissing( 'jgrem_orders_instalments', function ( Blueprint $table ) {
+        Schema::createIfMissing( 'subul_orders_instalments', function ( Blueprint $table ) {
             $table->bigIncrements( 'id' );
             $table->float( 'amount', 18, 5 )->default( 0 );
             $table->integer( 'order_id' )->nullable();
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists( 'jgrem_orders_instalments' );
+        Schema::dropIfExists( 'subul_orders_instalments' );
     }
 };

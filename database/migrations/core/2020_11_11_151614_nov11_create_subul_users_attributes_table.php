@@ -1,8 +1,8 @@
 <?php
 
+use App\Classes\Schema;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -23,11 +23,13 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_modules_migrations' ) ) {
-            Schema::create( 'jgrem_modules_migrations', function ( Blueprint $table ) {
-                $table->id();
-                $table->string( 'namespace' );
-                $table->string( 'file' );
+        if ( ! Schema::hasTable( 'subul_users_attributes' ) ) {
+            Schema::create( 'subul_users_attributes', function ( Blueprint $table ) {
+                $table->bigIncrements( 'id' );
+                $table->integer( 'user_id' );
+                $table->string( 'avatar_link' )->nullable();
+                $table->string( 'theme' )->nullable();
+                $table->string( 'language' )->nullable();
             } );
         }
     }
@@ -39,6 +41,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists( 'jgrem_modules_migrations' );
+        Schema::dropIfExists( 'subul_users_attributes' );
     }
 };

@@ -17,8 +17,8 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_taxes' ) ) {
-            Schema::createIfMissing( 'jgrem_taxes', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_taxes' ) ) {
+            Schema::createIfMissing( 'subul_taxes', function ( Blueprint $table ) {
                 $table->bigIncrements( 'id' );
                 $table->string( 'name' );
                 $table->text( 'description' )->nullable();
@@ -30,8 +30,8 @@ return new class extends Migration
             } );
         }
 
-        if ( ! Schema::hasTable( 'jgrem_taxes_groups' ) ) {
-            Schema::createIfMissing( 'jgrem_taxes_groups', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_taxes_groups' ) ) {
+            Schema::createIfMissing( 'subul_taxes_groups', function ( Blueprint $table ) {
                 $table->bigIncrements( 'id' );
                 $table->string( 'name' );
                 $table->text( 'description' )->nullable();
@@ -49,12 +49,12 @@ return new class extends Migration
      */
     public function down()
     {
-        if ( Schema::hasTable( 'jgrem_taxes' ) ) {
-            Schema::dropIfExists( 'jgrem_taxes' );
+        if ( Schema::hasTable( 'subul_taxes' ) ) {
+            Schema::dropIfExists( 'subul_taxes' );
         }
 
-        if ( Schema::hasTable( 'jgrem_taxes_groups' ) ) {
-            Schema::dropIfExists( 'jgrem_taxes_groups' );
+        if ( Schema::hasTable( 'subul_taxes_groups' ) ) {
+            Schema::dropIfExists( 'subul_taxes_groups' );
         }
     }
 };

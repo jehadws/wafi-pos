@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $permission = Permission::firstOrNew( [ 'namespace' => 'jgrem.convert.products-units' ] );
+        $permission = Permission::firstOrNew( [ 'namespace' => 'subul.convert.products-units' ] );
         $permission->name = __( 'Convert Products Units' );
-        $permission->namespace = 'jgrem.convert.products-units';
+        $permission->namespace = 'subul.convert.products-units';
         $permission->description = __( 'Let the user convert products' );
         $permission->save();
 
@@ -25,7 +25,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $permission = Permission::where( 'namespace', 'jgrem.convert.products-units' )->first();
+        $permission = Permission::where( 'namespace', 'subul.convert.products-units' )->first();
 
         if ( $permission instanceof Permission ) {
             $permission->removeFromRoles();

@@ -12,16 +12,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if ( Schema::hasTable( 'jgrem_expenses' ) ) {
-            Schema::rename( 'jgrem_expenses', 'jgrem_transactions' );
+        if ( Schema::hasTable( 'subul_expenses' ) ) {
+            Schema::rename( 'subul_expenses', 'subul_transactions' );
         }
 
-        if ( Schema::hasTable( 'jgrem_expenses_categories' ) ) {
-            Schema::rename( 'jgrem_expenses_categories', 'jgrem_transactions_accounts' );
+        if ( Schema::hasTable( 'subul_expenses_categories' ) ) {
+            Schema::rename( 'subul_expenses_categories', 'subul_transactions_accounts' );
         }
 
-        if ( Schema::hasTable( 'jgrem_cash_flow' ) ) {
-            Schema::rename( 'jgrem_cash_flow', 'jgrem_transactions_histories' );
+        if ( Schema::hasTable( 'subul_cash_flow' ) ) {
+            Schema::rename( 'subul_cash_flow', 'subul_transactions_histories' );
         }
 
         include_once base_path() . '/database/permissions/transactions-accounts.php';

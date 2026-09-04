@@ -24,26 +24,26 @@ return new class extends Migration
      */
     public function up()
     {
-        $createInstalment = Permission::firstOrNew( [ 'namespace' => 'jgrem.create.orders-instalments' ] );
-        $createInstalment->namespace = 'jgrem.create.orders-instalments';
+        $createInstalment = Permission::firstOrNew( [ 'namespace' => 'subul.create.orders-instalments' ] );
+        $createInstalment->namespace = 'subul.create.orders-instalments';
         $createInstalment->name = __( 'Create Instalment' );
         $createInstalment->description = __( 'Allow the user to create instalments.' );
         $createInstalment->save();
 
-        $updateInstalment = Permission::firstOrNew( [ 'namespace' => 'jgrem.update.orders-instalments' ] );
-        $updateInstalment->namespace = 'jgrem.update.orders-instalments';
+        $updateInstalment = Permission::firstOrNew( [ 'namespace' => 'subul.update.orders-instalments' ] );
+        $updateInstalment->namespace = 'subul.update.orders-instalments';
         $updateInstalment->name = __( 'Update Instalment' );
         $updateInstalment->description = __( 'Allow the user to update instalments.' );
         $updateInstalment->save();
 
-        $readInstalment = Permission::firstOrNew( [ 'namespace' => 'jgrem.read.orders-instalments' ] );
-        $readInstalment->namespace = 'jgrem.read.orders-instalments';
+        $readInstalment = Permission::firstOrNew( [ 'namespace' => 'subul.read.orders-instalments' ] );
+        $readInstalment->namespace = 'subul.read.orders-instalments';
         $readInstalment->name = __( 'Read Instalment' );
         $readInstalment->description = __( 'Allow the user to read instalments.' );
         $readInstalment->save();
 
-        $deleteInstalments = Permission::firstOrNew( [ 'namespace' => 'jgrem.delete.orders-instalments' ] );
-        $deleteInstalments->namespace = 'jgrem.delete.orders-instalments';
+        $deleteInstalments = Permission::firstOrNew( [ 'namespace' => 'subul.delete.orders-instalments' ] );
+        $deleteInstalments->namespace = 'subul.delete.orders-instalments';
         $deleteInstalments->name = __( 'Delete Instalment' );
         $deleteInstalments->description = __( 'Allow the user to delete instalments.' );
         $deleteInstalments->save();
@@ -55,7 +55,7 @@ return new class extends Migration
             $deleteInstalments,
         ] );
 
-        Role::namespace( 'jgrem.store.administrator' )->addPermissions( [
+        Role::namespace( 'subul.store.administrator' )->addPermissions( [
             $createInstalment,
             $updateInstalment,
             $readInstalment,
@@ -70,12 +70,12 @@ return new class extends Migration
      */
     public function down()
     {
-        if ( Schema::hasTable( 'jgrem_permissions' ) && Schema::hasTable( 'jgrem_roles' ) ) {
+        if ( Schema::hasTable( 'subul_permissions' ) && Schema::hasTable( 'subul_roles' ) ) {
             collect( [
-                'jgrem.create.orders-instalments',
-                'jgrem.update.orders-instalments',
-                'jgrem.read.orders-instalments',
-                'jgrem.delete.orders-instalments',
+                'subul.create.orders-instalments',
+                'subul.update.orders-instalments',
+                'subul.read.orders-instalments',
+                'subul.delete.orders-instalments',
             ] )->each( function ( $identifier ) {
                 $permission = Permission::where( 'namespace', $identifier
                 )->first();

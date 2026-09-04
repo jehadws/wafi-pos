@@ -17,8 +17,8 @@ return new class extends Migration
      */
     public function up()
     {
-        if ( ! Schema::hasTable( 'jgrem_customers_groups' ) ) {
-            Schema::createIfMissing( 'jgrem_customers_groups', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_customers_groups' ) ) {
+            Schema::createIfMissing( 'subul_customers_groups', function ( Blueprint $table ) {
                 $table->bigIncrements( 'id' );
                 $table->string( 'name' );
                 $table->text( 'description' )->nullable();
@@ -38,8 +38,8 @@ return new class extends Migration
      */
     public function down()
     {
-        if ( Schema::hasTable( 'jgrem_customers_groups' ) ) {
-            Schema::drop( 'jgrem_customers_groups' );
+        if ( Schema::hasTable( 'subul_customers_groups' ) ) {
+            Schema::drop( 'subul_customers_groups' );
         }
     }
 };

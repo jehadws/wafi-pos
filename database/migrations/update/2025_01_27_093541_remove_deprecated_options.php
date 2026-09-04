@@ -11,14 +11,14 @@ return new class extends Migration
     {
         //  products_flat_vat
         // products_variable_vat
-        if ( ns()->option->get( 'ns_jgrem_vat' ) === 'products_flat_vat' ) {
-            ns()->option->set( 'ns_jgrem_vat', 'flat_vat' );
-            ns()->option->set( 'ns_jgrem_price_with_tax', 'yes' );
+        if ( sb()->option->get( 'sb_subul_vat' ) === 'products_flat_vat' ) {
+            sb()->option->set( 'sb_subul_vat', 'flat_vat' );
+            sb()->option->set( 'sb_subul_price_with_tax', 'yes' );
         }
 
-        if ( ns()->option->get( 'ns_jgrem_vat' ) === 'products_variable_vat' ) {
-            ns()->option->set( 'ns_jgrem_vat', 'variable_vat' );
-            ns()->option->set( 'ns_jgrem_price_with_tax', 'yes' );
+        if ( sb()->option->get( 'sb_subul_vat' ) === 'products_variable_vat' ) {
+            sb()->option->set( 'sb_subul_vat', 'variable_vat' );
+            sb()->option->set( 'sb_subul_price_with_tax', 'yes' );
         }
     }
 

@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::createIfMissing( 'jgrem_payments_types', function ( Blueprint $table ) {
+        Schema::createIfMissing( 'subul_payments_types', function ( Blueprint $table ) {
             $table->id();
             $table->string( 'label' );
             $table->string( 'identifier' );
@@ -33,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists( 'jgrem_payments_types' );
+        Schema::dropIfExists( 'subul_payments_types' );
     }
 };

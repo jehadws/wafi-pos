@@ -17,7 +17,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::createIfMissing( 'jgrem_transactions', function ( Blueprint $table ) {
+        Schema::createIfMissing( 'subul_transactions', function ( Blueprint $table ) {
             $table->bigIncrements( 'id' );
             $table->string( 'name' );
             $table->integer( 'account_id' );
@@ -44,6 +44,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists( 'jgrem_transactions' );
+        Schema::dropIfExists( 'subul_transactions' );
     }
 };

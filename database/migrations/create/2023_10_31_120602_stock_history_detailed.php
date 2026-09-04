@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if ( ! Schema::hasTable( 'jgrem_products_histories_combined' ) ) {
-            Schema::create( 'jgrem_products_histories_combined', function ( Blueprint $table ) {
+        if ( ! Schema::hasTable( 'subul_products_histories_combined' ) ) {
+            Schema::create( 'subul_products_histories_combined', function ( Blueprint $table ) {
                 $table->increments( 'id' );
                 $table->string( 'name' );
                 $table->date( 'date' );
@@ -34,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists( 'jgrem_products_histories_combined' );
+        Schema::dropIfExists( 'subul_products_histories_combined' );
     }
 };
