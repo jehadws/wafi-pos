@@ -61,11 +61,11 @@ class SetupCommand extends Command
             ! empty( $this->option( 'admin_username' ) ) &&
             ! empty( $this->option( 'admin_password' ) )
         ) {
-            $this->sb_store_name = $this->option( 'store_name' );
-            $this->admin_email = $this->option( 'admin_email' );
+            $this->sb_store_name  = $this->option( 'store_name' );
+            $this->admin_email    = $this->option( 'admin_email' );
             $this->admin_username = $this->option( 'admin_username' );
             $this->admin_password = $this->option( 'admin_password' );
-            $this->language = $this->option( 'language' );
+            $this->language       = $this->option( 'language' );
             $this->requireConfirmation = false;
         }
 
@@ -101,9 +101,9 @@ class SetupCommand extends Command
             $service = app()->make( SetupService::class );
             $service->runMigration( [
                 'admin_username' => $this->admin_username,
-                'admin_email' => $this->admin_email,
-                'password' => $this->admin_password,
-                'sb_store_name' => $this->sb_store_name,
+                'admin_email'    => $this->admin_email,
+                'password'       => $this->admin_password,
+                'sb_store_name'  => $this->sb_store_name,
             ] );
 
             return $this->info( 'Thank you, Subul has been successfully installed.' );
@@ -115,11 +115,10 @@ class SetupCommand extends Command
     private function setupStoreName()
     {
         while ( empty( $this->sb_store_name ) ) {
-            $this->sb_store_name = $this->ask( __( 'What is the store name ? [Q] to quit.' ) );
+            $this->sb_store_name = $this->askOrQuit( __( 'What is the store name ? [Q] to quit.' ) );
 
-            if ( $this->sb_store_name === 'Q' ) {
-                $this->info( 'the setup has been interrupted' );
-                exit;
+            if ( $this->sb_store_name === null ) {
+                return;
             }
 
             if ( strlen( $this->sb_store_name ) < 6 ) {
@@ -132,11 +131,10 @@ class SetupCommand extends Command
     private function setupAdminPassword()
     {
         while ( empty( $this->admin_password ) ) {
-            $this->admin_password = $this->secret( __( 'What is the administrator password ? [Q] to quit.' ) );
+            $this->admin_password = $this->askOrQuit( __( 'What is the administrator password ? [Q] to quit.' ), secret: true );
 
-            if ( $this->admin_password === 'Q' ) {
-                $this->info( 'the setup has been interrupted' );
-                exit;
+            if ( $this->admin_password === null ) {
+                return;
             }
 
             if ( strlen( $this->admin_password ) < 6 ) {
@@ -149,20 +147,20 @@ class SetupCommand extends Command
     private function setupLanguage()
     {
         while (empty($this->language)) {
-            $languages = config('subul.languages');
+            $languages      = config('subul.languages');
             $languageValues = array_values($languages);
-            $languageKeys = array_keys($languages);
-            
+            $languageKeys   = array_keys($languages);
+
             $selectedLanguage = $this->choice(
-                __('In which language would you like to install Subul ?'), 
+                __('In which language would you like to install Subul ?'),
                 $languageValues
             );
-            
+
             // Find the key (language code) for the selected language value
             $langIndex = array_search($selectedLanguage, $languageValues);
             if ($langIndex !== false) {
                 $this->language = $languageKeys[$langIndex];
-                
+
                 if (strlen($this->language) != 2) {
                     $this->error(__('You must define the language of installation.'));
                     $this->language = null;
@@ -177,11 +175,10 @@ class SetupCommand extends Command
     private function setupAdminEmail()
     {
         while ( empty( $this->admin_email ) ) {
-            $this->admin_email = $this->ask( __( 'What is the administrator email ? [Q] to quit.' ) );
+            $this->admin_email = $this->askOrQuit( __( 'What is the administrator email ? [Q] to quit.' ) );
 
-            if ( $this->admin_email === 'Q' ) {
-                $this->info( 'the setup has been interrupted' );
-                exit;
+            if ( $this->admin_email === null ) {
+                return;
             }
 
             $regex = '/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/';
@@ -196,11 +193,10 @@ class SetupCommand extends Command
     private function setupAdminUsername()
     {
         while ( empty( $this->admin_username ) ) {
-            $this->admin_username = $this->ask( __( 'What is the administrator username ? [Q] to quit.' ) );
+            $this->admin_username = $this->askOrQuit( __( 'What is the administrator username ? [Q] to quit.' ) );
 
-            if ( $this->admin_username === 'Q' ) {
-                $this->info( 'the setup has been interrupted' );
-                exit;
+            if ( $this->admin_username === null ) {
+                return;
             }
 
             if ( strlen( $this->admin_username ) < 5 ) {
@@ -208,5 +204,22 @@ class SetupCommand extends Command
                 $this->admin_username = null;
             }
         }
+    }
+
+    /**
+     * Ask a question and return null (signaling an exit) if the user types 'Q'.
+     * Centralises the quit-pattern that was previously duplicated across every
+     * interactive setup method.
+     */
+    private function askOrQuit( string $prompt, bool $secret = false ): ?string
+    {
+        $answer = $secret ? $this->secret( $prompt ) : $this->ask( $prompt );
+
+        if ( $answer === 'Q' ) {
+            $this->info( 'The setup has been interrupted.' );
+            exit;
+        }
+
+        return $answer;
     }
 }

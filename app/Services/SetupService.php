@@ -43,52 +43,7 @@ class SetupService
         try {
             DB::connection( 'test' )->getPdo();
         } catch ( \Exception $e ) {
-            switch ( $e->getCode() ) {
-                case 2002:
-                    $message = [
-                        'name' => 'hostname',
-                        'message' => __( 'Unable to reach the host' ),
-                        'status' => 'error',
-                    ];
-                    break;
-                case 1045:
-                    $message = [
-                        'name' => 'username',
-                        'message' => __( 'Unable to connect to the database using the credentials provided.' ),
-                        'status' => 'error',
-                    ];
-                    break;
-                case 1049:
-                    $message = [
-                        'name' => 'database_name',
-                        'message' => __( 'Unable to select the database.' ),
-                        'status' => 'error',
-                    ];
-                    break;
-                case 1044:
-                    $message = [
-                        'name' => 'username',
-                        'message' => __( 'Access denied for this user.' ),
-                        'status' => 'error',
-                    ];
-                    break;
-                case 1698:
-                    $message = [
-                        'name' => 'username',
-                        'message' => __( 'Incorrect Authentication Plugin Provided.' ),
-                        'status' => 'error',
-                    ];
-                    break;
-                default:
-                    $message = [
-                        'name' => 'hostname',
-                        'message' => $e->getMessage(),
-                        'status' => 'error',
-                    ];
-                    break;
-            }
-
-            return response()->json( $message, 403 );
+            return response()->json( $this->translateDbError( $e ), 403 );
         }
 
         // we'll empty the database
@@ -233,8 +188,9 @@ class SetupService
         $this->options->set( 'sb_store_language', $configuredLanguage );
 
         return [
-            'status' => 'success',
+            'status'  => 'success',
             'message' => __( 'Subul has been successfully installed.' ),
+            'user'    => $user,
         ];
     }
 
@@ -275,62 +231,33 @@ class SetupService
         $customerAccountType->save();
     }
 
-    public function testDBConnexion()
+    public function testDatabaseConnection()
     {
         try {
-            $DB = DB::connection( env( 'DB_CONNECTION', 'mysql' ) )->getPdo();
+            DB::connection( env( 'DB_CONNECTION', 'mysql' ) )->getPdo();
 
             return [
-                'status' => 'success',
+                'status'  => 'success',
                 'message' => __( 'Database connection was successful.' ),
             ];
         } catch ( \Exception $e ) {
-            switch ( $e->getCode() ) {
-                case 2002:
-                    $message = [
-                        'name' => 'hostname',
-                        'message' => __( 'Unable to reach the host' ),
-                        'status' => 'error',
-                    ];
-                    break;
-                case 1045:
-                    $message = [
-                        'name' => 'username',
-                        'message' => __( 'Unable to connect to the database using the credentials provided.' ),
-                        'status' => 'error',
-                    ];
-                    break;
-                case 1049:
-                    $message = [
-                        'name' => 'database_name',
-                        'message' => __( 'Unable to select the database.' ),
-                        'status' => 'error',
-                    ];
-                    break;
-                case 1044:
-                    $message = [
-                        'name' => 'username',
-                        'message' => __( 'Access denied for this user.' ),
-                        'status' => 'error',
-                    ];
-                    break;
-                case 1698:
-                    $message = [
-                        'name' => 'username',
-                        'message' => __( 'Incorrect Authentication Plugin Provided.' ),
-                        'status' => 'error',
-                    ];
-                    break;
-                default:
-                    $message = [
-                        'name' => 'hostname',
-                        'message' => $e->getMessage(),
-                        'status' => 'error',
-                    ];
-                    break;
-            }
-
-            return response()->json( $message, 403 );
+            return response()->json( $this->translateDbError( $e ), 403 );
         }
+    }
+
+    /**
+     * Map a PDO/database exception to a field-level error array understood by
+     * the setup wizard frontend. A single canonical place for DB error codes.
+     */
+    private function translateDbError( \Exception $e ): array
+    {
+        return match ( (int) $e->getCode() ) {
+            2002    => [ 'name' => 'hostname',      'message' => __( 'Unable to reach the host.' ),                                          'status' => 'error' ],
+            1045    => [ 'name' => 'username',      'message' => __( 'Unable to connect using the credentials provided.' ),                  'status' => 'error' ],
+            1049    => [ 'name' => 'database_name', 'message' => __( 'Unable to select the database.' ),                                     'status' => 'error' ],
+            1044    => [ 'name' => 'username',      'message' => __( 'Access denied for this user.' ),                                       'status' => 'error' ],
+            1698    => [ 'name' => 'username',      'message' => __( 'Incorrect authentication plugin provided.' ),                          'status' => 'error' ],
+            default => [ 'name' => 'hostname',      'message' => $e->getMessage(),                                                           'status' => 'error' ],
+        };
     }
 }

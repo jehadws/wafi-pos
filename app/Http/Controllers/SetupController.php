@@ -13,6 +13,7 @@ use App\Http\Requests\ApplicationConfigRequest;
 use App\Services\Helper;
 use App\Services\SetupService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class SetupController extends Controller
@@ -29,29 +30,16 @@ class SetupController extends Controller
             return redirect()->route( 'sb.dashboard.home' );
         }
 
-        // Determine the furthest step the user has already completed so we can
-        // open the wizard at the right position instead of always at welcome.
-        $initialStep = 'welcome';
-
-        $dbConnection = env( 'DB_CONNECTION' );
-        $dbDatabase   = env( 'DB_DATABASE' );
-
-        if ( $dbConnection && $dbDatabase ) {
-            try {
-                DB::connection()->getPdo();
-                // DB credentials exist and connection works → skip to configuration.
-                $initialStep = 'configuration';
-            } catch ( \Exception ) {
-                // Credentials saved but DB unreachable → go back to database step.
-                $initialStep = 'database';
-            }
-        }
-
+        // The wizard always starts at the welcome step. If the user needs to
+        // reconfigure the database, they can navigate to the database step
+        // freely. The previous behaviour of auto-skipping to the configuration
+        // step when DB credentials existed caused a back-button loop that
+        // prevented reconfiguration.
         return inertia( 'setup/wizard', [
             'store_name'   => config( 'app.name' ),
             'languages'    => config( 'subul.languages', [] ),
             'default_lang' => $request->query( 'lang' ) ?: 'en',
-            'initial_step' => $initialStep,
+            'initial_step' => 'welcome',
         ] );
     }
 
@@ -62,12 +50,25 @@ class SetupController extends Controller
 
     public function checkDbConfigDefined( Request $request )
     {
-        return $this->setup->testDBConnexion();
+        return $this->setup->testDatabaseConnection();
     }
 
     public function saveConfiguration( ApplicationConfigRequest $request )
     {
-        return $this->setup->runMigration( $request->all() );
+        $result = $this->setup->runMigration( $request->all() );
+
+        // Log the newly-created admin in. Auth::login() needs the session,
+        // so it lives here in the controller rather than inside the service.
+        if ( isset( $result['user'] ) ) {
+            Auth::login( $result['user'] );
+            unset( $result['user'] ); // don't expose the model in the JSON response
+        }
+
+        if ( $request->hasSession() ) {
+            $request->session()->regenerate();
+        }
+
+        return $result;
     }
 
     public function checkExistingCredentials()
