@@ -25,7 +25,7 @@ export function StepIndicator({ step, current, onClick }: StepIndicatorProps) {
             <button
                 onClick={onClick}
                 className={cn(
-                    'relative z-10 flex w-full items-start gap-3 rounded-lg px-2 py-2 text-left transition-colors',
+                    'relative z-10 flex w-full items-start gap-3 rounded-lg px-2 py-2 text-start transition-colors',
                     active && 'bg-violet-500/10',
                     !active && !done && 'hover:bg-zinc-900',
                 )}

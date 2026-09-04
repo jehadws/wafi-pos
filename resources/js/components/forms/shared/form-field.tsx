@@ -25,7 +25,7 @@ export default function FormField({
   return (
     <div className={className}>
       <Label
-        className={`text-sm font-medium ${required ? "after:content-['*'] after:text-destructive after:ml-1" : ""}`}
+        className={`text-sm font-medium ${required ? "after:content-['*'] after:text-destructive after:ms-1" : ""}`}
         htmlFor={htmlFor}
       >
         {label}

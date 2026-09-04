@@ -25,7 +25,7 @@ interface CartItemProps {
   onOpenQuantityKeypad?: (item: OrderProduct) => void;
 }
 
-const CART_ITEM_LINK_CLASSES = "text-muted-foreground hover:text-primary hover:decoration-primary active:bg-muted active:scale-95 rounded px-1 py-0.5 text-left rtl:text-right underline decoration-dotted decoration-1 underline-offset-3 text-xs";
+const CART_ITEM_LINK_CLASSES = "text-muted-foreground hover:text-primary hover:decoration-primary active:bg-muted active:scale-95 rounded px-1 py-0.5 text-start rtl:text-end underline decoration-dotted decoration-1 underline-offset-3 text-xs";
 
 export default function CartItem({
   item,

@@ -2,7 +2,6 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useTranslation } from '@/lib/i18n';
 import { Plus, X } from 'lucide-react';
 
 interface InputWithButtonsProps {
@@ -28,17 +27,16 @@ export default function InputWithButtons({
     showAddButton = false,
     className = '',
 }: InputWithButtonsProps) {
-    const { t } = useTranslation();
     return (
         <div className={`flex ${className}`}>
-            <Input value={value} onChange={(e) => onChange?.(e.target.value)} placeholder={placeholder} className="rounded-r-none" />
+            <Input value={value} onChange={(e) => onChange?.(e.target.value)} placeholder={placeholder} className="rounded-e-none" />
             {showClearButton && (
-                <Button type="button" variant="outline" className="rounded-l-none border-l-0" onClick={onClear}>
+                <Button type="button" variant="outline" className="rounded-s-none border-s-0" onClick={onClear}>
                     <X className="h-4 w-4" />
                 </Button>
             )}
             {showAddButton && (
-                <Button type="button" variant="outline" className="ml-1" onClick={onAdd}>
+                <Button type="button" variant="outline" className="ms-1" onClick={onAdd}>
                     {rightButtonLabel ? rightButtonLabel : <Plus className="h-4 w-4" />}
                 </Button>
             )}

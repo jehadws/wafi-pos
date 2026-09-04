@@ -26,7 +26,7 @@ export default function PermissionSearch({ onSearch }: PermissionSearchProps) {
 
     return (
         <div className="relative">
-            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+            <Search className="text-muted-foreground absolute top-1/2 start-3 h-4 w-4 -translate-y-1/2 transform" />
             <Input
                 ref={inputRef}
                 type="text"
@@ -36,7 +36,7 @@ export default function PermissionSearch({ onSearch }: PermissionSearchProps) {
                     setQuery(e.target.value);
                     onSearch(e.target.value);
                 }}
-                className="h-12 pl-10 text-base"
+                className="h-12 ps-10 text-base"
             />
         </div>
     );

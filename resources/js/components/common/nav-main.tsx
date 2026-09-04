@@ -10,13 +10,11 @@ import {
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
 import { useTranslation } from '@/lib/i18n';
-import { cn } from '@/lib/utils';
 import { Menus } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import {
   BarChart3,
   ChevronDown,
-  ChevronLeft,
   ChevronRight,
   FileImage,
   FileText,
@@ -63,11 +61,11 @@ const MenuIcon = ({ iconName }: { iconName?: string }) => {
     return null;
   }
 
-  return <IconComponent className="mr-2 h-4 w-4" />;
+  return <IconComponent className="me-2 h-4 w-4" />;
 };
 
 export function NavMain() {
-  const { menus, locale }: { menus: Menus } = usePage().props;
+  const { menus }: { menus: Menus } = usePage().props;
   const { t } = useTranslation();
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>(
     Object.fromEntries(Object.entries(menus || {}).map(([key, item]) => [key, item.toggled || false])),
@@ -109,13 +107,11 @@ export function NavMain() {
                           >
                             <MenuIcon iconName={item.icon} />
                             <span>{item.label || ''}</span>
-                            <span className={cn(locale === 'ar' ? 'mr-auto' : 'ml-auto')}>
+                            <span className="ms-auto">
                               {isExpanded ? (
                                 <ChevronDown className="h-4 w-4" />
-                              ) : locale === 'ar' ? (
-                                <ChevronLeft className="h-4 w-4" />
                               ) : (
-                                <ChevronRight className="h-4 w-4" />
+                                <ChevronRight className="rtl:rotate-180 h-4 w-4" />
                               )}
                             </span>
                           </SidebarMenuButton>
@@ -142,7 +138,7 @@ export function NavMain() {
                             <MenuIcon iconName={item.icon} />
                             <span>{item.label || ''}</span>
                             {item.notification && item.notification > 0 && (
-                              <span className="ml-auto rounded-full bg-red-500 px-2 py-1 text-xs text-white">
+                              <span className="ms-auto rounded-full bg-red-500 px-2 py-1 text-xs text-white">
                                 {item.notification}
                               </span>
                             )}

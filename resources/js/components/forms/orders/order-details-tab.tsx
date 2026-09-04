@@ -154,7 +154,7 @@ export default function OrderDetailsTab({ order }: Props) {
                       {product.unit?.name} | <Badge variant="success">{product.condition}</Badge>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-end">
                     <div className="font-semibold">{formatCurrency(product.total_price)}</div>
                     <div className="text-muted-foreground text-xs">{product.created_at}</div>
                   </div>

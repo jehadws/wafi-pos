@@ -103,7 +103,7 @@ export function NotificationBell({ className, align = 'end' }: NotificationBellP
                             >
                                 <Bell className="size-4.5" />
                                 {count > 0 && (
-                                    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground ring-2 ring-background animate-in zoom-in-50">
+                                    <span className="absolute -top-0.5 -end-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground ring-2 ring-background animate-in zoom-in-50">
                                         {count > 99 ? '99+' : count}
                                     </span>
                                 )}
@@ -197,7 +197,7 @@ export function NotificationBell({ className, align = 'end' }: NotificationBellP
                                     </div>
 
                                     {/* Content */}
-                                    <div className="flex-1 min-w-0 pr-4">
+                                    <div className="flex-1 min-w-0 pe-4">
                                         <div className="flex items-center justify-between gap-1">
                                             <h4 className="text-xs font-semibold text-foreground truncate">
                                                 {item.title}
@@ -225,7 +225,7 @@ export function NotificationBell({ className, align = 'end' }: NotificationBellP
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="absolute top-2 right-2 h-6 w-6 text-muted-foreground opacity-70 hover:opacity-100 hover:bg-muted hover:text-foreground"
+                                            className="absolute top-2 end-2 h-6 w-6 text-muted-foreground opacity-70 hover:opacity-100 hover:bg-muted hover:text-foreground"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 dismiss(item.id);

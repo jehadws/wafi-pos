@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])
-    dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+    dir="{{ \App\Services\Helper::isRtlLocale() ? 'rtl' : 'ltr' }}">
 
 <head>
     <meta charset="utf-8">
@@ -17,18 +17,6 @@
                 if (prefersDark) {
                     document.documentElement.classList.add('dark');
                 }
-            }
-        })();
-    </script>
-
-    {{-- Add RTL detection for Arabic --}}
-    <script>
-        (function() {
-            const currentLocale = '{{ app()->getLocale() }}';
-
-            if (currentLocale === 'ar') {
-                document.documentElement.dir = 'rtl';
-                document.documentElement.classList.add('rtl');
             }
         })();
     </script>
@@ -59,7 +47,7 @@
     @inertiaHead
 </head>
 
-<body class="font-sans antialiased {{ app()->getLocale() === 'ar' ? 'rtl' : '' }}">
+<body class="font-sans antialiased">
     @inertia
 </body>
 

@@ -142,7 +142,7 @@ export default function ImagesTab({ form }: ImagesTabProps) {
                                         type="button"
                                         variant="destructive"
                                         size="sm"
-                                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                                        className="absolute -top-2 -end-2 h-6 w-6 rounded-full p-0"
                                         onClick={() => removeImage(index)}
                                     >
                                         <X className="h-4 w-4" />
@@ -152,7 +152,7 @@ export default function ImagesTab({ form }: ImagesTabProps) {
                             {pendingUploads.map(({ file, previewUrl }) => (
                                 <div key={previewUrl} className="relative opacity-60">
                                     <img src={previewUrl} alt={file.name} className="h-24 w-24 rounded-md object-cover" />
-                                    <Loader2 className="absolute top-1/2 left-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 animate-spin" />
+                                    <Loader2 className="absolute top-1/2 start-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 animate-spin" />
                                 </div>
                             ))}
                         </div>

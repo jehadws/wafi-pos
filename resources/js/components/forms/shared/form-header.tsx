@@ -20,7 +20,7 @@ export default function FormHeader({ title, description, onCancel, onSave, saveL
     return (
         <div className="border-b">
             <div className="flex items-center justify-between py-4">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2">
                     {showReturn && (
                         <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
                             <ArrowLeft className="h-4 w-4" />

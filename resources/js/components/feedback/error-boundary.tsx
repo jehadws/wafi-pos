@@ -56,7 +56,7 @@ export class ErrorBoundary extends Component<Props, State> {
                         An unexpected application error occurred. You can attempt to retry or refresh the page.
                     </p>
                     {this.state.error && (
-                        <pre className="mb-6 max-h-40 max-w-lg overflow-auto rounded bg-muted p-4 text-left font-mono text-xs text-muted-foreground border">
+                        <pre className="mb-6 max-h-40 max-w-lg overflow-auto rounded bg-muted p-4 text-start font-mono text-xs text-muted-foreground border">
                             {this.state.error.message}
                         </pre>
                     )}

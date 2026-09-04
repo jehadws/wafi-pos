@@ -95,7 +95,7 @@ export function DateTab({ form, options }: DateTabProps) {
                                             {tz.label}
                                             <Check
                                                 className={cn(
-                                                    'ml-auto',
+                                                    'ms-auto',
                                                     form.data.date.sb_datetime_timezone === tz.value
                                                         ? 'opacity-100'
                                                         : 'opacity-0',

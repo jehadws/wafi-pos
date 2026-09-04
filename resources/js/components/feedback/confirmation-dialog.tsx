@@ -79,10 +79,10 @@ export default function ConfirmationDialog({
                             <Icon className="h-5 w-5" />
                         </div>
                         <div className="flex-1">
-                            <DialogTitle className="text-left">{displayTitle}</DialogTitle>
+                            <DialogTitle className="text-start">{displayTitle}</DialogTitle>
                         </div>
                     </div>
-                    {displayDescription && <DialogDescription className="mt-2 text-left">{displayDescription}</DialogDescription>}
+                    {displayDescription && <DialogDescription className="mt-2 text-start">{displayDescription}</DialogDescription>}
                 </DialogHeader>
 
                 <DialogFooter className="flex-col gap-2 sm:flex-row">

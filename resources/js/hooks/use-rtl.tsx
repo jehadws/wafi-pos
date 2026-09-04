@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { isRTLLocale } from '@/lib/i18n/direction';
 
 type RTLContextType = {
     isRTL: boolean;
@@ -7,22 +8,16 @@ type RTLContextType = {
 const RTLContext = createContext<RTLContextType>({ isRTL: false });
 
 export function RTLProvider({ children, locale }: { children: ReactNode; locale: string }) {
-    const [isRTL, setIsRTL] = useState(false);
+    const [isRTL, setIsRTL] = useState(() => isRTLLocale(locale));
 
     useEffect(() => {
-        // Check if current locale is Arabic
-        const rtl = locale === 'ar';
+        const rtl = isRTLLocale(locale);
         setIsRTL(rtl);
 
-        // Update document direction
+        // The `dir` attribute on <html> is the single source of truth for the
+        // document direction. The `rtl:` Tailwind variant keys off this too
+        // (see @custom-variant rtl in resources/css/app.css).
         document.documentElement.dir = rtl ? 'rtl' : 'ltr';
-
-        // Add/remove RTL class on body
-        if (rtl) {
-            document.body.classList.add('rtl');
-        } else {
-            document.body.classList.remove('rtl');
-        }
     }, [locale]);
 
     return <RTLContext.Provider value={{ isRTL }}>{children}</RTLContext.Provider>;

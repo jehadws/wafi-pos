@@ -43,21 +43,21 @@ export function ProfileSecurityTab({
                             error={form.errors?.security_old_password}
                         >
                             <div className="relative">
-                                <Lock className="text-primary-400 absolute top-3 left-3 h-4 w-4" />
+                                <Lock className="text-primary-400 absolute top-3 start-3 h-4 w-4" />
                                 <Input
                                     id="security_old_password"
                                     name="security_old_password"
                                     value={form.data.security_old_password}
                                     onChange={handleInputChange}
                                     className={
-                                        form.errors?.security_old_password ? 'border-red-500 pr-10 pl-10' : 'pr-10 pl-10'
+                                        form.errors?.security_old_password ? 'border-red-500 pe-10 ps-10' : 'pe-10 ps-10'
                                     }
                                     type={showPassword ? 'text' : 'password'}
                                     placeholder="••••••••"
                                 />
                                 <button
                                     type="button"
-                                    className="text-primary-400 hover:text-primary-600 absolute top-3 right-3"
+                                    className="text-primary-400 hover:text-primary-600 absolute top-3 end-3"
                                     onClick={() => setShowPassword(!showPassword)}
                                 >
                                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -72,19 +72,19 @@ export function ProfileSecurityTab({
                             error={form.errors?.security_password}
                         >
                             <div className="relative">
-                                <Lock className="text-primary-400 absolute top-3 left-3 h-4 w-4" />
+                                <Lock className="text-primary-400 absolute top-3 start-3 h-4 w-4" />
                                 <Input
                                     id="security_password"
                                     name="security_password"
                                     value={form.data.security_password}
                                     onChange={handleInputChange}
-                                    className={form.errors?.security_password ? 'border-red-500 pr-10 pl-10' : 'pr-10 pl-10'}
+                                    className={form.errors?.security_password ? 'border-red-500 pe-10 ps-10' : 'pe-10 ps-10'}
                                     type={showPassword ? 'text' : 'password'}
                                     placeholder="••••••••"
                                 />
                                 <button
                                     type="button"
-                                    className="text-primary-400 hover:text-primary-600 absolute top-3 right-3"
+                                    className="text-primary-400 hover:text-primary-600 absolute top-3 end-3"
                                     onClick={() => setShowPassword(!showPassword)}
                                 >
                                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -99,21 +99,21 @@ export function ProfileSecurityTab({
                             error={form.errors?.security_password_confirm}
                         >
                             <div className="relative">
-                                <Lock className="text-primary-400 absolute top-3 left-3 h-4 w-4" />
+                                <Lock className="text-primary-400 absolute top-3 start-3 h-4 w-4" />
                                 <Input
                                     id="security_password_confirm"
                                     name="security_password_confirm"
                                     value={form.data.security_password_confirm}
                                     onChange={handleInputChange}
                                     className={
-                                        form.errors?.security_password_confirm ? 'border-red-500 pr-10 pl-10' : 'pr-10 pl-10'
+                                        form.errors?.security_password_confirm ? 'border-red-500 pe-10 ps-10' : 'pe-10 ps-10'
                                     }
                                     type={showPassword ? 'text' : 'password'}
                                     placeholder="••••••••"
                                 />
                                 <button
                                     type="button"
-                                    className="text-primary-400 hover:text-primary-600 absolute top-3 right-3"
+                                    className="text-primary-400 hover:text-primary-600 absolute top-3 end-3"
                                     onClick={() => setShowPassword(!showPassword)}
                                 >
                                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
