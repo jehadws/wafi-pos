@@ -103,7 +103,7 @@ class HandleInertiaRequests extends Middleware
 
                 if ($licenseData === null) {
                     $license = \App\Models\License::where('hwid', $hwid)->where('is_active', true)->first();
-                    $isValid = (bool) $license;
+                    $isValid = (bool) ($license && $license->isValid());
                 } else {
                     $isValid = (bool) ($licenseData['is_valid'] ?? false);
                 }

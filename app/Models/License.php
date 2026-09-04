@@ -13,6 +13,7 @@ class License extends Model
         'device_name',
         'client_name',
         'license_payload',
+        'key_string',
         'is_active',
         'activated_at',
         'last_seen',
@@ -59,5 +60,22 @@ class License extends Model
         }
 
         return $this->last_seen->diffInHours(now()) < $graceHours;
+    }
+
+    /**
+     * Cryptographically verify if this license record is authentic and active.
+     *
+     * Prevents database tampering (e.g. manually inserting a row with TablePlus)
+     * by verifying the RSA signature of key_string against Developer Public Key.
+     */
+    public function isValid(): bool
+    {
+        if (!$this->is_active || empty($this->key_string)) {
+            return false;
+        }
+
+        $payload = \App\Services\LicenseVerifierService::verifyKey($this->key_string);
+
+        return $payload !== null;
     }
 }

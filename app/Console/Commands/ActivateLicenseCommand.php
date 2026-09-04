@@ -64,6 +64,7 @@ class ActivateLicenseCommand extends Command
                 'device_name'     => $deviceName,
                 'client_name'     => $clientName,
                 'license_payload' => $payload,
+                'key_string'      => $keyString,
                 'is_active'       => true,
                 'activated_at'    => now(),
                 'last_seen'       => now(),

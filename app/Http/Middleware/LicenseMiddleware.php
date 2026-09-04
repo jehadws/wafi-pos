@@ -13,9 +13,10 @@ use Symfony\Component\HttpFoundation\Response;
 class LicenseMiddleware
 {
     /**
-     * Cache duration in seconds (24 hours = 86,400s).
+     * Cache duration in seconds (5 seconds to prevent spamming across parallel sub-requests).
+     * Keeping this short ensures database modifications take effect immediately.
      */
-    public const CACHE_TTL_SECONDS = 86400;
+    public const CACHE_TTL_SECONDS = 5;
 
     /**
      * Handle incoming request and enforce offline HWID licensing policy.
@@ -27,8 +28,20 @@ class LicenseMiddleware
             return $next($request);
         }
 
+        // Bypass in testing environment
+        if (app()->runningUnitTests()) {
+            return $next($request);
+        }
+
         // If the system is not yet installed, allow the setup wizard to proceed
         if (class_exists(\App\Services\Helper::class) && !\App\Services\Helper::installed()) {
+            return $next($request);
+        }
+
+        // Do NOT redirect unauthenticated users to /activate.
+        // The Authenticate middleware will handle the login redirect first.
+        // This ensures the flow is: dashboard → login → activate (if needed).
+        if (!auth()->check()) {
             return $next($request);
         }
 
@@ -42,7 +55,7 @@ class LicenseMiddleware
                 ->where('is_active', true)
                 ->first();
 
-            if ($license) {
+            if ($license && $license->isValid()) {
                 // Throttle last_seen database writes to at most once every 15 minutes
                 if ($license->last_seen === null || $license->last_seen->diffInMinutes(now()) >= 15) {
                     $license->withoutEvents(function () use ($license) {

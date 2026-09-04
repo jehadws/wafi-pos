@@ -24,7 +24,7 @@ class ActivationController extends Controller
 
         return Inertia::render('activation', [
             'hwid'        => $hwid,
-            'isActivated' => (bool) ($license && $license->is_active),
+            'isActivated' => (bool) ($license && $license->isValid()),
             'deviceName'  => $license?->device_name,
         ]);
     }

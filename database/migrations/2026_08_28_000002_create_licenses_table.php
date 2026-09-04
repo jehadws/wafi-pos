@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('device_name', 100)->nullable();
             $table->string('client_name', 150)->nullable();
             $table->text('license_payload')->nullable();
+            $table->text('key_string')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamp('activated_at')->nullable();
             $table->timestamp('last_seen')->nullable();
