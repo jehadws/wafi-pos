@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Requests\ResetRequest;
 use App\Services\DateService;
 use App\Services\DemoService;
 use App\Services\ResetService;
 use App\Services\SetupService;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class ResetController extends DashboardController
 {
@@ -21,28 +22,46 @@ class ResetController extends DashboardController
     }
 
     /**
-     * Will truncate the database and seed
+     * Truncate the database and optionally seed demo data
      *
-     * @return array
+     * @param ResetRequest $request
+     * @return JsonResponse
      */
-    public function truncateWithDemo( Request $request )
+    public function truncateWithDemo( ResetRequest $request ): JsonResponse
     {
-        $this->resetService->softReset( $request );
+        $validated = $request->validated();
+        $mode = $validated['mode'] ?? 'wipe_all';
 
-        switch ( $request->input( 'mode' ) ) {
+        // Perform soft reset to clear all transactions, orders, customers & options
+        $this->resetService->softReset();
+
+        switch ( $mode ) {
             case 'wipe_plus_grocery':
-                $this->demoService->run( $request->all() );
+                $this->demoService->run( [
+                    'mode' => 'wipe_plus_grocery',
+                    'create_sales' => ! empty( $validated['create_sales'] ),
+                    'create_procurements' => ! empty( $validated['create_procurements'] ),
+                ] );
+                $message = __( 'The database has been successfully reset and seeded with grocery demo data.' );
                 break;
+
+            case 'wipe_all':
+                // Clean wipe without demo records
+                $message = __( 'The database has been successfully wiped.' );
+                break;
+
             default:
-                $this->resetService->handleCustom(
-                    $request->all()
-                );
+                $result = $this->resetService->handleCustom( $validated );
+                if ( isset( $result['status'] ) && $result['status'] === 'error' ) {
+                    return response()->json( $result, 422 );
+                }
+                $message = $result['message'] ?? __( 'Custom reset executed successfully.' );
                 break;
         }
 
-        return [
+        return response()->json( [
             'status' => 'success',
-            'message' => __( 'The database has been successfully seeded.' ),
-        ];
+            'message' => $message,
+        ] );
     }
 }

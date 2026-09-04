@@ -15,77 +15,77 @@ class ResetService
 {
     public function softReset()
     {
-        $tables = Hook::filter( 'ns-wipeable-tables', [
-            'jgrem_coupons',
-            'jgrem_coupons_products',
-            'jgrem_coupons_categories',
-            'jgrem_coupons_customers',
-            'jgrem_coupons_customers_groups',
+        $tables = Hook::filter( 'sb-wipeable-tables', [
+            'subul_coupons',
+            'subul_coupons_products',
+            'subul_coupons_categories',
+            'subul_coupons_customers',
+            'subul_coupons_customers_groups',
 
-            'jgrem_customers_account_history',
-            'jgrem_customers_addresses',
-            'jgrem_customers_coupons',
-            'jgrem_customers_groups',
-            'jgrem_customers_rewards',
+            'subul_customers_account_history',
+            'subul_customers_addresses',
+            'subul_customers_coupons',
+            'subul_customers_groups',
+            'subul_customers_rewards',
 
-            'jgrem_dashboard_days',
-            'jgrem_dashboard_weeks',
-            'jgrem_dashboard_months',
+            'subul_dashboard_days',
+            'subul_dashboard_weeks',
+            'subul_dashboard_months',
 
-            'jgrem_transactions',
-            'jgrem_transactions_accounts',
-            'jgrem_transactions_histories',
-            'jgrem_transactions_balance_days',
-            'jgrem_transactions_balance_months',
-            'jgrem_transactions_actions_rules',
+            'subul_transactions',
+            'subul_transactions_accounts',
+            'subul_transactions_histories',
+            'subul_transactions_balance_days',
+            'subul_transactions_balance_months',
+            'subul_transactions_actions_rules',
 
-            'jgrem_medias',
-            'jgrem_notifications',
+            'subul_medias',
+            'subul_notifications',
 
-            'jgrem_orders',
-            'jgrem_orders_addresses',
-            'jgrem_orders_count',
-            'jgrem_orders_coupons',
-            'jgrem_orders_metas',
-            'jgrem_orders_payments',
-            'jgrem_orders_products',
-            'jgrem_orders_products_refunds',
-            'jgrem_orders_refunds',
-            'jgrem_orders_storage',
-            'jgrem_orders_taxes',
+            'subul_orders',
+            'subul_orders_addresses',
+            'subul_orders_count',
+            'subul_orders_coupons',
+            'subul_orders_metas',
+            'subul_orders_payments',
+            'subul_orders_products',
+            'subul_orders_products_refunds',
+            'subul_orders_refunds',
+            'subul_orders_storage',
+            'subul_orders_taxes',
 
-            'jgrem_procurements',
-            'jgrem_procurements_products',
+            'subul_procurements',
+            'subul_procurements_products',
 
-            'jgrem_products',
-            'jgrem_products_categories',
-            'jgrem_products_histories',
-            'jgrem_products_histories_combined',
-            'jgrem_products_galleries',
-            'jgrem_products_metas',
-            'jgrem_products_taxes',
-            'jgrem_products_unit_quantities',
+            'subul_products',
+            'subul_products_categories',
+            'subul_products_histories',
+            'subul_products_histories_combined',
+            'subul_products_galleries',
+            'subul_products_metas',
+            'subul_products_taxes',
+            'subul_products_unit_quantities',
 
-            'jgrem_payments_types',
+            'subul_payments_types',
 
-            'jgrem_providers',
+            'subul_providers',
 
-            'jgrem_registers',
-            'jgrem_registers_history',
+            'subul_registers',
+            'subul_registers_history',
 
-            'jgrem_rewards_system',
-            'jgrem_rewards_system_rules',
+            'subul_rewards_system',
+            'subul_rewards_system_rules',
 
-            'jgrem_taxes',
-            'jgrem_taxes_groups',
+            'subul_taxes',
+            'subul_taxes_groups',
 
-            'jgrem_units',
-            'jgrem_units_groups',
+            'subul_units',
+            'subul_units_groups',
         ] );
 
         foreach ( $tables as $table ) {
-            if ( Hook::filter( 'ns-reset-table', $table ) !== false && Schema::hasTable( Hook::filter( 'ns-reset-table', $table ) ) ) {
-                DB::table( Hook::filter( 'ns-table-name', $table ) )->truncate();
+            if ( Hook::filter( 'sb-reset-table', $table ) !== false && Schema::hasTable( Hook::filter( 'sb-reset-table', $table ) ) ) {
+                DB::table( Hook::filter( 'sb-table-name', $table ) )->truncate();
             }
         }
 
@@ -101,7 +101,7 @@ class ResetService
         Customer::get()->each( fn( $customer ) => $customerService->delete( $customer ) );
 
         /**
-         * We'll delete all options where key starts with "ns_"
+         * We'll delete all options where key starts with "sb_"
          * as this is a reserved key for the system, we can safely delete it
          * but excluding some options provided in an array
          */
@@ -110,17 +110,17 @@ class ResetService
             ->where( 'key', 'NOT LIKE', 'ns\_gastro_%' )
             ->where( 'key', 'NOT LIKE', 'ns\_sms_%' )
             ->where( 'key', 'NOT LIKE', 'ns\_email_%' )
-            ->where( 'key', 'NOT LIKE', 'ns-stocktransfers%' )
+            ->where( 'key', 'NOT LIKE', 'sb-stocktransfers%' )
             ->whereNotIn( 'key', [
-                'ns_store_name',
-                'ns_store_email',
-                'ns_date_format',
-                'ns_datetime_format',
-                'ns_currency_precision',
-                'ns_currency_iso',
-                'ns_currency_symbol',
+                'sb_store_name',
+                'sb_store_email',
+                'sb_date_format',
+                'sb_datetime_format',
+                'sb_currency_precision',
+                'sb_currency_iso',
+                'sb_currency_symbol',
                 'enabled_modules',
-                'ns_jgrem_order_types',
+                'sb_subul_order_types',
             ] )->delete();
 
         return [
@@ -176,7 +176,7 @@ class ResetService
          */
         extract( $data );
 
-        return Hook::filter( 'ns-handle-custom-reset', [
+        return Hook::filter( 'sb-handle-custom-reset', [
             'status' => 'error',
             'message' => __( 'No custom handler for the reset "' . $mode . '"' ),
         ], $data );

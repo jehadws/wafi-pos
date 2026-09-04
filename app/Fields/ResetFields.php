@@ -9,7 +9,7 @@ use App\Services\Helper;
 
 class ResetFields extends FieldsService
 {
-    protected static $identifier = 'ns.reset';
+    protected static $identifier = 'sb.reset';
 
     public function get( ?Unit $model = null )
     {
@@ -19,7 +19,7 @@ class ResetFields extends FieldsService
                 'label' => __( 'Mode' ),
                 'validation' => 'required',
                 'type' => 'select',
-                'options' => Helper::kvToJsOptions( Hook::filter( 'ns-reset-options', [
+                'options' => Helper::kvToJsOptions( Hook::filter( 'sb-reset-options', [
                     'wipe_all' => __( 'Wipe All' ),
                     'wipe_plus_grocery' => __( 'Wipe Plus Grocery' ),
                 ] ) ),
