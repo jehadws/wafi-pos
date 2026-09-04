@@ -12,17 +12,17 @@ return [
             'name' => 'invoice_reference',
             'value' => $procurement->invoice_reference ?? '',
             'label' => __( 'Invoice Number' ),
-            'description' => __( 'If the procurement has been issued outside of JgremPOS, please provide a unique reference.' ),
+            'description' => __( 'If the procurement has been issued outside of Subul, please provide a unique reference.' ),
         ], [
             'type' => 'date',
             'name' => 'delivery_time',
-            'value' => $procurement->delivery_time ?? ns()->date->now()->format( 'Y-m-d' ),
+            'value' => $procurement->delivery_time ?? sb()->date->now()->format( 'Y-m-d' ),
             'label' => __( 'Delivery Time' ),
             'description' => __( 'If the procurement has to be delivered at a specific time, define the moment here.' ),
         ], [
             'type' => 'date',
             'name' => 'invoice_date',
-            'value' => $procurement->invoice_date ?? ns()->date->now()->format( 'Y-m-d' ),
+            'value' => $procurement->invoice_date ?? sb()->date->now()->format( 'Y-m-d' ),
             'label' => __( 'Invoice Date' ),
             'description' => __( 'If you would like to define a custom invoice date.' ),
         ], [
@@ -60,7 +60,7 @@ return [
         ], [
             'type' => 'search-select',
             'name' => 'provider_id',
-            'component' => 'nsCrudForm',
+            'component' => 'sbCrudForm',
             'props' => ProviderCrud::getFormConfig(),
             'value' => $procurement->provider_id ?? '',
             'validation' => 'required',

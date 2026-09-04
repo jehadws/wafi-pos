@@ -119,7 +119,7 @@ class TestService
          */
         $customer = Customer::get()->random();
 
-        $subtotal = ns()->currency->define( $products->map( function ( $product ) use ( $currency ) {
+        $subtotal = sb()->currency->define( $products->map( function ( $product ) use ( $currency ) {
             return $currency
                 ->define( $product[ 'unit_price' ] )
                 ->multiplyBy( $product[ 'quantity' ] )

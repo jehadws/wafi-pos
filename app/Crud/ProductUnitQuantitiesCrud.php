@@ -20,19 +20,19 @@ class ProductUnitQuantitiesCrud extends CrudService
     /**
      * Define the identifier
      */
-    const IDENTIFIER = 'ns.products-units';
+    const IDENTIFIER = 'sb.products-units';
 
     /**
      * define the base table
      */
-    protected $table = 'jgrem_products_unit_quantities';
+    protected $table = 'subul_products_unit_quantities';
 
     /**
      * Define namespace
      *
      * @param  string
      */
-    protected $namespace = 'ns.products-units';
+    protected $namespace = 'sb.products-units';
 
     /**
      * Model Used
@@ -46,7 +46,7 @@ class ProductUnitQuantitiesCrud extends CrudService
      */
     protected $permissions = [
         'create' => false,
-        'read' => 'jgrem.read.products',
+        'read' => 'subul.read.products',
         'update' => false,
         'delete' => false,
     ];
@@ -55,8 +55,8 @@ class ProductUnitQuantitiesCrud extends CrudService
      * Adding relation
      */
     public $relations = [
-        [ 'jgrem_products as products', 'products.id', '=', 'jgrem_products_unit_quantities.product_id' ],
-        [ 'jgrem_units as units', 'units.id', '=', 'jgrem_products_unit_quantities.unit_id' ],
+        [ 'subul_products as products', 'products.id', '=', 'subul_products_unit_quantities.product_id' ],
+        [ 'subul_units as units', 'units.id', '=', 'subul_products_unit_quantities.unit_id' ],
     ];
 
     /**
@@ -65,7 +65,7 @@ class ProductUnitQuantitiesCrud extends CrudService
      * Should be an array of associative keys, where
      * keys are either the related table or alias name.
      * Example : [
-     *      'user'  =>  [ 'username' ], // here the relation on the table jgrem_users is using "user" as an alias
+     *      'user'  =>  [ 'username' ], // here the relation on the table subul_users is using "user" as an alias
      * ]
      */
     public $pick = [];
@@ -240,7 +240,7 @@ class ProductUnitQuantitiesCrud extends CrudService
     public function beforePost( $request )
     {
         if ( $this->permissions[ 'create' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'create' ] );
+            sb()->restrict( $this->permissions[ 'create' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -283,7 +283,7 @@ class ProductUnitQuantitiesCrud extends CrudService
     public function beforePut( $request, $entry )
     {
         if ( $this->permissions[ 'update' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'update' ] );
+            sb()->restrict( $this->permissions[ 'update' ] );
         }
 
         return $request;
@@ -308,7 +308,7 @@ class ProductUnitQuantitiesCrud extends CrudService
      */
     public function beforeDelete( $namespace, $id, $model )
     {
-        if ( $namespace == 'ns.products-units' ) {
+        if ( $namespace == 'sb.products-units' ) {
             /**
              *  Perform an action before deleting an entry
              *  In case something wrong, this response can be returned
@@ -319,7 +319,7 @@ class ProductUnitQuantitiesCrud extends CrudService
              *  ], 403 );
              **/
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -380,7 +380,7 @@ class ProductUnitQuantitiesCrud extends CrudService
              * Will control if the user has the permissoin to do that.
              */
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -414,11 +414,11 @@ class ProductUnitQuantitiesCrud extends CrudService
     public function getLinks(): array
     {
         return [
-            'list' => 'javascript:void(0)', // ns()->url( 'dashboard/' . 'products/units' ),
-            'create' => 'javascript:void(0)', // ns()->url( 'dashboard/' . 'products/units/create' ),
-            'edit' => 'javascript:void(0)', // ns()->url( 'dashboard/' . 'products/units/edit/' ),
-            'post' => 'javascript:void(0)', // ns()->url( 'dashboard/' . 'products/units' ),
-            'put' => 'javascript:void(0)', // ns()->url( 'dashboard/' . 'products/units/' . '' ),
+            'list' => 'javascript:void(0)', // sb()->url( 'dashboard/' . 'products/units' ),
+            'create' => 'javascript:void(0)', // sb()->url( 'dashboard/' . 'products/units/create' ),
+            'edit' => 'javascript:void(0)', // sb()->url( 'dashboard/' . 'products/units/edit/' ),
+            'post' => 'javascript:void(0)', // sb()->url( 'dashboard/' . 'products/units' ),
+            'put' => 'javascript:void(0)', // sb()->url( 'dashboard/' . 'products/units/' . '' ),
         ];
     }
 
@@ -433,7 +433,7 @@ class ProductUnitQuantitiesCrud extends CrudService
             [
                 'label' => __( 'Delete Selected Groups' ),
                 'identifier' => 'delete_selected',
-                'url' => ns()->route( 'ns.api.crud-bulk-actions', [
+                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
                     'namespace' => $this->namespace,
                 ] ),
             ],

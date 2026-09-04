@@ -20,14 +20,14 @@ class CustomerRewardCrud extends CrudService
     /**
      * Define the identifier
      */
-    const IDENTIFIER = 'ns.customers-rewards';
+    const IDENTIFIER = 'sb.customers-rewards';
 
     /**
      * define the base table
      *
      * @param  string
      */
-    protected $table = 'jgrem_customers_rewards';
+    protected $table = 'subul_customers_rewards';
 
     /**
      * default slug
@@ -64,12 +64,12 @@ class CustomerRewardCrud extends CrudService
 
     /**
      * Adding relation
-     * Example : [ 'jgrem_users as user', 'user.id', '=', 'jgrem_orders.author' ]
+     * Example : [ 'subul_users as user', 'user.id', '=', 'subul_orders.author' ]
      *
      * @param  array
      */
     public $relations = [
-        [ 'jgrem_users as customer', 'customer.id', '=', 'jgrem_customers_rewards.customer_id' ],
+        [ 'subul_users as customer', 'customer.id', '=', 'subul_customers_rewards.customer_id' ],
     ];
 
     /**
@@ -86,7 +86,7 @@ class CustomerRewardCrud extends CrudService
      * Should be an array of associative keys, where
      * keys are either the related table or alias name.
      * Example : [
-     *      'user'  =>  [ 'username' ], // here the relation on the table jgrem_users is using "user" as an alias
+     *      'user'  =>  [ 'username' ], // here the relation on the table subul_users is using "user" as an alias
      * ]
      */
     public $pick = [
@@ -217,7 +217,7 @@ class CustomerRewardCrud extends CrudService
     public function beforePost( $request )
     {
         if ( $this->permissions[ 'create' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'create' ] );
+            sb()->restrict( $this->permissions[ 'create' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -260,7 +260,7 @@ class CustomerRewardCrud extends CrudService
     public function beforePut( $request, $entry )
     {
         if ( $this->permissions[ 'update' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'update' ] );
+            sb()->restrict( $this->permissions[ 'update' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -287,7 +287,7 @@ class CustomerRewardCrud extends CrudService
      */
     public function beforeDelete( $namespace, $id, $model )
     {
-        if ( $namespace == 'ns.customers-rewards' ) {
+        if ( $namespace == 'sb.customers-rewards' ) {
             /**
              *  Perform an action before deleting an entry
              *  In case something wrong, this response can be returned
@@ -298,7 +298,7 @@ class CustomerRewardCrud extends CrudService
              *  ], 403 );
              **/
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -354,7 +354,7 @@ class CustomerRewardCrud extends CrudService
             identifier: 'edit',
             label: __( 'Edit' ),
             type: 'GOTO',
-            url: ns()->url( '/dashboard/' . $this->getSlug() . '/edit/' . $entry->id )
+            url: sb()->url( '/dashboard/' . $this->getSlug() . '/edit/' . $entry->id )
         );
 
         // Snippet 2
@@ -362,7 +362,7 @@ class CustomerRewardCrud extends CrudService
             identifier: 'delete',
             label: __( 'Delete' ),
             type: 'DELETE',
-            url: ns()->url( '/api/crud/ns.customers-rewards/' . $entry->id ),
+            url: sb()->url( '/api/crud/sb.customers-rewards/' . $entry->id ),
             confirm: [
                 'message' => __( 'Would you like to delete this ?' ),
             ]
@@ -393,7 +393,7 @@ class CustomerRewardCrud extends CrudService
              * Will control if the user has the permissoin to do that.
              */
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -429,9 +429,9 @@ class CustomerRewardCrud extends CrudService
         return [
             'list' => 'javascript:void(0)',
             'create' => 'javascript:void(0)',
-            'edit' => ns()->url( 'dashboard/' . $this->getSlug() . '/edit/' ),
-            'post' => ns()->url( 'api/crud/' . 'ns.customers-rewards' ),
-            'put' => ns()->url( 'api/crud/' . 'ns.customers-rewards/{id}' . '' ),
+            'edit' => sb()->url( 'dashboard/' . $this->getSlug() . '/edit/' ),
+            'post' => sb()->url( 'api/crud/' . 'sb.customers-rewards' ),
+            'put' => sb()->url( 'api/crud/' . 'sb.customers-rewards/{id}' . '' ),
         ];
     }
 
@@ -446,7 +446,7 @@ class CustomerRewardCrud extends CrudService
             [
                 'label' => __( 'Delete Selected Groups' ),
                 'identifier' => 'delete_selected',
-                'url' => ns()->route( 'ns.api.crud-bulk-actions', [
+                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
                     'namespace' => $this->namespace,
                 ] ),
             ],

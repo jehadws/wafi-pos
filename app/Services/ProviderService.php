@@ -150,7 +150,7 @@ class ProviderService
                 $label = __( 'Stocked' );
                 break;
             default:
-                $label = Hook::filter( 'ns-delivery-status', $label );
+                $label = Hook::filter( 'sb-delivery-status', $label );
                 break;
         }
 

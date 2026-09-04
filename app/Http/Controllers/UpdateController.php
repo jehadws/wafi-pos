@@ -1,7 +1,7 @@
 <?php
 
 /**
- * JgremPOS Controller
+ * Subul Controller
  *
  * @since  1.0
  **/
@@ -26,7 +26,7 @@ class UpdateController extends Controller
     {
         return view( 'pages.database.update', [
             'title' => __( 'Database Update' ),
-            'redirect' => session( 'after_update', ns()->route( 'ns.dashboard.home' ) ),
+            'redirect' => session( 'after_update', sb()->route( 'sb.dashboard.home' ) ),
             'modules' => collect( $this->modulesService->getEnabledAndAutoloadedModules() )->filter( fn( $module ) => count( $module[ 'migrations' ] ) > 0 )->toArray(),
         ] );
     }

@@ -7,11 +7,11 @@ use App\Services\FieldsService;
 
 class PasswordLostFields extends FieldsService
 {
-    protected static $identifier = 'ns.password-lost';
+    protected static $identifier = 'sb.password-lost';
 
     public function get()
     {
-        $fields = Hook::filter( 'ns-password-lost-fields', [
+        $fields = Hook::filter( 'sb-password-lost-fields', [
             [
                 'label' => __( 'Email' ),
                 'description' => __( 'Provide your email.' ),

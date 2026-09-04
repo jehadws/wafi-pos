@@ -21,7 +21,7 @@ class TransactionOccurrenceCast implements CastsAttributes
             if ( $model->getRawValue( 'type' ) === Transaction::TYPE_SCHEDULED ) {
                 return sprintf(
                     __( 'Scheduled for %s' ),
-                    ns()->date->getFormatted( $model->getRawValue( 'scheduled_date' ) )
+                    sb()->date->getFormatted( $model->getRawValue( 'scheduled_date' ) )
                 );
             }
         }

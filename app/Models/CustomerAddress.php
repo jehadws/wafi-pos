@@ -11,11 +11,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property string         $uuid
  * @property \Carbon\Carbon $updated_at
  */
-class CustomerAddress extends NsModel
+class CustomerAddress extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'customers_addresses';
+    protected $table = 'subul_' . 'customers_addresses';
 
     /**
      * define the relationship

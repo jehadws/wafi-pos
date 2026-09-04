@@ -16,7 +16,7 @@ class PasswordRecoveryMiddleware
      */
     public function handle( Request $request, Closure $next )
     {
-        if ( ns()->option->get( 'ns_recovery_enabled', 'no' ) === 'yes' ) {
+        if ( sb()->option->get( 'sb_recovery_enabled', 'no' ) === 'yes' ) {
             return $next( $request );
         }
 

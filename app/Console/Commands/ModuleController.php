@@ -53,8 +53,8 @@ class ModuleController extends Command
              */
             if ( $this->option( 'delete' ) == 'all' ) {
                 if ( $this->confirm( 'Do you want to delete all controllers ?' ) ) {
-                    Storage::disk( 'ns-modules' )->deleteDirectory( $controllerPath );
-                    Storage::disk( 'ns-modules' )->MakeDirectory( $controllerPath );
+                    Storage::disk( 'sb-modules' )->deleteDirectory( $controllerPath );
+                    Storage::disk( 'sb-modules' )->MakeDirectory( $controllerPath );
 
                     return $this->info( 'All controllers has been deleted !' );
                 }
@@ -66,13 +66,13 @@ class ModuleController extends Command
             $name = ucwords( Str::camel( $this->argument( 'name' ) ) );
             $fileName = $controllerPath . $name;
             $namespace = $this->argument( 'namespace' );
-            $fileExists = Storage::disk( 'ns-modules' )->exists(
+            $fileExists = Storage::disk( 'sb-modules' )->exists(
                 $fileName . '.php'
             );
 
             if ( ! empty( $name ) ) {
                 if ( ! $fileExists || ( $fileExists && $this->option( 'force' ) ) ) {
-                    Storage::disk( 'ns-modules' )->put(
+                    Storage::disk( 'sb-modules' )->put(
                         $fileName . '.php', view( 'generate.modules.controller', compact(
                             'modules', 'module', 'name', 'namespace'
                         ) ) );

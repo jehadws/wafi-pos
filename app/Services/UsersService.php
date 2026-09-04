@@ -52,8 +52,8 @@ class UsersService
      */
     public function setUser($attributes, $user = null)
     {
-        $validation_required = ns()->option->get('ns_registration_validated', 'yes') === 'yes' ? true : false;
-        $registration_role = ns()->option->get('ns_registration_role', false);
+        $validation_required = sb()->option->get('sb_registration_validated', 'yes') === 'yes' ? true : false;
+        $registration_role = sb()->option->get('sb_registration_role', false);
         $defaultRole = Role::namespace(Role::USER)->first();
         $assignedRole = Role::find($registration_role);
         $roleToUse = $registration_role === false ? $defaultRole : $assignedRole;
@@ -100,7 +100,7 @@ class UsersService
          */
         if ($validation_required) {
             $user->activation_token = Str::random(20);
-            $user->activation_expiration = now()->addMinutes(config('jgrem.authentication.activation_token_lifetime', 30));
+            $user->activation_expiration = now()->addMinutes(config('subul.authentication.activation_token_lifetime', 30));
         }
 
         /**
@@ -129,7 +129,7 @@ class UsersService
          * if the role are defined we'll use them. Otherwise, we'll use
          * the role defined by default.
          */
-        $this->setUserRole($user, $attributes['roles'] ?? ns()->option->get('ns_registration_role'));
+        $this->setUserRole($user, $attributes['roles'] ?? sb()->option->get('sb_registration_role'));
 
         /**
          * Every new user comes with attributes that
@@ -167,7 +167,7 @@ class UsersService
             Log::error($exception->getMessage());
         }
 
-        $validation_required = ns()->option->get('ns_registration_validated', 'yes') === 'yes' ? true : false;
+        $validation_required = sb()->option->get('sb_registration_validated', 'yes') === 'yes' ? true : false;
         $redirectTo = route('login');
 
         return [
@@ -267,7 +267,7 @@ class UsersService
         if (! $user->attribute instanceof UserAttribute) {
             $userAttribute = new UserAttribute;
             $userAttribute->user_id = $user->id;
-            $userAttribute->language = ns()->option->get('ns_store_language');
+            $userAttribute->language = sb()->option->get('sb_store_language');
             $userAttribute->save();
         }
     }
@@ -372,7 +372,7 @@ class UsersService
 
     public function checkPermission($permission, ?User $user = null): bool
     {
-        ns()->restrict($permission);
+        sb()->restrict($permission);
 
         return true;
     }

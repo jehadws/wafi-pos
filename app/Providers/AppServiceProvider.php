@@ -83,7 +83,7 @@ class AppServiceProvider extends ServiceProvider
         // save Singleton for options
         $this->app->singleton( DateService::class, function () {
             $options = app()->make( Options::class );
-            $timeZone = $options->get( 'ns_datetime_timezone', 'Europe/London' );
+            $timeZone = $options->get( 'sb_datetime_timezone', 'Europe/London' );
 
             config( ['app.timezone' => $timeZone ] );
             date_default_timezone_set( $timeZone );
@@ -165,13 +165,13 @@ class AppServiceProvider extends ServiceProvider
 
             return new CurrencyService(
                 0, [
-                    'decimal_precision' => $options->get( 'ns_currency_precision', 0 ),
-                    'decimal_separator' => $options->get( 'ns_currency_decimal_separator', ',' ),
-                    'thousand_separator' => $options->get( 'ns_currency_thousand_separator', '.' ),
-                    'currency_position' => $options->get( 'ns_currency_position', 'before' ),
-                    'currency_symbol' => $options->get( 'ns_currency_symbol' ),
-                    'currency_iso' => $options->get( 'ns_currency_iso' ),
-                    'prefered_currency' => $options->get( 'ns_currency_prefered' ),
+                    'decimal_precision' => $options->get( 'sb_currency_precision', 0 ),
+                    'decimal_separator' => $options->get( 'sb_currency_decimal_separator', ',' ),
+                    'thousand_separator' => $options->get( 'sb_currency_thousand_separator', '.' ),
+                    'currency_position' => $options->get( 'sb_currency_position', 'before' ),
+                    'currency_symbol' => $options->get( 'sb_currency_symbol' ),
+                    'currency_iso' => $options->get( 'sb_currency_iso' ),
+                    'prefered_currency' => $options->get( 'sb_currency_prefered' ),
                 ]
             );
         } );
@@ -279,7 +279,7 @@ class AppServiceProvider extends ServiceProvider
             $fileName = trim( $params[0], "'" );
             $module = trim( $params[1], " '" );
 
-            return "<?php echo ns()->moduleViteAssets( \"{$fileName}\", \"{$module}\" ); ?>";
+            return "<?php echo sb()->moduleViteAssets( \"{$fileName}\", \"{$module}\" ); ?>";
         } );
 
         /**
@@ -287,7 +287,7 @@ class AppServiceProvider extends ServiceProvider
          * when a job is about to be processed.
          */
         Event::listen( JobProcessing::class, function () {
-            ns()->option->rebuild();
+            sb()->option->rebuild();
         } );
     }
 
@@ -298,7 +298,7 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function loadConfiguration()
     {
-        config( [ 'jgrem.orders.statuses' => [
+        config( [ 'subul.orders.statuses' => [
             Order::PAYMENT_HOLD => __( 'Hold' ),
             Order::PAYMENT_UNPAID => __( 'Unpaid' ),
             Order::PAYMENT_PARTIALLY => __( 'Partially Paid' ),
@@ -310,7 +310,7 @@ class AppServiceProvider extends ServiceProvider
             Order::PAYMENT_PARTIALLY_DUE => __( 'Partially Due' ),
         ]] );
 
-        config( [ 'jgrem.orders.types' => Hook::filter( 'ns-orders-types', [
+        config( [ 'subul.orders.types' => Hook::filter( 'sb-orders-types', [
             'takeaway' => [
                 'identifier' => 'takeaway',
                 'label' => __( 'Take Away' ),
@@ -326,13 +326,13 @@ class AppServiceProvider extends ServiceProvider
         ] )] );
 
         config( [
-            'jgrem.orders.types-labels' => collect( config( 'jgrem.orders.types' ) )
+            'subul.orders.types-labels' => collect( config( 'subul.orders.types' ) )
                 ->mapWithKeys( fn( $type ) => [ $type[ 'identifier' ] => $type[ 'label' ] ] )
                 ->toArray(),
         ] );
 
         config( [
-            'jgrem.orders.products.refunds' => [
+            'subul.orders.products.refunds' => [
                 OrderProductRefund::CONDITION_DAMAGED => __( 'Damaged' ),
                 OrderProductRefund::CONDITION_UNSPOILED => __( 'Good Condition' ),
             ],

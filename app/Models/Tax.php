@@ -12,11 +12,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int            $author
  * @property \Carbon\Carbon $updated_at
  */
-class Tax extends NsModel
+class Tax extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'taxes';
+    protected $table = 'subul_' . 'taxes';
 
     public function group()
     {

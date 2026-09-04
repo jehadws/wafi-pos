@@ -8,7 +8,7 @@ class Currency
 {
     public static function define( $amount )
     {
-        return ns()->currency->define( $amount );
+        return sb()->currency->define( $amount );
     }
 
     /**
@@ -19,11 +19,11 @@ class Currency
      */
     public static function fresh( $amount ): CurrencyService
     {
-        return ns()->currency->fresh( $amount );
+        return sb()->currency->fresh( $amount );
     }
 
     public static function raw( $amount )
     {
-        return ns()->currency->define( $amount )->toFloat();
+        return sb()->currency->define( $amount )->toFloat();
     }
 }

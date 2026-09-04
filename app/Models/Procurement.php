@@ -29,11 +29,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
-class Procurement extends NsModel
+class Procurement extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'procurements';
+    protected $table = 'subul_' . 'procurements';
 
     /**
      * this status mention when the procurement

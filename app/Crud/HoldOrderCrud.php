@@ -18,21 +18,21 @@ class HoldOrderCrud extends CrudService
      *
      * @param  string
      */
-    protected $table = 'jgrem_orders';
+    protected $table = 'subul_orders';
 
     /**
      * default identifier
      *
      * @param  string
      */
-    const IDENTIFIER = 'ns.hold-orders';
+    const IDENTIFIER = 'sb.hold-orders';
 
     /**
      * Define namespace
      *
      * @param  string
      */
-    protected $namespace = 'ns.hold-orders';
+    protected $namespace = 'sb.hold-orders';
 
     /**
      * Model Used
@@ -59,8 +59,8 @@ class HoldOrderCrud extends CrudService
      * @param  array
      */
     public $relations = [
-        [ 'jgrem_users as customer', 'customer.id', '=', 'jgrem_orders.customer_id' ],
-        [ 'jgrem_users as user', 'jgrem_orders.author', '=', 'user.id' ],
+        [ 'subul_users as customer', 'customer.id', '=', 'subul_orders.customer_id' ],
+        [ 'subul_users as user', 'subul_orders.author', '=', 'user.id' ],
     ];
 
     /**
@@ -77,7 +77,7 @@ class HoldOrderCrud extends CrudService
      * Should be an array of associative keys, where
      * keys are either the related table or alias name.
      * Example : [
-     *      'user'  =>  [ 'username' ], // here the relation on the table jgrem_users is using "user" as an alias
+     *      'user'  =>  [ 'username' ], // here the relation on the table subul_users is using "user" as an alias
      * ]
      */
     public $pick = [
@@ -338,7 +338,7 @@ class HoldOrderCrud extends CrudService
     public function beforePost( $request )
     {
         if ( $this->permissions[ 'create' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'create' ] );
+            sb()->restrict( $this->permissions[ 'create' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -381,7 +381,7 @@ class HoldOrderCrud extends CrudService
     public function beforePut( $request, $entry )
     {
         if ( $this->permissions[ 'update' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'update' ] );
+            sb()->restrict( $this->permissions[ 'update' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -408,7 +408,7 @@ class HoldOrderCrud extends CrudService
      */
     public function beforeDelete( $namespace, $id, $model )
     {
-        if ( $namespace == 'ns.hold-orders' ) {
+        if ( $namespace == 'sb.hold-orders' ) {
             /**
              *  Perform an action before deleting an entry
              *  In case something wrong, this response can be returned
@@ -419,7 +419,7 @@ class HoldOrderCrud extends CrudService
              *  ], 403 );
              **/
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -438,7 +438,7 @@ class HoldOrderCrud extends CrudService
                 'width' => '120px',
                 '$sort' => false,
             ],
-            'jgrem_customers_name' => [
+            'subul_customers_name' => [
                 'label' => __( 'Customer' ),
                 '$direction' => '',
                 '$sort' => false,
@@ -463,7 +463,7 @@ class HoldOrderCrud extends CrudService
     {
         $entry->action(
             label: __( 'Continue' ),
-            identifier: 'ns.open',
+            identifier: 'sb.open',
             type: 'POPUP',
         );
 
@@ -487,7 +487,7 @@ class HoldOrderCrud extends CrudService
              * Will control if the user has the permissoin to do that.
              */
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -521,11 +521,11 @@ class HoldOrderCrud extends CrudService
     public function getLinks(): array
     {
         return [
-            'list' => ns()->url( 'dashboard/' . 'ns.hold-orders' ),
-            'create' => ns()->url( 'dashboard/' . 'ns.hold-orders/create' ),
-            'edit' => ns()->url( 'dashboard/' . 'ns.hold-orders/edit/' ),
-            'post' => ns()->url( 'dashboard/' . 'ns.hold-orders' ),
-            'put' => ns()->url( 'dashboard/' . 'ns.hold-orders/' . '' ),
+            'list' => sb()->url( 'dashboard/' . 'sb.hold-orders' ),
+            'create' => sb()->url( 'dashboard/' . 'sb.hold-orders/create' ),
+            'edit' => sb()->url( 'dashboard/' . 'sb.hold-orders/edit/' ),
+            'post' => sb()->url( 'dashboard/' . 'sb.hold-orders' ),
+            'put' => sb()->url( 'dashboard/' . 'sb.hold-orders/' . '' ),
         ];
     }
 

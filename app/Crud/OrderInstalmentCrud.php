@@ -20,14 +20,14 @@ class OrderInstalmentCrud extends CrudService
     /**
      * Define the identifier
      */
-    const IDENTIFIER = 'ns.orders-instalments';
+    const IDENTIFIER = 'sb.orders-instalments';
 
     /**
      * define the base table
      *
      * @param  string
      */
-    protected $table = 'jgrem_orders_instalments';
+    protected $table = 'subul_orders_instalments';
 
     /**
      * default slug
@@ -41,7 +41,7 @@ class OrderInstalmentCrud extends CrudService
      *
      * @param  string
      */
-    protected $namespace = 'ns.orders-instalments';
+    protected $namespace = 'sb.orders-instalments';
 
     /**
      * Model Used
@@ -70,13 +70,13 @@ class OrderInstalmentCrud extends CrudService
 
     /**
      * Adding relation
-     * Example : [ 'jgrem_users as user', 'user.id', '=', 'jgrem_orders.author' ]
+     * Example : [ 'subul_users as user', 'user.id', '=', 'subul_orders.author' ]
      *
      * @param  array
      */
     public $relations = [
-        [ 'jgrem_orders as order', 'order.id', '=', 'jgrem_orders_instalments.order_id' ],
-        [ 'jgrem_users as customer', 'customer.id', '=', 'order.customer_id' ],
+        [ 'subul_orders as order', 'order.id', '=', 'subul_orders_instalments.order_id' ],
+        [ 'subul_users as customer', 'customer.id', '=', 'order.customer_id' ],
     ];
 
     /**
@@ -93,7 +93,7 @@ class OrderInstalmentCrud extends CrudService
      * Should be an array of associative keys, where
      * keys are either the related table or alias name.
      * Example : [
-     *      'user'  =>  [ 'username' ], // here the relation on the table jgrem_users is using "user" as an alias
+     *      'user'  =>  [ 'username' ], // here the relation on the table subul_users is using "user" as an alias
      * ]
      */
     public $pick = [
@@ -238,7 +238,7 @@ class OrderInstalmentCrud extends CrudService
     public function beforePost( $request )
     {
         if ( $this->permissions[ 'create' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'create' ] );
+            sb()->restrict( $this->permissions[ 'create' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -281,7 +281,7 @@ class OrderInstalmentCrud extends CrudService
     public function beforePut( $request, $entry )
     {
         if ( $this->permissions[ 'update' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'update' ] );
+            sb()->restrict( $this->permissions[ 'update' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -308,7 +308,7 @@ class OrderInstalmentCrud extends CrudService
      */
     public function beforeDelete( $namespace, $id, $model )
     {
-        if ( $namespace == 'ns.orders-instalments' ) {
+        if ( $namespace == 'sb.orders-instalments' ) {
             /**
              *  Perform an action before deleting an entry
              *  In case something wrong, this response can be returned
@@ -319,7 +319,7 @@ class OrderInstalmentCrud extends CrudService
              *  ], 403 );
              **/
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -365,23 +365,23 @@ class OrderInstalmentCrud extends CrudService
      */
     public function setActions( CrudEntry $entry ): CrudEntry
     {
-        $entry->amount = (string) ns()->currency->define( $entry->amount );
+        $entry->amount = (string) sb()->currency->define( $entry->amount );
         $entry->{ '$cssClass' } = $entry->paid == 0 ? 'error' : 'success';
         $entry->paid = (bool) $entry->paid ? __( 'Yes' ) : __( 'No' );
-        $entry->date = ns()->date->getFormatted( $entry->date );
+        $entry->date = sb()->date->getFormatted( $entry->date );
         // you can make changes here
         $entry->action(
             identifier: 'edit',
             label: __( 'Edit' ),
             type: 'GOTO',
-            url: ns()->url( '/dashboard/' . $this->slug . '/edit/' . $entry->id ),
+            url: sb()->url( '/dashboard/' . $this->slug . '/edit/' . $entry->id ),
         );
 
         $entry->action(
             identifier: 'delete',
             label: __( 'Delete' ),
             type: 'DELETE',
-            url: ns()->url( '/api/crud/ns.orders-instalments/' . $entry->id ),
+            url: sb()->url( '/api/crud/sb.orders-instalments/' . $entry->id ),
             confirm: [
                 'message' => __( 'Would you like to delete this ?' ),
             ]
@@ -407,7 +407,7 @@ class OrderInstalmentCrud extends CrudService
              * Will control if the user has the permissoin to do that.
              */
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -441,11 +441,11 @@ class OrderInstalmentCrud extends CrudService
     public function getLinks(): array
     {
         return [
-            'list' => ns()->url( 'dashboard/' . 'orders/instalments' ),
+            'list' => sb()->url( 'dashboard/' . 'orders/instalments' ),
             'create' => false,
-            'edit' => ns()->url( 'dashboard/' . 'orders/instalments/edit/' ),
-            'post' => ns()->url( 'api/crud/' . 'ns.orders-instalments' ),
-            'put' => ns()->url( 'api/crud/' . 'ns.orders-instalments/{id}' . '' ),
+            'edit' => sb()->url( 'dashboard/' . 'orders/instalments/edit/' ),
+            'post' => sb()->url( 'api/crud/' . 'sb.orders-instalments' ),
+            'put' => sb()->url( 'api/crud/' . 'sb.orders-instalments/{id}' . '' ),
         ];
     }
 
@@ -460,7 +460,7 @@ class OrderInstalmentCrud extends CrudService
             [
                 'label' => __( 'Delete Selected Groups' ),
                 'identifier' => 'delete_selected',
-                'url' => ns()->route( 'ns.api.crud-bulk-actions', [
+                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
                     'namespace' => $this->namespace,
                 ] ),
             ],

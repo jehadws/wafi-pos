@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class UserRoleRelation extends Model
 {
-    protected $table = 'jgrem_users_roles_relations';
+    protected $table = 'subul_users_roles_relations';
 
     use HasFactory;
 

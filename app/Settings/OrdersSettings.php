@@ -24,11 +24,11 @@ class OrdersSettings extends SettingsPage
   public function getPayload()
   {
     return [
-      'ns_orders_code_type' => ns()->option->get('ns_orders_code_type'),
-      'ns_orders_allow_unpaid' => ns()->option->get('ns_orders_allow_unpaid'),
-      'ns_orders_allow_partial' => ns()->option->get('ns_orders_allow_partial'),
-      'ns_orders_strict_instalments' => ns()->option->get('ns_orders_strict_instalments'),
-      'ns_orders_quotation_expiration' => ns()->option->get('ns_orders_quotation_expiration'),
+      'sb_orders_code_type' => sb()->option->get('sb_orders_code_type'),
+      'sb_orders_allow_unpaid' => sb()->option->get('sb_orders_allow_unpaid'),
+      'sb_orders_allow_partial' => sb()->option->get('sb_orders_allow_partial'),
+      'sb_orders_strict_instalments' => sb()->option->get('sb_orders_strict_instalments'),
+      'sb_orders_quotation_expiration' => sb()->option->get('sb_orders_quotation_expiration'),
     ];
   }
 
@@ -46,24 +46,24 @@ class OrdersSettings extends SettingsPage
     ]);
 
     return [
-      'ns_orders_code_type' =>  Helper::kvToJsOptions([
+      'sb_orders_code_type' =>  Helper::kvToJsOptions([
         'date_sequential' => __('Sequential'),
         'random_code' => __('Random Code'),
         'number_sequential' => __('Number Sequential'),
       ]),
-      'ns_orders_allow_unpaid' => Helper::kvToJsOptions([
+      'sb_orders_allow_unpaid' => Helper::kvToJsOptions([
         'yes' => __('Yes'),
         'no' => __('No'),
       ]),
-      'ns_orders_allow_partial' =>  Helper::kvToJsOptions([
+      'sb_orders_allow_partial' =>  Helper::kvToJsOptions([
         'yes' => __('Yes'),
         'no' => __('No'),
       ]),
-      'ns_orders_strict_instalments' => Helper::kvToJsOptions([
+      'sb_orders_strict_instalments' => Helper::kvToJsOptions([
         'yes' => __('Yes'),
         'no' => __('No'),
       ]),
-      'ns_orders_quotation_expiration' =>  $expirationOptions,
+      'sb_orders_quotation_expiration' =>  $expirationOptions,
     ];
   }
 }

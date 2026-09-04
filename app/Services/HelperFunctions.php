@@ -71,7 +71,7 @@ function array_insert_before( $array, $key, $new )
 /**
  * Returns an instance of CoreService
  */
-function ns(): CoreService
+function sb(): CoreService
 {
     return app()->make( CoreService::class );
 }

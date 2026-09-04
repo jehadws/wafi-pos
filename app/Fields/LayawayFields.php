@@ -6,7 +6,7 @@ use App\Services\FieldsService;
 
 class LayawayFields extends FieldsService
 {
-    protected static $identifier = 'ns.layaway';
+    protected static $identifier = 'sb.layaway';
 
     public function get()
     {

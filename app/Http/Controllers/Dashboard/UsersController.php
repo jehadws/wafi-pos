@@ -1,7 +1,7 @@
 <?php
 
 /**
- * JgremPOS Controller
+ * Subul Controller
  *
  * @since  1.0
  **/
@@ -47,7 +47,7 @@ class UsersController extends DashboardController
 
   public function createUser()
   {
-    ns()->restrict(['create.users']);
+    sb()->restrict(['create.users']);
     $roles = Role::get(['id', 'name']);
     $groups = CustomerGroup::get(['id', 'name']);
     return Inertia::render('dashboard/users/create', [
@@ -61,7 +61,7 @@ class UsersController extends DashboardController
 
   public function editUser(User $user)
   {
-    ns()->restrict(['update.users']);
+    sb()->restrict(['update.users']);
     $roles = Role::get(['id', 'name']);
     $groups = CustomerGroup::get(['id', 'name']);
     $user->roles;
@@ -71,7 +71,7 @@ class UsersController extends DashboardController
     $user->shipping = $shipping;
 
     if ($user->id === Auth::id()) {
-      return redirect(ns()->route('ns.dashboard.users.profile'));
+      return redirect(sb()->route('sb.dashboard.users.profile'));
     }
 
     return Inertia::render('dashboard/users/edit', [
@@ -86,7 +86,7 @@ class UsersController extends DashboardController
 
   public function getUsers(User $user)
   {
-    ns()->restrict(['read.users']);
+    sb()->restrict(['read.users']);
 
     return User::get(['username', 'id', 'email']);
   }
@@ -101,7 +101,7 @@ class UsersController extends DashboardController
     /**
      * force permissions check
      */
-    ns()->restrict(['update.roles']);
+    sb()->restrict(['update.roles']);
     $roles = Role::with('permissions')->get();
     $permissions = Permission::get();
 
@@ -120,7 +120,7 @@ class UsersController extends DashboardController
    */
   public function getProfile()
   {
-    ns()->restrict(['manage.profile']);
+    sb()->restrict(['manage.profile']);
 
     $attributes = UserAttribute::where('user_id', auth::user()->id)
       ->firstornew([
@@ -133,7 +133,7 @@ class UsersController extends DashboardController
     return Inertia::render('dashboard/users/profile', [
       'title' => __('My Profile'),
       'description' => __('Change your personal settings'),
-      'src' => url('/api/forms/ns.user-profile'),
+      'src' => url('/api/forms/sb.user-profile'),
       'submitUrl' => url('/api/users/profile'),
       'attributes' => $attributes,
       'currentBilling' => $currentBilling,
@@ -169,7 +169,7 @@ class UsersController extends DashboardController
    */
   public function updateRole(Request $request)
   {
-    ns()->restrict(['update.roles']);
+    sb()->restrict(['update.roles']);
 
     $roles = $request->all();
 
@@ -198,7 +198,7 @@ class UsersController extends DashboardController
    */
   public function rolesList()
   {
-    ns()->restrict(['read.roles']);
+    sb()->restrict(['read.roles']);
 
     $roles = Role::with('permissions')->get();
     return Inertia::render('dashboard/users/roles/page', [
@@ -216,7 +216,7 @@ class UsersController extends DashboardController
    */
   public function editRole(Role $role)
   {
-    ns()->restrict(['update.roles']);
+    sb()->restrict(['update.roles']);
     return Inertia::render('dashboard/users/roles/edit', [
       'title' => __('Edit Role'),
       'role' => $role
@@ -235,7 +235,7 @@ class UsersController extends DashboardController
 
   public function cloneRole(Role $role)
   {
-    ns()->restrict(['create.roles']);
+    sb()->restrict(['create.roles']);
 
     return $this->usersService->cloneRole($role);
   }

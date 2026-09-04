@@ -18,14 +18,14 @@ use Illuminate\Support\Facades\Validator;
 
 class UserProfileForm extends SettingsPage
 {
-  const IDENTIFIER = 'ns.user-profile';
+  const IDENTIFIER = 'sb.user-profile';
 
   public function __construct()
   {
     $options = app()->make(UserOptions::class);
 
     $this->form = [
-      'tabs' => Hook::filter('ns-user-profile-form', [
+      'tabs' => Hook::filter('sb-user-profile-form', [
         'attribute' => include(dirname(__FILE__) . '/user-profile/attribute.php'),
         'shipping' => include(dirname(__FILE__) . '/user-profile/shipping.php'),
         'billing' => include(dirname(__FILE__) . '/user-profile/billing.php'),
@@ -37,7 +37,7 @@ class UserProfileForm extends SettingsPage
 
   public function saveForm(Request $request)
   {
-    ns()->restrict(['manage.profile']);
+    sb()->restrict(['manage.profile']);
 
     $validator = Validator::make($request->input('security'), []);
 

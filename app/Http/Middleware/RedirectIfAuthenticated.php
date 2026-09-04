@@ -2,13 +2,13 @@
 
 namespace App\Http\Middleware;
 
-use App\Traits\NsMiddlewareArgument;
+use App\Traits\SbMiddlewareArgument;
 use Closure;
 use Illuminate\Support\Facades\Auth;
 
 class RedirectIfAuthenticated
 {
-    use NsMiddlewareArgument;
+    use SbMiddlewareArgument;
 
     /**
      * Handle an incoming request.

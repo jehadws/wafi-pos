@@ -23,24 +23,24 @@ class RolesCrud extends CrudService
   /**
    * Define the identifier
    */
-  const IDENTIFIER = 'ns.roles';
+  const IDENTIFIER = 'sb.roles';
 
   /**
    * define the base table
    */
-  protected $table = 'jgrem_roles';
+  protected $table = 'subul_roles';
 
   /**
    * base route name
    */
-  protected $mainRoute = 'ns.roles';
+  protected $mainRoute = 'sb.roles';
 
   /**
    * Define namespace
    *
    * @param  string
    */
-  protected $namespace = 'ns.roles';
+  protected $namespace = 'sb.roles';
 
   /**
    * Model Used
@@ -56,7 +56,7 @@ class RolesCrud extends CrudService
    * redirect to route after creating
    *
    */
-  public $to_route = 'ns.dashboard.users.roles';
+  public $to_route = 'sb.dashboard.users.roles';
 
   /**
    * Pick
@@ -64,7 +64,7 @@ class RolesCrud extends CrudService
    * Should be an array of associative keys, where
    * keys are either the related table or alias name.
    * Example : [
-   *      'user'  =>  [ 'username' ], // here the relation on the table jgrem_users is using "user" as an alias
+   *      'user'  =>  [ 'username' ], // here the relation on the table subul_users is using "user" as an alias
    * ]
    */
   public $pick = [];
@@ -157,8 +157,8 @@ class RolesCrud extends CrudService
               'type' => 'text',
               'name' => 'namespace',
               'label' => __('Namespace'),
-              'validation' => $entry === null ? 'unique:jgrem_roles,namespace' : [
-                Rule::unique('jgrem_roles', 'namespace')->ignore($entry->id),
+              'validation' => $entry === null ? 'unique:subul_roles,namespace' : [
+                Rule::unique('subul_roles', 'namespace')->ignore($entry->id),
               ],
               'description' => __('Should be a unique value with no spaces or special character'),
               'value' => $entry->namespace ?? '',
@@ -306,7 +306,7 @@ class RolesCrud extends CrudService
    */
   public function beforeDelete($namespace, $id, $model)
   {
-    if ($namespace == 'ns.roles') {
+    if ($namespace == 'sb.roles') {
       $this->allowedTo('delete');
 
       if ($model->locked) {
@@ -353,7 +353,7 @@ class RolesCrud extends CrudService
       identifier: 'edit',
       label: __('Edit'),
       type: 'GOTO',
-      url: ns()->url('/dashboard/' . 'users/roles' . '/edit/' . $entry->id)
+      url: sb()->url('/dashboard/' . 'users/roles' . '/edit/' . $entry->id)
     );
 
     // Snippet 2
@@ -364,7 +364,7 @@ class RolesCrud extends CrudService
       confirm: [
         'message' => __('Would you like to clone this role ?'),
       ],
-      url: ns()->url('/api/' . 'users/roles/' . $entry->id . '/clone')
+      url: sb()->url('/api/' . 'users/roles/' . $entry->id . '/clone')
     );
 
     // Snippet 3
@@ -372,7 +372,7 @@ class RolesCrud extends CrudService
       identifier: 'delete',
       label: __('Delete'),
       type: 'DELETE',
-      url: ns()->url('/api/crud/ns.roles/' . $entry->id),
+      url: sb()->url('/api/crud/sb.roles/' . $entry->id),
       confirm: [
         'message' => __('Would you like to delete this ?'),
       ]
@@ -402,7 +402,7 @@ class RolesCrud extends CrudService
     }
 
     if ($request->input('action') == 'delete_selected') {
-      ns()->restrict(
+      sb()->restrict(
         ['delete.roles'],
         __('You do not have enough permissions to perform this action.')
       );
@@ -444,11 +444,11 @@ class RolesCrud extends CrudService
   public function getLinks(): array
   {
     return [
-      'list' => ns()->url('dashboard/' . 'users/roles'),
-      'create' => ns()->url('dashboard/' . 'users/roles/create'),
-      'edit' => ns()->url('dashboard/' . 'users/roles/edit/{id}'),
-      'post' => ns()->url('api/crud/' . 'ns.roles'),
-      'put' => ns()->url('api/crud/' . 'ns.roles/{id}' . ''),
+      'list' => sb()->url('dashboard/' . 'users/roles'),
+      'create' => sb()->url('dashboard/' . 'users/roles/create'),
+      'edit' => sb()->url('dashboard/' . 'users/roles/edit/{id}'),
+      'post' => sb()->url('api/crud/' . 'sb.roles'),
+      'put' => sb()->url('api/crud/' . 'sb.roles/{id}' . ''),
     ];
   }
 
@@ -463,7 +463,7 @@ class RolesCrud extends CrudService
       [
         'label' => __('Delete Selected Groups'),
         'identifier' => 'delete_selected',
-        'url' => ns()->route('ns.api.crud-bulk-actions', [
+        'url' => sb()->route('sb.api.crud-bulk-actions', [
           'namespace' => $this->namespace,
         ]),
       ],

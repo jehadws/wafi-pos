@@ -22,14 +22,14 @@ class RegisterHistoryCrud extends CrudService
     /**
      * Define the identifier
      */
-    const IDENTIFIER = 'ns.cash-registers-history';
+    const IDENTIFIER = 'sb.cash-registers-history';
 
     /**
      * define the base table
      *
      * @param  string
      */
-    protected $table = 'jgrem_registers_history';
+    protected $table = 'subul_registers_history';
 
     /**
      * default slug
@@ -43,7 +43,7 @@ class RegisterHistoryCrud extends CrudService
      *
      * @param  string
      */
-    protected $namespace = 'ns.cash-registers-history';
+    protected $namespace = 'sb.cash-registers-history';
 
     /**
      * Model Used
@@ -59,7 +59,7 @@ class RegisterHistoryCrud extends CrudService
      */
     protected $permissions = [
         'create' => false,
-        'read' => 'jgrem.read.registers-history',
+        'read' => 'subul.read.registers-history',
         'update' => false,
         'delete' => false,
     ];
@@ -70,7 +70,7 @@ class RegisterHistoryCrud extends CrudService
      * @param  array
      */
     public $relations = [
-        [ 'jgrem_users as user', 'user.id', '=', 'jgrem_registers_history.author' ],
+        [ 'subul_users as user', 'user.id', '=', 'subul_registers_history.author' ],
     ];
 
     /**
@@ -87,7 +87,7 @@ class RegisterHistoryCrud extends CrudService
      * Should be an array of associative keys, where
      * keys are either the related table or alias name.
      * Example : [
-     *      'user'  =>  [ 'username' ], // here the relation on the table jgrem_users is using "user" as an alias
+     *      'user'  =>  [ 'username' ], // here the relation on the table subul_users is using "user" as an alias
      * ]
      */
     public $pick = [
@@ -268,7 +268,7 @@ class RegisterHistoryCrud extends CrudService
     public function beforePost( $request )
     {
         if ( $this->permissions[ 'create' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'create' ] );
+            sb()->restrict( $this->permissions[ 'create' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -311,7 +311,7 @@ class RegisterHistoryCrud extends CrudService
     public function beforePut( $request, $entry )
     {
         if ( $this->permissions[ 'update' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'update' ] );
+            sb()->restrict( $this->permissions[ 'update' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -338,7 +338,7 @@ class RegisterHistoryCrud extends CrudService
      */
     public function beforeDelete( $namespace, $id, $model )
     {
-        if ( $namespace == 'ns.registers-hitory' ) {
+        if ( $namespace == 'sb.registers-hitory' ) {
             /**
              *  Perform an action before deleting an entry
              *  In case something wrong, this response can be returned
@@ -349,7 +349,7 @@ class RegisterHistoryCrud extends CrudService
              *  ], 403 );
              **/
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -460,10 +460,10 @@ class RegisterHistoryCrud extends CrudService
         );
 
         $entry->action = $this->registerService->getActionLabel( $entry->action );
-        $entry->created_at = ns()->date->getFormatted( $entry->created_at );
-        $entry->value = (string) ns()->currency->define( $entry->value );
-        $entry->balance_before = (string) ns()->currency->define( $entry->balance_before );
-        $entry->balance_after = (string) ns()->currency->define( $entry->balance_after );
+        $entry->created_at = sb()->date->getFormatted( $entry->created_at );
+        $entry->value = (string) sb()->currency->define( $entry->value );
+        $entry->balance_before = (string) sb()->currency->define( $entry->balance_before );
+        $entry->balance_after = (string) sb()->currency->define( $entry->balance_after );
         $entry->transaction_type = $this->getHumanTransactionType( $entry->transaction_type );
 
         return $entry;
@@ -500,7 +500,7 @@ class RegisterHistoryCrud extends CrudService
              * Will control if the user has the permissoin to do that.
              */
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -534,7 +534,7 @@ class RegisterHistoryCrud extends CrudService
     public function getLinks(): array
     {
         return [
-            'list' => ns()->url( 'dashboard/' . 'registers-history' ),
+            'list' => sb()->url( 'dashboard/' . 'registers-history' ),
             'create' => false,
             'edit' => false,
             'post' => false,
@@ -553,7 +553,7 @@ class RegisterHistoryCrud extends CrudService
             [
                 'label' => __( 'Delete Selected Groups' ),
                 'identifier' => 'delete_selected',
-                'url' => ns()->route( 'ns.api.crud-bulk-actions', [
+                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
                     'namespace' => $this->namespace,
                 ] ),
             ],

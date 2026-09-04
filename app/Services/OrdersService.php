@@ -71,7 +71,7 @@ class OrdersService
     }
 
     /**
-     * Create an order on JgremPOS.
+     * Create an order on Subul.
      *
      * @param  array      $fields
      * @param  Order|null $order  (optional)
@@ -319,7 +319,7 @@ class OrdersService
                  * if the minimal provided
                  * amount thoses match the required amount.
                  */
-                if ( $minimal > Currency::raw( $fields[ 'tendered' ] ) && ns()->option->get( 'ns_orders_allow_unpaid' ) === 'no' ) {
+                if ( $minimal > Currency::raw( $fields[ 'tendered' ] ) && sb()->option->get( 'sb_orders_allow_unpaid' ) === 'no' ) {
                     throw new NotAllowedException(
                         sprintf(
                             __( 'The minimal payment of %s has\'nt been provided.' ),
@@ -460,7 +460,7 @@ class OrdersService
             $response = $this->taxService->getTaxesComputed(
                 tax_type: $order->tax_type,
                 rates: $percentages->toArray(),
-                value: ns()->currency->define( $order->subtotal )->subtractBy( $order->discount )->toFloat()
+                value: sb()->currency->define( $order->subtotal )->subtractBy( $order->discount )->toFloat()
             );
 
             foreach ( $taxes as $index => $tax ) {
@@ -490,7 +490,7 @@ class OrdersService
 
         $order->products_tax_value = $this->getOrderProductsTaxes( $order );
 
-        switch ( ns()->option->get( 'ns_jgrem_vat' ) ) {
+        switch ( sb()->option->get( 'sb_subul_vat' ) ) {
             case 'flat_vat':
             case 'variable_vat':
                 $order->tax_value = Currency::define( collect( $orderTaxes )->sum( 'tax_value' ) )->toFloat();
@@ -808,7 +808,7 @@ class OrdersService
          * We want to prevent making payment on register that are closed.
          * if the cash regsiter feature is enabled.
          */
-        if ( ns()->option->get( 'ns_jgrem_registers_enabled', 'no' ) === 'yes' && isset( $payment[ 'register_id' ] ) ) {
+        if ( sb()->option->get( 'sb_subul_registers_enabled', 'no' ) === 'yes' && isset( $payment[ 'register_id' ] ) ) {
             $register = Register::opened()->where( 'id', $payment[ 'register_id' ] )->count();
 
             if ( $register === 0 ) {
@@ -820,11 +820,11 @@ class OrdersService
          * We should check if the order allow instalments. This is only done if
          * we've enabled strict instalments.
          */
-        if ( $order->instalments->count() > 0 && $order->support_instalments && ns()->option->get( 'ns_orders_strict_instalments', 'no' ) === 'yes' ) {
+        if ( $order->instalments->count() > 0 && $order->support_instalments && sb()->option->get( 'sb_orders_strict_instalments', 'no' ) === 'yes' ) {
             $paymentToday = $order->instalments()
                 ->where( 'paid', false )
-                ->where( 'date', '>=', ns()->date->copy()->startOfDay()->toDateTimeString() )
-                ->where( 'date', '<=', ns()->date->copy()->endOfDay()->toDateTimeString() )
+                ->where( 'date', '>=', sb()->date->copy()->startOfDay()->toDateTimeString() )
+                ->where( 'date', '<=', sb()->date->copy()->endOfDay()->toDateTimeString() )
                 ->get();
 
             if ( $paymentToday->count() === 0 ) {
@@ -923,7 +923,7 @@ class OrdersService
 
         $totalPayments = 0;
 
-        $subtotal = ns()->currency->define( collect( $fields[ 'products' ] )->map( function ( $product ) {
+        $subtotal = sb()->currency->define( collect( $fields[ 'products' ] )->map( function ( $product ) {
             return floatval( $product['total_price'] );
         } )->sum() )->toFloat();
 
@@ -965,12 +965,12 @@ class OrdersService
          */
         if ( $totalPayments < $total ) {
             if (
-                $this->optionsService->get( 'ns_orders_allow_partial', 'yes' ) !== 'yes' &&
+                $this->optionsService->get( 'sb_orders_allow_partial', 'yes' ) !== 'yes' &&
                 $totalPayments > 0
             ) {
                 throw new NotAllowedException( __( 'Unable to proceed. Partially paid orders aren\'t allowed. This option could be changed on the settings.' ) );
             } elseif (
-                $this->optionsService->get( 'ns_orders_allow_unpaid', 'yes' ) !== 'yes' &&
+                $this->optionsService->get( 'sb_orders_allow_unpaid', 'yes' ) !== 'yes' &&
                 $totalPayments === 0
             ) {
                 throw new NotAllowedException( __( 'Unable to proceed. Unpaid orders aren\'t allowed. This option could be changed on the settings.' ) );
@@ -987,7 +987,7 @@ class OrdersService
                 && (float) $customer->credit_limit_amount < (float) $customer->owed_amount + (float) $total ) {
                 throw new NotAllowedException( sprintf(
                     __( 'By proceeding this order, the customer will exceed the maximum credit allowed for his account: %s.' ),
-                    (string) ns()->currency->fresh( $customer->credit_limit_amount )
+                    (string) sb()->currency->fresh( $customer->credit_limit_amount )
                 ) );
             }
         }
@@ -1007,7 +1007,7 @@ class OrdersService
          * the logged user must have the rights to perform a payment
          */
         if ( $totalPayments > 0 ) {
-            ns()->restrict( 'jgrem.make-payment.orders', __( 'You\'re not allowed to make payments.' ) );
+            sb()->restrict( 'subul.make-payment.orders', __( 'You\'re not allowed to make payments.' ) );
         }
 
         return [
@@ -1162,7 +1162,7 @@ class OrdersService
 
             $this->computeOrderProduct( $orderProduct, $product );
 
-            if ( ns()->option->get( 'ns_jgrem_price_with_tax' ) === 'no' ) {
+            if ( sb()->option->get( 'sb_subul_price_with_tax' ) === 'no' ) {
                 $subTotal = $this->currencyService->define( $subTotal )
                     ->additionateBy( $orderProduct->total_price_with_tax )
                     ->get();
@@ -1443,9 +1443,9 @@ class OrdersService
             $fields[ 'discount_type' ] === 'percentage' ) {
 
             $fields[ 'discount' ] = ( $fields[ 'discount' ] ??
-                ns()->currency->define(
-                    ns()->currency->define(
-                        ns()->currency->define( $sale_price )->multiplyBy( $fields[ 'discount_percentage' ] )->toFloat()
+                sb()->currency->define(
+                    sb()->currency->define(
+                        sb()->currency->define( $sale_price )->multiplyBy( $fields[ 'discount_percentage' ] )->toFloat()
                     )->dividedBy( 100 )->toFloat()
                 )->multiplyBy( $fields[ 'quantity' ] )->toFloat() );
         } else {
@@ -1484,11 +1484,11 @@ class OrdersService
 
     /**
      * Generates the order code according to the
-     * "ns_orders_code_type" defined on the orders settings.
+     * "sb_orders_code_type" defined on the orders settings.
      */
     public function generateOrderCode( $order )
     {
-        switch ( ns()->option->get( 'ns_orders_code_type', 'date_sequential' ) ) {
+        switch ( sb()->option->get( 'sb_orders_code_type', 'date_sequential' ) ) {
             case 'random_code':
                 return strtoupper( Str::random( 8 ) );
             case 'number_sequential':
@@ -1503,12 +1503,12 @@ class OrdersService
      */
     protected function __nextGlobalSequentialCode(): string
     {
-        $today = ns()->date->toDateString();
-        $row = DB::table( 'jgrem_orders_count' )
+        $today = sb()->date->toDateString();
+        $row = DB::table( 'subul_orders_count' )
             ->where( 'date', 'global' );
 
         if ( ! $row->exists() ) {
-            DB::table( 'jgrem_orders_count' )
+            DB::table( 'subul_orders_count' )
                 ->insert( [
                     'date' => 'global',
                     'count' => 0,
@@ -1516,7 +1516,7 @@ class OrdersService
         }
 
         $row->increment( 'count' );
-        $count = (int) ( DB::table( 'jgrem_orders_count' )
+        $count = (int) ( DB::table( 'subul_orders_count' )
             ->where( 'date', 'global' )
             ->value( 'count' ) );
 
@@ -1530,20 +1530,20 @@ class OrdersService
     {
         $now = Carbon::parse( $order->created_at );
         $today = $now->toDateString();
-        $count = DB::table( 'jgrem_orders_count' )
+        $count = DB::table( 'subul_orders_count' )
             ->where( 'date', $today )
             ->value( 'count' );
 
         if ( $count === null ) {
             $count = 1;
-            DB::table( 'jgrem_orders_count' )
+            DB::table( 'subul_orders_count' )
                 ->insert( [
                     'date' => $today,
                     'count' => $count,
                 ] );
         }
 
-        DB::table( 'jgrem_orders_count' )
+        DB::table( 'subul_orders_count' )
             ->where( 'date', $today )
             ->increment( 'count' );
 
@@ -1563,7 +1563,7 @@ class OrdersService
              * if the order has just been created
              * then we'll define the "created_at" column.
              */
-            $order->created_at = $fields[ 'created_at' ] ?? ns()->date->getNow()->toDateTimeString();
+            $order->created_at = $fields[ 'created_at' ] ?? sb()->date->getNow()->toDateTimeString();
         }
 
         /**
@@ -1571,7 +1571,7 @@ class OrdersService
          * saved while creating the order, it should be
          * explicitly allowed on this filter
          */
-        foreach ( Hook::filter( 'ns-order-attributes', [] ) as $attribute ) {
+        foreach ( Hook::filter( 'sb-order-attributes', [] ) as $attribute ) {
             if ( ! in_array( $attribute, [
                 'id',
             ] ) ) {
@@ -1598,7 +1598,7 @@ class OrdersService
         $order->register_id = $fields[ 'register_id' ] ?? null;
         $order->note = $fields[ 'note'] ?? null;
         $order->note_visibility = $fields[ 'note_visibility' ] ?? null;
-        $order->updated_at = isset( $fields[ 'updated_at' ] ) ? Carbon::parse( $fields[ 'updated_at' ] )->format( 'Y-m-d h:m:s' ) : ns()->date->getNow()->toDateTimeString();
+        $order->updated_at = isset( $fields[ 'updated_at' ] ) ? Carbon::parse( $fields[ 'updated_at' ] )->format( 'Y-m-d h:m:s' ) : sb()->date->getNow()->toDateTimeString();
         $order->tax_group_id = $fields['tax_group_id' ] ?? null;
         $order->tax_type = $fields['tax_type' ] ?? null;
         $order->total_coupons = $fields['total_coupons'] ?? 0;
@@ -1684,7 +1684,7 @@ class OrdersService
 
         if ( ! empty( $fields[ 'discount_type' ] ) && ! empty( $fields[ 'discount_percentage' ] ) && $fields[ 'discount_type' ] === 'percentage' ) {
             return $this->currencyService->define(
-                ns()->currency->define( $fields[ 'subtotal' ] )->multiplyBy( $fields[ 'discount_percentage' ] )->toFloat()
+                sb()->currency->define( $fields[ 'subtotal' ] )->multiplyBy( $fields[ 'discount_percentage' ] )->toFloat()
             )->dividedBy( 100 )->toFloat();
         } else {
             return $this->currencyService->define( $fields[ 'discount' ] )->toFloat();
@@ -1716,7 +1716,7 @@ class OrdersService
      */
     public function computeOrderTaxes( Order $order )
     {
-        $posVat = ns()->option->get( 'ns_jgrem_vat' );
+        $posVat = sb()->option->get( 'sb_subul_vat' );
         $taxValue = 0;
 
         if ( in_array( $posVat, [
@@ -1840,7 +1840,7 @@ class OrdersService
             return $refundProduct->tax_value;
         } )->sum() ?: 0;
 
-        $orderRefund->tax_value = ns()->currency->define( $taxValue )->toFloat();
+        $orderRefund->tax_value = sb()->currency->define( $taxValue )->toFloat();
 
         /**
          * let's update the order refund total
@@ -1934,7 +1934,7 @@ class OrdersService
         $productRefund->tax_value = $this->computeTaxFromOrderTaxes(
             $order,
             Currency::define( $details[ 'unit_price' ] )->multipliedBy( $details[ 'quantity' ] )->toFloat(),
-            ns()->option->get( 'ns_jgrem_tax_type' )
+            sb()->option->get( 'sb_subul_tax_type' )
         );
 
         $productRefund->save();
@@ -2013,8 +2013,8 @@ class OrdersService
     public function computeDiscountValues( $rate, $value )
     {
         if ( $rate > 0 ) {
-            return ns()->currency->define(
-                ns()->currency->define( $value )->multiplyBy( $rate )->toFloat()
+            return sb()->currency->define(
+                sb()->currency->define( $value )->multiplyBy( $rate )->toFloat()
             )->divideBy( 100 )->toFloat();
         }
 
@@ -2223,7 +2223,7 @@ class OrdersService
                 ( $order->tax_type === 'exclusive' ? $order->tax_value : 0 )
             )
             ->subtractBy(
-                ns()->currency->fresh( $order->discount )
+                sb()->currency->fresh( $order->discount )
                     ->additionateBy( $order->total_coupons )
                     ->toFloat()
             )
@@ -2428,7 +2428,7 @@ class OrdersService
      */
     public function getPaymentLabel( $type )
     {
-        $payments = config( 'jgrem.orders.statuses' );
+        $payments = config( 'subul.orders.statuses' );
 
         return $payments[ $type ] ?? sprintf( __( 'Unknown Status (%s)' ), $type );
     }
@@ -2440,12 +2440,12 @@ class OrdersService
      */
     public function getPaymentLabels()
     {
-        return config( 'jgrem.orders.statuses' );
+        return config( 'subul.orders.statuses' );
     }
 
     public function getRefundedOrderProductLabel( $label )
     {
-        return config( 'jgrem.orders.products.refunds' )[ $label ] ?? __( 'Unknown Product Status' );
+        return config( 'subul.orders.products.refunds' )[ $label ] ?? __( 'Unknown Product Status' );
     }
 
     /**
@@ -2483,7 +2483,7 @@ class OrdersService
      */
     public function getTypeLabels()
     {
-        $types = Hook::filter( 'ns-order-types-labels', collect( $this->getTypeOptions() )->mapWithKeys( function ( $option ) {
+        $types = Hook::filter( 'sb-order-types-labels', collect( $this->getTypeOptions() )->mapWithKeys( function ( $option ) {
             return [
                 $option[ 'identifier' ] => $option[ 'label' ],
             ];
@@ -2494,7 +2494,7 @@ class OrdersService
 
     public function getTypeOptions()
     {
-        return Hook::filter( 'ns-orders-types', [
+        return Hook::filter( 'sb-orders-types', [
             'takeaway' => [
                 'identifier' => 'takeaway',
                 'label' => __( 'Take Away' ),
@@ -2564,16 +2564,16 @@ class OrdersService
      */
     public function orderTemplateMapping( $option, Order $order )
     {
-        $template = ns()->option->get( $option, '' );
+        $template = sb()->option->get( $option, '' );
         $availableTags = [
-            'store_name' => ns()->option->get( 'ns_store_name' ),
-            'store_email' => ns()->option->get( 'ns_store_email' ),
-            'store_phone' => ns()->option->get( 'ns_store_phone' ),
+            'store_name' => sb()->option->get( 'sb_store_name' ),
+            'store_email' => sb()->option->get( 'sb_store_email' ),
+            'store_phone' => sb()->option->get( 'sb_store_phone' ),
             'cashier_name' => $order->user->username,
             'cashier_id' => $order->author,
             'order_code' => $order->code,
             'order_type' => $this->getTypeLabel( $order->type ),
-            'order_date' => ns()->date->getFormatted( $order->created_at ),
+            'order_date' => sb()->date->getFormatted( $order->created_at ),
             'customer_first_name' => $order->customer->first_name,
             'customer_last_name' => $order->customer->last_name,
             'customer_email' => $order->customer->email,
@@ -2599,7 +2599,7 @@ class OrdersService
             'billing_' . 'email' => $order->billing_address->email,
         ];
 
-        $availableTags = Hook::filter( 'ns-orders-template-mapping', $availableTags, $order );
+        $availableTags = Hook::filter( 'sb-orders-template-mapping', $availableTags, $order );
 
         foreach ( $availableTags as $tag => $value ) {
             $template = ( str_replace( '{' . $tag . '}', $value ?: '', $template ) );
@@ -2633,7 +2633,7 @@ class OrdersService
                 $order->save();
             } );
 
-            $notificationID = 'ns.due-orders-notifications';
+            $notificationID = 'sb.due-orders-notifications';
 
             /**
              * let's clear previously emitted notification
@@ -2649,11 +2649,11 @@ class OrdersService
             $notificationService->create( [
                 'title' => __( 'Unpaid Orders Turned Due' ),
                 'identifier' => $notificationID,
-                'url' => ns()->route( 'ns.dashboard.orders' ),
+                'url' => sb()->route( 'sb.dashboard.orders' ),
                 'description' => sprintf( __( '%s order(s) either unpaid or partially paid has turned due. This occurs if none has been completed before the expected payment date.' ), $orders->count() ),
             ] )->dispatchForGroup( [
                 Role::namespace( 'admin' ),
-                Role::namespace( 'jgrem.store.administrator' ),
+                Role::namespace( 'subul.store.administrator' ),
             ] );
 
             DueOrdersEvent::dispatch( $orders );
@@ -2804,8 +2804,8 @@ class OrdersService
     {
         if ( in_array( $order->payment_status, [ Order::PAYMENT_PAID, Order::PAYMENT_PARTIALLY ] ) ) {
             $orderInstalments = $order->instalments()
-                ->where( 'date', '>=', ns()->date->copy()->startOfDay()->toDateTimeString() )
-                ->where( 'date', '<=', ns()->date->copy()->endOfDay()->toDateTimeString() )
+                ->where( 'date', '>=', sb()->date->copy()->startOfDay()->toDateTimeString() )
+                ->where( 'date', '<=', sb()->date->copy()->endOfDay()->toDateTimeString() )
                 ->where( 'paid', false )
                 ->get();
 
@@ -3030,10 +3030,10 @@ class OrdersService
 
                 return [
                     'label' => $paymentType->label,
-                    'total' => ns()->currency->define( $total )->toFloat(),
+                    'total' => sb()->currency->define( $total )->toFloat(),
                 ];
             } ),
-            'total' => ns()->currency->define( $total )->toFloat(),
+            'total' => sb()->currency->define( $total )->toFloat(),
             'entries' => $payments,
         ];
     }
@@ -3064,9 +3064,9 @@ class OrdersService
 
     public function handlePOSRoute( $bool, $request, $next )
     {
-        if ( $request->routeIs( ns()->routeName( 'ns.dashboard.pos' ) ) ) {
+        if ( $request->routeIs( sb()->routeName( 'sb.dashboard.pos' ) ) ) {
             if ( PaymentType::count() === 0 ) {
-                return redirect()->route( ns()->routeName( 'ns.dashboard.orders-create-types' ) )->with(
+                return redirect()->route( sb()->routeName( 'sb.dashboard.orders-create-types' ) )->with(
                     'errorMessage',
                     __( 'You need to define at least one payment type before proceeding.' )
                 );
@@ -3099,13 +3099,13 @@ class OrdersService
         $settings = $order->settings();
 
         $settings->create( [
-            'key' => 'ns_jgrem_price_with_tax',
-            'value' => ns()->option->get( 'ns_jgrem_price_with_tax' ),
+            'key' => 'sb_subul_price_with_tax',
+            'value' => sb()->option->get( 'sb_subul_price_with_tax' ),
         ] );
 
         $settings->create( [
-            'key' => 'ns_jgrem_vat',
-            'value' => ns()->option->get( 'ns_jgrem_vat' ),
+            'key' => 'sb_subul_vat',
+            'value' => sb()->option->get( 'sb_subul_vat' ),
         ] );
 
         return [

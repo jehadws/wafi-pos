@@ -9,11 +9,11 @@ use App\Events\OrderAfterCreatedEvent;
 use App\Events\OrderAfterPaymentStatusChangedEvent;
 use App\Events\OrderAfterUpdatedEvent;
 use App\Services\DateService;
-use App\Traits\NsFlashData;
+use App\Traits\SbFlashData;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
- * ns-generated-comments
+ * sb-generated-comments
  *
  * @property int id
  * @property string description
@@ -61,13 +61,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @method paymentStatus( )
  * @method paymentExpired( )
  */
-class Order extends NsModel
+class Order extends SbModel
 {
-    use HasFactory, NsFlashData;
+    use HasFactory, SbFlashData;
 
     public $timestamps = false;
 
-    protected $table = 'jgrem_' . 'orders';
+    protected $table = 'subul_' . 'orders';
 
     const TYPE_DELIVERY = 'delivery';
 
@@ -263,7 +263,7 @@ class Order extends NsModel
      */
     public function getCombinedProductsAttribute()
     {
-        if ( ns()->option->get( 'ns_invoice_merge_similar_products', 'no' ) === 'yes' ) {
+        if ( sb()->option->get( 'sb_invoice_merge_similar_products', 'no' ) === 'yes' ) {
             $combinaison = [];
 
             $this->products()->with( 'unit' )->get()->each( function ( $product ) use ( &$combinaison ) {
@@ -272,8 +272,8 @@ class Order extends NsModel
                 extract( $values );
 
                 $keys = array_keys( $combinaison );
-                $stringified = Hook::filter( 'ns-products-combinaison-identifier', $product_id . '-' . $order_id . '-' . $discount . '-' . $product_category_id . '-' . $status, $product );
-                $combinaisonAttributes = Hook::filter( 'ns-products-combinaison-attributes', [
+                $stringified = Hook::filter( 'sb-products-combinaison-identifier', $product_id . '-' . $order_id . '-' . $discount . '-' . $product_category_id . '-' . $status, $product );
+                $combinaisonAttributes = Hook::filter( 'sb-products-combinaison-attributes', [
                     'quantity',
                     'total_price_without_tax',
                     'total_price',

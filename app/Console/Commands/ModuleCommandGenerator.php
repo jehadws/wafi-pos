@@ -43,12 +43,12 @@ class ModuleCommandGenerator extends Command
             $name = ucwords( Str::camel( $this->argument( 'argument' ) ) );
             $fileName = $commandsPath . $name;
             $namespace = $this->argument( 'namespace' );
-            $fileExists = Storage::disk( 'ns-modules' )->exists(
+            $fileExists = Storage::disk( 'sb-modules' )->exists(
                 $fileName . '.php'
             );
 
             if ( ! $fileExists || ( $fileExists && $this->option( 'force' ) ) ) {
-                Storage::disk( 'ns-modules' )->put(
+                Storage::disk( 'sb-modules' )->put(
                     $fileName . '.php', view( 'generate.modules.command', compact(
                         'modules', 'module', 'name', 'namespace'
                     ) ) );

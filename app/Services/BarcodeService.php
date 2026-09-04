@@ -141,7 +141,7 @@ class BarcodeService
 
         try {
             Storage::disk( 'public' )->put(
-                Hook::filter( 'ns-media-path', 'products/barcodes/' . $barcode . '.png' ),
+                Hook::filter( 'sb-media-path', 'products/barcodes/' . $barcode . '.png' ),
                 $generator->getBarcode( $barcode, $realType, 3, 30 )
             );
         } catch ( Exception $exception ) {

@@ -8,9 +8,9 @@
  * We'll list here all aliased middleware.
  */
 $middleware->alias( [
-    'ns.not-installed' => \App\Http\Middleware\NotInstalledStateMiddleware::class,
-    'ns.installed' => \App\Http\Middleware\InstalledStateMiddleware::class,
-    'ns.clear-cache' => \App\Http\Middleware\ClearRequestCacheMiddleware::class,
+    'sb.not-installed' => \App\Http\Middleware\NotInstalledStateMiddleware::class,
+    'sb.installed' => \App\Http\Middleware\InstalledStateMiddleware::class,
+    'sb.clear-cache' => \App\Http\Middleware\ClearRequestCacheMiddleware::class,
     'auth' => \App\Http\Middleware\Authenticate::class,
     'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
     'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
@@ -21,8 +21,8 @@ $middleware->alias( [
     'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
     'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
     'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-    'ns.check-migrations' => \App\Http\Middleware\CheckMigrationStatus::class,
-    'ns.check-application-health' => \App\Http\Middleware\CheckApplicationHealthMiddleware::class,
+    'sb.check-migrations' => \App\Http\Middleware\CheckMigrationStatus::class,
+    'sb.check-application-health' => \App\Http\Middleware\CheckApplicationHealthMiddleware::class,
 ] );
 
 /**

@@ -5,7 +5,7 @@ namespace App\Jobs;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Services\CustomerService;
-use App\Traits\NsSerialize;
+use App\Traits\SbSerialize;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -13,7 +13,7 @@ use Illuminate\Queue\InteractsWithQueue;
 
 class ProcessCustomerOwedAndRewardsJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, NsSerialize, Queueable;
+    use Dispatchable, InteractsWithQueue, SbSerialize, Queueable;
 
     /**
      * Create a new job instance.

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * JgremPOS Controller
+ * Subul Controller
  *
  * @since  1.0
  **/
@@ -163,7 +163,7 @@ class CashRegistersController extends DashboardController
         if ( $register->status === Register::STATUS_OPENED ) {
             $lastOpening = $register->history()
                 ->where( 'action', RegisterHistory::ACTION_OPENING )
-                ->orderBy( Hook::filter( 'ns-table-name', 'jgrem_registers_history' ) . '.id', 'desc' )
+                ->orderBy( Hook::filter( 'sb-table-name', 'subul_registers_history' ) . '.id', 'desc' )
                 ->first();
 
             if ( $lastOpening instanceof RegisterHistory ) {
@@ -172,13 +172,13 @@ class CashRegistersController extends DashboardController
                  */
                 $historyRequest = $register->history()
                     ->select( [
-                        'jgrem_registers_history.*',
-                        'jgrem_registers_history.description as description',
-                        'jgrem_payments_types.label as payment_label',
+                        'subul_registers_history.*',
+                        'subul_registers_history.description as description',
+                        'subul_payments_types.label as payment_label',
                     ] )
                     ->with( 'order' )
-                    ->leftJoin( 'jgrem_payments_types', 'jgrem_registers_history.payment_type_id', '=', 'jgrem_payments_types.id' )
-                    ->where( 'jgrem_registers_history.id', '>=', $lastOpening->id );
+                    ->leftJoin( 'subul_payments_types', 'subul_registers_history.payment_type_id', '=', 'subul_payments_types.id' )
+                    ->where( 'subul_registers_history.id', '>=', $lastOpening->id );
 
                 $history = $historyRequest->get();
 
@@ -222,15 +222,15 @@ class CashRegistersController extends DashboardController
                 $totalCashChange = $history->where( 'action', RegisterHistory::ACTION_ORDER_CHANGE )->sum( 'value' );
 
                 $totalPaymentTypeSummary = $register->history()
-                    ->leftJoin( 'jgrem_payments_types', 'jgrem_registers_history.payment_type_id', '=', 'jgrem_payments_types.id' )
-                    ->where( 'jgrem_registers_history.id', '>=', $lastOpening->id )
-                    ->where( 'jgrem_registers_history.action', RegisterHistory::ACTION_ORDER_PAYMENT )
+                    ->leftJoin( 'subul_payments_types', 'subul_registers_history.payment_type_id', '=', 'subul_payments_types.id' )
+                    ->where( 'subul_registers_history.id', '>=', $lastOpening->id )
+                    ->where( 'subul_registers_history.action', RegisterHistory::ACTION_ORDER_PAYMENT )
                     ->select( [
-                        DB::raw( 'SUM(jgrem_registers_history.value) as value' ),
-                        'jgrem_payments_types.label as label',
-                        'jgrem_registers_history.action as action',
+                        DB::raw( 'SUM(subul_registers_history.value) as value' ),
+                        'subul_payments_types.label as label',
+                        'subul_registers_history.action as action',
                     ] )
-                    ->groupBy( [ 'jgrem_registers_history.action', 'jgrem_payments_types.label' ] )
+                    ->groupBy( [ 'subul_registers_history.action', 'subul_payments_types.label' ] )
                     ->get()
                     ->map( function ( $group ) {
                         return [
@@ -254,11 +254,11 @@ class CashRegistersController extends DashboardController
                     ],
                     [
                         'label' => __( 'On Hand' ),
-                        'value' => ns()->currency->define( $totalOpening )
+                        'value' => sb()->currency->define( $totalOpening )
                             ->additionateBy( $totalCashPayment )
                             ->additionateBy( $totalCashIn )
                             ->subtractBy(
-                                ns()->currency->define( $totalCashChange )
+                                sb()->currency->define( $totalCashChange )
                                     ->additionateBy( $totalDisbursement )
                                     ->toFloat()
                             )->toFloat(),

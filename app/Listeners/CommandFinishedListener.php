@@ -24,6 +24,6 @@ class CommandFinishedListener
          * because if we're running the reset from the command line
          * we might not have this cache entry deleted. We'll delete it when the reset is done.
          */
-        Cache::delete( 'ns-core-installed' );
+        Cache::delete( 'sb-core-installed' );
     }
 }

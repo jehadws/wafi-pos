@@ -52,7 +52,7 @@ class ComputeDailyReportCommand extends Command
     {
         $from = Carbon::parse( $this->option( 'from' ) );
         $monthCursor = $from->copy();
-        $currentDate = ns()->date->getNow();
+        $currentDate = sb()->date->getNow();
         $dates = collect( [] );
 
         while ( ! $monthCursor->isSameMonth( $currentDate->copy()->addMonth() ) ) {
@@ -92,7 +92,7 @@ class ComputeDailyReportCommand extends Command
     {
         $from = Carbon::parse( $this->option( 'from' ) );
         $dayCursor = $from->copy();
-        $currentDate = ns()->date->getNow();
+        $currentDate = sb()->date->getNow();
         $dates = collect( [] );
 
         while ( ! $dayCursor->isSameDay( $currentDate->copy()->addDay() ) ) {

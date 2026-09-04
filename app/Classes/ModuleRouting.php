@@ -24,7 +24,7 @@ class ModuleRouting
              * will load all web.php file as dashboard routes.
              */
             if ( $module[ 'routes-file' ] !== false ) {
-                if ( env( 'NS_WILDCARD_ENABLED' ) ) {
+                if ( env( 'SB_WILDCARD_ENABLED' ) ) {
                     /**
                      * The defined route should only be applicable
                      * to the main domain.
@@ -43,7 +43,7 @@ class ModuleRouting
              * will load api.php file has api file
              */
             if ( $module[ 'api-file' ] !== false ) {
-                if ( env( 'NS_WILDCARD_ENABLED' ) ) {
+                if ( env( 'SB_WILDCARD_ENABLED' ) ) {
                     /**
                      * The defined route should only be applicable
                      * to the main domain.

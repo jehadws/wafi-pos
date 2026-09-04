@@ -10,7 +10,7 @@ use App\Services\ProductService;
 use App\Services\TaxService;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
-use Modules\NsMultiStore\Models\Store;
+use Modules\SbMultiStore\Models\Store;
 
 class ProductCommand extends Command
 {
@@ -46,7 +46,7 @@ class ProductCommand extends Command
          * explicit support for multistore
          */
         if ( class_exists( Store::class ) && ! empty( $this->option( 'store' ) ) ) {
-            ns()->store->setStore( Store::find( $this->option( 'store' ) ) );
+            sb()->store->setStore( Store::find( $this->option( 'store' ) ) );
         }
 
         /**

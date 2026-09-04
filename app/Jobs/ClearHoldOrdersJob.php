@@ -7,7 +7,7 @@ use App\Models\Role;
 use App\Services\DateService;
 use App\Services\NotificationService;
 use App\Services\Options;
-use App\Traits\NsSerialize;
+use App\Traits\SbSerialize;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -16,7 +16,7 @@ use Illuminate\Queue\InteractsWithQueue;
 
 class ClearHoldOrdersJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, NsSerialize, Queueable;
+    use Dispatchable, InteractsWithQueue, SbSerialize, Queueable;
 
     /**
      * Create a new job instance.
@@ -41,7 +41,7 @@ class ClearHoldOrdersJob implements ShouldQueue
         NotificationService $notification
     ) {
         // we should prevent unpaid order to be deleted by default.
-        if ( empty( $options->get( 'ns_orders_quotation_expiration', 'never' ) ) ) {
+        if ( empty( $options->get( 'sb_orders_quotation_expiration', 'never' ) ) ) {
             return;
         }
 
@@ -52,7 +52,7 @@ class ClearHoldOrdersJob implements ShouldQueue
                  * @var Carbon
                  */
                 $expectedDate = Carbon::parse( $order->created_at )
-                    ->addDays( $options->get( 'ns_orders_quotation_expiration' ) );
+                    ->addDays( $options->get( 'sb_orders_quotation_expiration' ) );
 
                 if ( $expectedDate->lessThan( $date->now() ) ) {
                     /**
@@ -77,7 +77,7 @@ class ClearHoldOrdersJob implements ShouldQueue
                 'description' => sprintf( __( '%s order(s) has recently been deleted as they have expired.' ), $deleted->count() ),
             ] )->dispatchForGroup( [
                 Role::namespace( 'admin' ),
-                Role::namespace( 'jgrem.store.administrator' ),
+                Role::namespace( 'subul.store.administrator' ),
             ] );
         }
     }

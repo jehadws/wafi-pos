@@ -21,14 +21,14 @@ class TaxCrud extends CrudService
   /**
    * Define the identifier
    */
-  const IDENTIFIER = 'ns.taxes';
+  const IDENTIFIER = 'sb.taxes';
 
   /**
    * define the base table
    *
    * @param  string
    */
-  protected $table = 'jgrem_taxes';
+  protected $table = 'subul_taxes';
 
   /**
    * default slug
@@ -42,7 +42,7 @@ class TaxCrud extends CrudService
    *
    * @param  string
    */
-  protected $namespace = 'ns.taxes';
+  protected $namespace = 'sb.taxes';
 
   /**
    * Model Used
@@ -64,8 +64,8 @@ class TaxCrud extends CrudService
   ];
 
   public $relations = [
-    ['jgrem_users as user', 'jgrem_taxes.author', '=', 'user.id'],
-    ['jgrem_taxes_groups as parent', 'jgrem_taxes.tax_group_id', '=', 'parent.id'],
+    ['subul_users as user', 'subul_taxes.author', '=', 'user.id'],
+    ['subul_taxes_groups as parent', 'subul_taxes.tax_group_id', '=', 'parent.id'],
   ];
 
   /**
@@ -74,7 +74,7 @@ class TaxCrud extends CrudService
    * Should be an array of associative keys, where
    * keys are either the related table or alias name.
    * Example : [
-   *      'user'  =>  [ 'username' ], // here the relation on the table jgrem_users is using "user" as an alias
+   *      'user'  =>  [ 'username' ], // here the relation on the table subul_users is using "user" as an alias
    * ]
    */
   protected $pick = [
@@ -82,7 +82,7 @@ class TaxCrud extends CrudService
     'parent' => ['name'],
   ];
 
-  public $to_route = 'ns.dashboard.taxes';
+  public $to_route = 'sb.dashboard.taxes';
 
   /**
    * all tabs mentionned on the tabs relations
@@ -230,7 +230,7 @@ class TaxCrud extends CrudService
   public function beforePost($request)
   {
     if ($this->permissions['create'] !== false) {
-      ns()->restrict($this->permissions['create']);
+      sb()->restrict($this->permissions['create']);
     } else {
       throw new NotAllowedException;
     }
@@ -274,7 +274,7 @@ class TaxCrud extends CrudService
   public function beforePut($request, $entry)
   {
     if ($this->permissions['update'] !== false) {
-      ns()->restrict($this->permissions['update']);
+      sb()->restrict($this->permissions['update']);
     } else {
       throw new NotAllowedException;
     }
@@ -301,7 +301,7 @@ class TaxCrud extends CrudService
    */
   public function beforeDelete($namespace, $id, $model)
   {
-    if ($namespace == 'ns.taxes') {
+    if ($namespace == 'sb.taxes') {
       /**
        *  Perform an action before deleting an entry
        *  In case something wrong, this response can be returned
@@ -312,7 +312,7 @@ class TaxCrud extends CrudService
        *  ], 403 );
        **/
       if ($this->permissions['delete'] !== false) {
-        ns()->restrict($this->permissions['delete']);
+        sb()->restrict($this->permissions['delete']);
       } else {
         throw new NotAllowedException;
       }
@@ -365,14 +365,14 @@ class TaxCrud extends CrudService
       identifier: 'edit',
       label: __('Edit'),
       type: 'GOTO',
-      url: ns()->url('/dashboard/' . 'taxes' . '/edit/' . $entry->id)
+      url: sb()->url('/dashboard/' . 'taxes' . '/edit/' . $entry->id)
     );
 
     $entry->action(
       identifier: 'delete',
       label: __('Delete'),
       type: 'DELETE',
-      url: ns()->url('/api/crud/ns.taxes/' . $entry->id),
+      url: sb()->url('/api/crud/sb.taxes/' . $entry->id),
       confirm: [
         'message' => __('Would you like to delete this ?'),
       ]
@@ -398,7 +398,7 @@ class TaxCrud extends CrudService
        * Will control if the user has the permissoin to do that.
        */
       if ($this->permissions['delete'] !== false) {
-        ns()->restrict($this->permissions['delete']);
+        sb()->restrict($this->permissions['delete']);
       } else {
         throw new NotAllowedException;
       }
@@ -432,11 +432,11 @@ class TaxCrud extends CrudService
   public function getLinks(): array
   {
     return [
-      'list' => ns()->url('dashboard/' . 'taxes'),
-      'create' => ns()->url('dashboard/' . 'taxes/create'),
-      'edit' => ns()->url('dashboard/' . 'taxes/edit/'),
-      'post' => ns()->url('api/crud/' . 'ns.taxes'),
-      'put' => ns()->url('api/crud/' . 'ns.taxes/{id}' . ''),
+      'list' => sb()->url('dashboard/' . 'taxes'),
+      'create' => sb()->url('dashboard/' . 'taxes/create'),
+      'edit' => sb()->url('dashboard/' . 'taxes/edit/'),
+      'post' => sb()->url('api/crud/' . 'sb.taxes'),
+      'put' => sb()->url('api/crud/' . 'sb.taxes/{id}' . ''),
     ];
   }
 
@@ -451,7 +451,7 @@ class TaxCrud extends CrudService
       [
         'label' => __('Delete Selected Groups'),
         'identifier' => 'delete_selected',
-        'url' => ns()->route('ns.api.crud-bulk-actions', [
+        'url' => sb()->route('sb.api.crud-bulk-actions', [
           'namespace' => $this->namespace,
         ]),
       ],

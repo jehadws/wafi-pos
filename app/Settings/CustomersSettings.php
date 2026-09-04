@@ -29,33 +29,33 @@ class CustomersSettings extends SettingsPage
   public function getPayload()
   {
     return [
-      'ns_customers_rewards_enabled' => ns()->option->get('ns_customers_rewards_enabled', 'no'),
-      'ns_customers_force_valid_email' => ns()->option->get('ns_customers_force_valid_email', 'no'),
-      'ns_customers_force_unique_phone' => ns()->option->get('ns_customers_force_unique_phone', 'no'),
-      'ns_customers_default' => ns()->option->get('ns_customers_default', 'no'),
-      'ns_customers_default_group' => ns()->option->get('ns_customers_default_group', 'no'),
-      'ns_customers_credit_enabled' => ns()->option->get('ns_customers_credit_enabled', 'no'),
+      'sb_customers_rewards_enabled' => sb()->option->get('sb_customers_rewards_enabled', 'no'),
+      'sb_customers_force_valid_email' => sb()->option->get('sb_customers_force_valid_email', 'no'),
+      'sb_customers_force_unique_phone' => sb()->option->get('sb_customers_force_unique_phone', 'no'),
+      'sb_customers_default' => sb()->option->get('sb_customers_default', 'no'),
+      'sb_customers_default_group' => sb()->option->get('sb_customers_default_group', 'no'),
+      'sb_customers_credit_enabled' => sb()->option->get('sb_customers_credit_enabled', 'no'),
     ];
   }
 
   public function getOptions()
   {
     return [
-      'ns_customers_rewards_enabled' =>  Helper::kvToJsOptions([
+      'sb_customers_rewards_enabled' =>  Helper::kvToJsOptions([
         'yes' => __('Yes'),
         'no' => __('No'),
       ]),
-      'ns_customers_force_valid_email' =>  Helper::kvToJsOptions([
+      'sb_customers_force_valid_email' =>  Helper::kvToJsOptions([
         'yes' => __('Yes'),
         'no' => __('No'),
       ]),
-      'ns_customers_force_unique_phone' =>  Helper::kvToJsOptions([
+      'sb_customers_force_unique_phone' =>  Helper::kvToJsOptions([
         'yes' => __('Yes'),
         'no' => __('No'),
       ]),
-      'ns_customers_default' =>  Helper::toJsOptions(Customer::get(), ['id', ['first_name', 'last_name']]),
-      'ns_customers_default_group' =>  Helper::toJsOptions(CustomerGroup::get(), ['id', 'name']),
-      'ns_customers_credit_enabled' =>  Helper::kvToJsOptions([
+      'sb_customers_default' =>  Helper::toJsOptions(Customer::get(), ['id', ['first_name', 'last_name']]),
+      'sb_customers_default_group' =>  Helper::toJsOptions(CustomerGroup::get(), ['id', 'name']),
+      'sb_customers_credit_enabled' =>  Helper::kvToJsOptions([
         'yes' => __('Yes'),
         'no' => __('No'),
       ]),

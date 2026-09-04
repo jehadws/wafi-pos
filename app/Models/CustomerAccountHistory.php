@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int    $author
  * @property string $description
  */
-class CustomerAccountHistory extends NsModel
+class CustomerAccountHistory extends SbModel
 {
     use HasFactory;
 
@@ -27,7 +27,7 @@ class CustomerAccountHistory extends NsModel
 
     const OPERATION_PAYMENT = 'payment';
 
-    protected $table = 'jgrem_' . 'customers_account_history';
+    protected $table = 'subul_' . 'customers_account_history';
 
     public $dispatchesEvents = [
         'created' => CustomerAccountHistoryAfterCreatedEvent::class,

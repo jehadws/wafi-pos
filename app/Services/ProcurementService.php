@@ -771,7 +771,7 @@ class ProcurementService
                 );
 
                 $this->productService->stockAdjustment( ProductHistory::ACTION_DELETED, [
-                    'total_price' => ns()->currency->define( $purchasePrice )->multipliedBy( $convertedQuantityToRemove )->toFloat(),
+                    'total_price' => sb()->currency->define( $purchasePrice )->multipliedBy( $convertedQuantityToRemove )->toFloat(),
                     'unit_price' => $purchasePrice,
                     'unit_id' => $procurementProduct->convert_unit_id,
                     'product_id' => $procurementProduct->product_id,
@@ -967,14 +967,14 @@ class ProcurementService
         } );
 
         if ( $procurements->count() ) {
-            ns()->notification->create( [
+            sb()->notification->create( [
                 'title' => __( 'Procurement Automatically Stocked' ),
-                'identifier' => 'ns-warn-auto-procurement',
+                'identifier' => 'sb-warn-auto-procurement',
                 'url' => url( '/dashboard/procurements' ),
                 'description' => sprintf( __( '%s procurement(s) has recently been automatically procured.' ), $procurements->count() ),
             ] )->dispatchForGroup( [
                 Role::namespace( 'admin' ),
-                Role::namespace( 'jgrem.store.administrator' ),
+                Role::namespace( 'subul.store.administrator' ),
             ] );
         }
     }
@@ -1010,7 +1010,7 @@ class ProcurementService
     public function searchQuery()
     {
         return Product::query()
-            ->whereIn( 'type', Hook::filter( 'ns-procurement-searchable-product-type', [
+            ->whereIn( 'type', Hook::filter( 'sb-procurement-searchable-product-type', [
                 Product::TYPE_DEMATERIALIZED,
                 Product::TYPE_MATERIALIZED,
             ] ) )
@@ -1104,7 +1104,7 @@ class ProcurementService
                          */
                         $product->procurement = new stdClass;
                         $product->procurement->unit_id = $item[ 'unit_id' ];
-                        $product->procurement->quantity = ns()->currency
+                        $product->procurement->quantity = sb()->currency
                             ->define( $item[ 'quantity' ] )
                             ->multipliedBy( $data[ 'multiplier' ] )->toFloat();
 

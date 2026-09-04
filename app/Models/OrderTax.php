@@ -13,11 +13,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property float  $tax_value
  * @property string $tax_name
  */
-class OrderTax extends NsModel
+class OrderTax extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'orders_taxes';
+    protected $table = 'subul_' . 'orders_taxes';
 
     public $timestamps = false;
 

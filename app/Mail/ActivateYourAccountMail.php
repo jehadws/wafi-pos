@@ -31,8 +31,8 @@ class ActivateYourAccountMail extends Mailable
     public function build()
     {
         return $this
-            ->subject( ns()->option->get( 'ns_notifications_registrations_user_activate_title', __( '[JgremPOS] Activate Your Account' ) ) )
-            ->from( ns()->option->get( 'ns_store_email', 'notifications@jgrem.com' ) )
+            ->subject( sb()->option->get( 'sb_notifications_registrations_user_activate_title', __( '[Subul] Activate Your Account' ) ) )
+            ->from( sb()->option->get( 'sb_store_email', 'notifications@subul.com' ) )
             ->markdown( 'mails/activate-your-account-mail' );
     }
 }

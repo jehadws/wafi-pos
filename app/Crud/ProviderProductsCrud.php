@@ -19,14 +19,14 @@ class ProviderProductsCrud extends CrudService
     /**
      * Define the identifier
      */
-    const IDENTIFIER = 'ns.providers-products';
+    const IDENTIFIER = 'sb.providers-products';
 
     /**
      * define the base table
      *
      * @param  string
      */
-    protected $table = 'jgrem_procurements_products';
+    protected $table = 'subul_procurements_products';
 
     /**
      * default slug
@@ -40,7 +40,7 @@ class ProviderProductsCrud extends CrudService
      *
      * @param  string
      */
-    protected $namespace = 'ns.providers-products';
+    protected $namespace = 'sb.providers-products';
 
     /**
      * Model Used
@@ -63,12 +63,12 @@ class ProviderProductsCrud extends CrudService
 
     /**
      * Adding relation
-     * Example : [ 'jgrem_users as user', 'user.id', '=', 'jgrem_orders.author' ]
+     * Example : [ 'subul_users as user', 'user.id', '=', 'subul_orders.author' ]
      *
      * @param  array
      */
     public $relations = [
-        [ 'jgrem_taxes_groups as tax_group', 'jgrem_procurements_products.tax_group_id', '=', 'tax_group.id' ],
+        [ 'subul_taxes_groups as tax_group', 'subul_procurements_products.tax_group_id', '=', 'tax_group.id' ],
     ];
 
     /**
@@ -85,7 +85,7 @@ class ProviderProductsCrud extends CrudService
      * Should be an array of associative keys, where
      * keys are either the related table or alias name.
      * Example : [
-     *      'user'  =>  [ 'username' ], // here the relation on the table jgrem_users is using "user" as an alias
+     *      'user'  =>  [ 'username' ], // here the relation on the table subul_users is using "user" as an alias
      * ]
      */
     public $pick = [
@@ -206,7 +206,7 @@ class ProviderProductsCrud extends CrudService
     public function beforePost( $request )
     {
         if ( $this->permissions[ 'create' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'create' ] );
+            sb()->restrict( $this->permissions[ 'create' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -249,7 +249,7 @@ class ProviderProductsCrud extends CrudService
     public function beforePut( $request, $entry )
     {
         if ( $this->permissions[ 'update' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'update' ] );
+            sb()->restrict( $this->permissions[ 'update' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -276,7 +276,7 @@ class ProviderProductsCrud extends CrudService
      */
     public function beforeDelete( $namespace, $id, $model )
     {
-        if ( $namespace == 'ns.providers-products' ) {
+        if ( $namespace == 'sb.providers-products' ) {
             /**
              *  Perform an action before deleting an entry
              *  In case something wrong, this response can be returned
@@ -287,7 +287,7 @@ class ProviderProductsCrud extends CrudService
              *  ], 403 );
              **/
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -361,9 +361,9 @@ class ProviderProductsCrud extends CrudService
      */
     public function setActions( CrudEntry $entry ): CrudEntry
     {
-        $entry->purchase_price = ns()->currency->define( $entry->purchase_price )->format();
-        $entry->tax_value = ns()->currency->define( $entry->tax_value )->format();
-        $entry->total_purchase_price = ns()->currency->define( $entry->total_purchase_price )->format();
+        $entry->purchase_price = sb()->currency->define( $entry->purchase_price )->format();
+        $entry->tax_value = sb()->currency->define( $entry->tax_value )->format();
+        $entry->total_purchase_price = sb()->currency->define( $entry->total_purchase_price )->format();
         $entry->expiration_date = $entry->expiration_date ?: __( 'N/A' );
 
         // you can make changes here
@@ -371,14 +371,14 @@ class ProviderProductsCrud extends CrudService
             identifier: 'edit',
             label: __( 'Edit' ),
             type: 'GOTO',
-            url: ns()->url( '/dashboard/' . $this->slug . '/edit/' . $entry->id )
+            url: sb()->url( '/dashboard/' . $this->slug . '/edit/' . $entry->id )
         );
 
         $entry->action(
             identifier: 'delete',
             label: __( 'Delete' ),
             type: 'DELETE',
-            url: ns()->url( '/api/crud/ns.providers-products/' . $entry->id ),
+            url: sb()->url( '/api/crud/sb.providers-products/' . $entry->id ),
             confirm: [
                 'message' => __( 'Would you like to delete this ?' ),
             ]
@@ -409,7 +409,7 @@ class ProviderProductsCrud extends CrudService
              * Will control if the user has the permissoin to do that.
              */
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -443,7 +443,7 @@ class ProviderProductsCrud extends CrudService
     public function getLinks(): array
     {
         return [
-            'list' => ns()->url( 'dashboard/' . '/dashboard/providers' ),
+            'list' => sb()->url( 'dashboard/' . '/dashboard/providers' ),
             'create' => false,
             'edit' => false,
             'post' => false,
@@ -462,7 +462,7 @@ class ProviderProductsCrud extends CrudService
             [
                 'label' => __( 'Delete Selected Groups' ),
                 'identifier' => 'delete_selected',
-                'url' => ns()->route( 'ns.api.crud-bulk-actions', [
+                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
                     'namespace' => $this->namespace,
                 ] ),
             ],

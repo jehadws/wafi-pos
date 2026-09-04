@@ -9,7 +9,7 @@ use App\Services\SettingsPage;
 
 class ProcurementForm extends SettingsPage
 {
-    const IDENTIFIER = 'ns.procurement';
+    const IDENTIFIER = 'sb.procurement';
 
     public $form;
 
@@ -21,7 +21,7 @@ class ProcurementForm extends SettingsPage
                 ->find( request()->route( 'identifier' ) );
         }
 
-        $this->form = Hook::filter( 'ns-procurement-form', [
+        $this->form = Hook::filter( 'sb-procurement-form', [
             'main' => [
                 'name' => 'name',
                 'type' => 'text',
@@ -29,7 +29,7 @@ class ProcurementForm extends SettingsPage
                 'label' => __( 'Procurement Name' ),
                 'description' => __( 'Provide a name that will help to identify the procurement.' ),
             ],
-            'columns' => Hook::filter( 'ns-procurement-columns', [
+            'columns' => Hook::filter( 'sb-procurement-columns', [
                 'name' => [
                     'label' => __( 'Name' ),
                     'type' => 'name',

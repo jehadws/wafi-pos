@@ -11,11 +11,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string         $uuid
  * @property \Carbon\Carbon $updated_at
  */
-class RewardSystemRule extends NsModel
+class RewardSystemRule extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'rewards_system_rules';
+    protected $table = 'subul_' . 'rewards_system_rules';
 
     public function scopeAttachedTo( $query, $id )
     {

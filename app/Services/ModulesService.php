@@ -85,7 +85,7 @@ class ModulesService
          * If we're not loading a specific module directory
          */
         if ( $dir == null ) {
-            $directories = Storage::disk( 'ns-modules' )->directories();
+            $directories = Storage::disk( 'sb-modules' )->directories();
 
             /**
              * intersect modules/ and remove it
@@ -118,7 +118,7 @@ class ModulesService
         /**
          * Loading files from module directory
          */
-        $rawfiles = Storage::disk( 'ns-modules' )->files( $dir );
+        $rawfiles = Storage::disk( 'sb-modules' )->files( $dir );
 
         /**
          * Just retrieve the files name
@@ -185,16 +185,16 @@ class ModulesService
 
                 // check index existence
                 $config[ 'api-file' ] = is_file( $apiRoutesPath ) ? $apiRoutesPath : false;
-                $config[ 'composer-installed' ] = Storage::disk( 'ns-modules' )->exists( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php' );
+                $config[ 'composer-installed' ] = Storage::disk( 'sb-modules' )->exists( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php' );
                 $config[ 'controllers-path' ] = $currentModulePath . 'Http' . DIRECTORY_SEPARATOR . 'Controllers';
                 $config[ 'controllers-relativePath' ] = ucwords( $config[ 'namespace' ] ) . DIRECTORY_SEPARATOR . 'Http' . DIRECTORY_SEPARATOR . 'Controllers';
                 $config[ 'enabled' ] = false; // by default the module is set as disabled
-                $config[ 'has-languages' ] = Storage::disk( 'ns-modules' )->exists( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Lang' );
+                $config[ 'has-languages' ] = Storage::disk( 'sb-modules' )->exists( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Lang' );
                 $config[ 'lang-relativePath' ] = 'modules' . DIRECTORY_SEPARATOR . ucwords( $config[ 'namespace' ] ) . DIRECTORY_SEPARATOR . 'Lang';
                 $config[ 'index-file' ] = is_file( $indexPath ) ? $indexPath : false;
                 $config[ 'path' ] = $currentModulePath;
                 $config[ 'relativePath' ] = 'modules' . DIRECTORY_SEPARATOR . ucwords( $config[ 'namespace' ] ) . DIRECTORY_SEPARATOR;
-                $config[ 'requires-composer' ] = Storage::disk( 'ns-modules' )->exists( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'composer.json' ) && ! Storage::disk( 'ns-modules' )->exists( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . '.ignore-composer' );
+                $config[ 'requires-composer' ] = Storage::disk( 'sb-modules' )->exists( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'composer.json' ) && ! Storage::disk( 'sb-modules' )->exists( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . '.ignore-composer' );
                 $config[ 'routes-file' ] = is_file( $webRoutesPath ) ? $webRoutesPath : false;
                 $config[ 'views-path' ] = $currentModulePath . 'Resources' . DIRECTORY_SEPARATOR . 'Views';
                 $config[ 'views-relativePath' ] = 'modules' . DIRECTORY_SEPARATOR . ucwords( $config[ 'namespace' ] ) . DIRECTORY_SEPARATOR . 'Views';
@@ -214,10 +214,10 @@ class ModulesService
                  * Entry class must be namespaced like so : 'Modules\[namespace]\[namespace] . 'Module';
                  */
                 $config[ 'entry-class' ] = 'Modules\\' . $config[ 'namespace' ] . '\\' . $config[ 'namespace' ] . 'Module';
-                $config[ 'providers' ] = $this->getAllValidFiles( Storage::disk( 'ns-modules' )->allFiles( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Providers' ) );
-                $config[ 'actions' ] = $this->getAllValidFiles( Storage::disk( 'ns-modules' )->allFiles( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Actions' ) );
-                $config[ 'filters' ] = $this->getAllValidFiles( Storage::disk( 'ns-modules' )->allFiles( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Filters' ) );
-                $config[ 'commands' ] = collect( Storage::disk( 'ns-modules' )->allFiles( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Console' . DIRECTORY_SEPARATOR . 'Commands' ) )
+                $config[ 'providers' ] = $this->getAllValidFiles( Storage::disk( 'sb-modules' )->allFiles( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Providers' ) );
+                $config[ 'actions' ] = $this->getAllValidFiles( Storage::disk( 'sb-modules' )->allFiles( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Actions' ) );
+                $config[ 'filters' ] = $this->getAllValidFiles( Storage::disk( 'sb-modules' )->allFiles( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Filters' ) );
+                $config[ 'commands' ] = collect( Storage::disk( 'sb-modules' )->allFiles( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Console' . DIRECTORY_SEPARATOR . 'Commands' ) )
                     ->mapWithKeys( function ( $file ) {
                         $className = str_replace(
                             ['/', '.php'],
@@ -242,7 +242,7 @@ class ModulesService
                     /**
                      * Load Module Config
                      */
-                    $files = Storage::disk( 'ns-modules' )->allFiles( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Config' );
+                    $files = Storage::disk( 'sb-modules' )->allFiles( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Config' );
                     $moduleConfig = [];
 
                     foreach ( $files as $file ) {
@@ -264,7 +264,7 @@ class ModulesService
                     $config[ 'langFiles' ] = [];
 
                     if ( $config[ 'has-languages' ] ) {
-                        $rawFiles = Storage::disk( 'ns-modules' )
+                        $rawFiles = Storage::disk( 'sb-modules' )
                             ->allFiles( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Lang' );
                         $rawFiles = $this->getAllValidFiles( $rawFiles, [ 'json' ] );
 
@@ -425,7 +425,7 @@ class ModulesService
                 isset( $module[ 'core' ] ) &&
                 ! empty( $module[ 'core' ][ 'min-version' ] ) &&
                 version_compare(
-                    config( 'jgrem.version' ),
+                    config( 'subul.version' ),
                     $module[ 'core' ][ 'min-version' ],
                     '<'
                 )
@@ -434,9 +434,9 @@ class ModulesService
 
                 throw new ModuleVersionMismatchException( __(
                     sprintf(
-                        __( 'The module "%s" has been disabled as it\'s not compatible with the current version of JgremPOS %s, but requires %s. ' ),
+                        __( 'The module "%s" has been disabled as it\'s not compatible with the current version of Subul %s, but requires %s. ' ),
                         $module[ 'name' ],
-                        config( 'jgrem.version' ),
+                        config( 'subul.version' ),
                         $module[ 'core' ][ 'min-version' ]
                     )
                 ) );
@@ -627,8 +627,8 @@ class ModulesService
              */
             $manifest = false;
 
-            if ( Storage::disk( 'ns-modules' )->exists( ucwords( $namespace ) . DIRECTORY_SEPARATOR . 'manifest.json' ) ) {
-                $manifest = json_decode( Storage::disk( 'ns-modules' )->get( ucwords( $namespace ) . DIRECTORY_SEPARATOR . 'manifest.json' ), true );
+            if ( Storage::disk( 'sb-modules' )->exists( ucwords( $namespace ) . DIRECTORY_SEPARATOR . 'manifest.json' ) ) {
+                $manifest = json_decode( Storage::disk( 'sb-modules' )->get( ucwords( $namespace ) . DIRECTORY_SEPARATOR . 'manifest.json' ), true );
             }
 
             /**
@@ -650,7 +650,7 @@ class ModulesService
                 }
             }
 
-            $files = Storage::disk( 'ns-modules' )->allFiles( ucwords( $namespace ) );
+            $files = Storage::disk( 'sb-modules' )->allFiles( ucwords( $namespace ) );
 
             /**
              * if a file is within an exclude
@@ -716,9 +716,9 @@ class ModulesService
     {
         $this->checkManagementStatus();
 
-        $path = $file->store( '', [ 'disk' => 'ns-modules-temp' ] );
+        $path = $file->store( '', [ 'disk' => 'sb-modules-temp' ] );
 
-        $fullPath = Storage::disk( 'ns-modules-temp' )->path( $path );
+        $fullPath = Storage::disk( 'sb-modules-temp' )->path( $path );
         $extractionFolderName = Str::uuid();
         $dir = dirname( $fullPath );
 
@@ -732,14 +732,14 @@ class ModulesService
          */
         unlink( $fullPath );
 
-        $directory = Storage::disk( 'ns-modules-temp' )->directories( $extractionFolderName );
+        $directory = Storage::disk( 'sb-modules-temp' )->directories( $extractionFolderName );
 
         if ( count( $directory ) > 1 ) {
             throw new Exception( __( 'Unable to detect the folder from where to perform the installation.' ) );
         }
 
         $directoryName = pathinfo( $directory[0] )[ 'basename' ];
-        $rawFiles = Storage::disk( 'ns-modules-temp' )->allFiles( $extractionFolderName );
+        $rawFiles = Storage::disk( 'sb-modules-temp' )->allFiles( $extractionFolderName );
 
         /**
          * Just retrieve the files name
@@ -753,7 +753,7 @@ class ModulesService
         if ( in_array( 'config.xml', $files ) ) {
             $file = $extractionFolderName . DIRECTORY_SEPARATOR . $directoryName . DIRECTORY_SEPARATOR . 'config.xml';
             $xml = new \SimpleXMLElement(
-                Storage::disk( 'ns-modules-temp' )->get( $file )
+                Storage::disk( 'sb-modules-temp' )->get( $file )
             );
 
             if (
@@ -803,14 +803,14 @@ class ModulesService
                  * folder if that folder exists
                  * to avoid keeping unused files.
                  */
-                Storage::disk( 'ns-modules' )->deleteDirectory( $moduleNamespace );
+                Storage::disk( 'sb-modules' )->deleteDirectory( $moduleNamespace );
             }
 
             /**
              * @step 1 : creating host folder
              * No errors has been found, We\'ll install the module then
              */
-            Storage::disk( 'ns-modules' )->makeDirectory( $moduleNamespace, 0755, true );
+            Storage::disk( 'sb-modules' )->makeDirectory( $moduleNamespace, 0755, true );
 
             /**
              * @step 2 : move files
@@ -822,9 +822,9 @@ class ModulesService
                 $replacement = $moduleNamespace . DIRECTORY_SEPARATOR;
                 $final = str_replace( $search, $replacement, $file );
 
-                Storage::disk( 'ns-modules' )->put(
+                Storage::disk( 'sb-modules' )->put(
                     $final,
-                    Storage::disk( 'ns-modules-temp' )->get( $file )
+                    Storage::disk( 'sb-modules-temp' )->get( $file )
                 );
             }
 
@@ -905,7 +905,7 @@ class ModulesService
          * link for that directory
          */
         if (
-            Storage::disk( 'ns-modules' )->exists( $moduleNamespace . DIRECTORY_SEPARATOR . 'Public' ) &&
+            Storage::disk( 'sb-modules' )->exists( $moduleNamespace . DIRECTORY_SEPARATOR . 'Public' ) &&
             ! is_link( base_path( 'public' ) . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR . strtolower( $moduleNamespace ) )
         ) {
             $target = base_path( 'modules/' . $moduleNamespace . '/Public' );
@@ -925,7 +925,7 @@ class ModulesService
          * link for that directory
          */
         if (
-            Storage::disk( 'ns-modules' )->exists( $moduleNamespace . DIRECTORY_SEPARATOR . 'Lang' ) &&
+            Storage::disk( 'sb-modules' )->exists( $moduleNamespace . DIRECTORY_SEPARATOR . 'Lang' ) &&
             ! is_link( base_path( 'public' ) . DIRECTORY_SEPARATOR . 'modules-lang' . DIRECTORY_SEPARATOR . strtolower( $moduleNamespace ) )
         ) {
             $target = base_path( 'modules/' . $moduleNamespace . '/Lang' );
@@ -1034,7 +1034,7 @@ class ModulesService
             /**
              * Delete module from filesystem.
              */
-            Storage::disk( 'ns-modules' )->deleteDirectory( ucwords( $namespace ) );
+            Storage::disk( 'sb-modules' )->deleteDirectory( ucwords( $namespace ) );
 
             /**
              * remove symlink if that exists
@@ -1076,7 +1076,7 @@ class ModulesService
         /**
          * Run down method for all migrations
          */
-        $migrationFiles = Storage::disk( 'ns-modules' )->allFiles(
+        $migrationFiles = Storage::disk( 'sb-modules' )->allFiles(
             $module[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Migrations' . DIRECTORY_SEPARATOR
         );
 
@@ -1399,7 +1399,7 @@ class ModulesService
 
     public function getAllMigrations( array $module ): array
     {
-        $migrations = Storage::disk( 'ns-modules' )
+        $migrations = Storage::disk( 'sb-modules' )
             ->allFiles( ucwords( $module[ 'namespace' ] ) . DIRECTORY_SEPARATOR . 'Migrations' . DIRECTORY_SEPARATOR );
 
         return $this->getAllValidFiles( $migrations );
@@ -1471,7 +1471,7 @@ class ModulesService
     public function getAllModuleMigrationFiles( array $module ): array
     {
         $migrationDirectory = ucwords( $module[ 'namespace' ] ) . DIRECTORY_SEPARATOR . 'Migrations' . DIRECTORY_SEPARATOR;
-        $files = Storage::disk( 'ns-modules' )->allFiles( $migrationDirectory );
+        $files = Storage::disk( 'sb-modules' )->allFiles( $migrationDirectory );
         $files = $this->getAllValidFiles( $files );
 
         return collect( $files )->filter( function ( $file ) {
@@ -1596,7 +1596,7 @@ class ModulesService
      */
     public function checkManagementStatus(): void
     {
-        if ( env( 'NS_LOCK_MODULES', false ) ) {
+        if ( env( 'SB_LOCK_MODULES', false ) ) {
             throw new NotAllowedException( __( 'Unable to proceed, the modules management is disabled.' ) );
         }
     }
@@ -1615,37 +1615,37 @@ class ModulesService
              * If we decide to overwrite the module
              * we might then consider deleting that already exists
              */
-            $folderExists = Storage::disk( 'ns-modules' )->exists( $config[ 'namespace' ] );
+            $folderExists = Storage::disk( 'sb-modules' )->exists( $config[ 'namespace' ] );
             $deleteExisting = isset( $config[ 'force' ] ) && $config[ 'force' ];
 
             if ( $folderExists && $deleteExisting ) {
-                Storage::disk( 'ns-modules' )->deleteDirectory( $config[ 'namespace' ] );
+                Storage::disk( 'sb-modules' )->deleteDirectory( $config[ 'namespace' ] );
             }
 
-            Storage::disk( 'ns-modules' )->makeDirectory( $config[ 'namespace' ], 0755, true );
+            Storage::disk( 'sb-modules' )->makeDirectory( $config[ 'namespace' ], 0755, true );
 
             /**
              * Geneate Internal Directories
              */
             foreach ( [ 'Config', 'Crud', 'Events', 'Mail', 'Fields', 'Facades', 'Http', 'Migrations', 'Resources', 'Routes', 'Models', 'Providers', 'Services', 'Public' ] as $folder ) {
-                Storage::disk( 'ns-modules' )->makeDirectory( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . $folder, 0755, true );
+                Storage::disk( 'sb-modules' )->makeDirectory( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . $folder, 0755, true );
             }
 
             /**
              * Generate Sub Folders
              */
-            Storage::disk( 'ns-modules' )->makeDirectory( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Http' . DIRECTORY_SEPARATOR . 'Controllers', 0755, true );
-            Storage::disk( 'ns-modules' )->makeDirectory( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Migrations', 0755, true );
-            Storage::disk( 'ns-modules' )->makeDirectory( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Resources' . DIRECTORY_SEPARATOR . 'Views', 0755, true );
+            Storage::disk( 'sb-modules' )->makeDirectory( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Http' . DIRECTORY_SEPARATOR . 'Controllers', 0755, true );
+            Storage::disk( 'sb-modules' )->makeDirectory( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Migrations', 0755, true );
+            Storage::disk( 'sb-modules' )->makeDirectory( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Resources' . DIRECTORY_SEPARATOR . 'Views', 0755, true );
 
             /**
              * Generate Files
              */
-            Storage::disk( 'ns-modules' )->put( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'config.xml', $this->streamContent( 'config', $config ) );
-            Storage::disk( 'ns-modules' )->put( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . $config[ 'namespace' ] . 'Module.php', $this->streamContent( 'main', $config ) );
-            Storage::disk( 'ns-modules' )->put( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Events' . DIRECTORY_SEPARATOR . $config[ 'namespace' ] . 'Event.php', $this->streamContent( 'event', $config ) );
-            Storage::disk( 'ns-modules' )->put( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Public' . DIRECTORY_SEPARATOR . 'index.html', '<h1>Silence is golden !</h1>' );
-            Storage::disk( 'ns-modules' )->put( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Migrations' . DIRECTORY_SEPARATOR . 'DatabaseMigration.php', View::make( 'generate.modules.migration', [
+            Storage::disk( 'sb-modules' )->put( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'config.xml', $this->streamContent( 'config', $config ) );
+            Storage::disk( 'sb-modules' )->put( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . $config[ 'namespace' ] . 'Module.php', $this->streamContent( 'main', $config ) );
+            Storage::disk( 'sb-modules' )->put( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Events' . DIRECTORY_SEPARATOR . $config[ 'namespace' ] . 'Event.php', $this->streamContent( 'event', $config ) );
+            Storage::disk( 'sb-modules' )->put( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Public' . DIRECTORY_SEPARATOR . 'index.html', '<h1>Silence is golden !</h1>' );
+            Storage::disk( 'sb-modules' )->put( $config[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Migrations' . DIRECTORY_SEPARATOR . 'DatabaseMigration.php', View::make( 'generate.modules.migration', [
                 'module' => $config,
                 'migration' => 'DatabaseMigration',
             ] )->render() );

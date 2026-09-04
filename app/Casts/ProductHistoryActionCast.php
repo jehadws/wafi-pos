@@ -51,7 +51,7 @@ class ProductHistoryActionCast implements CastsAttributes
             ProductHistory::ACTION_ADJUSTMENT_SALE => __( 'Adjustment Sale' ),
             ProductHistory::ACTION_CONVERT_IN => __( 'Incoming Conversion' ),
             ProductHistory::ACTION_CONVERT_OUT => __( 'Outgoing Conversion' ),
-            default => Hook::filter( 'ns-products-history-label', __( 'Unknown Action' ), $value ),
+            default => Hook::filter( 'sb-products-history-label', __( 'Unknown Action' ), $value ),
         };
     }
 

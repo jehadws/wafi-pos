@@ -28,7 +28,7 @@ class FormsRequest extends FormRequest
     public function rules()
     {
         $service = new CrudService;
-        $instance = Events::filter( 'ns.forms', [], $this->route( 'resource' ) );
+        $instance = Events::filter( 'sb.forms', [], $this->route( 'resource' ) );
 
         if ( ! $instance instanceof SettingsPage ) {
             throw new Exception( sprintf(

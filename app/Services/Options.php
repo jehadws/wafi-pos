@@ -31,16 +31,16 @@ class Options
         Option::truncate();
 
         $defaultOptions = [
-            'ns_registration_enabled' => 'no',
-            'ns_store_name' => 'JgremPOS',
-            'ns_jgrem_allow_decimal_quantities' => 'yes',
-            'ns_jgrem_quick_product' => 'yes',
-            'ns_jgrem_show_quantity' => 'yes',
-            'ns_currency_precision' => 2,
-            'ns_jgrem_hide_empty_categories' => 'yes',
-            'ns_jgrem_unit_price_ediable' => 'yes',
-            'ns_jgrem_order_types' => ['takeaway', 'delivery'],
-            'ns_jgrem_registers_default_change_payment_type' => PaymentType::where('identifier', 'cash-payment')->first()?->id ?? 1,
+            'sb_registration_enabled' => 'no',
+            'sb_store_name' => 'Subul',
+            'sb_subul_allow_decimal_quantities' => 'yes',
+            'sb_subul_quick_product' => 'yes',
+            'sb_subul_show_quantity' => 'yes',
+            'sb_currency_precision' => 2,
+            'sb_subul_hide_empty_categories' => 'yes',
+            'sb_subul_unit_price_ediable' => 'yes',
+            'sb_subul_order_types' => ['takeaway', 'delivery'],
+            'sb_subul_registers_default_change_payment_type' => PaymentType::where('identifier', 'cash-payment')->first()?->id ?? 1,
         ];
 
         $options = array_merge($defaultOptions, $options);

@@ -12,11 +12,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property bool           $readonly
  * @property \Carbon\Carbon $updated_at
  */
-class PaymentType extends NsModel
+class PaymentType extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'payments_types';
+    protected $table = 'subul_' . 'payments_types';
 
     public function scopeActive( $query )
     {

@@ -55,12 +55,12 @@ class ModuleJob extends Command
             $namespace = $this->argument( 'namespace' );
             $relativePath = 'modules' . DIRECTORY_SEPARATOR . $fileName;
 
-            $fileExists = Storage::disk( 'ns-modules' )->exists(
+            $fileExists = Storage::disk( 'sb-modules' )->exists(
                 $fileName . '.php'
             );
 
             if ( ! $fileExists || ( $fileExists && $this->option( 'force' ) ) ) {
-                Storage::disk( 'ns-modules' )->put( $fileName . '.php', view( 'generate.modules.job', compact(
+                Storage::disk( 'sb-modules' )->put( $fileName . '.php', view( 'generate.modules.job', compact(
                     'modules', 'module', 'name', 'namespace'
                 ) ) );
 

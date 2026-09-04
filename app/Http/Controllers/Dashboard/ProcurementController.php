@@ -1,7 +1,7 @@
 <?php
 
 /**
- * JgremPOS Controller
+ * Subul Controller
  *
  * @since  1.0
  **/
@@ -70,7 +70,7 @@ class ProcurementController extends DashboardController
       'products',
     ]));
 
-    return to_route('ns.dashboard.procurement-list', $result);
+    return to_route('sb.dashboard.procurement-list', $result);
   }
 
   public function edit(Procurement $procurement, ProcurementRequest $request)
@@ -242,7 +242,7 @@ class ProcurementController extends DashboardController
     $procurements = Procurement::with(['provider'])
       ->addSelect([
         'author_name' => User::select('username')
-          ->whereColumn('jgrem_users.id', 'author')
+          ->whereColumn('subul_users.id', 'author')
           ->limit(1),
       ])
       ->get()
@@ -266,7 +266,7 @@ class ProcurementController extends DashboardController
    */
   public function createProcurement()
   {
-    ns()->restrict(['jgrem.create.procurements']);
+    sb()->restrict(['subul.create.procurements']);
 
     $tax_groups = TaxGroup::get(['id', 'name']);
     $providers = Provider::get(['id', 'first_name', 'last_name']);
@@ -282,7 +282,7 @@ class ProcurementController extends DashboardController
       'providers' => $providers,
       'tax_groups' => $tax_groups
     ]);
-    // return View::make( 'pages.dashboard.procurements.create', Hook::filter( 'ns-create-procurement-labels', [
+    // return View::make( 'pages.dashboard.procurements.create', Hook::filter( 'sb-create-procurement-labels', [
     //     'title' => __( 'New Procurement' ),
     //     'description' => __( 'Make a new procurement.' ),
     // ] ) );
@@ -290,7 +290,7 @@ class ProcurementController extends DashboardController
 
   public function updateProcurement(Procurement $procurement)
   {
-    ns()->restrict(['jgrem.update.procurements']);
+    sb()->restrict(['subul.update.procurements']);
 
     if ($procurement->delivery_status === Procurement::STOCKED) {
       throw new NotAllowedException(__('Unable to edit a procurement that is stocked. Consider performing an adjustment or either delete the procurement.'));
@@ -316,7 +316,7 @@ class ProcurementController extends DashboardController
 
   public function procurementInvoice(Procurement $procurement)
   {
-    ns()->restrict(['jgrem.read.procurements']);
+    sb()->restrict(['subul.read.procurements']);
 
     return View::make('pages.dashboard.procurements.invoice', [
       'title' => sprintf(__('%s - Invoice'), $procurement->name),
@@ -375,22 +375,22 @@ class ProcurementController extends DashboardController
   {
 
     // public $relations = [
-    //     [ 'jgrem_procurements as procurement', 'procurement.id', '=', 'jgrem_procurements_products.procurement_id' ],
-    //     [ 'jgrem_units as unit', 'unit.id', '=', 'jgrem_procurements_products.unit_id' ],
-    //     [ 'jgrem_users as user', 'user.id', '=', 'jgrem_procurements_products.author' ],
+    //     [ 'subul_procurements as procurement', 'procurement.id', '=', 'subul_procurements_products.procurement_id' ],
+    //     [ 'subul_units as unit', 'unit.id', '=', 'subul_procurements_products.unit_id' ],
+    //     [ 'subul_users as user', 'user.id', '=', 'subul_procurements_products.author' ],
     // ];
 
     // $products = ProcurementProduct::get();
 
     $products = ProcurementProduct::addSelect([
       'author_name' => User::select('username')
-        ->whereColumn('jgrem_users.id', 'author')
+        ->whereColumn('subul_users.id', 'author')
         ->limit(1),
       'procurement_name' => Procurement::select('name')
-        ->whereColumn('jgrem_procurements.id', 'procurement_id')
+        ->whereColumn('subul_procurements.id', 'procurement_id')
         ->limit(1),
       'unit_name' => Unit::select('name')
-        ->whereColumn('jgrem_units.id', 'unit_id')
+        ->whereColumn('subul_units.id', 'unit_id')
         ->limit(1),
     ])
       ->get();

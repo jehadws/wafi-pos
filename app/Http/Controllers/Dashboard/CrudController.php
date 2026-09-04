@@ -73,6 +73,16 @@ class CrudController extends DashboardController
      */
     event(new CrudAfterDeleteEvent($resource, (object) $model->toArray()));
 
+    /**
+     * API clients (axios) can't follow redirects: respond with JSON.
+     */
+    if (request()->expectsJson()) {
+      return response()->json([
+        'status' => 'success',
+        'message' => __('The entry has been successfully deleted.'),
+      ]);
+    }
+
     return redirect()->back();
   }
 
@@ -113,7 +123,7 @@ class CrudController extends DashboardController
    */
   public function crudList(string $namespace)
   {
-    $crudClass = Hook::filter('ns-crud-resource', $namespace);
+    $crudClass = Hook::filter('sb-crud-resource', $namespace);
 
     /**
      * In case nothing handle this crud
@@ -139,7 +149,7 @@ class CrudController extends DashboardController
    */
   public function crudBulkActions(string $namespace, Request $request)
   {
-    $crudClass = Hook::filter('ns-crud-resource', $namespace);
+    $crudClass = Hook::filter('sb-crud-resource', $namespace);
 
     /**
      * In case nothing handle this crud
@@ -190,7 +200,7 @@ class CrudController extends DashboardController
    */
   public function crudGet(string $namespace, Request $request)
   {
-    $crudClass = Hook::filter('ns-crud-resource', $namespace);
+    $crudClass = Hook::filter('sb-crud-resource', $namespace);
 
     /**
      * Let's check it the resource has a method to retrieve an item
@@ -215,7 +225,7 @@ class CrudController extends DashboardController
    */
   public function getColumns(string $namespace)
   {
-    $crudClass = Hook::filter('ns-crud-resource', $namespace);
+    $crudClass = Hook::filter('sb-crud-resource', $namespace);
     $resource = new $crudClass;
     $resource->allowedTo('read');
 
@@ -239,7 +249,7 @@ class CrudController extends DashboardController
    */
   public function getConfig(string $namespace)
   {
-    $crudClass = Hook::filter('ns-crud-resource', $namespace);
+    $crudClass = Hook::filter('sb-crud-resource', $namespace);
 
     if (! class_exists($crudClass)) {
       throw new Exception(sprintf(
@@ -283,7 +293,7 @@ class CrudController extends DashboardController
    */
   public function getFormConfig(string $namespace, $id = null)
   {
-    $crudClass = Hook::filter('ns-crud-resource', $namespace);
+    $crudClass = Hook::filter('sb-crud-resource', $namespace);
     $resource = new $crudClass(compact('namespace', 'id'));
 
     if ($resource instanceof CrudService) {
@@ -306,7 +316,7 @@ class CrudController extends DashboardController
    */
   public function exportCrud($namespace, Request $request)
   {
-    $crudClass = Hook::filter('ns-crud-resource', $namespace);
+    $crudClass = Hook::filter('sb-crud-resource', $namespace);
 
     $resource = new $crudClass;
     $spreadsheet = new Spreadsheet;
@@ -397,7 +407,7 @@ class CrudController extends DashboardController
       mkdir(storage_path('app/public/exports'));
     }
 
-    $dateFormat = Str::slug(ns()->date->toDateTimeString());
+    $dateFormat = Str::slug(sb()->date->toDateTimeString());
     $relativePath = 'exports/' . Str::slug($resource->getLabels()['list_title']) . '-' . $dateFormat . '.csv';
     $fileName = storage_path('app/public/' . $relativePath);
 
@@ -416,7 +426,7 @@ class CrudController extends DashboardController
     Cache::put($hash, $relativePath, now()->addMinutes(5));
 
     return [
-      'url' => route('ns.dashboard.crud-download', compact('hash')),
+      'url' => route('sb.dashboard.crud-download', compact('hash')),
     ];
   }
 

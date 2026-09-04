@@ -43,8 +43,8 @@ class DoctorService
         if ( ! $user->attribute instanceof UserAttribute ) {
             $attribute = new UserAttribute;
             $attribute->user_id = $user->id;
-            $attribute->language = ns()->option->get( 'ns_store_language', 'en' );
-            $attribute->theme = ns()->option->get( 'ns_default_theme', 'dark' );
+            $attribute->language = sb()->option->get( 'sb_store_language', 'en' );
+            $attribute->theme = sb()->option->get( 'sb_default_theme', 'dark' );
             $attribute->save();
         }
     }
@@ -155,11 +155,11 @@ class DoctorService
         $withoutPort = explode( ':', $domain )[0];
 
         if ( ! env( 'SESSION_DOMAIN', false ) ) {
-            ns()->envEditor->set( 'SESSION_DOMAIN', Str::replaceFirst( 'http://', '', $withoutPort ) );
+            sb()->envEditor->set( 'SESSION_DOMAIN', Str::replaceFirst( 'http://', '', $withoutPort ) );
         }
 
         if ( ! env( 'SANCTUM_STATEFUL_DOMAINS', false ) ) {
-            ns()->envEditor->set( 'SANCTUM_STATEFUL_DOMAINS', collect( [ $domain, 'localhost', '127.0.0.1' ] )->unique()->join( ',' ) );
+            sb()->envEditor->set( 'SANCTUM_STATEFUL_DOMAINS', collect( [ $domain, 'localhost', '127.0.0.1' ] )->unique()->join( ',' ) );
         }
     }
 
@@ -213,8 +213,8 @@ class DoctorService
 
     public function clearTemporaryFiles()
     {
-        $directories = Storage::disk( 'ns-modules-temp' )->directories();
-        $deleted = collect( $directories )->filter( fn( $directory ) => Storage::disk( 'ns-modules-temp' )->deleteDirectory( $directory ) );
+        $directories = Storage::disk( 'sb-modules-temp' )->directories();
+        $deleted = collect( $directories )->filter( fn( $directory ) => Storage::disk( 'sb-modules-temp' )->deleteDirectory( $directory ) );
 
         $this->command->info( sprintf(
             __( '%s on %s directories were deleted.' ),
@@ -222,8 +222,8 @@ class DoctorService
             $deleted->count()
         ) );
 
-        $files = Storage::disk( 'ns-modules-temp' )->files();
-        $deleted = collect( $files )->filter( fn( $file ) => Storage::disk( 'ns-modules-temp' )->delete( $file ) );
+        $files = Storage::disk( 'sb-modules-temp' )->files();
+        $deleted = collect( $files )->filter( fn( $file ) => Storage::disk( 'sb-modules-temp' )->delete( $file ) );
 
         $this->command->info( sprintf(
             __( '%s on %s files were deleted.' ),

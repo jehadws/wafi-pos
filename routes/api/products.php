@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Dashboard\ProductsController;
-use App\Http\Middleware\NsRestrictMiddleware;
+use App\Http\Middleware\SbRestrictMiddleware;
 use Illuminate\Support\Facades\Route;
 
 Route::get('products', [ProductsController::class, 'getProduts']);
@@ -24,7 +24,7 @@ Route::get('products/{product}/procurements', [ProductsController::class, 'getPr
 Route::get('products/search/using-barcode/{product}', [ProductsController::class, 'searchUsingArgument']);
 
 Route::middleware([
-  NsRestrictMiddleware::arguments('jgrem.delete.products'),
+  SbRestrictMiddleware::arguments('subul.delete.products'),
 ])->group(function () {
   Route::delete('products/{identifier}', [ProductsController::class, 'deleteProduct']);
   Route::delete('products/units/quantity/{unitQuantity}', [ProductsController::class, 'deleteUnitQuantity']);
@@ -33,11 +33,11 @@ Route::middleware([
   Route::delete('products', [ProductsController::class, 'deleteAllProducts']);
 });
 
-Route::post('products', [ProductsController::class, 'saveProduct'])->middleware(NsRestrictMiddleware::arguments('jgrem.create.products'))->name('ns.products.saveProduct');
-Route::post('products/search', [ProductsController::class, 'searchProduct'])->middleware(NsRestrictMiddleware::arguments('jgrem.read.products'));
-Route::post('products/adjustments', [ProductsController::class, 'createAdjustment'])->middleware(NsRestrictMiddleware::arguments('jgrem.update.products'));
-Route::post('products/{identifier}/variations/{variation_id}', [ProductsController::class, 'createSingleVariation'])->middleware(NsRestrictMiddleware::arguments('jgrem.create.products'));
-Route::post('products/{product}/units/conversion', [ProductsController::class, 'convertUnits'])->middleware(NsRestrictMiddleware::arguments('jgrem.update.products'));
+Route::post('products', [ProductsController::class, 'saveProduct'])->middleware(SbRestrictMiddleware::arguments('subul.create.products'))->name('sb.products.saveProduct');
+Route::post('products/search', [ProductsController::class, 'searchProduct'])->middleware(SbRestrictMiddleware::arguments('subul.read.products'));
+Route::post('products/adjustments', [ProductsController::class, 'createAdjustment'])->middleware(SbRestrictMiddleware::arguments('subul.update.products'));
+Route::post('products/{identifier}/variations/{variation_id}', [ProductsController::class, 'createSingleVariation'])->middleware(SbRestrictMiddleware::arguments('subul.create.products'));
+Route::post('products/{product}/units/conversion', [ProductsController::class, 'convertUnits'])->middleware(SbRestrictMiddleware::arguments('subul.update.products'));
 
-Route::put('products/{identifier}/variations/{variation_id}', [ProductsController::class, 'editSingleVariation'])->middleware(NsRestrictMiddleware::arguments('jgrem.update.products'));
-Route::put('products/{product}', [ProductsController::class, 'updateProduct'])->middleware(NsRestrictMiddleware::arguments('jgrem.update.products'));
+Route::put('products/{identifier}/variations/{variation_id}', [ProductsController::class, 'editSingleVariation'])->middleware(SbRestrictMiddleware::arguments('subul.update.products'));
+Route::put('products/{product}', [ProductsController::class, 'updateProduct'])->middleware(SbRestrictMiddleware::arguments('subul.update.products'));

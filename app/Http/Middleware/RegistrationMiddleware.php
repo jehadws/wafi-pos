@@ -16,7 +16,7 @@ class RegistrationMiddleware
      */
     public function handle( Request $request, Closure $next )
     {
-        if ( ns()->option->get( 'ns_registration_enabled', 'no' ) === 'yes' ) {
+        if ( sb()->option->get( 'sb_registration_enabled', 'no' ) === 'yes' ) {
             return $next( $request );
         }
 

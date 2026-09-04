@@ -12,11 +12,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property float          $value
  * @property \Carbon\Carbon $updated_at
  */
-class ProductTax extends NsModel
+class ProductTax extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'products_taxes';
+    protected $table = 'subul_' . 'products_taxes';
 
     /**
      * define the relationship

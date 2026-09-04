@@ -27,11 +27,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
-class TransactionHistory extends NsModel
+class TransactionHistory extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'transactions_histories';
+    protected $table = 'subul_' . 'transactions_histories';
 
     const STATUS_ACTIVE = 'active';
 

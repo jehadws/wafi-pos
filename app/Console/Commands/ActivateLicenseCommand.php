@@ -25,7 +25,7 @@ class ActivateLicenseCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Cryptographically verify and activate Wafi POS license on this terminal/server';
+    protected $description = 'Cryptographically verify and activate Subul license on this terminal/server';
 
     /**
      * Execute the console command.
@@ -55,7 +55,7 @@ class ActivateLicenseCommand extends Command
 
         $clientName = $payload['client'] ?? 'Retail Customer';
         $maxDevices = $payload['max_devices'] ?? 1;
-        $keyId = $payload['key_id'] ?? 'WAFI-KEY';
+        $keyId = $payload['key_id'] ?? 'SUBUL-KEY';
 
         // Record or update this hardware's verified activation
         $license = License::updateOrCreate(
@@ -73,7 +73,7 @@ class ActivateLicenseCommand extends Command
         // Invalidate license cache so changes take effect immediately
         Cache::forget("license_{$hwid}");
 
-        $this->info("✓ Wafi POS successfully activated for device: {$deviceName}");
+        $this->info("✓ Subul successfully activated for device: {$deviceName}");
         $this->table(
             ['Property', 'Verified Value'],
             [

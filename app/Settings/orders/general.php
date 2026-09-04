@@ -25,8 +25,8 @@ return SettingForm::tabs(
             FormInput::select(
                 label: __( 'Order Code Type' ),
                 description: __( 'Determine how the system will generate code for each orders.' ),
-                name: 'ns_orders_code_type',
-                value: ns()->option->get( 'ns_orders_code_type' ),
+                name: 'sb_orders_code_type',
+                value: sb()->option->get( 'sb_orders_code_type' ),
                 options: Helper::kvToJsOptions( [
                     'date_sequential' => __( 'Sequential' ),
                     'random_code' => __( 'Random Code' ),
@@ -35,8 +35,8 @@ return SettingForm::tabs(
             ),
             FormInput::switch(
                 label: __( 'Allow Unpaid Orders' ),
-                name: 'ns_orders_allow_unpaid',
-                value: ns()->option->get( 'ns_orders_allow_unpaid' ),
+                name: 'sb_orders_allow_unpaid',
+                value: sb()->option->get( 'sb_orders_allow_unpaid' ),
                 description: __( 'Will prevent incomplete orders to be placed. If credit is allowed, this option should be set to "yes".' ),
                 options: Helper::kvToJsOptions( [
                     'yes' => __( 'Yes' ),
@@ -45,8 +45,8 @@ return SettingForm::tabs(
             ),
             FormInput::switch(
                 label: __( 'Allow Partial Orders' ),
-                name: 'ns_orders_allow_partial',
-                value: ns()->option->get( 'ns_orders_allow_partial' ),
+                name: 'sb_orders_allow_partial',
+                value: sb()->option->get( 'sb_orders_allow_partial' ),
                 description: __( 'Will prevent partially paid orders to be placed.' ),
                 options: Helper::kvToJsOptions( [
                     'yes' => __( 'Yes' ),
@@ -55,8 +55,8 @@ return SettingForm::tabs(
             ),
             FormInput::switch(
                 label: __( 'Strict Instalments' ),
-                name: 'ns_orders_strict_instalments',
-                value: ns()->option->get( 'ns_orders_strict_instalments' ),
+                name: 'sb_orders_strict_instalments',
+                value: sb()->option->get( 'sb_orders_strict_instalments' ),
                 description: __( 'Will enforce instalment to be paid on specific date.' ),
                 options: Helper::kvToJsOptions( [
                     'yes' => __( 'Yes' ),
@@ -65,8 +65,8 @@ return SettingForm::tabs(
             ),
             FormInput::select(
                 label: __( 'Quotation Expiration' ),
-                name: 'ns_orders_quotation_expiration',
-                value: ns()->option->get( 'ns_orders_quotation_expiration' ),
+                name: 'sb_orders_quotation_expiration',
+                value: sb()->option->get( 'sb_orders_quotation_expiration' ),
                 description: __( 'Quotations will get deleted after they defined they has reached.' ),
                 options: $expirationOptions,
             ),

@@ -11,13 +11,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property mixed $theme
  * @property mixed $language
  */
-class UserAttribute extends NsRootModel
+class UserAttribute extends SbRootModel
 {
     use HasFactory;
 
     public $timestamps = false;
 
-    protected $table = 'jgrem_users_attributes';
+    protected $table = 'subul_users_attributes';
 
     protected $fillable = [ 'language' ];
 }

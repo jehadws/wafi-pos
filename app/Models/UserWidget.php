@@ -17,5 +17,5 @@ class UserWidget extends Model
 
     protected $fillable = [ 'column', 'identifier', 'class_name', 'column', 'position', 'user_id' ];
 
-    protected $table = 'jgrem_users_widgets';
+    protected $table = 'subul_users_widgets';
 }

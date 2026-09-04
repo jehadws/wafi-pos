@@ -1,7 +1,7 @@
 <?php
 
 /**
- * JgremPOS Controller
+ * Subul Controller
  *
  * @since  1.0
  **/
@@ -119,7 +119,7 @@ class CategoryController extends DashboardController
     //   'data' => compact('category'),
     // ];
 
-    return redirect()->route('ns.dashboard.products.categories')->with('success', 'The category has been correctly saved');
+    return redirect()->route('sb.dashboard.products.categories')->with('success', 'The category has been correctly saved');
   }
 
   /**
@@ -219,7 +219,7 @@ class CategoryController extends DashboardController
   {
     $categories =  ProductCategory::addSelect([
       'author_name' => User::select('username')
-        ->whereColumn('jgrem_users.id', 'author')
+        ->whereColumn('subul_users.id', 'author')
         ->limit(1),
     ])->get();
 
@@ -311,7 +311,7 @@ class CategoryController extends DashboardController
 
   private function applyHideProducts($query)
   {
-    $exhaustedHidden = ns()->option->get('ns_jgrem_hide_exhausted_products');
+    $exhaustedHidden = sb()->option->get('sb_subul_hide_exhausted_products');
 
     if ($exhaustedHidden === 'yes') {
       $query->where('stock_management', Product::STOCK_MANAGEMENT_DISABLED);
@@ -328,7 +328,7 @@ class CategoryController extends DashboardController
 
   private function applyHideCategories($query)
   {
-    $exhaustedHidden = ns()->option->get('ns_jgrem_hide_empty_categories');
+    $exhaustedHidden = sb()->option->get('sb_subul_hide_empty_categories');
 
     if ($exhaustedHidden === 'yes') {
       $query->whereHas('products', function ($query) {

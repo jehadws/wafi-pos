@@ -38,7 +38,7 @@ class GenerateAuthorizationToken extends Command
      */
     public function handle()
     {
-        ns()->envEditor->set( 'NS_AUTHORIZATION', Str::random( 20 ) );
+        sb()->envEditor->set( 'SB_AUTHORIZATION', Str::random( 20 ) );
         $this->info( 'The authorization token has been refreshed.' );
     }
 }

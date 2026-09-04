@@ -1,7 +1,7 @@
 <?php
 
 /**
- * JgremPOS Controller
+ * Subul Controller
  *
  * @since  1.0
  **/
@@ -24,7 +24,7 @@ class ModulesController extends DashboardController
         protected DateService $dateService
     ) {
         $this->middleware( function ( $request, $next ) {
-            ns()->restrict( [ 'manage.modules' ] );
+            sb()->restrict( [ 'manage.modules' ] );
 
             return $next( $request );
         } );
@@ -40,7 +40,7 @@ class ModulesController extends DashboardController
 
     public function downloadModule( $identifier )
     {
-        ns()->restrict( [ 'manage.modules' ] );
+        sb()->restrict( [ 'manage.modules' ] );
 
         $module = $this->modules->get( $identifier );
         $download = $this->modules->extract( $identifier );
@@ -111,7 +111,7 @@ class ModulesController extends DashboardController
     {
         return View::make( 'pages.dashboard.modules.upload', [
             'title' => __( 'Upload A Module' ),
-            'description' => __( 'Extends JgremPOS features with some new modules.' ),
+            'description' => __( 'Extends Subul features with some new modules.' ),
         ] );
     }
 
@@ -131,12 +131,12 @@ class ModulesController extends DashboardController
              * if the module upload was successful
              */
             if ( $result[ 'status' ] === 'success' ) {
-                return redirect( ns()->route( 'ns.dashboard.modules-list' ) )->with( $result );
+                return redirect( sb()->route( 'sb.dashboard.modules-list' ) )->with( $result );
             } else {
                 $validator = Validator::make( $request->all(), [] );
                 $validator->errors()->add( 'module', $result[ 'message' ] );
 
-                return redirect( ns()->route( 'ns.dashboard.modules-upload' ) )->withErrors( $validator );
+                return redirect( sb()->route( 'sb.dashboard.modules-upload' ) )->withErrors( $validator );
             }
         }
 

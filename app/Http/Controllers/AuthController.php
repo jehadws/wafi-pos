@@ -1,7 +1,7 @@
 <?php
 
 /**
- * JgremPOS Controller
+ * Subul Controller
  *
  * @since  1.0
  **/
@@ -37,15 +37,15 @@ class AuthController extends Controller
 
     public function signIn()
     {
-        return view( Hook::filter( 'ns-views:pages.sign-in', 'pages.auth.sign-in' ), [
-            'title' => __( 'Sign In &mdash; JgremPOS' ),
+        return view( Hook::filter( 'sb-views:pages.sign-in', 'pages.auth.sign-in' ), [
+            'title' => __( 'Sign In &mdash; Subul' ),
         ] );
     }
 
     public function signUp()
     {
-        return view( Hook::filter( 'ns-views:pages.sign-up', 'pages.auth.sign-up' ), [
-            'title' => __( 'Sign Up &mdash; JgremPOS' ),
+        return view( Hook::filter( 'sb-views:pages.sign-up', 'pages.auth.sign-up' ), [
+            'title' => __( 'Sign Up &mdash; Subul' ),
         ] );
     }
 
@@ -56,7 +56,7 @@ class AuthController extends Controller
          * account ? Not possible.
          */
         if ( $user->active ) {
-            return redirect( ns()->route( 'ns.login' ) )->with( 'errorMessage', __( 'No activation is needed for this account.' ) );
+            return redirect( sb()->route( 'sb.login' ) )->with( 'errorMessage', __( 'No activation is needed for this account.' ) );
         }
 
         /**
@@ -64,15 +64,15 @@ class AuthController extends Controller
          * let's throw an exception.
          */
         if ( $user->activation_token !== $token || $user->activation_token === null ) {
-            return redirect( ns()->route( 'ns.login' ) )->with( 'errorMessage', __( 'Invalid activation token.' ) );
+            return redirect( sb()->route( 'sb.login' ) )->with( 'errorMessage', __( 'Invalid activation token.' ) );
         }
 
         /**
          * The activationt token has expired. Let's redirect
          * the user to the login page with a message.
          */
-        if ( ! ns()->date->lessThan( Carbon::parse( $user->activation_expiration ) ) ) {
-            return redirect( ns()->route( 'ns.login' ) )->with( 'errorMessage', __( 'The expiration token has expired.' ) );
+        if ( ! sb()->date->lessThan( Carbon::parse( $user->activation_expiration ) ) ) {
+            return redirect( sb()->route( 'sb.login' ) )->with( 'errorMessage', __( 'The expiration token has expired.' ) );
         }
 
         $user->activation_expiration = null;
@@ -86,7 +86,7 @@ class AuthController extends Controller
          */
         UserAfterActivationSuccessfulEvent::dispatch( $user );
 
-        return redirect( ns()->route( 'ns.login' ) )->with( 'message', __( 'Your account is now activate.' ) );
+        return redirect( sb()->route( 'sb.login' ) )->with( 'message', __( 'Your account is now activate.' ) );
     }
 
     public function passwordLost()
@@ -124,9 +124,9 @@ class AuthController extends Controller
         Auth::logout();
 
         $request->session()->flush();
-        $request->cookie( 'jgrem_session', null, 0 );
+        $request->cookie( 'subul_session', null, 0 );
 
-        return redirect( ns()->route( 'ns.dashboard.home' ) );
+        return redirect( sb()->route( 'sb.dashboard.home' ) );
     }
 
     public function updateDatabase()
@@ -138,7 +138,7 @@ class AuthController extends Controller
 
     public function postSignIn( SignInRequest $request )
     {
-        Hook::action( 'ns-login-form', $request );
+        Hook::action( 'sb-login-form', $request );
 
         $attempt = Auth::attempt( [
             'username' => $request->input( 'username' ),
@@ -165,17 +165,17 @@ class AuthController extends Controller
                 $validator = Validator::make( $request->all(), [] );
                 $validator->errors()->add( 'username', __( 'This account is disabled.' ) );
 
-                return redirect( ns()->route( 'ns.login' ) )->withErrors( $validator );
+                return redirect( sb()->route( 'sb.login' ) )->withErrors( $validator );
             }
 
-            return redirect()->intended( Hook::filter( 'ns-login-redirect' ) );
+            return redirect()->intended( Hook::filter( 'sb-login-redirect' ) );
         }
 
         $validator = Validator::make( $request->all(), [] );
         $validator->errors()->add( 'username', __( 'Unable to find record having that username.' ) );
         $validator->errors()->add( 'password', __( 'Unable to find record having that password.' ) );
 
-        return redirect( ns()->route( 'ns.login' ) )->withErrors( $validator );
+        return redirect( sb()->route( 'sb.login' ) )->withErrors( $validator );
     }
 
     public function handleJsonRequests( $request, $attempt )
@@ -196,8 +196,8 @@ class AuthController extends Controller
         return JsonResponse::success(
             message: __( 'You have been successfully connected.' ),
             data: [
-                'redirectTo' => Hook::filter( 'ns-login-redirect',
-                    ( $intended ) === url( '/' ) ? ns()->route( 'ns.dashboard.home' ) : $intended,
+                'redirectTo' => Hook::filter( 'sb-login-redirect',
+                    ( $intended ) === url( '/' ) ? sb()->route( 'sb.dashboard.home' ) : $intended,
                     redirect()->intended()->getTargetUrl() ? true : false
                 ),
             ]
@@ -219,9 +219,9 @@ class AuthController extends Controller
             return JsonResponse::success(
                 message: __( 'The recovery email has been send to your inbox.' ),
                 data: [
-                    'redirectTo' => route( 'ns.intermediate', [
-                        'route' => 'ns.login',
-                        'from' => 'ns.password-lost',
+                    'redirectTo' => route( 'sb.intermediate', [
+                        'route' => 'sb.login',
+                        'from' => 'sb.password-lost',
                     ] ),
                 ]
             );
@@ -235,7 +235,7 @@ class AuthController extends Controller
      */
     public function postSignUp( SignUpRequest $request )
     {
-        Hook::action( 'ns-register-form', $request );
+        Hook::action( 'sb-register-form', $request );
 
         try {
             $response = $this->userService->setUser( $request->only( [
@@ -247,7 +247,7 @@ class AuthController extends Controller
             if ( $request->expectsJson() ) {
                 return $response;
             } else {
-                return redirect()->route( 'ns.login', [
+                return redirect()->route( 'sb.login', [
                     'status' => 'success',
                     'message' => $response[ 'message' ],
                 ] );
@@ -256,7 +256,7 @@ class AuthController extends Controller
             if ( $request->expectsJson() ) {
                 throw $exception;
             } else {
-                return redirect()->route( 'ns.register' )->withErrors( [
+                return redirect()->route( 'sb.register' )->withErrors( [
                     'username' => $exception->getMessage(),
                 ] );
             }
@@ -279,7 +279,7 @@ class AuthController extends Controller
             throw new NotAllowedException( __( 'Unable to proceed, the provided token is not valid.' ) );
         }
 
-        if ( Carbon::parse( $user->activation_expiration )->lessThan( ns()->date->now() ) ) {
+        if ( Carbon::parse( $user->activation_expiration )->lessThan( sb()->date->now() ) ) {
             throw new NotAllowedException( __( 'Unable to proceed, the token has expired.' ) );
         }
 
@@ -294,9 +294,9 @@ class AuthController extends Controller
             'status' => 'success',
             'message' => __( 'Your password has been updated.' ),
             'data' => [
-                'redirectTo' => route( 'ns.intermediate', [
-                    'route' => 'ns.login',
-                    'from' => 'ns.password-updated',
+                'redirectTo' => route( 'sb.intermediate', [
+                    'route' => 'sb.login',
+                    'from' => 'sb.password-updated',
                 ] ),
             ],
         ];

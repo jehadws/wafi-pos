@@ -18,14 +18,14 @@ class CustomerOrderCrud extends OrderCrud
     /**
      * Define the identifier
      */
-    const IDENTIFIER = 'ns.customers-orders';
+    const IDENTIFIER = 'sb.customers-orders';
 
     /**
      * Define namespace
      *
      * @param  string
      */
-    protected $namespace = 'ns.customers-orders';
+    protected $namespace = 'sb.customers-orders';
 
     /**
      * Model Used
@@ -36,9 +36,9 @@ class CustomerOrderCrud extends OrderCrud
 
     protected $permissions = [
         'create' => false,
-        'read' => 'jgrem.read.orders',
+        'read' => 'subul.read.orders',
         'update' => false,
-        'delete' => 'jgrem.delete.orders',
+        'delete' => 'subul.delete.orders',
     ];
 
     /**
@@ -121,7 +121,7 @@ class CustomerOrderCrud extends OrderCrud
     public function beforePost( $request )
     {
         if ( $this->permissions[ 'create' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'create' ] );
+            sb()->restrict( $this->permissions[ 'create' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -164,7 +164,7 @@ class CustomerOrderCrud extends OrderCrud
     public function beforePut( $request, $entry )
     {
         if ( $this->permissions[ 'update' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'update' ] );
+            sb()->restrict( $this->permissions[ 'update' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -191,7 +191,7 @@ class CustomerOrderCrud extends OrderCrud
      */
     public function beforeDelete( $namespace, $id, $model )
     {
-        if ( $namespace == 'ns.customers.orders' ) {
+        if ( $namespace == 'sb.customers.orders' ) {
             /**
              *  Perform an action before deleting an entry
              *  In case something wrong, this response can be returned
@@ -202,7 +202,7 @@ class CustomerOrderCrud extends OrderCrud
              *  ], 403 );
              **/
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -226,7 +226,7 @@ class CustomerOrderCrud extends OrderCrud
              * Will control if the user has the permissoin to do that.
              */
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -260,11 +260,11 @@ class CustomerOrderCrud extends OrderCrud
     public function getLinks(): array
     {
         return [
-            'list' => ns()->url( 'dashboard/' . 'dashboard/customers/orders' ),
-            'create' => ns()->url( 'dashboard/' . 'dashboard/customers/orders/create' ),
-            'edit' => ns()->url( 'dashboard/' . 'dashboard/customers/orders/edit/' ),
-            'post' => ns()->url( 'api/crud/' . 'ns.customers.orders' ),
-            'put' => ns()->url( 'api/crud/' . 'ns.customers.orders/{id}' . '' ),
+            'list' => sb()->url( 'dashboard/' . 'dashboard/customers/orders' ),
+            'create' => sb()->url( 'dashboard/' . 'dashboard/customers/orders/create' ),
+            'edit' => sb()->url( 'dashboard/' . 'dashboard/customers/orders/edit/' ),
+            'post' => sb()->url( 'api/crud/' . 'sb.customers.orders' ),
+            'put' => sb()->url( 'api/crud/' . 'sb.customers.orders/{id}' . '' ),
         ];
     }
 
@@ -279,7 +279,7 @@ class CustomerOrderCrud extends OrderCrud
             [
                 'label' => __( 'Delete Selected Groups' ),
                 'identifier' => 'delete_selected',
-                'url' => ns()->route( 'ns.api.crud-bulk-actions', [
+                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
                     'namespace' => $this->namespace,
                 ] ),
             ],

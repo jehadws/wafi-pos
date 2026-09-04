@@ -6,7 +6,7 @@ use App\Models\Customer;
 use App\Models\CustomerReward;
 use App\Models\RewardSystem;
 use App\Services\CustomerService;
-use App\Traits\NsSerialize;
+use App\Traits\SbSerialize;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -14,7 +14,7 @@ use Illuminate\Queue\InteractsWithQueue;
 
 class ApplyCustomerRewardJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, NsSerialize, Queueable;
+    use Dispatchable, InteractsWithQueue, SbSerialize, Queueable;
 
     /**
      * Create a new job instance.

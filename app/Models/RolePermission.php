@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 /**
  * @property int $role_id
  */
-class RolePermission extends NsRootModel
+class RolePermission extends SbRootModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_role_permission';
+    protected $table = 'subul_role_permission';
 
     public $timestamps = false;
 

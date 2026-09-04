@@ -31,8 +31,8 @@ class WelcomeMail extends Mailable
     public function build()
     {
         return $this
-            ->subject( ns()->option->get( 'ns_notifications_registrations_user_email_title', __( '[JgremPOS] Your Account Has Been Created' ) ) )
-            ->from( ns()->option->get( 'ns_store_email', 'notifications@jgrem.com' ) )
+            ->subject( sb()->option->get( 'sb_notifications_registrations_user_email_title', __( '[Subul] Your Account Has Been Created' ) ) )
+            ->from( sb()->option->get( 'sb_store_email', 'notifications@subul.com' ) )
             ->markdown( 'mails/welcome-mail' );
     }
 }

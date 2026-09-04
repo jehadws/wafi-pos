@@ -37,76 +37,76 @@ class GeneralSettings extends SettingsPage
       identifier: 'identification',
       fields: SettingForm::fields(
         FormInput::text(
-          name: 'ns_store_name',
-          value: ns()->option->get('ns_store_name'),
+          name: 'sb_store_name',
+          value: sb()->option->get('sb_store_name'),
           label: __('Store Name'),
           description: __('This is the store name.'),
           validation: 'required',
         ),
         FormInput::text(
-          name: 'ns_store_address',
-          value: ns()->option->get('ns_store_address'),
+          name: 'sb_store_address',
+          value: sb()->option->get('sb_store_address'),
           label: __('Store Address'),
           description: __('The actual store address.'),
         ),
         FormInput::text(
-          name: 'ns_store_city',
-          value: ns()->option->get('ns_store_city'),
+          name: 'sb_store_city',
+          value: sb()->option->get('sb_store_city'),
           label: __('Store City'),
           description: __('The actual store city.'),
         ),
         FormInput::text(
-          name: 'ns_store_phone',
-          value: ns()->option->get('ns_store_phone'),
+          name: 'sb_store_phone',
+          value: sb()->option->get('sb_store_phone'),
           label: __('Store Phone'),
           description: __('The phone number to reach the store.'),
         ),
         FormInput::text(
-          name: 'ns_store_email',
-          value: ns()->option->get('ns_store_email'),
+          name: 'sb_store_email',
+          value: sb()->option->get('sb_store_email'),
           label: __('Store Email'),
           description: __('The actual store email. Might be used on invoice or for reports.'),
         ),
         FormInput::text(
-          name: 'ns_store_pobox',
-          value: ns()->option->get('ns_store_pobox'),
+          name: 'sb_store_pobox',
+          value: sb()->option->get('sb_store_pobox'),
           label: __('Store PO.Box'),
           description: __('The store mail box number.'),
         ),
         FormInput::text(
-          name: 'ns_store_fax',
-          value: ns()->option->get('ns_store_fax'),
+          name: 'sb_store_fax',
+          value: sb()->option->get('sb_store_fax'),
           label: __('Store Fax'),
           description: __('The store fax number.'),
         ),
         FormInput::textarea(
-          name: 'ns_store_additional',
-          value: ns()->option->get('ns_store_additional'),
+          name: 'sb_store_additional',
+          value: sb()->option->get('sb_store_additional'),
           label: __('Store Additional Information'),
           description: __('Store additional information.'),
         ),
         FormInput::media(
-          name: 'ns_store_square_logo',
-          value: ns()->option->get('ns_store_square_logo'),
+          name: 'sb_store_square_logo',
+          value: sb()->option->get('sb_store_square_logo'),
           label: __('Store Square Logo'),
           description: __('Choose what is the square logo of the store.'),
         ),
         FormInput::media(
-          name: 'ns_store_rectangle_logo',
-          value: ns()->option->get('ns_store_rectangle_logo'),
+          name: 'sb_store_rectangle_logo',
+          value: sb()->option->get('sb_store_rectangle_logo'),
           label: __('Store Rectangle Logo'),
           description: __('Choose what is the rectangle logo of the store.'),
         ),
         FormInput::select(
-          name: 'ns_store_language',
-          value: ns()->option->get('ns_store_language'),
-          options: Helper::kvToJsOptions(config('jgrem.languages')),
+          name: 'sb_store_language',
+          value: sb()->option->get('sb_store_language'),
+          options: Helper::kvToJsOptions(config('subul.languages')),
           label: __('Language'),
           description: __('Define the default fallback language.'),
         ),
         FormInput::select(
-          name: 'ns_default_theme',
-          value: ns()->option->get('ns_default_theme'),
+          name: 'sb_default_theme',
+          value: sb()->option->get('sb_default_theme'),
           options: Helper::kvToJsOptions([
             'dark' => __('Dark'),
             'light' => __('Light'),
@@ -125,22 +125,22 @@ class GeneralSettings extends SettingsPage
       identifier: 'currency',
       fields: SettingForm::fields(
         FormInput::text(
-          name: 'ns_currency_symbol',
-          value: ns()->option->get('ns_currency_symbol'),
+          name: 'sb_currency_symbol',
+          value: sb()->option->get('sb_currency_symbol'),
           label: __('Currency Symbol'),
           description: __('This is the currency symbol.'),
           validation: 'required',
         ),
         FormInput::text(
-          name: 'ns_currency_iso',
-          value: ns()->option->get('ns_currency_iso'),
+          name: 'sb_currency_iso',
+          value: sb()->option->get('sb_currency_iso'),
           label: __('Currency ISO'),
           description: __('The international currency ISO format.'),
           validation: 'required',
         ),
         FormInput::select(
-          name: 'ns_currency_position',
-          value: ns()->option->get('ns_currency_position'),
+          name: 'sb_currency_position',
+          value: sb()->option->get('sb_currency_position'),
           options: [
             [
               'label' => __('Before the amount'),
@@ -155,8 +155,8 @@ class GeneralSettings extends SettingsPage
           description: __('Define where the currency should be located.'),
         ),
         FormInput::select(
-          name: 'ns_currency_prefered',
-          value: ns()->option->get('ns_currency_prefered'),
+          name: 'sb_currency_prefered',
+          value: sb()->option->get('sb_currency_prefered'),
           options: [
             [
               'label' => __('ISO Currency'),
@@ -171,20 +171,20 @@ class GeneralSettings extends SettingsPage
           description: __('Determine what is the currency indicator that should be used.'),
         ),
         FormInput::text(
-          name: 'ns_currency_thousand_separator',
-          value: ns()->option->get('ns_currency_thousand_separator'),
+          name: 'sb_currency_thousand_separator',
+          value: sb()->option->get('sb_currency_thousand_separator'),
           label: __('Currency Thousand Separator'),
           description: __('Define the symbol that indicate thousand. By default "," is used.'),
         ),
         FormInput::text(
-          name: 'ns_currency_decimal_separator',
-          value: ns()->option->get('ns_currency_decimal_separator'),
+          name: 'sb_currency_decimal_separator',
+          value: sb()->option->get('sb_currency_decimal_separator'),
           label: __('Currency Decimal Separator'),
           description: __('Define the symbol that indicate decimal number. By default "." is used.'),
         ),
         FormInput::select(
-          name: 'ns_currency_precision',
-          value: ns()->option->get('ns_currency_precision', '2'),
+          name: 'sb_currency_precision',
+          value: sb()->option->get('sb_currency_precision', '2'),
           options: collect([0, 1, 2, 3, 4, 5])->map(function ($index) {
             return [
               'label' => sprintf(__('%s numbers after the decimal'), $index),
@@ -206,41 +206,41 @@ class GeneralSettings extends SettingsPage
       fields: SettingForm::fields(
         FormInput::select(
           label: __('Date Format'),
-          name: 'ns_date_format',
-          value: ns()->option->get('ns_date_format'),
+          name: 'sb_date_format',
+          value: sb()->option->get('sb_date_format'),
           options: Helper::kvToJsOptions([
-            'Y-m-d' => ns()->date->format('Y-m-d'),
-            'Y/m/d' => ns()->date->format('Y/m/d'),
-            'd-m-y' => ns()->date->format('d-m-Y'),
-            'd/m/y' => ns()->date->format('d/m/Y'),
-            'M dS, Y' => ns()->date->format('M dS, Y'),
-            'd M Y' => ns()->date->format('d M Y'),
-            'd.m.Y' => ns()->date->format('d.m.Y'),
+            'Y-m-d' => sb()->date->format('Y-m-d'),
+            'Y/m/d' => sb()->date->format('Y/m/d'),
+            'd-m-y' => sb()->date->format('d-m-Y'),
+            'd/m/y' => sb()->date->format('d/m/Y'),
+            'M dS, Y' => sb()->date->format('M dS, Y'),
+            'd M Y' => sb()->date->format('d M Y'),
+            'd.m.Y' => sb()->date->format('d.m.Y'),
           ]),
           description: __('This define how the date should be defined. The default format is "Y-m-d".'),
         ),
         FormInput::select(
           label: __('Date Time Format'),
-          name: 'ns_datetime_format',
-          value: ns()->option->get('ns_datetime_format'),
+          name: 'sb_datetime_format',
+          value: sb()->option->get('sb_datetime_format'),
           options: Helper::kvToJsOptions([
-            'Y-m-d H:i' => ns()->date->format('Y-m-d H:i'),
-            'Y/m/d H:i' => ns()->date->format('Y/m/d H:i'),
-            'd-m-y H:i' => ns()->date->format('d-m-Y H:i'),
-            'd/m/y H:i' => ns()->date->format('d/m/Y H:i'),
-            'M dS, Y H:i' => ns()->date->format('M dS, Y H:i'),
-            'd M Y, H:i' => ns()->date->format('d M Y, H:i'),
-            'd.m.Y, H:i' => ns()->date->format('d.m.Y, H:i'),
+            'Y-m-d H:i' => sb()->date->format('Y-m-d H:i'),
+            'Y/m/d H:i' => sb()->date->format('Y/m/d H:i'),
+            'd-m-y H:i' => sb()->date->format('d-m-Y H:i'),
+            'd/m/y H:i' => sb()->date->format('d/m/Y H:i'),
+            'M dS, Y H:i' => sb()->date->format('M dS, Y H:i'),
+            'd M Y, H:i' => sb()->date->format('d M Y, H:i'),
+            'd.m.Y, H:i' => sb()->date->format('d.m.Y, H:i'),
           ]),
           description: __('This define how the date and times hould be formated. The default format is "Y-m-d H:i".'),
         ),
         FormInput::select(
           label: sprintf(__('Date TimeZone')),
-          name: 'ns_datetime_timezone',
-          value: ns()->option->get('ns_datetime_timezone'),
+          name: 'sb_datetime_timezone',
+          value: sb()->option->get('sb_datetime_timezone'),
           type: 'search-select',
-          options: Helper::kvToJsOptions(config('jgrem.timezones')),
-          description: sprintf(__('Determine the default timezone of the store. Current Time: %s'), ns()->date->getNowFormatted()),
+          options: Helper::kvToJsOptions(config('subul.timezones')),
+          description: sprintf(__('Determine the default timezone of the store. Current Time: %s'), sb()->date->getNowFormatted()),
         ),
       )
     );
@@ -253,8 +253,8 @@ class GeneralSettings extends SettingsPage
       identifier: 'registration',
       fields: SettingForm::fields(
         FormInput::select(
-          name: 'ns_registration_enabled',
-          value: ns()->option->get('ns_registration_enabled'),
+          name: 'sb_registration_enabled',
+          value: sb()->option->get('sb_registration_enabled'),
           options: Helper::kvToJsOptions([
             'yes' => __('Yes'),
             'no' => __('No'),
@@ -263,15 +263,15 @@ class GeneralSettings extends SettingsPage
           description: __('Determine if everyone can register.'),
         ),
         FormInput::select(
-          name: 'ns_registration_role',
-          value: ns()->option->get('ns_registration_role'),
-          options: Helper::toJsOptions(Hook::filter('ns-registration-roles', Role::get()), ['id', 'name']),
+          name: 'sb_registration_role',
+          value: sb()->option->get('sb_registration_role'),
+          options: Helper::toJsOptions(Hook::filter('sb-registration-roles', Role::get()), ['id', 'name']),
           label: __('Registration Role'),
           description: __('Select what is the registration role.'),
         ),
         FormInput::select(
-          name: 'ns_registration_validated',
-          value: ns()->option->get('ns_registration_validated'),
+          name: 'sb_registration_validated',
+          value: sb()->option->get('sb_registration_validated'),
           options: Helper::kvToJsOptions([
             'yes' => __('Yes'),
             'no' => __('No'),
@@ -280,8 +280,8 @@ class GeneralSettings extends SettingsPage
           description: __('Force account validation after the registration.'),
         ),
         FormInput::switch(
-          name: 'ns_recovery_enabled',
-          value: ns()->option->get('ns_recovery_enabled'),
+          name: 'sb_recovery_enabled',
+          value: sb()->option->get('sb_recovery_enabled'),
           options: Helper::kvToJsOptions([
             'yes' => __('Yes'),
             'no' => __('No'),
@@ -297,38 +297,38 @@ class GeneralSettings extends SettingsPage
   {
     return [
       'identification' => [
-        'ns_store_name' => ns()->option->get('ns_store_name'),
-        'ns_store_address' => ns()->option->get('ns_store_address'),
-        'ns_store_city' => ns()->option->get('ns_store_city'),
-        'ns_store_phone' => ns()->option->get('ns_store_phone'),
-        'ns_store_email' => ns()->option->get('ns_store_email'),
-        'ns_store_pobox' => ns()->option->get('ns_store_pobox'),
-        'ns_store_fax' => ns()->option->get('ns_store_fax'),
-        'ns_store_additional' => ns()->option->get('ns_store_additional'),
-        'ns_store_square_logo' => ns()->option->get('ns_store_square_logo'),
-        'ns_store_rectangle_logo' => ns()->option->get('ns_store_rectangle_logo'),
-        'ns_store_language' => ns()->option->get('ns_store_language'),
-        'ns_default_theme' => ns()->option->get('ns_default_theme'),
+        'sb_store_name' => sb()->option->get('sb_store_name'),
+        'sb_store_address' => sb()->option->get('sb_store_address'),
+        'sb_store_city' => sb()->option->get('sb_store_city'),
+        'sb_store_phone' => sb()->option->get('sb_store_phone'),
+        'sb_store_email' => sb()->option->get('sb_store_email'),
+        'sb_store_pobox' => sb()->option->get('sb_store_pobox'),
+        'sb_store_fax' => sb()->option->get('sb_store_fax'),
+        'sb_store_additional' => sb()->option->get('sb_store_additional'),
+        'sb_store_square_logo' => sb()->option->get('sb_store_square_logo'),
+        'sb_store_rectangle_logo' => sb()->option->get('sb_store_rectangle_logo'),
+        'sb_store_language' => sb()->option->get('sb_store_language'),
+        'sb_default_theme' => sb()->option->get('sb_default_theme'),
       ],
       'currency' => [
-        'ns_currency_symbol' => ns()->option->get('ns_currency_symbol'),
-        'ns_currency_iso' => ns()->option->get('ns_currency_iso'),
-        'ns_currency_position' => ns()->option->get('ns_currency_position'),
-        'ns_currency_prefered' => ns()->option->get('ns_currency_prefered'),
-        'ns_currency_thousand_separator' => ns()->option->get('ns_currency_thousand_separator'),
-        'ns_currency_decimal_separator' => ns()->option->get('ns_currency_decimal_separator'),
-        'ns_currency_precision' => ns()->option->get('ns_currency_precision'),
+        'sb_currency_symbol' => sb()->option->get('sb_currency_symbol'),
+        'sb_currency_iso' => sb()->option->get('sb_currency_iso'),
+        'sb_currency_position' => sb()->option->get('sb_currency_position'),
+        'sb_currency_prefered' => sb()->option->get('sb_currency_prefered'),
+        'sb_currency_thousand_separator' => sb()->option->get('sb_currency_thousand_separator'),
+        'sb_currency_decimal_separator' => sb()->option->get('sb_currency_decimal_separator'),
+        'sb_currency_precision' => sb()->option->get('sb_currency_precision'),
       ],
       'date' => [
-        'ns_date_format' => ns()->option->get('ns_date_format'),
-        'ns_datetime_format' => ns()->option->get('ns_datetime_format'),
-        'ns_datetime_timezone' => ns()->option->get('ns_datetime_timezone'),
+        'sb_date_format' => sb()->option->get('sb_date_format'),
+        'sb_datetime_format' => sb()->option->get('sb_datetime_format'),
+        'sb_datetime_timezone' => sb()->option->get('sb_datetime_timezone'),
       ],
       'registration' => [
-        'ns_registration_enabled' => ns()->option->get('ns_registration_enabled'),
-        'ns_registration_role' => ns()->option->get('ns_registration_role'),
-        'ns_registration_validated' => ns()->option->get('ns_registration_validated'),
-        'ns_recovery_enabled' => ns()->option->get('ns_recovery_enabled'),
+        'sb_registration_enabled' => sb()->option->get('sb_registration_enabled'),
+        'sb_registration_role' => sb()->option->get('sb_registration_role'),
+        'sb_registration_validated' => sb()->option->get('sb_registration_validated'),
+        'sb_recovery_enabled' => sb()->option->get('sb_recovery_enabled'),
       ],
     ];
   }
@@ -336,12 +336,12 @@ class GeneralSettings extends SettingsPage
   public function getOptions()
   {
     return [
-      'ns_store_language' => Helper::kvToJsOptions(config('jgrem.languages')),
-      'ns_default_theme' => Helper::kvToJsOptions([
+      'sb_store_language' => Helper::kvToJsOptions(config('subul.languages')),
+      'sb_default_theme' => Helper::kvToJsOptions([
         'dark' => __('Dark'),
         'light' => __('Light'),
       ]),
-      'ns_currency_position' => [
+      'sb_currency_position' => [
         [
           'label' => __('Before the amount'),
           'value' => 'before',
@@ -351,7 +351,7 @@ class GeneralSettings extends SettingsPage
           'value' => 'after',
         ],
       ],
-      'ns_currency_prefered' => [
+      'sb_currency_prefered' => [
         [
           'label' => __('ISO Currency'),
           'value' => 'iso',
@@ -361,37 +361,37 @@ class GeneralSettings extends SettingsPage
           'value' => 'symbol',
         ],
       ],
-      'ns_currency_precision' =>  collect([0, 1, 2, 3, 4, 5])->map(function ($index) {
+      'sb_currency_precision' =>  collect([0, 1, 2, 3, 4, 5])->map(function ($index) {
         return [
           'label' => sprintf(__('%s numbers after the decimal'), $index),
           'value' => $index,
         ];
       })->toArray(),
-      'ns_date_format' => Helper::kvToJsOptions([
-        'Y-m-d' => ns()->date->format('Y-m-d'),
-        'Y/m/d' => ns()->date->format('Y/m/d'),
-        'd-m-y' => ns()->date->format('d-m-Y'),
-        'd/m/y' => ns()->date->format('d/m/Y'),
-        'M dS, Y' => ns()->date->format('M dS, Y'),
-        'd M Y' => ns()->date->format('d M Y'),
-        'd.m.Y' => ns()->date->format('d.m.Y'),
+      'sb_date_format' => Helper::kvToJsOptions([
+        'Y-m-d' => sb()->date->format('Y-m-d'),
+        'Y/m/d' => sb()->date->format('Y/m/d'),
+        'd-m-y' => sb()->date->format('d-m-Y'),
+        'd/m/y' => sb()->date->format('d/m/Y'),
+        'M dS, Y' => sb()->date->format('M dS, Y'),
+        'd M Y' => sb()->date->format('d M Y'),
+        'd.m.Y' => sb()->date->format('d.m.Y'),
       ]),
-      'ns_datetime_format' => Helper::kvToJsOptions([
-        'Y-m-d H:i' => ns()->date->format('Y-m-d H:i'),
-        'Y/m/d H:i' => ns()->date->format('Y/m/d H:i'),
-        'd-m-y H:i' => ns()->date->format('d-m-Y H:i'),
-        'd/m/y H:i' => ns()->date->format('d/m/Y H:i'),
-        'M dS, Y H:i' => ns()->date->format('M dS, Y H:i'),
-        'd M Y, H:i' => ns()->date->format('d M Y, H:i'),
-        'd.m.Y, H:i' => ns()->date->format('d.m.Y, H:i'),
+      'sb_datetime_format' => Helper::kvToJsOptions([
+        'Y-m-d H:i' => sb()->date->format('Y-m-d H:i'),
+        'Y/m/d H:i' => sb()->date->format('Y/m/d H:i'),
+        'd-m-y H:i' => sb()->date->format('d-m-Y H:i'),
+        'd/m/y H:i' => sb()->date->format('d/m/Y H:i'),
+        'M dS, Y H:i' => sb()->date->format('M dS, Y H:i'),
+        'd M Y, H:i' => sb()->date->format('d M Y, H:i'),
+        'd.m.Y, H:i' => sb()->date->format('d.m.Y, H:i'),
       ]),
-      'ns_datetime_timezone' => Helper::kvToJsOptions(config('jgrem.timezones')),
-      'ns_registration_enabled' => Helper::kvToJsOptions([
+      'sb_datetime_timezone' => Helper::kvToJsOptions(config('subul.timezones')),
+      'sb_registration_enabled' => Helper::kvToJsOptions([
         'yes' => __('Yes'),
         'no' => __('No'),
       ]),
-      'ns_registration_role' => Helper::toJsOptions(Hook::filter('ns-registration-roles', Role::get()), ['id', 'name']),
-      'ns_registration_validated' =>  Helper::kvToJsOptions([
+      'sb_registration_role' => Helper::toJsOptions(Hook::filter('sb-registration-roles', Role::get()), ['id', 'name']),
+      'sb_registration_validated' =>  Helper::kvToJsOptions([
         'yes' => __('Yes'),
         'no' => __('No'),
       ]),

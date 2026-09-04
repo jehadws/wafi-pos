@@ -5,9 +5,9 @@ namespace App\Classes;
 use TorMorten\Eventy\Facades\Eventy;
 
 /**
- * @static nsDashboardMenus( $callback )
+ * @static sbDashboardMenus( $callback )
  */
 class Hook extends Eventy
 {
-    const nsDashboardMenus = 'ns-dashboard-menus';
+    const sbDashboardMenus = 'sb-dashboard-menus';
 }

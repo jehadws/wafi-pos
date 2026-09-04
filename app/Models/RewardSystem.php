@@ -12,11 +12,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string         $description
  * @property \Carbon\Carbon $updated_at
  */
-class RewardSystem extends NsModel
+class RewardSystem extends SbModel
 {
   use HasFactory;
 
-  protected $table = 'jgrem_' . 'rewards_system';
+  protected $table = 'subul_' . 'rewards_system';
 
   public function rules()
   {

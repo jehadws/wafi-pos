@@ -7,11 +7,11 @@ use App\Services\FieldsService;
 
 class NewPasswordFields extends FieldsService
 {
-    protected static $identifier = 'ns.new-password';
+    protected static $identifier = 'sb.new-password';
 
     public function get()
     {
-        $fields = Hook::filter( 'ns-new-password-fields', [
+        $fields = Hook::filter( 'sb-new-password-fields', [
             [
                 'label' => __( 'New Password' ),
                 'description' => __( 'define your new password.' ),

@@ -15,11 +15,11 @@ use Illuminate\Support\Facades\Cache;
  * @property string $identifier
  * @property string $uuid
  */
-class OrderPayment extends NsModel
+class OrderPayment extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'orders_payments';
+    protected $table = 'subul_' . 'orders_payments';
 
     const PAYMENT_CASH = 'cash-payment';
 
@@ -49,7 +49,7 @@ class OrderPayment extends NsModel
 
     public function getPaymentLabelAttribute()
     {
-        $paymentTypes = Cache::remember( 'jgrem.pos.payments-key', '3600', function () {
+        $paymentTypes = Cache::remember( 'subul.pos.payments-key', '3600', function () {
             return PaymentType::active()->get()->mapWithKeys( function ( $paymentType ) {
                 return [ $paymentType->identifier => $paymentType->label ];
             } );

@@ -41,7 +41,7 @@ class LocalizationServiceProvider extends ServiceProvider
             if (
                 isset( $module[ 'langFiles' ] ) &&
                 isset( $module[ 'langFiles' ][ app()->getLocale() ] ) &&
-                Storage::disk( 'ns-modules' )->exists( $module[ 'langFiles' ][ app()->getLocale() ] )
+                Storage::disk( 'sb-modules' )->exists( $module[ 'langFiles' ][ app()->getLocale() ] )
             ) {
                 $locales = json_decode( file_get_contents( base_path( 'modules' . DIRECTORY_SEPARATOR . $module[ 'langFiles' ][ app()->getLocale() ] ) ), true );
                 $newLocales = collect( $locales )->mapWithKeys( function ( $value, $key ) use ( $module ) {

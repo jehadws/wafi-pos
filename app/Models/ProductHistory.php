@@ -28,11 +28,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property \Carbon\Carbon $updated_at
  * @property Product        $product
  */
-class ProductHistory extends NsModel
+class ProductHistory extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'products_histories';
+    protected $table = 'subul_' . 'products_histories';
 
     const ACTION_STOCKED = 'procured';
 

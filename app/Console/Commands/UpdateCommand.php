@@ -18,7 +18,7 @@ class UpdateCommand extends Command
      *
      * @var string
      */
-    protected $description = 'An utility for updating JgremPOS and it\'s modules. Only works if the project was installed using Git.';
+    protected $description = 'An utility for updating Subul and it\'s modules. Only works if the project was installed using Git.';
 
     /**
      * Create a new command instance.
@@ -46,7 +46,7 @@ class UpdateCommand extends Command
 
     private function proceedUpdateModule()
     {
-        // we need to update my.jgrem.com to support this.
+        // we need to update my.subul.com to support this.
     }
 
     /**
@@ -67,7 +67,7 @@ class UpdateCommand extends Command
 
     private function proceedTagUpdate( $tag )
     {
-        $gitpath = env( 'NS_GIT', 'git' );
+        $gitpath = env( 'SB_GIT', 'git' );
 
         $this->info( __( 'Downloading latest dev build...' ) );
 
@@ -82,8 +82,8 @@ class UpdateCommand extends Command
 
     private function build()
     {
-        $composerpath = env( 'NS_COMPOSER', 'composer' );
-        $npmpath = env( 'NS_NPM', 'npm' );
+        $composerpath = env( 'SB_COMPOSER', 'composer' );
+        $npmpath = env( 'SB_NPM', 'npm' );
 
         $this->line( exec( "{$npmpath} i" ) );
         $this->line( exec( "{$composerpath} i" ) );
@@ -96,7 +96,7 @@ class UpdateCommand extends Command
      */
     private function proceedDevPull()
     {
-        $gitpath = env( 'NS_GIT', 'git' );
+        $gitpath = env( 'SB_GIT', 'git' );
 
         $this->info( __( 'Downloading latest dev build...' ) );
 

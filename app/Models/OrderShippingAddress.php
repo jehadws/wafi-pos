@@ -11,11 +11,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string         $uuid
  * @property \Carbon\Carbon $updated_at
  */
-class OrderShippingAddress extends NsModel
+class OrderShippingAddress extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'orders_addresses';
+    protected $table = 'subul_' . 'orders_addresses';
 
     protected static function booted()
     {

@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Modules\NsCommissions\Models\EarnedCommission;
+use Modules\SbCommissions\Models\EarnedCommission;
 use stdClass;
 
 class ReportService
@@ -194,12 +194,12 @@ class ReportService
        *
        * @var NotificationService
        */
-      $message = __('A stock operation has recently been detected, however JgremPOS was\'nt able to update the report accordingly. This occurs if the daily dashboard reference has\'nt been created.');
+      $message = __('A stock operation has recently been detected, however Subul was\'nt able to update the report accordingly. This occurs if the daily dashboard reference has\'nt been created.');
       $notification = app()->make(NotificationService::class);
       $notification->create([
         'title' => __('Untracked Stock Operation'),
         'description' => $message,
-        'url' => 'https://my.jgrem.com/en/troubleshooting/untracked-stock-operation',
+        'url' => 'https://my.subul.com/en/troubleshooting/untracked-stock-operation',
       ])->dispatchForGroup(Role::namespace('admin'));
 
       return [
@@ -387,13 +387,13 @@ class ReportService
      *
      * @var NotificationService
      */
-    $message = __('A stock operation has recently been detected, however JgremPOS was\'nt able to update the report accordingly. This occurs if the daily dashboard reference has\'nt been created.');
+    $message = __('A stock operation has recently been detected, however Subul was\'nt able to update the report accordingly. This occurs if the daily dashboard reference has\'nt been created.');
 
     $notification = app()->make(NotificationService::class);
     $notification->create([
       'title' => __('Untracked Stock Operation'),
       'description' => $message,
-      'url' => 'https://my.jgrem.com/en/troubleshooting/untracked-stock-operation',
+      'url' => 'https://my.subul.com/en/troubleshooting/untracked-stock-operation',
     ])->dispatchForGroup(Role::namespace('admin'));
 
     return [
@@ -555,8 +555,8 @@ class ReportService
    */
   private function getBestRecords($previousDates, $sort)
   {
-    $orderProductTable = Hook::filter('ns-model-table', 'jgrem_orders_products');
-    $orderTable = Hook::filter('ns-model-table', 'jgrem_orders');
+    $orderProductTable = Hook::filter('sb-model-table', 'subul_orders_products');
+    $orderTable = Hook::filter('sb-model-table', 'subul_orders');
 
     switch ($sort) {
       case 'using_quantity_asc':
@@ -702,7 +702,7 @@ class ReportService
         'shipping' => $order->shipping,
         'total' => $order->total,
         'total_purchase_price' => $totalPurchasePrice,
-        'profit' => ns()->currency->define($order->total)
+        'profit' => sb()->currency->define($order->total)
           ->subtractBy($totalPurchasePrice)
           ->subtractBy($order->tax_value)
           ->subtractBy($productTaxes)
@@ -886,8 +886,8 @@ class ReportService
     }
 
     return Cache::remember($cacheKey, now()->addDay(1), function () use ($startDate, $cashier, $endDate) {
-      $startDate = $startDate === null ? ns()->date->getNow()->startOfDay()->toDateTimeString() : $startDate;
-      $endDate = $endDate === null ? ns()->date->getNow()->endOfDay()->toDateTimeString() : $endDate;
+      $startDate = $startDate === null ? sb()->date->getNow()->startOfDay()->toDateTimeString() : $startDate;
+      $endDate = $endDate === null ? sb()->date->getNow()->endOfDay()->toDateTimeString() : $endDate;
 
       $totalSales = Order::paid()
         ->where('author', $cashier)
@@ -934,11 +934,11 @@ class ReportService
       $module = app()->make(ModulesService::class);
       $config = [];
 
-      if ($module->getIfEnabled('NsCommissions')) {
+      if ($module->getIfEnabled('SbCommissions')) {
         $config = [
           'today_commissions' => EarnedCommission::for(Auth::id())
-            ->where('created_at', '>=', ns()->date->getNow()->copy()->startOfDay()->toDateTimeString())
-            ->where('created_at', '<=', ns()->date->getNow()->copy()->endOfDay()->toDateTimeString())
+            ->where('created_at', '>=', sb()->date->getNow()->copy()->startOfDay()->toDateTimeString())
+            ->where('created_at', '<=', sb()->date->getNow()->copy()->endOfDay()->toDateTimeString())
             ->sum('value'),
           'total_commissions' => EarnedCommission::for(Auth::id())
             ->sum('value'),
@@ -948,7 +948,7 @@ class ReportService
       return array_merge([
         [
           'key' => 'created_at',
-          'value' => ns()->date->getFormatted(Auth::user()->created_at),
+          'value' => sb()->date->getFormatted(Auth::user()->created_at),
           'label' => __('Member Since'),
         ],
         [
@@ -963,21 +963,21 @@ class ReportService
         ],
         [
           'key' => 'total_sales_amount',
-          'value' => ns()->currency->define($totalSalesAmount)->format(),
+          'value' => sb()->currency->define($totalSalesAmount)->format(),
           'label' => __('Total Sales'),
           'today' => [
             'key' => 'today_sales_amount',
-            'value' => ns()->currency->define($todaySalesAmount)->format(),
+            'value' => sb()->currency->define($todaySalesAmount)->format(),
             'label' => __('Today\'s Sales'),
           ],
         ],
         [
           'key' => 'total_refunds_amount',
-          'value' => ns()->currency->define($totalRefundsAmount)->format(),
+          'value' => sb()->currency->define($totalRefundsAmount)->format(),
           'label' => __('Total Refunds'),
           'today' => [
             'key' => 'today_refunds_amount',
-            'value' => ns()->currency->define($todayRefunds)->format(),
+            'value' => sb()->currency->define($todayRefunds)->format(),
             'label' => __('Today\'s Refunds'),
           ],
         ],
@@ -1001,7 +1001,7 @@ class ReportService
    */
   public function computeYearReport($year)
   {
-    $date = ns()->date->copy();
+    $date = sb()->date->copy();
     $date->year = $year;
     $startOfYear = $date->copy()->startOfYear();
     $endOfYear = $date->copy()->endOfYear();
@@ -1090,7 +1090,7 @@ class ReportService
       $endDateString
     );
 
-    $days = ns()->date->getDaysInBetween($fromDate, $toDate);
+    $days = sb()->date->getDaysInBetween($fromDate, $toDate);
 
     foreach ($days as $day) {
       $this->computeDayReport(
@@ -1261,7 +1261,7 @@ class ReportService
       $currentDetailedHistory->procured_quantity += $productHistory->quantity;
     }
 
-    $currentDetailedHistory->final_quantity = ns()->currency->define($currentDetailedHistory->initial_quantity)
+    $currentDetailedHistory->final_quantity = sb()->currency->define($currentDetailedHistory->initial_quantity)
       ->additionateBy($currentDetailedHistory->procured_quantity)
       ->subtractBy($currentDetailedHistory->sold_quantity)
       ->subtractBy($currentDetailedHistory->defective_quantity)
@@ -1273,39 +1273,39 @@ class ReportService
   public function getCombinedProductHistory($date, $categories, $units)
   {
     $request = DB::query()->select([
-      'jgrem_products_unit_quantities.*',
-      'jgrem_products.category_id as product_category_id',
-      'jgrem_units.name as unit_name',
-      'jgrem_products_histories_combined.date as history_date',
-      'jgrem_products_histories_combined.initial_quantity as history_initial_quantity',
-      'jgrem_products_histories_combined.procured_quantity as history_procured_quantity',
-      'jgrem_products_histories_combined.defective_quantity as history_defective_quantity',
-      'jgrem_products_histories_combined.sold_quantity as history_sold_quantity',
-      'jgrem_products_histories_combined.final_quantity as history_final_quantity',
-      'jgrem_products_histories_combined.unit_id as history_unit_id',
-      'jgrem_products_histories_combined.product_id as history_product_id',
-      'jgrem_products_histories_combined.name as history_name',
-    ])->from('jgrem_products_unit_quantities')
-      ->rightJoin('jgrem_products', 'jgrem_products.id', '=', 'jgrem_products_unit_quantities.product_id')
-      ->rightJoin('jgrem_products_histories_combined', function ($join) use ($date) {
-        $join->on('jgrem_products_histories_combined.product_id', '=', 'jgrem_products_unit_quantities.product_id');
-        $join->on('jgrem_products_histories_combined.unit_id', '=', 'jgrem_products_unit_quantities.unit_id');
-        $join->where('jgrem_products_histories_combined.date', $date);
+      'subul_products_unit_quantities.*',
+      'subul_products.category_id as product_category_id',
+      'subul_units.name as unit_name',
+      'subul_products_histories_combined.date as history_date',
+      'subul_products_histories_combined.initial_quantity as history_initial_quantity',
+      'subul_products_histories_combined.procured_quantity as history_procured_quantity',
+      'subul_products_histories_combined.defective_quantity as history_defective_quantity',
+      'subul_products_histories_combined.sold_quantity as history_sold_quantity',
+      'subul_products_histories_combined.final_quantity as history_final_quantity',
+      'subul_products_histories_combined.unit_id as history_unit_id',
+      'subul_products_histories_combined.product_id as history_product_id',
+      'subul_products_histories_combined.name as history_name',
+    ])->from('subul_products_unit_quantities')
+      ->rightJoin('subul_products', 'subul_products.id', '=', 'subul_products_unit_quantities.product_id')
+      ->rightJoin('subul_products_histories_combined', function ($join) use ($date) {
+        $join->on('subul_products_histories_combined.product_id', '=', 'subul_products_unit_quantities.product_id');
+        $join->on('subul_products_histories_combined.unit_id', '=', 'subul_products_unit_quantities.unit_id');
+        $join->where('subul_products_histories_combined.date', $date);
       })
-      ->rightJoin('jgrem_units', 'jgrem_units.id', '=', 'jgrem_products_histories_combined.unit_id');
+      ->rightJoin('subul_units', 'subul_units.id', '=', 'subul_products_histories_combined.unit_id');
 
     /**
      * Will only pull products that belongs to the units id provided.
      */
     if (! empty($units)) {
-      $request->whereIn('jgrem_products_histories_combined.unit_id', $units);
+      $request->whereIn('subul_products_histories_combined.unit_id', $units);
     }
 
     if (! empty($categories)) {
-      $request->whereIn('jgrem_products.category_id', $categories);
+      $request->whereIn('subul_products.category_id', $categories);
     }
 
-    $request->where('jgrem_products_histories_combined.date', Carbon::parse($date)->format('Y-m-d'));
+    $request->where('subul_products_histories_combined.date', Carbon::parse($date)->format('Y-m-d'));
 
     return $request->get();
   }
@@ -1325,8 +1325,8 @@ class ReportService
 
   public function getAccountSummaryReport($startDate = null, $endDate = null)
   {
-    $startDate = $startDate === null ? ns()->date->getNow()->startOfMonth()->toDateTimeString() : $startDate;
-    $endDate = $endDate === null ? ns()->date->getNow()->endOfMonth()->toDateTimeString() : $endDate;
+    $startDate = $startDate === null ? sb()->date->getNow()->startOfMonth()->toDateTimeString() : $startDate;
+    $endDate = $endDate === null ? sb()->date->getNow()->endOfMonth()->toDateTimeString() : $endDate;
     $accounts = collect(config('accounting.accounts'))->map(function ($account, $name) use ($startDate, $endDate) {
       $transactionAccount = TransactionAccount::where('category_identifier', $name)->with(['histories' => function ($query) use ($startDate, $endDate) {
         $query->where('created_at', '>=', $startDate)->where('created_at', '<=', $endDate);
@@ -1352,7 +1352,7 @@ class ReportService
       'accounts' => $accounts,
       'debits' => $accounts->sum('debits'),
       'credits' => $accounts->sum('credits'),
-      'profit' => ns()->currency->define($accounts->sum('credits'))->subtractBy($accounts->sum('debits'))->toFloat(),
+      'profit' => sb()->currency->define($accounts->sum('credits'))->subtractBy($accounts->sum('debits'))->toFloat(),
     ];
   }
 }

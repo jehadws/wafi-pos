@@ -18,18 +18,18 @@ trait App
      */
     public static function installed()
     {
-        if ( ! Cache::has( 'ns-core-installed' ) ) {
-            Cache::set( 'ns-core-installed', (bool) self::checkDatabaseExistence(), 60 );
+        if ( ! Cache::has( 'sb-core-installed' ) ) {
+            Cache::set( 'sb-core-installed', (bool) self::checkDatabaseExistence(), 60 );
         }
 
-        return (bool) Cache::get( 'ns-core-installed' );
+        return (bool) Cache::get( 'sb-core-installed' );
     }
 
     private static function checkDatabaseExistence()
     {
         try {
             if ( DB::connection()->getPdo() ) {
-                return Schema::hasTable( 'jgrem_options' );
+                return Schema::hasTable( 'subul_options' );
             }
         } catch ( \Exception $e ) {
             return false;
@@ -38,10 +38,10 @@ trait App
 
     public static function pageTitle( $string )
     {
-        $storeName = ns()->option->get( 'ns_store_name' ) ?: 'JgremPOS';
+        $storeName = sb()->option->get( 'sb_store_name' ) ?: 'Subul';
 
         return sprintf(
-            Hook::filter( 'ns-page-title', __( '%s &mdash; %s' ) ),
+            Hook::filter( 'sb-page-title', __( '%s &mdash; %s' ) ),
             $string,
             $storeName
         );

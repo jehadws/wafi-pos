@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string         $description
  * @property \Carbon\Carbon $updated_at
  */
-class OrderProductRefund extends NsModel
+class OrderProductRefund extends SbModel
 {
     use HasFactory;
 
@@ -20,7 +20,7 @@ class OrderProductRefund extends NsModel
 
     const CONDITION_UNSPOILED = 'unspoiled';
 
-    protected $table = 'jgrem_' . 'orders_products_refunds';
+    protected $table = 'subul_' . 'orders_products_refunds';
 
     public function unit()
     {

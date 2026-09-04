@@ -1,7 +1,7 @@
 <?php
 
 /**
- * JgremPOS Controller
+ * Subul Controller
  *
  * @since  1.0
  **/
@@ -26,7 +26,7 @@ class SettingsController extends DashboardController
 
   public function handleDefaultSettings($identifier)
   {
-    $settings = Hook::filter('ns.settings', false, $identifier);
+    $settings = Hook::filter('sb.settings', false, $identifier);
 
     if ($settings instanceof SettingsPage) {
         return $settings->renderForm();
@@ -43,7 +43,7 @@ class SettingsController extends DashboardController
    */
   public function getSettingsForm($identifier)
   {
-    $settings = Hook::filter('ns.settings', false, $identifier);
+    $settings = Hook::filter('sb.settings', false, $identifier);
 
     if ($settings instanceof SettingsPage) {
       return $settings->getForm();
@@ -54,9 +54,9 @@ class SettingsController extends DashboardController
 
   public function saveSettingsForm(SettingsRequest $request, $identifier)
   {
-    ns()->restrict(['manage.options']);
+    sb()->restrict(['manage.options']);
 
-    $resource = Hook::filter('ns.settings', false, $identifier);
+    $resource = Hook::filter('sb.settings', false, $identifier);
 
     if (! $resource instanceof SettingsPage) {
       throw new Exception(sprintf(

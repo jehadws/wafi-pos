@@ -13,13 +13,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string         $description
  * @property \Carbon\Carbon $updated_at
  */
-class ProductCategory extends NsModel
+class ProductCategory extends SbModel
 {
     use HasFactory;
 
     protected $guarded = [];
 
-    protected $table = 'jgrem_' . 'products_categories';
+    protected $table = 'subul_' . 'products_categories';
 
     public function setDependencies()
     {

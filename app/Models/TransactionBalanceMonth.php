@@ -19,5 +19,5 @@ class TransactionBalanceMonth extends Model
 {
     use HasFactory;
 
-    protected $table = 'jgrem_transactions_balance_months';
+    protected $table = 'subul_transactions_balance_months';
 }

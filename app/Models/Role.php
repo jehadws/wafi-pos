@@ -13,11 +13,11 @@ use Illuminate\Support\Collection;
  * @property bool           $locked
  * @property \Carbon\Carbon $updated_at
  */
-class Role extends NsRootModel
+class Role extends SbRootModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_roles';
+    protected $table = 'subul_roles';
 
     protected $fillable = [ 'namespace', 'name', 'description', 'reward_system_id', 'minimal_credit_payment' ];
 
@@ -29,17 +29,17 @@ class Role extends NsRootModel
     /**
      * @var string STOREADMIN store manager
      */
-    const STOREADMIN = 'jgrem.store.administrator';
+    const STOREADMIN = 'subul.store.administrator';
 
     /**
      * @var string STORECASHIER store role with sales capacity
      */
-    const STORECASHIER = 'jgrem.store.cashier';
+    const STORECASHIER = 'subul.store.cashier';
 
     /**
      * @var string STOREDRIVER store role with purchasing capacity
      */
-    const STORECUSTOMER = 'jgrem.store.customer';
+    const STORECUSTOMER = 'subul.store.customer';
 
     /**
      * @var string USER base role with no or less permissions
@@ -72,7 +72,7 @@ class Role extends NsRootModel
      **/
     public function permissions(): BelongsToMany
     {
-        return $this->belongsToMany( Permission::class, 'jgrem_role_permission' );
+        return $this->belongsToMany( Permission::class, 'subul_role_permission' );
     }
 
     public function scopeWithNamespace( $query, $param )

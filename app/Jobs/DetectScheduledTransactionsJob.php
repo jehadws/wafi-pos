@@ -33,7 +33,7 @@ class DetectScheduledTransactionsJob implements ShouldQueue
     public function handle()
     {
         $query = TransactionHistory::scheduled()
-            ->triggerDate( ns()->date->toDateTimeString() );
+            ->triggerDate( sb()->date->toDateTimeString() );
 
         /**
          * This means we have some valid transactions

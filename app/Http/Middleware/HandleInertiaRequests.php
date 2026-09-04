@@ -80,8 +80,8 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
-                'user' => $request->user(),
-                'roles' => $request->user()?->roles()->pluck('namespace')->toArray() ?? [],
+                'user' => \App\Services\Helper::installed() ? $request->user() : null,
+                'roles' => (\App\Services\Helper::installed() && $request->user()) ? $request->user()?->roles()->pluck('namespace')->toArray() ?? [] : [],
             ],
             'ziggy' => fn (): array => [
                 ...(new Ziggy)->toArray(),
@@ -89,7 +89,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'locale' => app()->getLocale(),
-            'menus' => $request->user() ?
+            'menus' => (\App\Services\Helper::installed() && $request->user()) ?
                 app()->make(\App\Services\MenuService::class)->getMenus() :
                 [],
             'settings' => \App\Services\Helper::installed() ? (new GeneralSettings)->getPayload() : [],

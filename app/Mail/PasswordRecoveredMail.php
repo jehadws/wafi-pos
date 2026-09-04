@@ -31,7 +31,7 @@ class PasswordRecoveredMail extends Mailable
     public function build()
     {
         return $this
-            ->from( ns()->option->get( 'ns_store_email', 'contact@jgrem.com' ), ns()->option->get( 'ns_store_name', env( 'APP_NAME' ) ) )
+            ->from( sb()->option->get( 'sb_store_email', 'contact@subul.com' ), sb()->option->get( 'sb_store_name', env( 'APP_NAME' ) ) )
             ->to( $this->user->email )
             ->markdown( 'mails/password-recovered-mail' );
     }

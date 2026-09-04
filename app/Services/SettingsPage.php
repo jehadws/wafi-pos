@@ -4,13 +4,13 @@ namespace App\Services;
 
 use App\Classes\Hook;
 use App\Events\SettingsSavedEvent;
-use App\Traits\NsForms;
+use App\Traits\SbForms;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class SettingsPage
 {
-  use NsForms;
+  use SbForms;
 
   protected $form = [];
 

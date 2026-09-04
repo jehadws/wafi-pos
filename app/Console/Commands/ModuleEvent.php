@@ -54,12 +54,12 @@ class ModuleEvent extends Command
             $fileName = $eventsPath . $name;
             $fullRelativePath = 'modules' . DIRECTORY_SEPARATOR . $fileName;
             $namespace = $this->argument( 'namespace' );
-            $fileExists = Storage::disk( 'ns-modules' )->exists(
+            $fileExists = Storage::disk( 'sb-modules' )->exists(
                 $fileName . '.php'
             );
 
             if ( ! $fileExists || ( $fileExists && $this->option( 'force' ) ) ) {
-                Storage::disk( 'ns-modules' )->put( $fileName . '.php', view( 'generate.modules.event', compact(
+                Storage::disk( 'sb-modules' )->put( $fileName . '.php', view( 'generate.modules.event', compact(
                     'modules', 'module', 'name', 'namespace'
                 ) ) );
 

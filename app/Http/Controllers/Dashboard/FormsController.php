@@ -1,7 +1,7 @@
 <?php
 
 /**
- * JgremPOS Controller
+ * Subul Controller
  *
  * @since  1.0
  **/
@@ -21,7 +21,7 @@ class FormsController extends DashboardController
         /**
          * @var SettingsPage
          */
-        $instance = Hook::filter( 'ns.forms', [], $resource );
+        $instance = Hook::filter( 'sb.forms', [], $resource );
 
         if ( ! $instance instanceof SettingsPage ) {
             throw new Exception( sprintf(
@@ -36,7 +36,7 @@ class FormsController extends DashboardController
 
     public function saveForm( FormsRequest $request, $resource, $identifier = null )
     {
-        $instance = Hook::filter( 'ns.forms', [], $resource, $identifier );
+        $instance = Hook::filter( 'sb.forms', [], $resource, $identifier );
 
         if ( ! $instance instanceof SettingsPage ) {
             throw new Exception( sprintf(

@@ -25,15 +25,15 @@ class PaymentTypeCrud extends CrudService
   /**
    * Define the identifier
    */
-  const IDENTIFIER = 'ns.payments-types';
+  const IDENTIFIER = 'sb.payments-types';
 
   /**
    * define the base table
    *
    * @param  string
    */
-  protected $table = 'jgrem_payments_types';
-  protected $to_route = 'ns.dashboard.orders-payments-types';
+  protected $table = 'subul_payments_types';
+  protected $to_route = 'sb.dashboard.orders-payments-types';
 
   /**
    * default slug
@@ -47,7 +47,7 @@ class PaymentTypeCrud extends CrudService
    *
    * @param  string
    */
-  protected $namespace = 'ns.payments-types';
+  protected $namespace = 'sb.payments-types';
 
   /**
    * Model Used
@@ -62,20 +62,20 @@ class PaymentTypeCrud extends CrudService
    * @param  array
    */
   protected $permissions = [
-    'create' => 'jgrem.manage-payments-types',
-    'read' => 'jgrem.manage-payments-types',
-    'update' => 'jgrem.manage-payments-types',
-    'delete' => 'jgrem.manage-payments-types',
+    'create' => 'subul.manage-payments-types',
+    'read' => 'subul.manage-payments-types',
+    'update' => 'subul.manage-payments-types',
+    'delete' => 'subul.manage-payments-types',
   ];
 
   /**
    * Adding relation
-   * Example : [ 'jgrem_users as user', 'user.id', '=', 'jgrem_orders.author' ]
+   * Example : [ 'subul_users as user', 'user.id', '=', 'subul_orders.author' ]
    *
    * @param  array
    */
   public $relations = [
-    ['jgrem_users as user', 'user.id', '=', 'jgrem_payments_types.author'],
+    ['subul_users as user', 'user.id', '=', 'subul_payments_types.author'],
   ];
 
   /**
@@ -92,7 +92,7 @@ class PaymentTypeCrud extends CrudService
    * Should be an array of associative keys, where
    * keys are either the related table or alias name.
    * Example : [
-   *      'user'  =>  [ 'username' ], // here the relation on the table jgrem_users is using "user" as an alias
+   *      'user'  =>  [ 'username' ], // here the relation on the table subul_users is using "user" as an alias
    * ]
    */
   public $pick = [
@@ -265,13 +265,13 @@ class PaymentTypeCrud extends CrudService
   public function beforePost($request)
   {
     if ($this->permissions['create'] !== false) {
-      ns()->restrict($this->permissions['create']);
+      sb()->restrict($this->permissions['create']);
     } else {
       throw new NotAllowedException;
     }
 
-    Cache::forget('jgrem.pos.payments');
-    Cache::forget('jgrem.pos.payments-key');
+    Cache::forget('subul.pos.payments');
+    Cache::forget('subul.pos.payments-key');
 
     return $request;
   }
@@ -312,13 +312,13 @@ class PaymentTypeCrud extends CrudService
   public function beforePut($request, $entry)
   {
     if ($this->permissions['update'] !== false) {
-      ns()->restrict($this->permissions['update']);
+      sb()->restrict($this->permissions['update']);
     } else {
       throw new NotAllowedException;
     }
 
-    Cache::forget('jgrem.pos.payments');
-    Cache::forget('jgrem.pos.payments-key');
+    Cache::forget('subul.pos.payments');
+    Cache::forget('subul.pos.payments-key');
 
     return $request;
   }
@@ -342,7 +342,7 @@ class PaymentTypeCrud extends CrudService
    */
   public function beforeDelete($namespace, $id, $model)
   {
-    if ($namespace == 'ns.payments-types') {
+    if ($namespace == 'sb.payments-types') {
       /**
        *  Perform an action before deleting an entry
        *  In case something wrong, this response can be returned
@@ -353,7 +353,7 @@ class PaymentTypeCrud extends CrudService
        *  ], 403 );
        **/
       if ($this->permissions['delete'] !== false) {
-        ns()->restrict($this->permissions['delete']);
+        sb()->restrict($this->permissions['delete']);
       } else {
         throw new NotAllowedException;
       }
@@ -362,8 +362,8 @@ class PaymentTypeCrud extends CrudService
         throw new NotAllowedException(__('Unable to delete a read-only payments type.'));
       }
 
-      Cache::forget('jgrem.pos.payments');
-      Cache::forget('jgrem.pos.payments-key');
+      Cache::forget('subul.pos.payments');
+      Cache::forget('subul.pos.payments-key');
     }
   }
 
@@ -424,14 +424,14 @@ class PaymentTypeCrud extends CrudService
       identifier: 'edit',
       label: __('Edit'),
       type: 'GOTO',
-      url: ns()->url('/dashboard/' . $this->slug . '/edit/' . $entry->id),
+      url: sb()->url('/dashboard/' . $this->slug . '/edit/' . $entry->id),
     );
 
     $entry->action(
       identifier: 'delete',
       label: __('Delete'),
       type: 'DELETE',
-      url: ns()->url('/api/crud/ns.payments-types/' . $entry->id),
+      url: sb()->url('/api/crud/sb.payments-types/' . $entry->id),
       confirm: [
         'message' => __('Would you like to delete this ?'),
       ]
@@ -457,7 +457,7 @@ class PaymentTypeCrud extends CrudService
        * Will control if the user has the permissoin to do that.
        */
       if ($this->permissions['delete'] !== false) {
-        ns()->restrict($this->permissions['delete']);
+        sb()->restrict($this->permissions['delete']);
       } else {
         throw new NotAllowedException;
       }
@@ -476,8 +476,8 @@ class PaymentTypeCrud extends CrudService
         }
 
         if ($entity instanceof PaymentType) {
-          Cache::forget('jgrem.pos.payments');
-          Cache::forget('jgrem.pos.payments-key');
+          Cache::forget('subul.pos.payments');
+          Cache::forget('subul.pos.payments-key');
 
           $entity->delete();
           $status['success']++;
@@ -500,11 +500,11 @@ class PaymentTypeCrud extends CrudService
   public function getLinks(): array
   {
     return [
-      'list' => ns()->url('dashboard/' . 'orders/payments-types'),
-      'create' => ns()->url('dashboard/' . 'orders/payments-types/create'),
-      'edit' => ns()->url('dashboard/' . 'orders/payments-types/edit/'),
-      'post' => ns()->url('api/crud/' . 'ns.payments-types'),
-      'put' => ns()->url('api/crud/' . 'ns.payments-types/{id}' . ''),
+      'list' => sb()->url('dashboard/' . 'orders/payments-types'),
+      'create' => sb()->url('dashboard/' . 'orders/payments-types/create'),
+      'edit' => sb()->url('dashboard/' . 'orders/payments-types/edit/'),
+      'post' => sb()->url('api/crud/' . 'sb.payments-types'),
+      'put' => sb()->url('api/crud/' . 'sb.payments-types/{id}' . ''),
     ];
   }
 
@@ -519,7 +519,7 @@ class PaymentTypeCrud extends CrudService
       [
         'label' => __('Delete Selected Groups'),
         'identifier' => 'delete_selected',
-        'url' => ns()->route('ns.api.crud-bulk-actions', [
+        'url' => sb()->route('sb.api.crud-bulk-actions', [
           'namespace' => $this->namespace,
         ]),
       ],

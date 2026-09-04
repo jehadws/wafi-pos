@@ -45,7 +45,7 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Hook::addFilter( 'ns-dashboard-menus', [ MenusFilter::class, 'injectRegisterMenus' ] );
-        Hook::addFilter( 'ns-common-routes', [ app()->make( OrdersService::class ), 'handlePOSRoute' ], 10, 3 );
+        Hook::addFilter( 'sb-dashboard-menus', [ MenusFilter::class, 'injectRegisterMenus' ] );
+        Hook::addFilter( 'sb-common-routes', [ app()->make( OrdersService::class ), 'handlePOSRoute' ], 10, 3 );
     }
 }

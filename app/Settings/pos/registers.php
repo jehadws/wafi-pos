@@ -7,8 +7,8 @@ use App\Services\Helper;
 
 $cashRegisters = [
     [
-        'name' => 'ns_jgrem_registers_enabled',
-        'value' => ns()->option->get( 'ns_jgrem_registers_enabled' ),
+        'name' => 'sb_subul_registers_enabled',
+        'value' => sb()->option->get( 'sb_subul_registers_enabled' ),
         'options' => Helper::kvToJsOptions( [
             'yes' => __( 'Yes' ),
             'no' => __( 'No' ),
@@ -19,12 +19,12 @@ $cashRegisters = [
     ],
 ];
 
-if ( ns()->option->get( 'ns_jgrem_registers_enabled' ) === 'yes' ) {
+if ( sb()->option->get( 'sb_subul_registers_enabled' ) === 'yes' ) {
     $cashRegisters[] = [
         'label' => __( 'Cashier Idle Counter' ),
-        'name' => 'ns_jgrem_idle_counter',
+        'name' => 'sb_subul_idle_counter',
         'type' => 'select',
-        'value' => ns()->option->get( 'ns_jgrem_idle_counter' ),
+        'value' => sb()->option->get( 'sb_subul_idle_counter' ),
         'options' => Helper::kvToJsOptions( [
             'disabled' => __( 'Disabled' ),
             '5min' => __( '5 Minutes' ),
@@ -38,9 +38,9 @@ if ( ns()->option->get( 'ns_jgrem_registers_enabled' ) === 'yes' ) {
 
     $cashRegisters[] = [
         'label' => __( 'Cash Disbursement' ),
-        'name' => 'ns_jgrem_disbursement',
+        'name' => 'sb_subul_disbursement',
         'type' => 'select',
-        'value' => ns()->option->get( 'ns_jgrem_disbursement' ),
+        'value' => sb()->option->get( 'sb_subul_disbursement' ),
         'description' => __( 'Allow cash disbursement by the cashier.' ),
         'options' => Helper::kvToJsOptions( [
             'yes' => __( 'Yes' ),
@@ -50,12 +50,12 @@ if ( ns()->option->get( 'ns_jgrem_registers_enabled' ) === 'yes' ) {
 
     $cashRegisters[] = FormInput::searchSelect(
         label: __( 'Default Change Payment Type' ),
-        name: 'ns_jgrem_registers_default_change_payment_type',
+        name: 'sb_subul_registers_default_change_payment_type',
         description: __( 'Define the payment type that will be used for all change from the registers.' ),
         props: PaymentTypeCrud::getFormConfig(),
-        component: 'nsCrudForm',
+        component: 'sbCrudForm',
         validation: 'required',
-        value: ns()->option->get( 'ns_jgrem_registers_default_change_payment_type' ),
+        value: sb()->option->get( 'sb_subul_registers_default_change_payment_type' ),
         options: Helper::toJsOptions( PaymentType::get( [ 'id', 'label' ] ), [ 'id', 'label' ] )
     );
 }

@@ -34,15 +34,15 @@ class SettingsListener
     {
         $options = app()->make( Options::class );
 
-        if ( $options->get( 'ns_workers_enabled' ) === 'await_confirm' ) {
-            $notification_id = NotificationsEnum::NSWORKERDISABLED;
+        if ( $options->get( 'sb_workers_enabled' ) === 'await_confirm' ) {
+            $notification_id = NotificationsEnum::SBWORKERDISABLED;
 
             TestWorkerJob::dispatch( $notification_id )
                 ->delay( now() );
 
             $this->notificationService->create( [
                 'title' => __( 'Workers Aren\'t Running' ),
-                'description' => __( 'The workers has been enabled, but it looks like JgremPOS can\'t run workers. This usually happen if supervisor is not configured correctly.' ),
+                'description' => __( 'The workers has been enabled, but it looks like Subul can\'t run workers. This usually happen if supervisor is not configured correctly.' ),
                 'url' => 'https://laravel.com/docs/8.x/queues#supervisor-configuration',
                 'identifier' => $notification_id,
             ] )->dispatchForGroup( Role::namespace( 'admin' ) );

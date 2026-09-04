@@ -8,7 +8,7 @@ use App\Services\FieldsService;
 
 class UnitsFields extends FieldsService
 {
-    protected static $identifier = 'ns.units-fields';
+    protected static $identifier = 'sb.units-fields';
 
     public function get( ?Unit $model = null )
     {

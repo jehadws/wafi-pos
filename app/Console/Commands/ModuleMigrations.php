@@ -247,14 +247,14 @@ class ModuleMigrations extends Command
         /**
          * Make sure the migration don't exist yet
          */
-        if ( Storage::disk( 'ns-modules' )->exists( $fileName ) ) {
+        if ( Storage::disk( 'sb-modules' )->exists( $fileName ) ) {
             return $this->info( 'A migration with the same name has been found !' );
         }
 
         /**
          * Create Migration file
          */
-        Storage::disk( 'ns-modules' )->put(
+        Storage::disk( 'sb-modules' )->put(
             $fileName,
             $this->streamContent( 'migration' )
         );

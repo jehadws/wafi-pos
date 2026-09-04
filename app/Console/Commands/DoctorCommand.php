@@ -33,7 +33,7 @@ class DoctorCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Will perform various tasks to fix issues on JgremPOS.';
+    protected $description = 'Will perform various tasks to fix issues on Subul.';
 
     /**
      * Create a new command instance.

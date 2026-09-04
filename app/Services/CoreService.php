@@ -30,7 +30,7 @@ class CoreService
   public $storeID;
 
   /**
-   * @var \Modules\NsMultiStore\Services\StoresService
+   * @var \Modules\SbMultiStore\Services\StoresService
    */
   public $store;
 
@@ -51,38 +51,38 @@ class CoreService
 
   /**
    * Returns a route to which apply
-   * the filter "ns-route".
+   * the filter "sb-route".
    */
   public function route(string $route, array $params = []): string
   {
-    return Hook::filter('ns-route', false, $route, $params) ?: route($route, $params);
+    return Hook::filter('sb-route', false, $route, $params) ?: route($route, $params);
   }
 
   /**
    * Returns a route name to which apply
-   * the filter "ns-route-name".
+   * the filter "sb-route-name".
    */
   public function routeName(string $name): string
   {
-    return Hook::filter('ns-route-name', $name);
+    return Hook::filter('sb-route-name', $name);
   }
 
   /**
    * Returns a filtred URL to which
-   * apply the filter "ns-url" hook.
+   * apply the filter "sb-url" hook.
    */
   public function url(?string $url = null): string
   {
-    return url(Hook::filter('ns-url', $url));
+    return url(Hook::filter('sb-url', $url));
   }
 
   /**
    * Returns a filtred URL to which
-   * apply the filter "ns-url" hook.
+   * apply the filter "sb-url" hook.
    */
   public function asset(string $url): string
   {
-    return url(Hook::filter('ns-asset', $url));
+    return url(Hook::filter('sb-asset', $url));
   }
 
   /**
@@ -212,9 +212,9 @@ class CoreService
    */
   public function canPerformAsynchronousOperations(): bool
   {
-    $lastUpdate = Carbon::parse(ns()->option->get('ns_jobs_last_activity', false));
+    $lastUpdate = Carbon::parse(sb()->option->get('sb_jobs_last_activity', false));
 
-    if ($lastUpdate->diffInMinutes(ns()->date->now()) > 60 || ! ns()->option->get('ns_jobs_last_activity', false)) {
+    if ($lastUpdate->diffInMinutes(sb()->date->now()) > 60 || ! sb()->option->get('sb_jobs_last_activity', false)) {
       return false;
     }
 
@@ -227,7 +227,7 @@ class CoreService
    */
   public function checkTaskSchedulingConfiguration(): void
   {
-    if (ns()->option->get('ns_jobs_last_activity', false) === false) {
+    if (sb()->option->get('sb_jobs_last_activity', false) === false) {
       /**
        * @var NotificationsEnum;
        */
@@ -243,7 +243,7 @@ class CoreService
        * @var DateService
        */
       $date = app()->make(DateService::class);
-      $lastUpdate = Carbon::parse(ns()->option->get('ns_jobs_last_activity'));
+      $lastUpdate = Carbon::parse(sb()->option->get('sb_jobs_last_activity'));
 
       if ($lastUpdate->diffInMinutes($date->now()) > 60) {
         $this->emitNotificationForTaskSchedulingMisconfigured();
@@ -272,7 +272,7 @@ class CoreService
       Permission::get()->each(function ($permission) {
         if (! Gate::has($permission->namespace)) {
           Gate::define($permission->namespace, function (User $user) use ($permission) {
-            $permissions = Cache::remember('ns-all-permissions-' . $user->id, 3600, function () use ($user) {
+            $permissions = Cache::remember('sb-all-permissions-' . $user->id, 3600, function () use ($user) {
               return $user->roles()
                 ->with('permissions')
                 ->get()
@@ -297,9 +297,9 @@ class CoreService
      * @var NotificationService
      */
     $notification = app()->make(NotificationService::class);
-    $notification->deleteHavingIdentifier(NotificationsEnum::NSCRONDISABLED);
+    $notification->deleteHavingIdentifier(NotificationsEnum::SBCRONDISABLED);
 
-    ns()->option->set('ns_cron_last_activity', ns()->date->toDateTimeString());
+    sb()->option->set('sb_cron_last_activity', sb()->date->toDateTimeString());
   }
 
   /**
@@ -308,14 +308,14 @@ class CoreService
    */
   public function checkCronConfiguration(): void
   {
-    if (ns()->option->get('ns_cron_last_activity', false) === false) {
+    if (sb()->option->get('sb_cron_last_activity', false) === false) {
       $this->emitCronMisconfigurationNotification();
     } else {
       /**
        * @var DateService
        */
       $date = app()->make(DateService::class);
-      $lastUpdate = Carbon::parse(ns()->option->get('ns_cron_last_activity'));
+      $lastUpdate = Carbon::parse(sb()->option->get('sb_cron_last_activity'));
 
       if ($lastUpdate->diffInMinutes($date->now()) > 60) {
         $this->emitCronMisconfigurationNotification();
@@ -326,18 +326,18 @@ class CoreService
   public function checkSymbolicLinks(): void
   {
     if (! file_exists(public_path('storage'))) {
-      $notification = Notification::where('identifier', NotificationsEnum::NSSYMBOLICLINKSMISSING)
+      $notification = Notification::where('identifier', NotificationsEnum::SBSYMBOLICLINKSMISSING)
         ->first();
 
       if (! $notification instanceof Notification) {
-        ns()->option->set('ns_has_symbolic_links_missing_notifications', true);
+        sb()->option->set('sb_has_symbolic_links_missing_notifications', true);
 
         $notification = app()->make(NotificationService::class);
         $notification->create([
           'title' => __('Symbolic Links Missing'),
-          'identifier' => NotificationsEnum::NSSYMBOLICLINKSMISSING,
+          'identifier' => NotificationsEnum::SBSYMBOLICLINKSMISSING,
           'source' => 'system',
-          'url' => 'https://my.jgrem.com/en/documentation/troubleshooting/broken-media-images?utm_source=jgrem&utm_campaign=warning&utm_medium=app',
+          'url' => 'https://my.subul.com/en/documentation/troubleshooting/broken-media-images?utm_source=subul&utm_campaign=warning&utm_medium=app',
           'description' => __('The Symbolic Links to the public directory is missing. Your medias might be broken and not display.'),
         ])->dispatchForGroup(Role::namespace(Role::ADMIN));
       }
@@ -346,8 +346,8 @@ class CoreService
        * We should only perform this if we have reason to believe
        * there is some records, to avoid the request triggered for no reason.
        */
-      if (ns()->option->get('ns_has_symbolic_links_missing_notifications')) {
-        Notification::where('identifier', NotificationsEnum::NSSYMBOLICLINKSMISSING)->delete();
+      if (sb()->option->get('sb_has_symbolic_links_missing_notifications')) {
+        Notification::where('identifier', NotificationsEnum::SBSYMBOLICLINKSMISSING)->delete();
       }
     }
   }
@@ -361,10 +361,10 @@ class CoreService
     $notification = app()->make(NotificationService::class);
     $notification->create([
       'title' => __('Cron Disabled'),
-      'identifier' => NotificationsEnum::NSCRONDISABLED,
+      'identifier' => NotificationsEnum::SBCRONDISABLED,
       'source' => 'system',
-      'url' => 'https://my.jgrem.com/en/documentation/troubleshooting/workers-or-async-requests-disabled?utm_source=jgrem&utm_campaign=warning&utm_medium=app',
-      'description' => __("Cron jobs aren't configured correctly on JgremPOS. This might restrict necessary features. Click here to learn how to fix it."),
+      'url' => 'https://my.subul.com/en/documentation/troubleshooting/workers-or-async-requests-disabled?utm_source=subul&utm_campaign=warning&utm_medium=app',
+      'description' => __("Cron jobs aren't configured correctly on Subul. This might restrict necessary features. Click here to learn how to fix it."),
     ])->dispatchForGroup(Role::namespace(Role::ADMIN));
   }
 
@@ -377,10 +377,10 @@ class CoreService
     $notification = app()->make(NotificationService::class);
     $notification->create([
       'title' => __('Task Scheduling Disabled'),
-      'identifier' => NotificationsEnum::NSWORKERDISABLED,
+      'identifier' => NotificationsEnum::SBWORKERDISABLED,
       'source' => 'system',
-      'url' => 'https://my.jgrem.com/en/documentation/troubleshooting/workers-or-async-requests-disabled?utm_source=jgrem&utm_campaign=warning&utm_medium=app',
-      'description' => __('JgremPOS is unable to schedule background tasks. This might restrict necessary features. Click here to learn how to fix it.'),
+      'url' => 'https://my.subul.com/en/documentation/troubleshooting/workers-or-async-requests-disabled?utm_source=subul&utm_campaign=warning&utm_medium=app',
+      'description' => __('Subul is unable to schedule background tasks. This might restrict necessary features. Click here to learn how to fix it.'),
     ])->dispatchForGroup(Role::namespace(Role::ADMIN));
   }
 

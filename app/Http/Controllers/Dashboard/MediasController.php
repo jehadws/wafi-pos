@@ -64,7 +64,7 @@ class MediasController extends DashboardController
 
   public function bulkDeleteMedias(Request $request)
   {
-    ns()->restrict('jgrem.delete.medias');
+    sb()->restrict('subul.delete.medias');
 
     $result = [];
 

@@ -7,11 +7,11 @@ namespace App\Enums;
  */
 class NotificationsEnum
 {
-    const NSCRONDISABLED = 'ns.notifications.cron-disabled';
+    const SBCRONDISABLED = 'sb.notifications.cron-disabled';
 
-    const NSWORKERDISABLED = 'ns.notifications.workers-disabled';
+    const SBWORKERDISABLED = 'sb.notifications.workers-disabled';
 
-    const NSCHEDULEDTRANSACTIONS = 'ns.notifications.scheduled-transactions';
+    const SBCHEDULEDTRANSACTIONS = 'sb.notifications.scheduled-transactions';
 
-    const NSSYMBOLICLINKSMISSING = 'ns.notifications.symbolic-links-missing';
+    const SBSYMBOLICLINKSMISSING = 'sb.notifications.symbolic-links-missing';
 }

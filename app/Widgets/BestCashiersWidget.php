@@ -6,12 +6,12 @@ use App\Services\WidgetService;
 
 class BestCashiersWidget extends WidgetService
 {
-    protected $vueComponent = 'nsBestCashiers';
+    protected $vueComponent = 'sbBestCashiers';
 
     public function __construct()
     {
         $this->name = __( 'Best Cashiers' );
         $this->description = __( 'Will display all cashiers who performs well.' );
-        $this->permission = 'jgrem.see.best-cashier-widget';
+        $this->permission = 'subul.see.best-cashier-widget';
     }
 }

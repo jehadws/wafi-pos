@@ -12,13 +12,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int            $month_of_year
  * @property \Carbon\Carbon $updated_at
  */
-class DashboardMonth extends NsModel
+class DashboardMonth extends SbModel
 {
     use HasFactory;
 
     public $timestamps = false;
 
-    protected $table = 'jgrem_' . 'dashboard_months';
+    protected $table = 'subul_' . 'dashboard_months';
 
     protected $dispatchEvents = [
         'created' => DashboardMonthAfterCreatedEvent::class,

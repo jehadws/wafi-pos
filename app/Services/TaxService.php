@@ -266,8 +266,8 @@ class TaxService
         $response = [];
         $response[ 'value' ] = $value;
         $response[ 'rate' ] = collect( $rates )->sum();
-        $response[ 'percentages' ] = collect( $rates )->map( fn( $rate ) => ns()->currency->define(
-            ns()->currency->define( $rate )->dividedBy( $response[ 'rate' ] )->toFloat()
+        $response[ 'percentages' ] = collect( $rates )->map( fn( $rate ) => sb()->currency->define(
+            sb()->currency->define( $rate )->dividedBy( $response[ 'rate' ] )->toFloat()
         )->multipliedBy( 100 )->toFloat() );
 
         if ( $tax_type === 'inclusive' ) {
@@ -295,12 +295,12 @@ class TaxService
          * let's now compute the individual values
          */
         $response[ 'percentages' ] = collect( $response[ 'percentages' ] )->map( function ( $percentage ) use ( $value, $response ) {
-            $computed = ns()->currency->define(
-                ns()->currency->define( $value )->multipliedBy( $percentage )->toFloat()
+            $computed = sb()->currency->define(
+                sb()->currency->define( $value )->multipliedBy( $percentage )->toFloat()
             )->divideBy( 100 )->toFloat();
 
-            $tax = ns()->currency->define(
-                ns()->currency->define( $response[ 'tax' ] )->multipliedBy( $percentage )->toFloat()
+            $tax = sb()->currency->define(
+                sb()->currency->define( $response[ 'tax' ] )->multipliedBy( $percentage )->toFloat()
             )->dividedBy( 100 )->toFloat();
 
             return compact( 'computed', 'percentage', 'tax' );
@@ -445,7 +445,7 @@ class TaxService
          */
         $taxGroup = TaxGroup::find( $orderProduct->tax_group_id );
 
-        $type = $orderProduct->tax_type ?: ns()->option->get( 'ns_jgrem_tax_type' );
+        $type = $orderProduct->tax_type ?: sb()->option->get( 'sb_subul_tax_type' );
 
         /**
          * if the tax group is not defined,
@@ -477,18 +477,18 @@ class TaxService
 
         $orderProduct->discount = $discount;
 
-        $orderProduct->total_price_without_tax = $orderProduct->total_price_without_tax ?: ns()->currency
+        $orderProduct->total_price_without_tax = $orderProduct->total_price_without_tax ?: sb()->currency
             ->fresh( $orderProduct->price_without_tax )
             ->multiplyBy( $orderProduct->quantity )
             ->get();
 
-        $orderProduct->total_price = $orderProduct->total_price ?: ns()->currency
+        $orderProduct->total_price = $orderProduct->total_price ?: sb()->currency
             ->fresh( $orderProduct->filterAttribute( 'unit_price', $productArray ) )
             ->subtractBy( $discount )
             ->multiplyBy( $orderProduct->quantity )
             ->toFloat();
 
-        $orderProduct->total_price_with_tax = $orderProduct->total_price_with_tax ?: ns()->currency
+        $orderProduct->total_price_with_tax = $orderProduct->total_price_with_tax ?: sb()->currency
             ->fresh( $orderProduct->price_with_tax )
             ->multiplyBy( $orderProduct->quantity )
             ->get();

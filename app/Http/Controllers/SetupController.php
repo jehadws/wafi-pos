@@ -1,7 +1,7 @@
 <?php
 
 /**
- * JgremPOS Controller
+ * Subul Controller
  *
  * @since  1.0
  **/
@@ -26,7 +26,7 @@ class SetupController extends Controller
     {
         // If the app is already fully installed, redirect away from setup.
         if ( Helper::installed() ) {
-            return redirect()->route( 'ns.dashboard.home' );
+            return redirect()->route( 'sb.dashboard.home' );
         }
 
         // Determine the furthest step the user has already completed so we can
@@ -49,7 +49,7 @@ class SetupController extends Controller
 
         return inertia( 'setup/wizard', [
             'store_name'   => config( 'app.name' ),
-            'languages'    => config( 'jgrem.languages', [] ),
+            'languages'    => config( 'subul.languages', [] ),
             'default_lang' => $request->query( 'lang' ) ?: 'en',
             'initial_step' => $initialStep,
         ] );

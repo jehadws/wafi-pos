@@ -11,11 +11,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int            $author
  * @property \Carbon\Carbon $updated_at
  */
-class TransactionAccount extends NsModel
+class TransactionAccount extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'transactions_accounts';
+    protected $table = 'subul_' . 'transactions_accounts';
 
     public function transactions()
     {

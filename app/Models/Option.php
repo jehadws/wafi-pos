@@ -11,11 +11,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property \Carbon\Carbon $updated_at
  * @property bool           $array
  */
-class Option extends NsModel
+class Option extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_options';
+    protected $table = 'subul_options';
 
     public $parsed = false;
 

@@ -70,22 +70,22 @@ return [
             'root' => base_path(),
         ],
 
-        'ns-public' => [
+        'sb-public' => [
             'driver' => 'local',
             'root' => base_path( 'public' ),
         ],
 
-        'ns-modules' => [
+        'sb-modules' => [
             'driver' => 'local',
             'root' => base_path( 'modules' ),
         ],
 
-        'ns-modules-temp' => [
+        'sb-modules-temp' => [
             'driver' => 'local',
             'root' => storage_path( 'temporary-files/modules' ),
         ],
 
-        'ns-temp' => [
+        'sb-temp' => [
             'driver' => 'local',
             'root' => storage_path( 'temporary-files' ),
         ],

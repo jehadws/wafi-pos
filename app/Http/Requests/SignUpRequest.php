@@ -19,7 +19,7 @@ class SignUpRequest extends FormRequest
     {
         $options = app()->make(Options::class);
 
-        if ($options->get('ns_registration_enabled') !== 'yes') {
+        if ($options->get('sb_registration_enabled') !== 'yes') {
             throw new NotAllowedException(__('Unable to register. The registration is closed.'));
         }
 

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-abstract class UserScope extends NsModel
+abstract class UserScope extends SbModel
 {
     /**
      * Get customer using email

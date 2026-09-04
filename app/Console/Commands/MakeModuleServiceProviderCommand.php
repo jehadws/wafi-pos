@@ -63,10 +63,10 @@ class MakeModuleServiceProviderCommand extends Command
                     }
 
                     $filePath = $module[ 'namespace' ] . DIRECTORY_SEPARATOR . 'Providers' . DIRECTORY_SEPARATOR . $fileName . '.php';
-                    $fileExists = Storage::disk( 'ns-modules' )->exists( $filePath );
+                    $fileExists = Storage::disk( 'sb-modules' )->exists( $filePath );
 
                     if ( ! $fileExists || ( $fileExists && $this->option( 'force' ) ) ) {
-                        Storage::disk( 'ns-modules' )->put(
+                        Storage::disk( 'sb-modules' )->put(
                             $filePath,
                             view( 'generate.modules.providers', [
                                 'module' => $module,
@@ -83,7 +83,7 @@ class MakeModuleServiceProviderCommand extends Command
                 }
             }
         } else {
-            $this->error( 'JgremPOS is not yet installed.' );
+            $this->error( 'Subul is not yet installed.' );
         }
     }
 }

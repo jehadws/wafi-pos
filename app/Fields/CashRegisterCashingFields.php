@@ -10,13 +10,13 @@ use App\Services\Helper;
 
 class CashRegisterCashingFields extends FieldsService
 {
-    protected static $identifier = 'ns.cash-registers-cashing';
+    protected static $identifier = 'sb.cash-registers-cashing';
 
     public function get()
     {
-        $accounts = TransactionAccount::whereIn( 'id', ns()->option->get( 'ns_accounting_cashing_accounts', [] ) )->get();
+        $accounts = TransactionAccount::whereIn( 'id', sb()->option->get( 'sb_accounting_cashing_accounts', [] ) )->get();
 
-        $fields = Hook::filter( 'ns-cash-register-cashing-fields', [
+        $fields = Hook::filter( 'sb-cash-register-cashing-fields', [
             FormInput::hidden(
                 label: __( 'Amount' ),
                 description: __( 'define the amount of the transaction.' ),
@@ -27,7 +27,7 @@ class CashRegisterCashingFields extends FieldsService
                 name: 'transaction_account_id',
                 description: __( 'Select the account to proceed.' ),
                 validation: 'required',
-                value: ns()->option->get( 'ns_accounting_default_cashing_account' ),
+                value: sb()->option->get( 'sb_accounting_default_cashing_account' ),
                 options: Helper::toJsOptions( $accounts, [ 'id', 'name' ] )
             ),
             FormInput::textarea(

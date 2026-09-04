@@ -1,7 +1,7 @@
 <?php
 
 /**
- * JgremPOS Controller
+ * Subul Controller
  *
  * @since  1.0
  **/
@@ -105,7 +105,7 @@ class OrdersController extends DashboardController
   public function listOrders()
   {
     Hook::addAction(
-      'ns-crud-footer',
+      'sb-crud-footer',
       fn(Output $output) => $output
         ->addView('pages.dashboard.orders.footer')
     );
@@ -171,7 +171,7 @@ class OrdersController extends DashboardController
     }
 
     return Order::with(['customer'])->AddSelect([
-      'author_name' => User::select('username')->whereColumn('jgrem_users.id', 'author')->limit(1),
+      'author_name' => User::select('username')->whereColumn('subul_users.id', 'author')->limit(1),
     ])->get();
   }
 
@@ -182,7 +182,7 @@ class OrdersController extends DashboardController
      * for being able to manage orders.
      */
     // Hook::addAction(
-    //   'ns-dashboard-footer',
+    //   'sb-dashboard-footer',
     //   fn(Output $output) => $output
     //     ->addView('pages.dashboard.orders.footer')
     // );
@@ -191,74 +191,74 @@ class OrdersController extends DashboardController
     return Inertia::render('dashboard/pos', [
       'title' => sprintf(
         __('POS'),
-        ns()->option->get('ns_store_name', 'JgremPOS')
+        sb()->option->get('sb_store_name', 'Subul')
       ),
       'orderTypes' => collect($this->ordersService->getTypeOptions())
         ->filter(function ($type, $label) {
-          return in_array($label, ns()->option->get('ns_jgrem_order_types') ?: []);
+          return in_array($label, sb()->option->get('sb_subul_order_types') ?: []);
         }),
-      'options' => Hook::filter('ns-pos-options', [
-        'ns_jgrem_printing_document' => ns()->option->get('ns_jgrem_printing_document', 'receipt'),
-        'ns_orders_allow_partial' => ns()->option->get('ns_orders_allow_partial', 'no'),
-        'ns_orders_allow_unpaid' => ns()->option->get('ns_orders_allow_unpaid', 'no'),
-        'ns_jgrem_order_types' => ns()->option->get('ns_jgrem_order_types', []),
-        'ns_jgrem_quick_product' => ns()->option->get('ns_jgrem_quick_product', 'no'),
-        'ns_jgrem_quick_product_default_unit' => ns()->option->get('ns_jgrem_quick_product_default_unit', 0),
-        'ns_jgrem_price_with_tax' => ns()->option->get('ns_jgrem_price_with_tax', 'no'),
-        'ns_jgrem_unit_price_ediable' => ns()->option->get('ns_jgrem_unit_price_ediable', 'no'),
-        'ns_jgrem_printing_enabled_for' => ns()->option->get('ns_jgrem_printing_enabled_for', 'only_paid_orders'),
-        'ns_jgrem_printing_auto' => ns()->option->get('ns_jgrem_printing_auto', 'yes'),
-        'ns_jgrem_registers_enabled' => ns()->option->get('ns_jgrem_registers_enabled', 'no'),
-        'ns_jgrem_idle_counter' => ns()->option->get('ns_jgrem_idle_counter', 0),
-        'ns_jgrem_disbursement' => ns()->option->get('ns_jgrem_disbursement', 'no'),
-        'ns_customers_default' => ns()->option->get('ns_customers_default', false),
-        'ns_jgrem_vat' => ns()->option->get('ns_jgrem_vat', 'disabled'),
-        'ns_jgrem_tax_group' => ns()->option->get('ns_jgrem_tax_group', null),
-        'ns_jgrem_tax_type' => ns()->option->get('ns_jgrem_tax_type', false),
-        'ns_jgrem_printing_gateway' => ns()->option->get('ns_jgrem_printing_gateway', 'default'),
-        'ns_jgrem_show_quantity' => ns()->option->get('ns_jgrem_show_quantity', 'no') === 'no' ? false : true,
-        'ns_jgrem_new_item_audio' => ns()->option->get('ns_jgrem_new_item_audio', ''),
-        'ns_jgrem_complete_sale_audio' => ns()->option->get('ns_jgrem_complete_sale_audio', ''),
-        'ns_jgrem_numpad' => ns()->option->get('ns_jgrem_numpad', 'default'),
-        'ns_jgrem_allow_wholesale_price' => ns()->option->get('ns_jgrem_allow_wholesale_price', 'no') === 'yes' ? true : false,
-        'ns_jgrem_allow_decimal_quantities' => ns()->option->get('ns_jgrem_allow_decimal_quantities', 'no') === 'yes' ? true : false,
-        'ns_jgrem_force_autofocus' => ns()->option->get('ns_jgrem_force_autofocus', 'no') === 'yes' ? true : false,
-        'ns_jgrem_items_merge' => ns()->option->get('ns_jgrem_items_merge', 'yes') === 'yes' ? true : false,
-        'ns_jgrem_registers_default_change_payment_type' => ns()->option->get('ns_jgrem_registers_default_change_payment_type', 'cash'),
-        'ns_orders_strict_instalments' => ns()->option->get('ns_orders_strict_instalments', 'no') === 'yes' ? true : false,
-        'ns_customers_credit_enabled' => ns()->option->get('ns_customers_credit_enabled', 'no') === 'yes' ? true : false,
+      'options' => Hook::filter('sb-pos-options', [
+        'sb_subul_printing_document' => sb()->option->get('sb_subul_printing_document', 'receipt'),
+        'sb_orders_allow_partial' => sb()->option->get('sb_orders_allow_partial', 'no'),
+        'sb_orders_allow_unpaid' => sb()->option->get('sb_orders_allow_unpaid', 'no'),
+        'sb_subul_order_types' => sb()->option->get('sb_subul_order_types', []),
+        'sb_subul_quick_product' => sb()->option->get('sb_subul_quick_product', 'no'),
+        'sb_subul_quick_product_default_unit' => sb()->option->get('sb_subul_quick_product_default_unit', 0),
+        'sb_subul_price_with_tax' => sb()->option->get('sb_subul_price_with_tax', 'no'),
+        'sb_subul_unit_price_ediable' => sb()->option->get('sb_subul_unit_price_ediable', 'no'),
+        'sb_subul_printing_enabled_for' => sb()->option->get('sb_subul_printing_enabled_for', 'only_paid_orders'),
+        'sb_subul_printing_auto' => sb()->option->get('sb_subul_printing_auto', 'yes'),
+        'sb_subul_registers_enabled' => sb()->option->get('sb_subul_registers_enabled', 'no'),
+        'sb_subul_idle_counter' => sb()->option->get('sb_subul_idle_counter', 0),
+        'sb_subul_disbursement' => sb()->option->get('sb_subul_disbursement', 'no'),
+        'sb_customers_default' => sb()->option->get('sb_customers_default', false),
+        'sb_subul_vat' => sb()->option->get('sb_subul_vat', 'disabled'),
+        'sb_subul_tax_group' => sb()->option->get('sb_subul_tax_group', null),
+        'sb_subul_tax_type' => sb()->option->get('sb_subul_tax_type', false),
+        'sb_subul_printing_gateway' => sb()->option->get('sb_subul_printing_gateway', 'default'),
+        'sb_subul_show_quantity' => sb()->option->get('sb_subul_show_quantity', 'no') === 'no' ? false : true,
+        'sb_subul_new_item_audio' => sb()->option->get('sb_subul_new_item_audio', ''),
+        'sb_subul_complete_sale_audio' => sb()->option->get('sb_subul_complete_sale_audio', ''),
+        'sb_subul_numpad' => sb()->option->get('sb_subul_numpad', 'default'),
+        'sb_subul_allow_wholesale_price' => sb()->option->get('sb_subul_allow_wholesale_price', 'no') === 'yes' ? true : false,
+        'sb_subul_allow_decimal_quantities' => sb()->option->get('sb_subul_allow_decimal_quantities', 'no') === 'yes' ? true : false,
+        'sb_subul_force_autofocus' => sb()->option->get('sb_subul_force_autofocus', 'no') === 'yes' ? true : false,
+        'sb_subul_items_merge' => sb()->option->get('sb_subul_items_merge', 'yes') === 'yes' ? true : false,
+        'sb_subul_registers_default_change_payment_type' => sb()->option->get('sb_subul_registers_default_change_payment_type', 'cash'),
+        'sb_orders_strict_instalments' => sb()->option->get('sb_orders_strict_instalments', 'no') === 'yes' ? true : false,
+        'sb_customers_credit_enabled' => sb()->option->get('sb_customers_credit_enabled', 'no') === 'yes' ? true : false,
         // Customer constraints
-        'ns_customers_rewards_enabled' => ns()->option->get('ns_customers_rewards_enabled', 'no') === 'yes' ? true : false,
-        'ns_customers_force_valid_email' => ns()->option->get('ns_customers_force_valid_email', 'no'),
-        'ns_customers_force_unique_phone' => ns()->option->get('ns_customers_force_unique_phone', 'no'),
-        'ns_customers_default_group' => ns()->option->get('ns_customers_default_group', null),
+        'sb_customers_rewards_enabled' => sb()->option->get('sb_customers_rewards_enabled', 'no') === 'yes' ? true : false,
+        'sb_customers_force_valid_email' => sb()->option->get('sb_customers_force_valid_email', 'no'),
+        'sb_customers_force_unique_phone' => sb()->option->get('sb_customers_force_unique_phone', 'no'),
+        'sb_customers_default_group' => sb()->option->get('sb_customers_default_group', null),
         // Invoice / receipt settings
-        'ns_invoice_receipt_template' => ns()->option->get('ns_invoice_receipt_template', 'default'),
-        'ns_invoice_receipt_logo' => ns()->option->get('ns_invoice_receipt_logo', ''),
-        'ns_invoice_receipt_footer' => ns()->option->get('ns_invoice_receipt_footer', ''),
-        'ns_invoice_merge_similar_products' => ns()->option->get('ns_invoice_merge_similar_products', 'no') === 'yes' ? true : false,
-        'ns_invoice_display_tax_breakdown' => ns()->option->get('ns_invoice_display_tax_breakdown', 'no') === 'yes' ? true : false,
+        'sb_invoice_receipt_template' => sb()->option->get('sb_invoice_receipt_template', 'default'),
+        'sb_invoice_receipt_logo' => sb()->option->get('sb_invoice_receipt_logo', ''),
+        'sb_invoice_receipt_footer' => sb()->option->get('sb_invoice_receipt_footer', ''),
+        'sb_invoice_merge_similar_products' => sb()->option->get('sb_invoice_merge_similar_products', 'no') === 'yes' ? true : false,
+        'sb_invoice_display_tax_breakdown' => sb()->option->get('sb_invoice_display_tax_breakdown', 'no') === 'yes' ? true : false,
         // Keyboard shortcuts
-        'ns_jgrem_keyboard_cancel_order' => ns()->option->get('ns_jgrem_keyboard_cancel_order', []),
-        'ns_jgrem_keyboard_hold_order' => ns()->option->get('ns_jgrem_keyboard_hold_order', []),
-        'ns_jgrem_keyboard_create_customer' => ns()->option->get('ns_jgrem_keyboard_create_customer', []),
-        'ns_jgrem_keyboard_payment' => ns()->option->get('ns_jgrem_keyboard_payment', []),
-        'ns_jgrem_keyboard_shipping' => ns()->option->get('ns_jgrem_keyboard_shipping', []),
-        'ns_jgrem_keyboard_note' => ns()->option->get('ns_jgrem_keyboard_note', []),
-        'ns_jgrem_keyboard_order_type' => ns()->option->get('ns_jgrem_keyboard_order_type', []),
-        'ns_jgrem_keyboard_fullscreen' => ns()->option->get('ns_jgrem_keyboard_fullscreen', []),
-        'ns_jgrem_keyboard_quick_search' => ns()->option->get('ns_jgrem_keyboard_quick_search', []),
-        'ns_jgrem_keyboard_toggle_merge' => ns()->option->get('ns_jgrem_keyboard_toggle_merge', []),
+        'sb_subul_keyboard_cancel_order' => sb()->option->get('sb_subul_keyboard_cancel_order', []),
+        'sb_subul_keyboard_hold_order' => sb()->option->get('sb_subul_keyboard_hold_order', []),
+        'sb_subul_keyboard_create_customer' => sb()->option->get('sb_subul_keyboard_create_customer', []),
+        'sb_subul_keyboard_payment' => sb()->option->get('sb_subul_keyboard_payment', []),
+        'sb_subul_keyboard_shipping' => sb()->option->get('sb_subul_keyboard_shipping', []),
+        'sb_subul_keyboard_note' => sb()->option->get('sb_subul_keyboard_note', []),
+        'sb_subul_keyboard_order_type' => sb()->option->get('sb_subul_keyboard_order_type', []),
+        'sb_subul_keyboard_fullscreen' => sb()->option->get('sb_subul_keyboard_fullscreen', []),
+        'sb_subul_keyboard_quick_search' => sb()->option->get('sb_subul_keyboard_quick_search', []),
+        'sb_subul_keyboard_toggle_merge' => sb()->option->get('sb_subul_keyboard_toggle_merge', []),
         // Amount shortcuts (quick payment buttons)
-        'ns_jgrem_amount_shortcut' => ns()->option->get('ns_jgrem_amount_shortcut', null),
+        'sb_subul_amount_shortcut' => sb()->option->get('sb_subul_amount_shortcut', null),
       ]),
       'urls' => [
-        'sale_printing_url' => Hook::filter('ns-pos-printing-url', ns()->url('/dashboard/orders/receipt/{id}?dash-visibility=disabled&autoprint=true')),
-        // 'orders_url' => ns()->route('ns.dashboard.orders'),
-        // 'dashboard_url' => ns()->route('ns.dashboard.home'),
-        // 'categories_url' => ns()->route('ns.dashboard.products.categories.create'),
-        // 'registers_url' => ns()->route('ns.dashboard.registers-create'),
-        // 'order_type_url' => ns()->route('ns.dashboard.settings', ['settings' => 'pos?tab=features']),
+        'sale_printing_url' => Hook::filter('sb-pos-printing-url', sb()->url('/dashboard/orders/receipt/{id}?dash-visibility=disabled&autoprint=true')),
+        // 'orders_url' => sb()->route('sb.dashboard.orders'),
+        // 'dashboard_url' => sb()->route('sb.dashboard.home'),
+        // 'categories_url' => sb()->route('sb.dashboard.products.categories.create'),
+        // 'registers_url' => sb()->route('sb.dashboard.registers-create'),
+        // 'order_type_url' => sb()->route('sb.dashboard.settings', ['settings' => 'pos?tab=features']),
       ],
       'paymentTypes' => $this->paymentTypes,
       'categories' => $categories,
@@ -276,7 +276,7 @@ class OrdersController extends DashboardController
     $order->load('user');
     $order->load('taxes');
 
-    $order->products = Hook::filter('ns-receipt-products', $order->products);
+    $order->products = Hook::filter('sb-receipt-products', $order->products);
     $order->paymentStatus = $this->ordersService->getPaymentLabel($order->payment_status);
     $order->deliveryStatus = $this->ordersService->getPaymentLabel($order->delivery_status);
 
@@ -294,7 +294,7 @@ class OrdersController extends DashboardController
     $refund->load('order.customer', 'order.refundedProducts', 'order.refunds.author', 'order.shipping_address', 'order.billing_address', 'order.user');
     $refund->load('refunded_products.product', 'refunded_products.unit');
 
-    $refund->refunded_products = Hook::filter('ns-refund-receipt-products', $refund->refunded_products);
+    $refund->refunded_products = Hook::filter('sb-refund-receipt-products', $refund->refunded_products);
 
     return View::make('pages.dashboard.orders.templates.refund-receipt', [
       'refund' => $refund,

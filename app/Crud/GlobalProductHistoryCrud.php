@@ -21,14 +21,14 @@ class GlobalProductHistoryCrud extends CrudService
     /**
      * Define the identifier
      */
-    const IDENTIFIER = 'ns.global-products-history';
+    const IDENTIFIER = 'sb.global-products-history';
 
     /**
      * define the base table
      *
      * @param  string
      */
-    protected $table = 'jgrem_products_histories';
+    protected $table = 'subul_products_histories';
 
     /**
      * default slug
@@ -42,7 +42,7 @@ class GlobalProductHistoryCrud extends CrudService
      *
      * @param  string
      */
-    protected $namespace = 'ns.global-products-history';
+    protected $namespace = 'sb.global-products-history';
 
     /**
      * Model Used
@@ -73,17 +73,17 @@ class GlobalProductHistoryCrud extends CrudService
 
     /**
      * Adding relation
-     * Example : [ 'jgrem_users as user', 'user.id', '=', 'jgrem_orders.author' ]
+     * Example : [ 'subul_users as user', 'user.id', '=', 'subul_orders.author' ]
      *
      * @param  array
      */
     public $relations = [
-        [ 'jgrem_users as user', 'user.id', '=', 'jgrem_products_histories.author' ],
-        [ 'jgrem_products as product', 'product.id', '=', 'jgrem_products_histories.product_id' ],
-        [ 'jgrem_units as unit', 'unit.id', '=', 'jgrem_products_histories.unit_id' ],
+        [ 'subul_users as user', 'user.id', '=', 'subul_products_histories.author' ],
+        [ 'subul_products as product', 'product.id', '=', 'subul_products_histories.product_id' ],
+        [ 'subul_units as unit', 'unit.id', '=', 'subul_products_histories.unit_id' ],
         'leftJoin' => [
-            [ 'jgrem_procurements as procurement', 'procurement.id', '=', 'jgrem_products_histories.procurement_id' ],
-            [ 'jgrem_orders as order', 'order.id', '=', 'jgrem_products_histories.order_id' ],
+            [ 'subul_procurements as procurement', 'procurement.id', '=', 'subul_products_histories.procurement_id' ],
+            [ 'subul_orders as order', 'order.id', '=', 'subul_products_histories.order_id' ],
         ],
     ];
 
@@ -101,7 +101,7 @@ class GlobalProductHistoryCrud extends CrudService
      * Should be an array of associative keys, where
      * keys are either the related table or alias name.
      * Example : [
-     *      'user'  =>  [ 'username' ], // here the relation on the table jgrem_users is using "user" as an alias
+     *      'user'  =>  [ 'username' ], // here the relation on the table subul_users is using "user" as an alias
      * ]
      */
     public $pick = [];
@@ -224,7 +224,7 @@ class GlobalProductHistoryCrud extends CrudService
     public function beforePost( $request )
     {
         if ( $this->permissions[ 'create' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'create' ] );
+            sb()->restrict( $this->permissions[ 'create' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -267,7 +267,7 @@ class GlobalProductHistoryCrud extends CrudService
     public function beforePut( $request, $entry )
     {
         if ( $this->permissions[ 'update' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'update' ] );
+            sb()->restrict( $this->permissions[ 'update' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -294,7 +294,7 @@ class GlobalProductHistoryCrud extends CrudService
      */
     public function beforeDelete( $namespace, $id, $model )
     {
-        if ( $namespace == 'ns.global-products-history' ) {
+        if ( $namespace == 'sb.global-products-history' ) {
             /**
              *  Perform an action before deleting an entry
              *  In case something wrong, this response can be returned
@@ -305,7 +305,7 @@ class GlobalProductHistoryCrud extends CrudService
              *  ], 403 );
              **/
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -385,13 +385,13 @@ class GlobalProductHistoryCrud extends CrudService
     {
         $entry->procurement_name = $entry->procurement_name ?: __( 'N/A' );
         $entry->order_code = $entry->order_code ?: __( 'N/A' );
-        $entry->total_price = ns()->currency->fresh( $entry->total_price )->format();
+        $entry->total_price = sb()->currency->fresh( $entry->total_price )->format();
 
         // you can make changes here
         $entry->action(
             label: __( 'Delete' ),
             identifier: 'delete',
-            url: ns()->url( '/api/crud/ns.global-products-history/' . $entry->id ),
+            url: sb()->url( '/api/crud/sb.global-products-history/' . $entry->id ),
             confirm: [
                 'message' => __( 'Would you like to delete this ?' ),
             ]
@@ -422,7 +422,7 @@ class GlobalProductHistoryCrud extends CrudService
              * Will control if the user has the permissoin to do that.
              */
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -456,11 +456,11 @@ class GlobalProductHistoryCrud extends CrudService
     public function getLinks(): array
     {
         return [
-            'list' => ns()->url( 'dashboard/' . '/products/history' ),
-            'create' => ns()->url( 'dashboard/' . '/products/history/create' ),
-            'edit' => ns()->url( 'dashboard/' . '/products/history/edit/' ),
-            'post' => ns()->url( 'api/crud/' . 'ns.global-products-history' ),
-            'put' => ns()->url( 'api/crud/' . 'ns.global-products-history/{id}' . '' ),
+            'list' => sb()->url( 'dashboard/' . '/products/history' ),
+            'create' => sb()->url( 'dashboard/' . '/products/history/create' ),
+            'edit' => sb()->url( 'dashboard/' . '/products/history/edit/' ),
+            'post' => sb()->url( 'api/crud/' . 'sb.global-products-history' ),
+            'put' => sb()->url( 'api/crud/' . 'sb.global-products-history/{id}' . '' ),
         ];
     }
 
@@ -475,7 +475,7 @@ class GlobalProductHistoryCrud extends CrudService
             [
                 'label' => __( 'Delete Selected Groups' ),
                 'identifier' => 'delete_selected',
-                'url' => ns()->route( 'ns.api.crud-bulk-actions', [
+                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
                     'namespace' => $this->namespace,
                 ] ),
             ],

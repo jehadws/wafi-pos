@@ -22,7 +22,7 @@ class ProductSubItem extends Model
 {
     use HasFactory;
 
-    protected $table = 'jgrem_products_subitems';
+    protected $table = 'subul_products_subitems';
 
     public function unit()
     {

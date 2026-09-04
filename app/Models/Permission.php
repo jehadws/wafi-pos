@@ -15,7 +15,7 @@ class Permission extends Model
 {
     use HasFactory;
 
-    protected $table = 'jgrem_permissions';
+    protected $table = 'subul_permissions';
 
     protected $fillable = [ 'namespace', 'name', 'description' ];
 
@@ -44,7 +44,7 @@ class Permission extends Model
 
     public function roles()
     {
-        return $this->belongsToMany( Role::class, 'jgrem_role_permission' );
+        return $this->belongsToMany( Role::class, 'subul_role_permission' );
     }
 
     /**

@@ -21,19 +21,19 @@ class ProductHistoryCrud extends CrudService
     /**
      * Define the identifier
      */
-    const IDENTIFIER = 'ns.products-histories';
+    const IDENTIFIER = 'sb.products-histories';
 
     /**
      * define the base table
      */
-    protected $table = 'jgrem_products_histories';
+    protected $table = 'subul_products_histories';
 
     /**
      * Define namespace
      *
      * @param  string
      */
-    protected $namespace = 'ns.products-histories';
+    protected $namespace = 'sb.products-histories';
 
     /**
      * Model Used
@@ -47,7 +47,7 @@ class ProductHistoryCrud extends CrudService
      */
     protected $permissions = [
         'create' => false,
-        'read' => 'jgrem.read.products-history',
+        'read' => 'subul.read.products-history',
         'update' => false,
         'delete' => false,
     ];
@@ -60,12 +60,12 @@ class ProductHistoryCrud extends CrudService
      * Adding relation
      */
     public $relations = [
-        [ 'jgrem_products as products', 'jgrem_products_histories.product_id', '=', 'products.id' ],
-        [ 'jgrem_units as units', 'jgrem_products_histories.unit_id', '=', 'units.id' ],
+        [ 'subul_products as products', 'subul_products_histories.product_id', '=', 'products.id' ],
+        [ 'subul_units as units', 'subul_products_histories.unit_id', '=', 'units.id' ],
         'leftJoin' => [
-            [ 'jgrem_users as users', 'jgrem_products_histories.author', '=', 'users.id' ],
-            [ 'jgrem_procurements as procurements', 'jgrem_products_histories.procurement_id', '=', 'procurements.id' ],
-            [ 'jgrem_orders as orders', 'jgrem_products_histories.order_id', '=', 'orders.id' ],
+            [ 'subul_users as users', 'subul_products_histories.author', '=', 'users.id' ],
+            [ 'subul_procurements as procurements', 'subul_products_histories.procurement_id', '=', 'procurements.id' ],
+            [ 'subul_orders as orders', 'subul_products_histories.order_id', '=', 'orders.id' ],
         ],
     ];
 
@@ -75,7 +75,7 @@ class ProductHistoryCrud extends CrudService
      * Should be an array of associative keys, where
      * keys are either the related table or alias name.
      * Example : [
-     *      'user'  =>  [ 'username' ], // here the relation on the table jgrem_users is using "user" as an alias
+     *      'user'  =>  [ 'username' ], // here the relation on the table subul_users is using "user" as an alias
      * ]
      */
     public $pick = [
@@ -284,7 +284,7 @@ class ProductHistoryCrud extends CrudService
     public function beforePost( $request )
     {
         if ( $this->permissions[ 'create' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'create' ] );
+            sb()->restrict( $this->permissions[ 'create' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -327,7 +327,7 @@ class ProductHistoryCrud extends CrudService
     public function beforePut( $request, $entry )
     {
         if ( $this->permissions[ 'update' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'update' ] );
+            sb()->restrict( $this->permissions[ 'update' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -354,7 +354,7 @@ class ProductHistoryCrud extends CrudService
      */
     public function beforeDelete( $namespace, $id, $model )
     {
-        if ( $namespace == 'ns.products-histories' ) {
+        if ( $namespace == 'sb.products-histories' ) {
             /**
              *  Perform an action before deleting an entry
              *  In case something wrong, this response can be returned
@@ -365,7 +365,7 @@ class ProductHistoryCrud extends CrudService
              *  ], 403 );
              **/
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -451,10 +451,10 @@ class ProductHistoryCrud extends CrudService
     {
         $entry->orders_code = $entry->orders_code ?: __( 'N/A' );
         $entry->procurements_name = $entry->procurements_name ?: __( 'N/A' );
-        $entry->unit_price = ns()->currency->define( $entry->unit_price )
+        $entry->unit_price = sb()->currency->define( $entry->unit_price )
             ->format();
 
-        $entry->total_price = ns()->currency->define( $entry->total_price )
+        $entry->total_price = sb()->currency->define( $entry->total_price )
             ->format();
 
         switch ( $entry->operation_type ) {
@@ -487,7 +487,7 @@ class ProductHistoryCrud extends CrudService
 
         // you can make changes here
         $entry->action(
-            identifier: 'ns.description',
+            identifier: 'sb.description',
             label: '<i class="mr-2 las la-eye"></i> ' . __( 'Description' ),
             type: 'POPUP',
         );
@@ -512,7 +512,7 @@ class ProductHistoryCrud extends CrudService
              * Will control if the user has the permissoin to do that.
              */
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -559,7 +559,7 @@ class ProductHistoryCrud extends CrudService
     public function getLinks(): array
     {
         return [
-            'list' => ns()->url( 'dashboard/' . 'products/histories' ),
+            'list' => sb()->url( 'dashboard/' . 'products/histories' ),
             'create' => false,
             'edit' => false,
             'post' => false,
@@ -578,7 +578,7 @@ class ProductHistoryCrud extends CrudService
             [
                 'label' => __( 'Delete Selected Groups' ),
                 'identifier' => 'delete_selected',
-                'url' => ns()->route( 'ns.api.crud-bulk-actions', [
+                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
                     'namespace' => $this->namespace,
                 ] ),
             ],

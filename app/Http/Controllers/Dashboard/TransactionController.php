@@ -1,7 +1,7 @@
 <?php
 
 /**
- * JgremPOS Controller
+ * Subul Controller
  *
  * @since  1.0
  **/
@@ -63,14 +63,14 @@ class TransactionController extends DashboardController
   {
     $infoMessage = session()->get('infoMessage');
 
-    if (! ns()->canPerformAsynchronousOperations()) {
+    if (! sb()->canPerformAsynchronousOperations()) {
       $infoMessage = __('Unable to use Scheduled, Recurring and Entity Transactions as Queues aren\'t configured correctly.');
     }
 
-    if (ns()->option->get('ns_accounting_expenses_accounts') === null) {
+    if (sb()->option->get('sb_accounting_expenses_accounts') === null) {
       session()->flash('infoMessage', __('You need to configure the expense accounts before creating a transaction.'));
 
-      return redirect()->route('ns.dashboard.settings', ['settings' => 'accounting']);
+      return redirect()->route('sb.dashboard.settings', ['settings' => 'accounting']);
     }
 
     // return View::make('pages.dashboard.transactions.create');
@@ -88,7 +88,7 @@ class TransactionController extends DashboardController
   {
     $infoMessage = session()->get('infoMessage');
 
-    if (! ns()->canPerformAsynchronousOperations()) {
+    if (! sb()->canPerformAsynchronousOperations()) {
       $infoMessage = __('Unable to use Scheduled, Recurring and Entity Transactions as Queues aren\'t configured correctly.');
     }
 
@@ -265,7 +265,7 @@ class TransactionController extends DashboardController
 
   public function resetDefaultAccounts(Request $request)
   {
-    ns()->restrict(['jgrem.create.transactions-account']);
+    sb()->restrict(['subul.create.transactions-account']);
 
     return $this->transactionService->createDefaultAccounts();
   }

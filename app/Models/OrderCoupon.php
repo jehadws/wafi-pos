@@ -13,11 +13,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property float          $value
  * @property \Carbon\Carbon $updated_at
  */
-class OrderCoupon extends NsModel
+class OrderCoupon extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'orders_coupons';
+    protected $table = 'subul_' . 'orders_coupons';
 
     public $dispatchesEvents = [
         'created' => OrderCouponAfterCreatedEvent::class,

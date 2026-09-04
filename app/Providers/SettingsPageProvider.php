@@ -27,7 +27,7 @@ class SettingsPageProvider extends ServiceProvider
      */
     public function boot()
     {
-        Hook::addFilter( 'ns.settings', function ( $class, $identifier ) {
+        Hook::addFilter( 'sb.settings', function ( $class, $identifier ) {
             $classes = Cache::get( 'crud-classes', function () use ( $identifier ) {
                 $files = collect( Storage::disk( 'ns' )->files( 'app/Settings' ) );
 

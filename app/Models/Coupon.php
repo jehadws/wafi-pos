@@ -20,11 +20,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
-class Coupon extends NsModel
+class Coupon extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'coupons';
+    protected $table = 'subul_' . 'coupons';
 
     const TYPE_PERCENTAGE = 'percentage_discount';
 

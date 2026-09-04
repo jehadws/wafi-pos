@@ -24,7 +24,7 @@ class ExtractTranslation extends Command
      *
      * @var string
      */
-    protected $description = 'Will perform various operation regarding translation for JgremPOS and it\'s modules';
+    protected $description = 'Will perform various operation regarding translation for Subul and it\'s modules';
 
     /**
      * Create a new command instance.
@@ -88,7 +88,7 @@ class ExtractTranslation extends Command
         Storage::disk( 'ns' )->put( $filePath, json_encode( $finalArray ) );
 
         $this->newLine();
-        $this->info( sprintf( __( 'Localization for %s extracted to %s' ), config( 'jgrem.languages' )[ $lang ], $filePath ) );
+        $this->info( sprintf( __( 'Localization for %s extracted to %s' ), config( 'subul.languages' )[ $lang ], $filePath ) );
     }
 
     private function extracting()
@@ -114,7 +114,7 @@ class ExtractTranslation extends Command
                  * We'll loop all the languages that are available
                  */
                 if ( $this->option( 'lang' ) === 'all' ) {
-                    foreach ( config( 'jgrem.languages' ) as $lang => $humanName ) {
+                    foreach ( config( 'subul.languages' ) as $lang => $humanName ) {
                         $this->extractForModuleLanguage( $lang, $module, $files );
                     }
                 } else {
@@ -132,7 +132,7 @@ class ExtractTranslation extends Command
             );
 
             if ( $this->option( 'lang' ) === 'all' ) {
-                foreach ( config( 'jgrem.languages' ) as $lang => $humanName ) {
+                foreach ( config( 'subul.languages' ) as $lang => $humanName ) {
                     $this->extractLanguageForSystem( $lang, $files );
                 }
                 $this->info( 'Translation process is complete !' );
@@ -159,7 +159,7 @@ class ExtractTranslation extends Command
         Storage::disk( 'ns' )->put( 'lang/' . $lang . '.json', json_encode( $finalArray ) );
 
         $this->newLine();
-        $this->info( 'Extraction complete for language : ' . config( 'jgrem.languages' )[ $lang ] );
+        $this->info( 'Extraction complete for language : ' . config( 'subul.languages' )[ $lang ] );
     }
 
     /**

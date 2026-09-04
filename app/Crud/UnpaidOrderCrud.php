@@ -14,7 +14,7 @@ class UnpaidOrderCrud extends HoldOrderCrud
     /**
      * Define the identifier
      */
-    const IDENTIFIER = 'ns.unpaid-orders';
+    const IDENTIFIER = 'sb.unpaid-orders';
 
     /**
      * Define Constructor

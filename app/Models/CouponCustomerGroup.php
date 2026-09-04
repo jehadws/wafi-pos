@@ -16,7 +16,7 @@ class CouponCustomerGroup extends Model
 
     public $timestamps = false;
 
-    protected $table = 'jgrem_' . 'coupons_customers_groups';
+    protected $table = 'subul_' . 'coupons_customers_groups';
 
     public function coupon()
     {

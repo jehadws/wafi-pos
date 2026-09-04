@@ -29,6 +29,6 @@ class ProcurementBeforeCreateEvent
      */
     public function broadcastOn()
     {
-        return new PrivateChannel( 'ns.private-channel' );
+        return new PrivateChannel( 'sb.private-channel' );
     }
 }

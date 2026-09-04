@@ -14,7 +14,7 @@ class PartiallyPaidOrderCrud extends HoldOrderCrud
     /**
      * Define the identifier
      */
-    const IDENTIFIER = 'ns.partially-paid-orders';
+    const IDENTIFIER = 'sb.partially-paid-orders';
 
     /**
      * Define Constructor

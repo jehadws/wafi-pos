@@ -24,14 +24,14 @@ class TransactionsHistoryCrud extends CrudService
     /**
      * Define the identifier
      */
-    const IDENTIFIER = 'ns.transactions-history';
+    const IDENTIFIER = 'sb.transactions-history';
 
     /**
      * define the base table
      *
      * @param string
      */
-    protected $table = 'jgrem_transactions_histories';
+    protected $table = 'subul_transactions_histories';
 
     /**
      * default slug
@@ -45,7 +45,7 @@ class TransactionsHistoryCrud extends CrudService
      *
      * @param string
      */
-    protected $namespace = 'ns.transactions-history';
+    protected $namespace = 'sb.transactions-history';
 
     /**
      * Model Used
@@ -61,23 +61,23 @@ class TransactionsHistoryCrud extends CrudService
      */
     protected $permissions = [
         'create' => false,
-        'read' => 'jgrem.read.transactions-history',
+        'read' => 'subul.read.transactions-history',
         'update' => false,
-        'delete' => 'jgrem.delete.transactions-history',
+        'delete' => 'subul.delete.transactions-history',
     ];
 
     /**
      * Adding relation
-     * Example : [ 'jgrem_users as user', 'user.id', '=', 'jgrem_orders.author' ]
+     * Example : [ 'subul_users as user', 'user.id', '=', 'subul_orders.author' ]
      *
      * @param array
      */
     public $relations = [
         'leftJoin' => [
-            [ 'jgrem_transactions as transaction', 'transaction.id', '=', 'jgrem_transactions_histories.transaction_id' ],
+            [ 'subul_transactions as transaction', 'transaction.id', '=', 'subul_transactions_histories.transaction_id' ],
         ],
-        [ 'jgrem_users as users', 'users.id', '=', 'jgrem_transactions_histories.author' ],
-        [ 'jgrem_transactions_accounts as transactions_accounts', 'transactions_accounts.id', '=', 'jgrem_transactions_histories.transaction_account_id' ],
+        [ 'subul_users as users', 'users.id', '=', 'subul_transactions_histories.author' ],
+        [ 'subul_transactions_accounts as transactions_accounts', 'transactions_accounts.id', '=', 'subul_transactions_histories.transaction_account_id' ],
     ];
 
     /**
@@ -100,7 +100,7 @@ class TransactionsHistoryCrud extends CrudService
      * Should be an array of associative keys, where
      * keys are either the related table or alias name.
      * Example : [
-     *      'user'  =>  [ 'username' ], // here the relation on the table jgrem_users is using "user" as an alias
+     *      'user'  =>  [ 'username' ], // here the relation on the table subul_users is using "user" as an alias
      * ]
      */
     public $pick = [
@@ -233,7 +233,7 @@ class TransactionsHistoryCrud extends CrudService
     public function beforePost( $request )
     {
         if ( $this->permissions[ 'create' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'create' ] );
+            sb()->restrict( $this->permissions[ 'create' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -276,7 +276,7 @@ class TransactionsHistoryCrud extends CrudService
     public function beforePut( $request, $entry )
     {
         if ( $this->permissions[ 'update' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'update' ] );
+            sb()->restrict( $this->permissions[ 'update' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -303,7 +303,7 @@ class TransactionsHistoryCrud extends CrudService
      */
     public function beforeDelete( $namespace, $id, $model )
     {
-        if ( $namespace == 'ns.transactions-history' ) {
+        if ( $namespace == 'sb.transactions-history' ) {
             /**
              *  Perform an action before deleting an entry
              *  In case something wrong, this response can be returned
@@ -314,7 +314,7 @@ class TransactionsHistoryCrud extends CrudService
              *  ], 403 );
              **/
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -357,7 +357,7 @@ class TransactionsHistoryCrud extends CrudService
         if ( ! $hasReflection && $hasTransaction && (bool) $entry->is_reflection === false ) {
             $entry->action(
                 label: '<i class="mr-2 las la-eye"></i> ' . __( 'Create Reflection' ),
-                url: ns()->url( 'api/transactions/history/' . $entry->id . '/create-reflection' ),
+                url: sb()->url( 'api/transactions/history/' . $entry->id . '/create-reflection' ),
                 type: 'GET',
                 identifier: 'create_reflection',
                 confirm: [
@@ -369,7 +369,7 @@ class TransactionsHistoryCrud extends CrudService
         $entry->action(
             label: '<i class="mr-2 las la-trash"></i> ' . __( 'Delete' ),
             identifier: 'delete',
-            url: ns()->url( 'api/crud/' . self::IDENTIFIER . '/' . $entry->id ),
+            url: sb()->url( 'api/crud/' . self::IDENTIFIER . '/' . $entry->id ),
             type: 'DELETE',
             confirm: [
                 'message' => __( 'Are you sure you want to delete this transaction history?' ),
@@ -396,7 +396,7 @@ class TransactionsHistoryCrud extends CrudService
              * Will control if the user has the permissoin to do that.
              */
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -430,11 +430,11 @@ class TransactionsHistoryCrud extends CrudService
     public function getLinks(): array
     {
         return [
-            'list' => ns()->url( 'dashboard/' . 'history' ),
-            'create' => ns()->url( 'dashboard/' . 'history/create' ),
-            'edit' => ns()->url( 'dashboard/' . 'history/edit/' ),
-            'post' => ns()->url( 'api/crud/' . 'ns.transactions-history' ),
-            'put' => ns()->url( 'api/crud/' . 'ns.transactions-history/{id}' . '' ),
+            'list' => sb()->url( 'dashboard/' . 'history' ),
+            'create' => sb()->url( 'dashboard/' . 'history/create' ),
+            'edit' => sb()->url( 'dashboard/' . 'history/edit/' ),
+            'post' => sb()->url( 'api/crud/' . 'sb.transactions-history' ),
+            'put' => sb()->url( 'api/crud/' . 'sb.transactions-history/{id}' . '' ),
         ];
     }
 
@@ -449,7 +449,7 @@ class TransactionsHistoryCrud extends CrudService
             [
                 'label' => __( 'Delete Selected Groups' ),
                 'identifier' => 'delete_selected',
-                'url' => ns()->route( 'ns.api.crud-bulk-actions', [
+                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
                     'namespace' => $this->namespace,
                 ] ),
             ],

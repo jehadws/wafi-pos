@@ -87,7 +87,7 @@ class ModuleRequest extends Command
         /**
          * Make sure the migration don't exist yet
          */
-        $fileExists = Storage::disk( 'ns-modules' )->exists(
+        $fileExists = Storage::disk( 'sb-modules' )->exists(
             $fileName
         );
 
@@ -101,7 +101,7 @@ class ModuleRequest extends Command
         /**
          * Create Migration file
          */
-        Storage::disk( 'ns-modules' )->put(
+        Storage::disk( 'sb-modules' )->put(
             $fileName,
             $this->streamContent( 'migration' )
         );

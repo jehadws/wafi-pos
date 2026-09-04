@@ -13,11 +13,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property float          $target
  * @property \Carbon\Carbon $updated_at
  */
-class CustomerReward extends NsModel
+class CustomerReward extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'customers_rewards';
+    protected $table = 'subul_' . 'customers_rewards';
 
     public $dispatchesEvents = [
         'created' => CustomerRewardAfterCreatedEvent::class,

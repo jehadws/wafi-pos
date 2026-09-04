@@ -22,28 +22,28 @@ class RewardSystemCrud extends CrudService
   /**
    * Define the identifier
    */
-  const IDENTIFIER = 'ns.rewards-system';
+  const IDENTIFIER = 'sb.rewards-system';
 
   /**
    * define the base table
    */
-  protected $table = 'jgrem_rewards_system';
+  protected $table = 'subul_rewards_system';
 
   /**
    * base route name
    */
-  protected $mainRoute = 'ns.rewards-system';
+  protected $mainRoute = 'sb.rewards-system';
 
   /**
    * Define namespace
    *
    * @param  string
    */
-  protected $namespace = 'ns.rewards-system';
+  protected $namespace = 'sb.rewards-system';
 
   protected $slug = 'customers/{customer_id}/rewards';
 
-  public $to_route = 'ns.dashboard.rewards-list';
+  public $to_route = 'sb.dashboard.rewards-list';
 
   /**
    * Model Used
@@ -54,12 +54,12 @@ class RewardSystemCrud extends CrudService
    * Adding relation
    */
   public $relations = [
-    ['jgrem_users', 'jgrem_rewards_system.author', '=', 'jgrem_users.id'],
-    ['jgrem_coupons as coupon', 'coupon.id', '=', 'jgrem_rewards_system.coupon_id'],
+    ['subul_users', 'subul_rewards_system.author', '=', 'subul_users.id'],
+    ['subul_coupons as coupon', 'coupon.id', '=', 'subul_rewards_system.coupon_id'],
   ];
 
   public $pick = [
-    'jgrem_users' => ['username'],
+    'subul_users' => ['username'],
     'coupon' => ['name'],
   ];
 
@@ -85,10 +85,10 @@ class RewardSystemCrud extends CrudService
   public $skippable = ['rules'];
 
   protected $permissions = [
-    'create' => 'jgrem.create.rewards',
-    'read' => 'jgrem.read.rewards',
-    'update' => 'jgrem.update.rewards',
-    'delete' => 'jgrem.delete.rewards',
+    'create' => 'subul.create.rewards',
+    'read' => 'subul.read.rewards',
+    'update' => 'subul.update.rewards',
+    'delete' => 'subul.delete.rewards',
   ];
 
   /**
@@ -190,7 +190,7 @@ class RewardSystemCrud extends CrudService
             [
               'type' => 'search-select',
               'name' => 'coupon_id',
-              'component' => 'nsCreateCoupons',
+              'component' => 'sbCreateCoupons',
               'props' => CouponCrud::getFormConfig(),
               'value' => $entry->coupon_id ?? '',
               'label' => __('Coupon'),
@@ -334,7 +334,7 @@ class RewardSystemCrud extends CrudService
    */
   public function beforeDelete($namespace, $id)
   {
-    if ($namespace == 'ns.rewards_system') {
+    if ($namespace == 'sb.rewards_system') {
       $this->allowedTo('delete');
     }
   }
@@ -380,7 +380,7 @@ class RewardSystemCrud extends CrudService
         '$direction' => '',
         '$sort' => false,
       ],
-      'jgrem_users_username' => [
+      'subul_users_username' => [
         'label' => __('Author'),
         '$direction' => '',
         '$sort' => false,
@@ -405,14 +405,14 @@ class RewardSystemCrud extends CrudService
       identifier: 'edit.rewards',
       label: __('Edit'),
       type: 'GOTO',
-      url: ns()->url('/dashboard/customers/rewards-system/edit/' . $entry->id)
+      url: sb()->url('/dashboard/customers/rewards-system/edit/' . $entry->id)
     );
 
     $entry->action(
       identifier: 'delete',
       label: __('Delete'),
       type: 'DELETE',
-      url: ns()->url('/api/crud/ns.rewards-system/' . $entry->id),
+      url: sb()->url('/api/crud/sb.rewards-system/' . $entry->id),
       confirm: [
         'message' => __('Would you like to delete this reward system ?'),
         'title' => __('Delete a licence'),
@@ -473,11 +473,11 @@ class RewardSystemCrud extends CrudService
   public function getLinks(): array
   {
     return [
-      'list' => ns()->url('/dashboard/customers/rewards-system'),
-      'create' => ns()->url('/dashboard/customers/rewards-system/create'),
-      'edit' => ns()->url('/dashboard/customers/rewards-system/edit/{id}'),
-      'post' => ns()->url('/api/crud/' . $this->getMainRoute()),
-      'put' => ns()->url('/api/crud/' . $this->getMainRoute() . '/{id}'),
+      'list' => sb()->url('/dashboard/customers/rewards-system'),
+      'create' => sb()->url('/dashboard/customers/rewards-system/create'),
+      'edit' => sb()->url('/dashboard/customers/rewards-system/edit/{id}'),
+      'post' => sb()->url('/api/crud/' . $this->getMainRoute()),
+      'put' => sb()->url('/api/crud/' . $this->getMainRoute() . '/{id}'),
     ];
   }
 
@@ -493,7 +493,7 @@ class RewardSystemCrud extends CrudService
         'label' => __('Delete Selected Rewards'),
         'confirm' => __('Would you like to delete selected rewards?'),
         'identifier' => 'delete_selected',
-        'url' => ns()->route('ns.api.crud-bulk-actions', [
+        'url' => sb()->route('sb.api.crud-bulk-actions', [
           'namespace' => $this->namespace,
         ]),
       ],

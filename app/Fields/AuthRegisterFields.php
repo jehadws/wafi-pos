@@ -7,11 +7,11 @@ use App\Services\FieldsService;
 
 class AuthRegisterFields extends FieldsService
 {
-    protected static $identifier = 'ns.register';
+    protected static $identifier = 'sb.register';
 
     public function get()
     {
-        $fields = Hook::filter( 'ns-register-fields', [
+        $fields = Hook::filter( 'sb-register-fields', [
             [
                 'label' => __( 'Username' ),
                 'description' => __( 'Provide your username.' ),

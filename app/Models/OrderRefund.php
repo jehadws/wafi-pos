@@ -11,11 +11,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string         $payment_method
  * @property \Carbon\Carbon $updated_at
  */
-class OrderRefund extends NsModel
+class OrderRefund extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'orders_refunds';
+    protected $table = 'subul_' . 'orders_refunds';
 
     public function refunded_products()
     {

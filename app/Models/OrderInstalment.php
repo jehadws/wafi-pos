@@ -12,13 +12,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int    $payment_id
  * @property string $date
  */
-class OrderInstalment extends NsModel
+class OrderInstalment extends SbModel
 {
     use HasFactory;
 
     public $timestamps = false;
 
-    protected $table = 'jgrem_' . 'orders_instalments';
+    protected $table = 'subul_' . 'orders_instalments';
 
     protected $casts = [
         'paid' => 'boolean',

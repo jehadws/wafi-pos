@@ -25,7 +25,7 @@ class SettingsRequest extends BaseCrudRequest
      */
     public function rules()
     {
-        $service = Hook::filter( 'ns.settings', false, $this->route( 'identifier' ) );
+        $service = Hook::filter( 'sb.settings', false, $this->route( 'identifier' ) );
 
         if ( $service instanceof SettingsPage ) {
             return $service->validateForm( $this );

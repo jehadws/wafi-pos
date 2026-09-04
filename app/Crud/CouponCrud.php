@@ -35,14 +35,14 @@ class CouponCrud extends CrudService
   /**
    * Define the identifier
    */
-  const IDENTIFIER = 'ns.coupons';
+  const IDENTIFIER = 'sb.coupons';
 
   /**
    * define the base table
    *
    * @param  string
    */
-  protected $table = 'jgrem_coupons';
+  protected $table = 'subul_coupons';
 
   /**
    * default slug
@@ -56,7 +56,7 @@ class CouponCrud extends CrudService
    *
    * @param  string
    */
-  protected $namespace = 'ns.coupons';
+  protected $namespace = 'sb.coupons';
 
   /**
    * Model Used
@@ -69,7 +69,7 @@ class CouponCrud extends CrudService
    * redirect to route after creating
    *
    */
-  public $to_route = 'ns.dashboard.all-customers-coupons-list';
+  public $to_route = 'sb.dashboard.all-customers-coupons-list';
 
   /**
    * Define permissions
@@ -77,20 +77,20 @@ class CouponCrud extends CrudService
    * @param  array
    */
   protected $permissions = [
-    'create' => 'jgrem.create.coupons',
-    'read' => 'jgrem.read.coupons',
-    'update' => 'jgrem.update.coupons',
-    'delete' => 'jgrem.delete.coupons',
+    'create' => 'subul.create.coupons',
+    'read' => 'subul.read.coupons',
+    'update' => 'subul.update.coupons',
+    'delete' => 'subul.delete.coupons',
   ];
 
   /**
    * Adding relation
-   * Example : [ 'jgrem_users as user', 'user.id', '=', 'jgrem_orders.author' ]
+   * Example : [ 'subul_users as user', 'user.id', '=', 'subul_orders.author' ]
    *
    * @param  array
    */
   public $relations = [
-    ['jgrem_users', 'jgrem_coupons.author', '=', 'jgrem_users.id'],
+    ['subul_users', 'subul_coupons.author', '=', 'subul_users.id'],
   ];
 
   /**
@@ -111,7 +111,7 @@ class CouponCrud extends CrudService
    * Should be an array of associative keys, where
    * keys are either the related table or alias name.
    * Example : [
-   *      'user'  =>  [ 'username' ], // here the relation on the table jgrem_users is using "user" as an alias
+   *      'user'  =>  [ 'username' ], // here the relation on the table subul_users is using "user" as an alias
    * ]
    */
   public $pick = [];
@@ -201,7 +201,7 @@ class CouponCrud extends CrudService
               name: 'code',
               validation: [
                 'required',
-                Rule::unique('jgrem_coupons', 'code')->ignore($entry !== null ? $entry->id : 0),
+                Rule::unique('subul_coupons', 'code')->ignore($entry !== null ? $entry->id : 0),
               ],
               description: __('Might be used while printing the coupon.'),
               value: $entry->code ?? '',
@@ -503,7 +503,7 @@ class CouponCrud extends CrudService
   public function beforePut(array $inputs, $entry): array
   {
     if ($this->permissions['update'] !== false) {
-      ns()->restrict($this->permissions['update']);
+      sb()->restrict($this->permissions['update']);
 
       foreach ($inputs['products'] ?? [] as $product_id) {
         $product = Product::find($product_id);
@@ -593,9 +593,9 @@ class CouponCrud extends CrudService
    */
   public function beforeDelete($namespace, $id, $coupon): void
   {
-    ns()->restrict($this->permissions['delete']);
+    sb()->restrict($this->permissions['delete']);
 
-    if ($namespace == 'ns.coupons') {
+    if ($namespace == 'sb.coupons') {
       /**
        * @var CustomerService
        */
@@ -640,7 +640,7 @@ class CouponCrud extends CrudService
         '$direction' => '',
         '$sort' => false,
       ],
-      'jgrem_users_username' => [
+      'subul_users_username' => [
         'label' => __('Author'),
         '$direction' => '',
         '$sort' => false,
@@ -665,7 +665,7 @@ class CouponCrud extends CrudService
         break;
       case 'flat_discount':
         $entry->type = __('Flat Discount');
-        $entry->discount_value = (string) ns()->currency->define($entry->discount_value);
+        $entry->discount_value = (string) sb()->currency->define($entry->discount_value);
         break;
       default:
         $entry->type = __('N/A');
@@ -679,21 +679,21 @@ class CouponCrud extends CrudService
       identifier: 'edit-coupon',
       label: __('Edit'),
       type: 'GOTO',
-      url: ns()->url('/dashboard/customers/coupons/edit/' . $entry->id),
+      url: sb()->url('/dashboard/customers/coupons/edit/' . $entry->id),
     );
 
     $entry->action(
       identifier: 'coupon-history',
       label: __('History'),
       type: 'GOTO',
-      url: ns()->url('/dashboard/customers/coupons/history/' . $entry->id),
+      url: sb()->url('/dashboard/customers/coupons/history/' . $entry->id),
     );
 
     $entry->action(
       identifier: 'delete',
       label: __('Delete'),
       type: 'DELETE',
-      url: ns()->url('/api/crud/ns.coupons/' . $entry->id),
+      url: sb()->url('/api/crud/sb.coupons/' . $entry->id),
       confirm: [
         'message' => __('Would you like to delete this ?'),
         'title' => __('Delete a licence'),
@@ -717,7 +717,7 @@ class CouponCrud extends CrudService
        * Will control if the user has the permissoin to do that.
        */
       if ($this->permissions['delete'] !== false) {
-        ns()->restrict($this->permissions['delete']);
+        sb()->restrict($this->permissions['delete']);
       } else {
         throw new NotAllowedException;
       }
@@ -750,11 +750,11 @@ class CouponCrud extends CrudService
   public function getLinks(): array
   {
     return [
-      'list' => ns()->url('dashboard/' . 'customers/coupons'),
-      'create' => ns()->url('dashboard/' . 'customers/coupons/create'),
-      'edit' => ns()->url('dashboard/' . 'customers/coupons/edit/'),
-      'post' => ns()->url('api/crud/' . 'ns.coupons'),
-      'put' => ns()->url('api/crud/' . 'ns.coupons/{id}' . ''),
+      'list' => sb()->url('dashboard/' . 'customers/coupons'),
+      'create' => sb()->url('dashboard/' . 'customers/coupons/create'),
+      'edit' => sb()->url('dashboard/' . 'customers/coupons/edit/'),
+      'post' => sb()->url('api/crud/' . 'sb.coupons'),
+      'put' => sb()->url('api/crud/' . 'sb.coupons/{id}' . ''),
     ];
   }
 
@@ -767,7 +767,7 @@ class CouponCrud extends CrudService
       [
         'label' => __('Delete Selected Groups'),
         'identifier' => 'delete_selected',
-        'url' => ns()->route('ns.api.crud-bulk-actions', [
+        'url' => sb()->route('sb.api.crud-bulk-actions', [
           'namespace' => $this->namespace,
         ]),
       ],

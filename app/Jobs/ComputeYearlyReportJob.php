@@ -46,15 +46,15 @@ class ComputeYearlyReportJob implements ShouldQueue
 
         $notificationService->create( [
             'title' => __( 'Report Refreshed' ),
-            'identifier' => 'ns-refreshed-annual-' . $this->year,
+            'identifier' => 'sb-refreshed-annual-' . $this->year,
             'description' => sprintf(
                 __( 'The yearly report has been successfully refreshed for the year "%s".' ),
                 $this->year
             ),
-            'url' => route( ns()->routeName( 'ns.dashboard.reports-annual' ) ),
+            'url' => route( sb()->routeName( 'sb.dashboard.reports-annual' ) ),
         ] )->dispatchForGroup( [
             'admin',
-            'jgrem.store.administrator',
+            'subul.store.administrator',
         ] );
     }
 }

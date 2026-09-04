@@ -1,7 +1,7 @@
 <?php
 
 /**
- * JgremPOS Controller
+ * Subul Controller
  *
  * @since  1.0
  **/
@@ -316,7 +316,7 @@ class CustomersController extends DashboardController
   public function getCustomersOrders(Customer $customer)
   {
     return CustomerOrderCrud::table([
-      'src' => ns()->url('/api/crud/ns.customers-orders'),
+      'src' => sb()->url('/api/crud/sb.customers-orders'),
       'queryParams' => [
         'customer_id' => $customer->id,
       ],
@@ -347,7 +347,7 @@ class CustomersController extends DashboardController
   public function editCustomerReward(Customer $customer, CustomerReward $reward)
   {
     return CustomerRewardCrud::form($reward, [
-      'returnUrl' => ns()->route('ns.dashboard.customers-rewards-list', ['customer' => $customer->id]),
+      'returnUrl' => sb()->route('sb.dashboard.customers-rewards-list', ['customer' => $customer->id]),
       'queryParams' => [
         'customer_id' => $customer->id,
       ],
@@ -402,7 +402,7 @@ class CustomersController extends DashboardController
       'queryParams' => [
         'customer_id' => $customer->id,
       ],
-      'createUrl' => ns()->url('/dashboard/customers/' . $customer->id . '/account-history/create'),
+      'createUrl' => sb()->url('/dashboard/customers/' . $customer->id . '/account-history/create'),
       'description' => sprintf(
         __('Displays the customer account history for %s'),
         $customer->first_name . ' ' . $customer->last_name
@@ -425,8 +425,8 @@ class CustomersController extends DashboardController
       'queryParams' => [
         'customer_id' => $customer->id,
       ],
-      'returnUrl' => ns()->url('/dashboard/customers/' . $customer->id . '/account-history'),
-      'submitUrl' => ns()->url('/api/customers/' . $customer->id . '/crud/account-history'),
+      'returnUrl' => sb()->url('/dashboard/customers/' . $customer->id . '/account-history'),
+      'submitUrl' => sb()->url('/api/customers/' . $customer->id . '/crud/account-history'),
       'description' => sprintf(
         __('Displays the customer account history for %s'),
         $customer->name

@@ -13,7 +13,7 @@ class ProcurementRequest extends FormRequest
      */
     public function authorize()
     {
-        return ns()->allowedTo( [ 'jgrem.create.procurements' ] );
+        return sb()->allowedTo( [ 'subul.create.procurements' ] );
     }
 
     /**

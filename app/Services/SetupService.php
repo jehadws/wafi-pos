@@ -112,29 +112,29 @@ class SetupService
     {
         $domain = parse_url( url()->to( '/' ) );
 
-        ns()->envEditor->set( 'APP_URL', url()->to( '/' ) );
-        ns()->envEditor->set( 'SESSION_DOMAIN', $domain[ 'host' ] );
-        ns()->envEditor->set( 'SANCTUM_STATEFUL_DOMAINS', $domain[ 'host' ] . ( isset( $domain[ 'port' ] ) ? ':' . $domain[ 'port' ] : '' ) );
+        sb()->envEditor->set( 'APP_URL', url()->to( '/' ) );
+        sb()->envEditor->set( 'SESSION_DOMAIN', $domain[ 'host' ] );
+        sb()->envEditor->set( 'SANCTUM_STATEFUL_DOMAINS', $domain[ 'host' ] . ( isset( $domain[ 'port' ] ) ? ':' . $domain[ 'port' ] : '' ) );
 
-        ns()->envEditor->set( 'REVERB_APP_ID', 'app-key-' . Str::random( 10 ) );
-        ns()->envEditor->set( 'REVERB_APP_KEY', 'app-key-' . Str::random( 10 ) );
-        ns()->envEditor->set( 'REVERB_APP_SECRET', Str::uuid() );
+        sb()->envEditor->set( 'REVERB_APP_ID', 'app-key-' . Str::random( 10 ) );
+        sb()->envEditor->set( 'REVERB_APP_KEY', 'app-key-' . Str::random( 10 ) );
+        sb()->envEditor->set( 'REVERB_APP_SECRET', Str::uuid() );
     }
 
     public function updateAppDBConfiguration( $data )
     {
-        ns()->envEditor->set( 'DB_CONNECTION', $data[ 'database_driver' ] );
+        sb()->envEditor->set( 'DB_CONNECTION', $data[ 'database_driver' ] );
 
         if ( $data[ 'database_driver' ] === 'sqlite' ) {
-            ns()->envEditor->set( 'DB_DATABASE', database_path( 'database.sqlite' ) );
-            ns()->envEditor->set( 'DB_PREFIX', $data[   'database_prefix' ] );
+            sb()->envEditor->set( 'DB_DATABASE', database_path( 'database.sqlite' ) );
+            sb()->envEditor->set( 'DB_PREFIX', $data[   'database_prefix' ] );
         } elseif ( $data[ 'database_driver' ] === 'mysql' ) {
-            ns()->envEditor->set( 'DB_HOST', $data[ 'hostname' ] );
-            ns()->envEditor->set( 'DB_DATABASE', $data[ 'database_name' ] ?: database_path( 'database.sqlite' ) );
-            ns()->envEditor->set( 'DB_USERNAME', $data[ 'username' ] );
-            ns()->envEditor->set( 'DB_PASSWORD', $data[ 'password' ] );
-            ns()->envEditor->set( 'DB_PREFIX', $data[   'database_prefix' ] );
-            ns()->envEditor->set( 'DB_PORT', $data[ 'database_port' ] ?: 3306 );
+            sb()->envEditor->set( 'DB_HOST', $data[ 'hostname' ] );
+            sb()->envEditor->set( 'DB_DATABASE', $data[ 'database_name' ] ?: database_path( 'database.sqlite' ) );
+            sb()->envEditor->set( 'DB_USERNAME', $data[ 'username' ] );
+            sb()->envEditor->set( 'DB_PASSWORD', $data[ 'password' ] );
+            sb()->envEditor->set( 'DB_PREFIX', $data[   'database_prefix' ] );
+            sb()->envEditor->set( 'DB_PORT', $data[ 'database_port' ] ?: 3306 );
         }
     }
 
@@ -172,26 +172,26 @@ class SetupService
          * as already run as these migration are supposed
          * to be integrated on "create" files.
          */
-        ns()->update
+        sb()->update
             ->getMigrations(
                 directories: [ 'core', 'create' ],
                 ignoreMigrations: true
             )
             ->each( function ( $file ) {
-                ns()->update->executeMigrationFromFileName( $file );
+                sb()->update->executeMigrationFromFileName( $file );
             } );
 
         /**
          * The update migrations should'nt be executed.
          * This should improve the speed during the installation.
          */
-        ns()->update
+        sb()->update
             ->getMigrations(
                 directories: [ 'update' ],
                 ignoreMigrations: true
             )
             ->each( function ( $file ) {
-                ns()->update->assumeExecuted( $file );
+                sb()->update->assumeExecuted( $file );
             } );
 
         /**
@@ -203,7 +203,7 @@ class SetupService
          * From this moment, new permissions has been created.
          * However Laravel gates aren't aware of them. We'll fix this here.
          */
-        ns()->registerGatePermissions();
+        sb()->registerGatePermissions();
 
         $userID = rand( 1, 99 );
         $user = new User;
@@ -230,11 +230,11 @@ class SetupService
 
         $this->options = app()->make( Options::class );
         $this->options->setDefault();
-        $this->options->set( 'ns_store_language', $configuredLanguage );
+        $this->options->set( 'sb_store_language', $configuredLanguage );
 
         return [
             'status' => 'success',
-            'message' => __( 'JgremPOS has been successfully installed.' ),
+            'message' => __( 'Subul has been successfully installed.' ),
         ];
     }
 

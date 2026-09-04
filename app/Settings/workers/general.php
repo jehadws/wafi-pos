@@ -8,9 +8,9 @@ return [
     [
       'type' => 'switch',
       'label' => __('Enable Workers'),
-      'description' => __('Enable background services for JgremPOS. Refresh to check whether the option has turned to "Yes".'),
-      'name' => 'ns_workers_enabled',
-      'value' => ns()->option->get('ns_workers_enabled', 'no'),
+      'description' => __('Enable background services for Subul. Refresh to check whether the option has turned to "Yes".'),
+      'name' => 'sb_workers_enabled',
+      'value' => sb()->option->get('sb_workers_enabled', 'no'),
       'options' => collect(Helper::kvToJsOptions([
         'no' => __('No'),
         'await_confirm' => __('Test'),

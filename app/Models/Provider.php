@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Classes\Model;
-use App\Traits\NsDependable;
+use App\Traits\SbDependable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
@@ -14,11 +14,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property float          $amount_paid
  * @property \Carbon\Carbon $updated_at
  */
-class Provider extends NsModel
+class Provider extends SbModel
 {
-  use HasFactory, NsDependable;
+  use HasFactory, SbDependable;
 
-  protected $table = 'jgrem_' . 'providers';
+  protected $table = 'subul_' . 'providers';
 
   protected $guarded = [];
 

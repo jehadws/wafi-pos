@@ -6,7 +6,7 @@ use App\Events\LowStockProductsCountedEvent;
 use App\Models\ProductUnitQuantity;
 use App\Models\Role;
 use App\Services\NotificationService;
-use App\Traits\NsSerialize;
+use App\Traits\SbSerialize;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -14,7 +14,7 @@ use Illuminate\Queue\InteractsWithQueue;
 
 class DetectLowStockProductsJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, NsSerialize, Queueable;
+    use Dispatchable, InteractsWithQueue, SbSerialize, Queueable;
 
     /**
      * Create a new job instance.
@@ -46,8 +46,8 @@ class DetectLowStockProductsJob implements ShouldQueue
                     __( '%s product(s) has low stock. Reorder those product(s) before it get exhausted.' ),
                     $products
                 ),
-                'identifier' => 'ns.low-stock-products',
-                'url' => ns()->route( 'ns.dashboard.reports-low-stock' ),
+                'identifier' => 'sb.low-stock-products',
+                'url' => sb()->route( 'sb.dashboard.reports-low-stock' ),
             ] )->dispatchForGroupNamespaces( [
                 Role::ADMIN,
                 Role::STOREADMIN,

@@ -20,20 +20,20 @@ class ProcurementCrud extends CrudService
   /**
    * Define the identifier
    */
-  const IDENTIFIER = 'ns.procurements';
+  const IDENTIFIER = 'sb.procurements';
 
   /**
    * define the base table
    */
-  protected $table = 'jgrem_procurements';
+  protected $table = 'subul_procurements';
 
   /**
    * Define namespace
    *
    * @param  string
    */
-  protected $namespace = 'ns.procurements';
-  public $to_route = 'ns.dashboard.procurement-list';
+  protected $namespace = 'sb.procurements';
+  public $to_route = 'sb.dashboard.procurement-list';
 
   /**
    * Model Used
@@ -44,8 +44,8 @@ class ProcurementCrud extends CrudService
    * Adding relation
    */
   public $relations = [
-    ['jgrem_users as users', 'jgrem_procurements.author', '=', 'users.id'],
-    ['jgrem_providers as providers', 'jgrem_procurements.provider_id', '=', 'providers.id'],
+    ['subul_users as users', 'subul_procurements.author', '=', 'users.id'],
+    ['subul_providers as providers', 'subul_procurements.provider_id', '=', 'providers.id'],
   ];
 
   /**
@@ -71,10 +71,10 @@ class ProcurementCrud extends CrudService
    * define permission
    */
   public $permissions = [
-    'create' => 'jgrem.create.procurements',
-    'read' => 'jgrem.read.procurements',
+    'create' => 'subul.create.procurements',
+    'read' => 'subul.read.procurements',
     'update' => false,
-    'delete' => 'jgrem.delete.procurements',
+    'delete' => 'subul.delete.procurements',
   ];
 
   /**
@@ -233,7 +233,7 @@ class ProcurementCrud extends CrudService
   public function filterPostInputs($inputs)
   {
     if (empty($inputs['invoice_date'])) {
-      $inputs['invoice_date'] = ns()->date->toDateTimeString();
+      $inputs['invoice_date'] = sb()->date->toDateTimeString();
     }
 
     return $inputs;
@@ -248,7 +248,7 @@ class ProcurementCrud extends CrudService
   public function filterPutInputs($inputs, Procurement $entry)
   {
     if (empty($inputs['invoice_date'])) {
-      $inputs['invoice_date'] = ns()->date->toDateTimeString();
+      $inputs['invoice_date'] = sb()->date->toDateTimeString();
     }
 
     return $inputs;
@@ -326,7 +326,7 @@ class ProcurementCrud extends CrudService
    */
   public function beforeDelete($namespace, $id, $model)
   {
-    if ($namespace == 'ns.procurements') {
+    if ($namespace == 'sb.procurements') {
       $this->allowedTo('delete');
     }
   }
@@ -395,17 +395,17 @@ class ProcurementCrud extends CrudService
     $entry->delivery_status = $this->providerService->getDeliveryStatusLabel($entry->delivery_status);
     $entry->payment_status = $this->providerService->getPaymentStatusLabel($entry->payment_status);
 
-    $entry->value = ns()
+    $entry->value = sb()
       ->currency
       ->define($entry->value)
       ->format();
 
-    $entry->cost = ns()
+    $entry->cost = sb()
       ->currency
       ->define($entry->cost)
       ->format();
 
-    $entry->tax_value = ns()
+    $entry->tax_value = sb()
       ->currency
       ->define($entry->tax_value)
       ->format();
@@ -414,14 +414,14 @@ class ProcurementCrud extends CrudService
       identifier: 'edit',
       label: __('Edit'),
       type: 'GOTO',
-      url: ns()->url('/dashboard/' . 'procurements' . '/edit/' . $entry->id)
+      url: sb()->url('/dashboard/' . 'procurements' . '/edit/' . $entry->id)
     );
 
     $entry->action(
       identifier: 'invoice', // Assuming you want to replace 'namespace' with 'identifier'
       label: __('Invoice'),
       type: 'GOTO',
-      url: ns()->url('/dashboard/' . 'procurements' . '/edit/' . $entry->id . '/invoice')
+      url: sb()->url('/dashboard/' . 'procurements' . '/edit/' . $entry->id . '/invoice')
     );
 
     /**
@@ -433,7 +433,7 @@ class ProcurementCrud extends CrudService
         identifier: 'set_paid', // Hypothetical - please verify if this is accurate
         label: __('Set Paid'),
         type: 'GET',
-        url: ns()->url('/api/procurements/' . $entry->id . '/set-as-paid'),
+        url: sb()->url('/api/procurements/' . $entry->id . '/set-as-paid'),
         confirm: [
           'message' => __('Would you like to mark this procurement as paid?'),
         ]
@@ -444,7 +444,7 @@ class ProcurementCrud extends CrudService
       identifier: 'refresh',
       label: __('Refresh'),
       type: 'GET',
-      url: ns()->url('/api/procurements/' . $entry->id . '/refresh'),
+      url: sb()->url('/api/procurements/' . $entry->id . '/refresh'),
       confirm: [
         'message' => __('Would you like to refresh this ?'),
       ]
@@ -454,7 +454,7 @@ class ProcurementCrud extends CrudService
       identifier: 'delete',
       label: __('Delete'),
       type: 'DELETE',
-      url: ns()->url('/api/crud/ns.procurements/' . $entry->id),
+      url: sb()->url('/api/crud/sb.procurements/' . $entry->id),
       confirm: [
         'message' => __('Would you like to delete this ?'),
       ]
@@ -476,7 +476,7 @@ class ProcurementCrud extends CrudService
        * Will control if the user has the permissoin to do that.
        */
       if ($this->permissions['delete'] !== false) {
-        ns()->restrict($this->permissions['delete']);
+        sb()->restrict($this->permissions['delete']);
       } else {
         throw new NotAllowedException;
       }
@@ -527,7 +527,7 @@ class ProcurementCrud extends CrudService
       [
         'label' => __('Delete Selected Groups'),
         'identifier' => 'delete_selected',
-        'url' => ns()->route('ns.api.crud-bulk-actions', [
+        'url' => sb()->route('sb.api.crud-bulk-actions', [
           'namespace' => $this->namespace,
         ]),
       ],

@@ -36,9 +36,9 @@ class CheckTaskSchedulingConfigurationJob implements ShouldQueue
              * @var NotificationService
              */
             $notification = app()->make( NotificationService::class );
-            $notification->deleteHavingIdentifier( NotificationsEnum::NSWORKERDISABLED );
+            $notification->deleteHavingIdentifier( NotificationsEnum::SBWORKERDISABLED );
 
-            ns()->option->set( 'ns_jobs_last_activity', ns()->date->toDateTimeString() );
+            sb()->option->set( 'sb_jobs_last_activity', sb()->date->toDateTimeString() );
         }
     }
 }

@@ -10,11 +10,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string         $session_identifier
  * @property \Carbon\Carbon $updated_at
  */
-class OrderStorage extends NsModel
+class OrderStorage extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'orders_storage';
+    protected $table = 'subul_' . 'orders_storage';
 
     public function scopeWithIdentifier( $query, $id )
     {

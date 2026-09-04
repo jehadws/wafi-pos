@@ -1,7 +1,7 @@
 <?php
 
 /**
- * JgremPOS Controller
+ * Subul Controller
  *
  * @since  1.0
  **/
@@ -34,7 +34,7 @@ class UnitsController extends DashboardController
   public function postGroup(Request $request)
   {
     $result = $this->unitService->createGroup($request->all());
-    return redirect()->route('ns.dashboard.units.groups')->with('success', 'Unit Group created successfully');
+    return redirect()->route('sb.dashboard.units.groups')->with('success', 'Unit Group created successfully');
   }
 
   public function putGroup(Request $request, $id)
@@ -51,7 +51,7 @@ class UnitsController extends DashboardController
   public function postUnit(Request $request)
   {
     $result =  $this->unitService->createUnit($request->only(['name', 'description', 'group_id', 'value', 'base_unit', 'identifier']));
-    return redirect()->route('ns.dashboard.units')->with('success', 'Unit created successfully');
+    return redirect()->route('sb.dashboard.units')->with('success', 'Unit created successfully');
   }
 
   public function deleteUnitGroup($id)
@@ -128,7 +128,7 @@ class UnitsController extends DashboardController
 
   public function listUnitsGroups()
   {
-    ns()->restrict(['jgrem.read.products-units']);
+    sb()->restrict(['subul.read.products-units']);
     $units =  UnitGroup::get();
     return Inertia::render('dashboard/units/groups/page', [
       'title' => __('Dashboard'),
@@ -140,14 +140,14 @@ class UnitsController extends DashboardController
 
   public function listUnits()
   {
-    ns()->restrict(['jgrem.read.products-units']);
+    sb()->restrict(['subul.read.products-units']);
 
     $units =  Unit::addSelect([
       'author_name' => User::select('username')
-        ->whereColumn('jgrem_users.id', 'author')
+        ->whereColumn('subul_users.id', 'author')
         ->limit(1),
       'group_name' => UnitGroup::select('name')
-        ->whereColumn('jgrem_units_groups.id', 'group_id')
+        ->whereColumn('subul_units_groups.id', 'group_id')
         ->limit(1),
     ])->get();
     return Inertia::render('dashboard/units/page', [
@@ -160,7 +160,7 @@ class UnitsController extends DashboardController
 
   public function createUnitGroup()
   {
-    ns()->restrict(['jgrem.create.products-units']);
+    sb()->restrict(['subul.create.products-units']);
 
     return Inertia::render('dashboard/units/groups/create');
 
@@ -174,7 +174,7 @@ class UnitsController extends DashboardController
    */
   public function editUnitGroup(UnitGroup $group)
   {
-    ns()->restrict(['jgrem.update.products-units']);
+    sb()->restrict(['subul.update.products-units']);
 
     return Inertia::render('dashboard/units/groups/edit', [
       'group' => $group
@@ -184,7 +184,7 @@ class UnitsController extends DashboardController
 
   public function createUnit()
   {
-    ns()->restrict(['jgrem.create.products-units']);
+    sb()->restrict(['subul.create.products-units']);
 
     $unitGroups = UnitGroup::get();
 
@@ -196,7 +196,7 @@ class UnitsController extends DashboardController
 
   public function editUnit(Unit $unit)
   {
-    ns()->restrict(['jgrem.update.products-units']);
+    sb()->restrict(['subul.update.products-units']);
     $unitGroups = UnitGroup::get();
 
     return Inertia::render('dashboard/units/edit', [

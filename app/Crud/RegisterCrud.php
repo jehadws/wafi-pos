@@ -21,14 +21,14 @@ class RegisterCrud extends CrudService
     /**
      * Define the identifier
      */
-    const IDENTIFIER = 'ns.cash-registers';
+    const IDENTIFIER = 'sb.cash-registers';
 
     /**
      * define the base table
      *
      * @param  string
      */
-    protected $table = 'jgrem_registers';
+    protected $table = 'subul_registers';
 
     /**
      * default slug
@@ -42,13 +42,13 @@ class RegisterCrud extends CrudService
      *
      * @param  string
      */
-    protected $namespace = 'ns.cash-registers';
+    protected $namespace = 'sb.cash-registers';
 
     /**
      * Route to redirect after
      * a crud submission
      */
-    public $to_route = 'ns.dashboard.registers-list';
+    public $to_route = 'sb.dashboard.registers-list';
 
     /**
      * Model Used
@@ -63,10 +63,10 @@ class RegisterCrud extends CrudService
      * @param  array
      */
     protected $permissions = [
-        'create' => 'jgrem.create.registers',
-        'read' => 'jgrem.read.registers',
-        'update' => 'jgrem.update.registers',
-        'delete' => 'jgrem.delete.registers',
+        'create' => 'subul.create.registers',
+        'read' => 'subul.read.registers',
+        'update' => 'subul.update.registers',
+        'delete' => 'subul.delete.registers',
     ];
 
     /**
@@ -75,9 +75,9 @@ class RegisterCrud extends CrudService
      * @param  array
      */
     public $relations = [
-        [ 'jgrem_users as user', 'jgrem_registers.author', '=', 'user.id' ],
+        [ 'subul_users as user', 'subul_registers.author', '=', 'user.id' ],
         'leftJoin' => [
-            [ 'jgrem_users as cashier', 'jgrem_registers.used_by', '=', 'cashier.id' ],
+            [ 'subul_users as cashier', 'subul_registers.used_by', '=', 'cashier.id' ],
         ],
     ];
 
@@ -95,7 +95,7 @@ class RegisterCrud extends CrudService
      * Should be an array of associative keys, where
      * keys are either the related table or alias name.
      * Example : [
-     *      'user'  =>  [ 'username' ], // here the relation on the table jgrem_users is using "user" as an alias
+     *      'user'  =>  [ 'username' ], // here the relation on the table subul_users is using "user" as an alias
      * ]
      */
     public $pick = [
@@ -236,7 +236,7 @@ class RegisterCrud extends CrudService
     public function beforePost( $request )
     {
         if ( $this->permissions[ 'create' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'create' ] );
+            sb()->restrict( $this->permissions[ 'create' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -279,7 +279,7 @@ class RegisterCrud extends CrudService
     public function beforePut( $request, $entry )
     {
         if ( $this->permissions[ 'update' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'update' ] );
+            sb()->restrict( $this->permissions[ 'update' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -317,7 +317,7 @@ class RegisterCrud extends CrudService
              *  ], 403 );
              **/
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -373,28 +373,28 @@ class RegisterCrud extends CrudService
     public function setActions( CrudEntry $entry ): CrudEntry
     {
         $entry->cashier_username = $entry->cashier_username ?: __( 'N/A' );
-        $entry->balance = (string) ns()->currency->define( $entry->balance );
+        $entry->balance = (string) sb()->currency->define( $entry->balance );
 
         // you can make changes here
         $entry->action(
             identifier: 'edit',
             label: __( 'Edit' ),
             type: 'GOTO',
-            url: ns()->url( '/dashboard/' . 'cash-registers' . '/edit/' . $entry->id )
+            url: sb()->url( '/dashboard/' . 'cash-registers' . '/edit/' . $entry->id )
         );
 
         $entry->action(
             identifier: 'register-history', // Prioritize 'identifier'
             label: __( 'Register History' ),
             type: 'GOTO',
-            url: ns()->url( '/dashboard/' . 'cash-registers' . '/history/' . $entry->id )
+            url: sb()->url( '/dashboard/' . 'cash-registers' . '/history/' . $entry->id )
         );
 
         $entry->action(
             identifier: 'delete',
             label: __( 'Delete' ),
             type: 'DELETE',
-            url: ns()->url( '/api/crud/' . self::IDENTIFIER . '/' . $entry->id ),
+            url: sb()->url( '/api/crud/' . self::IDENTIFIER . '/' . $entry->id ),
             confirm: [
                 'message' => __( 'Would you like to delete this ?' ),
             ]
@@ -420,7 +420,7 @@ class RegisterCrud extends CrudService
              * Will control if the user has the permissoin to do that.
              */
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -454,11 +454,11 @@ class RegisterCrud extends CrudService
     public function getLinks(): array
     {
         return [
-            'list' => ns()->url( 'dashboard/' . 'cash-registers' ),
-            'create' => ns()->url( 'dashboard/' . 'cash-registers/create' ),
-            'edit' => ns()->url( 'dashboard/' . 'cash-registers/edit/{id}' ),
-            'post' => ns()->url( 'api/crud/' . self::IDENTIFIER ),
-            'put' => ns()->url( 'api/crud/' . self::IDENTIFIER . '/{id}' . '' ),
+            'list' => sb()->url( 'dashboard/' . 'cash-registers' ),
+            'create' => sb()->url( 'dashboard/' . 'cash-registers/create' ),
+            'edit' => sb()->url( 'dashboard/' . 'cash-registers/edit/{id}' ),
+            'post' => sb()->url( 'api/crud/' . self::IDENTIFIER ),
+            'put' => sb()->url( 'api/crud/' . self::IDENTIFIER . '/{id}' . '' ),
         ];
     }
 
@@ -473,7 +473,7 @@ class RegisterCrud extends CrudService
             [
                 'label' => __( 'Delete Selected Groups' ),
                 'identifier' => 'delete_selected',
-                'url' => ns()->route( 'ns.api.crud-bulk-actions', [
+                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
                     'namespace' => $this->namespace,
                 ] ),
             ],

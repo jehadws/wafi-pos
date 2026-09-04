@@ -12,13 +12,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int            $author
  * @property \Carbon\Carbon $updated_at
  */
-class UnitGroup extends NsModel
+class UnitGroup extends SbModel
 {
     use HasFactory;
 
     protected $guarded = [];
 
-    protected $table = 'jgrem_units_groups';
+    protected $table = 'subul_units_groups';
 
     public function setDependencies()
     {

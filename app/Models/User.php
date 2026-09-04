@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Classes\Model;
 use App\Services\UserOptions;
-use App\Traits\NsDependable;
+use App\Traits\SbDependable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -32,9 +32,9 @@ class User extends Authenticatable
     use HasApiTokens,
         HasFactory,
         Notifiable,
-        NsDependable;
+        SbDependable;
 
-    protected $table = 'jgrem_users';
+    protected $table = 'subul_users';
 
     protected $casts = [
         'active' => 'boolean',
@@ -103,7 +103,7 @@ class User extends Authenticatable
      */
     public function freshTimestamp()
     {
-        return ns()->date->getNow();
+        return sb()->date->getNow();
     }
 
     /**

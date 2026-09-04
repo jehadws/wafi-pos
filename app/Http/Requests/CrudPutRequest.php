@@ -50,6 +50,6 @@ class CrudPutRequest extends BaseCrudRequest
             return [ $rule[0] => $rule[1] ];
         } )->toArray();
 
-        return Hook::filter( 'ns.validation.' . $this->route( 'namespace' ), $flatRules );
+        return Hook::filter( 'sb.validation.' . $this->route( 'namespace' ), $flatRules );
     }
 }

@@ -21,7 +21,7 @@ class CrudServiceProvider extends ServiceProvider
          * every crud class on the system should be
          * added here in order to be available and supported.
          */
-        Hook::addFilter( 'ns-crud-resource', function ( $namespace ) {
+        Hook::addFilter( 'sb-crud-resource', function ( $namespace ) {
             /**
              * We'll attempt autoloading crud that explicitely
              * defined they want to be autoloaded. We expect classes to have 2

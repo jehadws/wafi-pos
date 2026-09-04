@@ -10,13 +10,13 @@ namespace App\Models;
  * @property mixed  $created_at
  * @property mixed  $updated_at
  */
-class OrderSetting extends NsModel
+class OrderSetting extends SbModel
 {
     protected $fillable = [
         'key', 'value', 'order_id',
     ];
 
-    protected $table = 'jgrem_orders_settings';
+    protected $table = 'subul_orders_settings';
 
     public function order()
     {

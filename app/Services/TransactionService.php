@@ -84,7 +84,7 @@ class TransactionService
                 Transaction::TYPE_SCHEDULED,
             ] ) ) {
                 $operation = $transactionHistory->operation === 'debit' ? 'credit' : 'debit';
-                $counterAccount = TransactionAccount::find( ns()->option->get( 'ns_accounting_default_paid_expense_offset_account' ) );
+                $counterAccount = TransactionAccount::find( sb()->option->get( 'sb_accounting_default_paid_expense_offset_account' ) );
             } else {
                 throw new NotAllowedException( __( 'Invalid transaction history provided for reflection.' ) );
             }
@@ -102,7 +102,7 @@ class TransactionService
                 $counterTransaction->author = $transactionHistory->author;
                 $counterTransaction->name = $transactionHistory->name;
                 $counterTransaction->status = TransactionHistory::STATUS_ACTIVE;
-                $counterTransaction->trigger_date = ns()->date->toDateTimeString();
+                $counterTransaction->trigger_date = sb()->date->toDateTimeString();
                 $counterTransaction->type = $transactionHistory->type;
                 $counterTransaction->procurement_id = $transactionHistory->procurement_id;
                 $counterTransaction->order_id = $transactionHistory->order_id;
@@ -118,12 +118,12 @@ class TransactionService
                 $counterTransaction->save();
             }
         } else {
-            ns()->notification->create(
+            sb()->notification->create(
                 title: __( 'Accounting Misconfiguration' ),
                 identifier: 'accounting-reflection-transaction-misconfiguration',
-                url: ns()->route( 'ns.dashboard.transactions-rules' ),
+                url: sb()->route( 'sb.dashboard.transactions-rules' ),
                 description: __( 'Unable to reflect the transaction as the account type is not found.' )
-            )->dispatchForPermissions( [ 'jgrem.create.transactions-account' ] );
+            )->dispatchForPermissions( [ 'subul.create.transactions-account' ] );
         }
     }
 
@@ -138,7 +138,7 @@ class TransactionService
             $reflection->delete();
 
             /**
-             * We'll instruct JgremPOS to perform
+             * We'll instruct Subul to perform
              * a backend jobs to update the report.
              */
             ShouldRefreshReportEvent::dispatch( $transactionHistory->created_at );
@@ -376,7 +376,7 @@ class TransactionService
             $account->$field = $value;
         }
 
-        $account->author = ns()->getValidAuthor();
+        $account->author = sb()->getValidAuthor();
         $account->save();
 
         return [
@@ -530,7 +530,7 @@ class TransactionService
         $history->author = $transaction->author;
         $history->name = $transaction->name;
         $history->status = TransactionHistory::STATUS_ACTIVE;
-        $history->trigger_date = ns()->date->toDateTimeString();
+        $history->trigger_date = sb()->date->toDateTimeString();
         $history->type = $transaction->type;
         $history->procurement_id = $transaction->procurement_id ?? 0; // if the cash flow is created from a procurement
         $history->order_id = $transaction->order_id ?? 0; // if the cash flow is created from a refund
@@ -562,7 +562,7 @@ class TransactionService
                     $history->transaction_id = $transaction->id;
                     $history->operation = 'debit';
                     $history->author = $transaction->author;
-                    $history->trigger_date = ns()->date->toDateTimeString();
+                    $history->trigger_date = sb()->date->toDateTimeString();
                     $history->type = $transaction->type;
                     $history->status = TransactionHistory::STATUS_ACTIVE;
                     $history->name = str_replace( '{user}', ucwords( $user->username ), $transaction->name );
@@ -739,19 +739,19 @@ class TransactionService
          */
         if ( ! $rule instanceof TransactionActionRule ) {
             if ( $procurement->payment_status === Procurement::PAYMENT_PAID ) {
-                return ns()->notification->create(
+                return sb()->notification->create(
                     title: __( 'Accounting Misconfiguration' ),
                     identifier: 'accounting-procurement-misconfiguration',
-                    url: ns()->route( 'ns.dashboard.transactions-rules' ),
+                    url: sb()->route( 'sb.dashboard.transactions-rules' ),
                     description: __( 'Unable to record accounting transactions for paid procurement. Until the accounts rules are set, records are skipped.' )
-                )->dispatchForPermissions( [ 'jgrem.create.transactions-account' ] );
+                )->dispatchForPermissions( [ 'subul.create.transactions-account' ] );
             } else {
-                return ns()->notification->create(
+                return sb()->notification->create(
                     title: __( 'Accounting Misconfiguration' ),
                     identifier: 'accounting-procurement-misconfiguration',
-                    url: ns()->route( 'ns.dashboard.transactions-rules' ),
+                    url: sb()->route( 'sb.dashboard.transactions-rules' ),
                     description: __( 'Unable to record accounting transactions for unpaid procurement. Until the accounts rules are set, records are skipped.' )
-                )->dispatchForPermissions( [ 'jgrem.create.transactions-account' ] );
+                )->dispatchForPermissions( [ 'subul.create.transactions-account' ] );
             }
         }
 
@@ -759,21 +759,21 @@ class TransactionService
         $offset = TransactionAccount::find( $rule->offset_account_id );
 
         if ( ! $account instanceof TransactionAccount ) {
-            return ns()->notification->create(
+            return sb()->notification->create(
                 title: __( 'Accounting Misconfiguration' ),
                 identifier: 'accounting-procurement-misconfiguration',
-                url: ns()->route( 'ns.dashboard.transactions-rules' ),
+                url: sb()->route( 'sb.dashboard.transactions-rules' ),
                 description: sprintf( __( 'Unable to record accounting transactions as the account set to the rule assigned to the action "%s" can\'t be found.' ), $this->getActionLabel( $rule->on ) )
-            )->dispatchForPermissions( [ 'jgrem.create.transactions-account' ] );
+            )->dispatchForPermissions( [ 'subul.create.transactions-account' ] );
         }
 
         if ( ! $offset instanceof TransactionAccount ) {
-            return ns()->notification->create(
+            return sb()->notification->create(
                 title: __( 'Accounting Misconfiguration' ),
                 identifier: 'accounting-procurement-misconfiguration',
-                url: ns()->route( 'ns.dashboard.transactions-rules' ),
+                url: sb()->route( 'sb.dashboard.transactions-rules' ),
                 description: sprintf( __( 'Unable to record accounting transactions as the offset account set to the rule assigned to the action "%s" can\'t be found.' ), $this->getActionLabel( $rule->on ) )
-            )->dispatchForPermissions( [ 'jgrem.create.transactions-account' ] );
+            )->dispatchForPermissions( [ 'subul.create.transactions-account' ] );
         }
 
         $operation = $accounts[ $account->category_identifier ][ $rule->action ];
@@ -807,31 +807,31 @@ class TransactionService
         $rule = TransactionActionRule::where( 'on', TransactionActionRule::RULE_ORDER_FROM_UNPAID_TO_PAID )->first();
 
         if ( ! $rule instanceof TransactionActionRule ) {
-            ns()->notification->create(
+            sb()->notification->create(
                 title: __( 'Accounting Rule Misconfiguration' ),
                 identifier: 'accounting-unpaid-to-paid-order-misconfiguration',
-                url: ns()->route( 'ns.dashboard.transactions-rules' ),
+                url: sb()->route( 'sb.dashboard.transactions-rules' ),
                 description: sprintf(
                     __( 'Unable to record accounting transactions for the order %s which was initially unpaid and then paid. No rule was set for this.' ),
                     $order->code
                 )
-            )->dispatchForPermissions( [ 'jgrem.create.transactions-account' ] );
+            )->dispatchForPermissions( [ 'subul.create.transactions-account' ] );
         }
 
         $accounts = config( 'accounting' )[ 'accounts' ];
         $account = TransactionAccount::find( $rule->account_id );
 
         if ( ! $account instanceof TransactionAccount ) {
-            ns()->notification->create(
+            sb()->notification->create(
                 title: __( 'Accounting Rule Misconfiguration' ),
                 identifier: 'accounting-unpaid-to-paid-order-misconfiguration',
-                url: ns()->route( 'ns.dashboard.transactions-rules' ),
+                url: sb()->route( 'sb.dashboard.transactions-rules' ),
                 description: sprintf(
                     __( 'Unable to record accounting transactions for the order %s which was initially unpaid and then paid. The account set to the rule assigned to the action "%s" can\'t be found.' ),
                     $order->code,
                     $this->getActionLabel( $rule->on )
                 )
-            )->dispatchForPermissions( [ 'jgrem.create.transactions-account' ] );
+            )->dispatchForPermissions( [ 'subul.create.transactions-account' ] );
         }
 
         $operation = $accounts[ $account->category_identifier ][ $rule->action ];
@@ -854,31 +854,31 @@ class TransactionService
         $rule = TransactionActionRule::where( 'on', TransactionActionRule::RULE_ORDER_UNPAID_VOIDED )->first();
 
         if ( ! $rule instanceof TransactionActionRule ) {
-            ns()->notification->create(
+            sb()->notification->create(
                 title: __( 'Accounting Rule Misconfiguration' ),
                 identifier: 'accounting-unpaid-to-void-order-misconfiguration',
-                url: ns()->route( 'ns.dashboard.transactions-rules' ),
+                url: sb()->route( 'sb.dashboard.transactions-rules' ),
                 description: sprintf(
                     __( 'Unable to record accounting transactions for the order %s which was initially unpaid and then voided. No rule was set for this.' ),
                     $order->code
                 )
-            )->dispatchForPermissions( [ 'jgrem.create.transactions-account' ] );
+            )->dispatchForPermissions( [ 'subul.create.transactions-account' ] );
         }
 
         $accounts = config( 'accounting' )[ 'accounts' ];
         $account = TransactionAccount::find( $rule->account_id );
 
         if ( ! $account instanceof TransactionAccount ) {
-            ns()->notification->create(
+            sb()->notification->create(
                 title: __( 'Accounting Rule Misconfiguration' ),
                 identifier: 'accounting-unpaid-to-void-order-misconfiguration',
-                url: ns()->route( 'ns.dashboard.transactions-rules' ),
+                url: sb()->route( 'sb.dashboard.transactions-rules' ),
                 description: sprintf(
                     __( 'Unable to record accounting transactions for the order %s which was initially unpaid and then voided. The account set to the rule assigned to the action "%s" can\'t be found.' ),
                     $order->code,
                     $this->getActionLabel( $rule->on )
                 )
-            )->dispatchForPermissions( [ 'jgrem.create.transactions-account' ] );
+            )->dispatchForPermissions( [ 'subul.create.transactions-account' ] );
         }
 
         $operation = $accounts[ $account->category_identifier ][ $rule->action ];
@@ -911,31 +911,31 @@ class TransactionService
         $rule = TransactionActionRule::where( 'on', TransactionActionRule::RULE_ORDER_PAID_VOIDED )->first();
 
         if ( ! $rule instanceof TransactionActionRule ) {
-            ns()->notification->create(
+            sb()->notification->create(
                 title: __( 'Accounting Rule Misconfiguration' ),
                 identifier: 'accounting-paid-to-void-order-misconfiguration',
-                url: ns()->route( 'ns.dashboard.transactions-rules' ),
+                url: sb()->route( 'sb.dashboard.transactions-rules' ),
                 description: sprintf(
                     __( 'Unable to record accounting transactions for the order %s which was initially paid and then voided. No rule was set for this.' ),
                     $order->code
                 )
-            )->dispatchForPermissions( [ 'jgrem.create.transactions-account' ] );
+            )->dispatchForPermissions( [ 'subul.create.transactions-account' ] );
         }
 
         $accounts = config( 'accounting' )[ 'accounts' ];
         $account = TransactionAccount::find( $rule->account_id );
 
         if ( ! $account instanceof TransactionAccount ) {
-            ns()->notification->create(
+            sb()->notification->create(
                 title: __( 'Accounting Rule Misconfiguration' ),
                 identifier: 'accounting-paid-to-void-order-misconfiguration',
-                url: ns()->route( 'ns.dashboard.transactions-rules' ),
+                url: sb()->route( 'sb.dashboard.transactions-rules' ),
                 description: sprintf(
                     __( 'Unable to record accounting transactions for the order %s which was initially paid and then voided. The account set to the rule assigned to the action "%s" can\'t be found.' ),
                     $order->code,
                     $this->getActionLabel( $rule->on )
                 )
-            )->dispatchForPermissions( [ 'jgrem.create.transactions-account' ] );
+            )->dispatchForPermissions( [ 'subul.create.transactions-account' ] );
         }
 
         $operation = $accounts[ $account->category_identifier ][ $rule->action ];
@@ -1005,15 +1005,15 @@ class TransactionService
         $rule = TransactionActionRule::where( 'on', $ruleOn )->first();
 
         if ( ! $rule instanceof TransactionActionRule ) {
-            ns()->notification->create(
+            sb()->notification->create(
                 title: __( 'Accounting Rule Misconfiguration' ),
                 identifier: 'accounting-sale-misconfiguration',
-                url: ns()->route( 'ns.dashboard.transactions-rules' ),
+                url: sb()->route( 'sb.dashboard.transactions-rules' ),
                 description: sprintf(
                     __( 'Unable to record accounting transactions for the order %s. No rule was set for this.' ),
                     $order->code
                 )
-            )->dispatchForPermissions( [ 'jgrem.create.transactions-account' ] );
+            )->dispatchForPermissions( [ 'subul.create.transactions-account' ] );
 
             return [
                 'status' => 'error',
@@ -1025,16 +1025,16 @@ class TransactionService
         $offset = TransactionAccount::find( $rule->offset_account_id );
 
         if ( ! $account instanceof TransactionAccount ) {
-            return ns()->notification->create(
+            return sb()->notification->create(
                 title: __( 'Accounting Rule Misconfiguration' ),
                 identifier: 'accounting-sale-misconfiguration',
-                url: ns()->route( 'ns.dashboard.transactions-rules' ),
+                url: sb()->route( 'sb.dashboard.transactions-rules' ),
                 description: sprintf(
                     __( 'Unable to record accounting transactions for the order %s. The accounts set to the rule assigned to the action "%s" can\'t be found.' ),
                     $order->code,
                     $this->getActionLabel( $rule->on )
                 )
-            )->dispatchForPermissions( [ 'jgrem.create.transactions-account' ] );
+            )->dispatchForPermissions( [ 'subul.create.transactions-account' ] );
 
             return [
                 'status' => 'error',
@@ -1074,15 +1074,15 @@ class TransactionService
         $accounts = config( 'accounting' )[ 'accounts' ];
 
         if ( ! $rule instanceof TransactionActionRule ) {
-            return ns()->notification->create(
+            return sb()->notification->create(
                 title: __( 'Accounting Rule Misconfiguration' ),
                 identifier: 'accounting-sale-misconfiguration',
-                url: ns()->route( 'ns.dashboard.transactions-rules' ),
+                url: sb()->route( 'sb.dashboard.transactions-rules' ),
                 description: sprintf(
                     __( 'Unable to record COGS transactions for order %s. Until the accounts rules are set, records are skipped.' ),
                     $order->code
                 )
-            )->dispatchForPermissions( [ 'jgrem.create.transactions-account' ] );
+            )->dispatchForPermissions( [ 'subul.create.transactions-account' ] );
         }
 
         /**
@@ -1094,16 +1094,16 @@ class TransactionService
             $offset = TransactionAccount::find( $rule->offset_account_id );
 
             if ( ! $account instanceof TransactionAccount || ! $offset instanceof TransactionAccount ) {
-                return ns()->notification->create(
+                return sb()->notification->create(
                     title: __( 'Accounting Rule Misconfiguration' ),
                     identifier: 'accounting-sale-misconfiguration',
-                    url: ns()->route( 'ns.dashboard.transactions-rules' ),
+                    url: sb()->route( 'sb.dashboard.transactions-rules' ),
                     description: sprintf(
                         __( 'Unable to record COGS transactions for order %s. Make sure either the account or the offset account are set and assigned to the rule %s.' ),
                         $order->code,
                         $this->getActionLabel( $rule->on )
                     )
-                )->dispatchForPermissions( [ 'jgrem.create.transactions-account' ] );
+                )->dispatchForPermissions( [ 'subul.create.transactions-account' ] );
             }
 
             $operation = $accounts[ $account->category_identifier ][ $rule->action ];
@@ -1147,7 +1147,7 @@ class TransactionService
          * Those features can only be enabled
          * if the jobs are configured correctly.
          */
-        if ( ns()->canPerformAsynchronousOperations() ) {
+        if ( sb()->canPerformAsynchronousOperations() ) {
             $asyncTransactions = [
                 [
                     'identifier' => ReccurringTransactionFields::getIdentifier(),
@@ -1168,12 +1168,12 @@ class TransactionService
             ];
         } else {
             $warningMessage = sprintf(
-                __( 'Some expense type are disabled as JgremPOS is not able to <a target="_blank" href="%s">perform asynchronous requests</a>.' ),
-                'https://my.jgrem.com/en/documentation/troubleshooting/workers-or-async-requests-disabled'
+                __( 'Some expense type are disabled as Subul is not able to <a target="_blank" href="%s">perform asynchronous requests</a>.' ),
+                'https://my.subul.com/en/documentation/troubleshooting/workers-or-async-requests-disabled'
             );
         }
 
-        $configurations = Hook::filter( 'ns-transactions-configurations', [
+        $configurations = Hook::filter( 'sb-transactions-configurations', [
             [
                 'identifier' => DirectTransactionFields::getIdentifier(),
                 'label' => __( 'Direct Expense' ),
@@ -1182,13 +1182,13 @@ class TransactionService
             ], ...$asyncTransactions,
         ] );
 
-        $recurrence = Hook::filter( 'ns-transactions-recurrence', [
+        $recurrence = Hook::filter( 'sb-transactions-recurrence', [
             [
                 'type' => 'select',
                 'label' => __( 'Condition' ),
                 'name' => 'occurrence',
                 'value' => $transaction->occurrence ?? '',
-                'options' => Hook::filter( 'ns-transactions-recurrence-options', Helper::kvToJsOptions( [
+                'options' => Hook::filter( 'sb-transactions-recurrence-options', Helper::kvToJsOptions( [
                     Transaction::OCCURRENCE_START_OF_MONTH => __( 'First Day Of Month' ),
                     Transaction::OCCURRENCE_END_OF_MONTH => __( 'Last Day Of Month' ),
                     Transaction::OCCURRENCE_MIDDLE_OF_MONTH => __( 'Month middle Of Month' ),
@@ -1522,7 +1522,7 @@ class TransactionService
         /**
          * We'll now assign the default offset account for paid expenses
          */
-        ns()->option->set( 'ns_accounting_default_paid_expense_offset_account', $expensesCash[ 'data' ][ 'account' ]->id );
+        sb()->option->set( 'sb_accounting_default_paid_expense_offset_account', $expensesCash[ 'data' ][ 'account' ]->id );
     }
 
     /**

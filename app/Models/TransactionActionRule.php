@@ -52,5 +52,5 @@ class TransactionActionRule extends Model
 
     const RULE_ORDER_UNPAID_VOIDED = 'order_unpaid_voided';
 
-    protected $table = 'jgrem_transactions_actions_rules';
+    protected $table = 'subul_transactions_actions_rules';
 }

@@ -34,25 +34,25 @@ class TransactionCrud extends CrudService
   /**
    * Define the identifier
    */
-  const IDENTIFIER = 'ns.transactions';
+  const IDENTIFIER = 'sb.transactions';
 
   /**
    * define the base table
    */
-  protected $table = 'jgrem_transactions';
+  protected $table = 'subul_transactions';
 
   /**
    * base route name
    */
-  protected $mainRoute = 'ns.transactions';
-  protected $to_route = 'ns.dashboard.transactions';
+  protected $mainRoute = 'sb.transactions';
+  protected $to_route = 'sb.dashboard.transactions';
 
   /**
    * Define namespace
    *
    * @param  string
    */
-  protected $namespace = 'ns.transactions';
+  protected $namespace = 'sb.transactions';
 
   /**
    * Model Used
@@ -63,8 +63,8 @@ class TransactionCrud extends CrudService
    * Adding relation
    */
   public $relations = [
-    ['jgrem_users as user', 'jgrem_transactions.author', '=', 'user.id'],
-    ['jgrem_transactions_accounts as transactions_accounts', 'transactions_accounts.id', '=', 'jgrem_transactions.account_id'],
+    ['subul_users as user', 'subul_transactions.author', '=', 'user.id'],
+    ['subul_transactions_accounts as transactions_accounts', 'transactions_accounts.id', '=', 'subul_transactions.account_id'],
   ];
 
   protected $pick = [
@@ -73,10 +73,10 @@ class TransactionCrud extends CrudService
   ];
 
   protected $permissions = [
-    'create' => 'jgrem.create.transactions',
-    'read' => 'jgrem.read.transactions',
-    'update' => 'jgrem.update.transactions',
-    'delete' => 'jgrem.delete.transactions',
+    'create' => 'subul.create.transactions',
+    'read' => 'subul.read.transactions',
+    'update' => 'subul.update.transactions',
+    'delete' => 'subul.delete.transactions',
   ];
 
   /**
@@ -193,7 +193,7 @@ class TransactionCrud extends CrudService
               description: __('Assign the transaction to an account'),
               validation: 'required',
               props: TransactionAccountCrud::getFormConfig(),
-              component: 'nsCrudForm',
+              component: 'sbCrudForm',
               value: $entry->account_id ?? '',
               options: Helper::toJsOptions(TransactionAccount::get(), ['id', 'name']),
             ),
@@ -395,7 +395,7 @@ class TransactionCrud extends CrudService
    */
   public function beforeDelete($namespace, $id, $model)
   {
-    if ($namespace == 'ns.transactions') {
+    if ($namespace == 'sb.transactions') {
       $this->allowedTo('delete');
 
       /**
@@ -433,21 +433,21 @@ class TransactionCrud extends CrudService
     $entry->action(
       identifier: 'edit',
       label: __('Edit'),
-      url: ns()->url('/dashboard/' . 'accounting/transactions' . '/edit/' . $entry->id),
+      url: sb()->url('/dashboard/' . 'accounting/transactions' . '/edit/' . $entry->id),
       type: 'GOTO',
     );
 
     $entry->action(
       identifier: 'history',
       label: __('History'),
-      url: ns()->url('/dashboard/' . 'accounting/transactions' . '/history/' . $entry->id),
+      url: sb()->url('/dashboard/' . 'accounting/transactions' . '/history/' . $entry->id),
       type: 'GOTO'
     );
 
     $entry->action(
       identifier: 'trigger',
       label: __('Trigger'),
-      url: ns()->url('/api/transactions/trigger/' . $entry->id),
+      url: sb()->url('/api/transactions/trigger/' . $entry->id),
       type: 'GET',
       confirm: [
         'message' => __('Would you like to trigger this expense now?'),
@@ -457,7 +457,7 @@ class TransactionCrud extends CrudService
     $entry->action(
       identifier: 'delete',
       label: __('Delete'),
-      url: ns()->url('/api/crud/ns.transactions/' . $entry->id),
+      url: sb()->url('/api/crud/sb.transactions/' . $entry->id),
       type: 'DELETE',
       confirm: [
         'message' => __('Would you like to delete this ?'),
@@ -519,11 +519,11 @@ class TransactionCrud extends CrudService
   public function getLinks(): array
   {
     return CrudTable::links(
-      list: ns()->url('dashboard/' . 'accounting/transactions'),
-      create: ns()->url('dashboard/' . 'accounting/transactions/create'),
-      edit: ns()->url('dashboard/' . 'accounting/transactions/edit/{id}'),
-      post: ns()->url('api/crud/' . 'ns.transactions'),
-      put: ns()->url('api/crud/' . 'ns.transactions/' . '{id}'),
+      list: sb()->url('dashboard/' . 'accounting/transactions'),
+      create: sb()->url('dashboard/' . 'accounting/transactions/create'),
+      edit: sb()->url('dashboard/' . 'accounting/transactions/edit/{id}'),
+      post: sb()->url('api/crud/' . 'sb.transactions'),
+      put: sb()->url('api/crud/' . 'sb.transactions/' . '{id}'),
     );
   }
 
@@ -538,7 +538,7 @@ class TransactionCrud extends CrudService
       [
         'label' => __('Delete Selected Groups'),
         'identifier' => 'delete_selected',
-        'url' => ns()->route('ns.api.crud-bulk-actions', [
+        'url' => sb()->route('sb.api.crud-bulk-actions', [
           'namespace' => $this->namespace,
         ]),
       ],

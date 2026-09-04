@@ -24,7 +24,7 @@ class ProductHistoryCombined extends Model
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'products_histories_combined';
+    protected $table = 'subul_' . 'products_histories_combined';
 
     public function scopeFor( $query, $for )
     {

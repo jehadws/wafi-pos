@@ -24,7 +24,7 @@ class OrderPaymentAfterCreatedEventListener
     public function handle( OrderPaymentAfterCreatedEvent $event )
     {
         TrackCashRegisterJob::dispatchIf(
-            ns()->option->get( 'ns_jgrem_registers_enabled', 'no' ) === 'yes',
+            sb()->option->get( 'sb_subul_registers_enabled', 'no' ) === 'yes',
             $event->orderPayment
         );
 

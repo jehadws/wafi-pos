@@ -7,7 +7,7 @@ use App\Models\TransactionHistory;
 use App\Services\DateService;
 use App\Services\NotificationService;
 use App\Services\TransactionService;
-use App\Traits\NsSerialize;
+use App\Traits\SbSerialize;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -16,7 +16,7 @@ use Illuminate\Queue\SerializesModels;
 
 class ExecuteDelayedTransactionJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, NsSerialize, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, SbSerialize, Queueable, SerializesModels;
 
     /**
      * Create a new job instance.
@@ -41,7 +41,7 @@ class ExecuteDelayedTransactionJob implements ShouldQueue
         $notificationService->create( [
             'title' => __( 'Scheduled Transactions' ),
             'description' => sprintf( __( 'the transaction "%s" was executed as scheduled on %s.' ), $transaction->name, $dateService->getNowFormatted() ),
-            'url' => ns()->route( 'ns.dashboard.transactions.history', [ 'transaction' => $transaction->id ] ),
+            'url' => sb()->route( 'sb.dashboard.transactions.history', [ 'transaction' => $transaction->id ] ),
         ] )->dispatchForGroup( [ Role::namespace( Role::ADMIN ), Role::namespace( Role::STOREADMIN ) ] );
     }
 }

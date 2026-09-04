@@ -1,7 +1,7 @@
 <?php
 
 /**
- * JgremPOS Controller
+ * Subul Controller
  *
  * @since  1.0
  **/
@@ -60,10 +60,10 @@ class DashboardController extends Controller
 
   public function getBestCashiers()
   {
-    $role = Role::namespace('jgrem.store.cashier');
+    $role = Role::namespace('subul.store.cashier');
     return $role
       ? $role->users()
-          ->select('jgrem_users.id', 'jgrem_users.username', 'jgrem_users.email', 'jgrem_users.total_sales', 'jgrem_users.total_sales_count')
+          ->select('subul_users.id', 'subul_users.username', 'subul_users.email', 'subul_users.total_sales', 'subul_users.total_sales_count')
           ->orderBy('total_sales', 'desc')
           ->limit(10)
           ->get()
@@ -80,7 +80,7 @@ class DashboardController extends Controller
    */
   public function hookOutput($name)
   {
-    Hook::addAction('ns-dashboard-footer', function (Output $output) use ($name) {
+    Hook::addAction('sb-dashboard-footer', function (Output $output) use ($name) {
       Hook::action($name, $output);
     }, 15);
   }
@@ -91,7 +91,7 @@ class DashboardController extends Controller
    */
   private function isElevated(): bool
   {
-    return ns()->hasRole(Role::ADMIN) || ns()->hasRole(Role::STOREADMIN);
+    return sb()->hasRole(Role::ADMIN) || sb()->hasRole(Role::STOREADMIN);
   }
 
   public function getAllDashboardData()
@@ -113,7 +113,7 @@ class DashboardController extends Controller
     $bestCustomers = $isElevated
       ? Customer::orderBy('purchases_amount', 'desc')
           ->limit(5)
-          ->get(['jgrem_users.id', 'jgrem_users.username', 'jgrem_users.email', 'jgrem_users.purchases_amount'])
+          ->get(['subul_users.id', 'subul_users.username', 'subul_users.email', 'subul_users.purchases_amount'])
       : [];
 
     // --- Recent orders ---
@@ -134,7 +134,7 @@ class DashboardController extends Controller
     $cashierRole = Role::namespace(Role::STORECASHIER);
     $bestCashiers = $isElevated && $cashierRole
       ? $cashierRole->users()
-          ->select('jgrem_users.id', 'jgrem_users.username', 'jgrem_users.email', 'jgrem_users.total_sales', 'jgrem_users.total_sales_count')
+          ->select('subul_users.id', 'subul_users.username', 'subul_users.email', 'subul_users.total_sales', 'subul_users.total_sales_count')
           ->orderBy('total_sales', 'desc')
           ->limit(10)
           ->get()

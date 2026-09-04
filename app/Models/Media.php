@@ -10,11 +10,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string         $slug
  * @property \Carbon\Carbon $updated_at
  */
-class Media extends NsModel
+class Media extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_medias';
+    protected $table = 'subul_medias';
 
     protected $casts = [
         'created_at' => DateCast::class,

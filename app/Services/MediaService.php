@@ -38,7 +38,7 @@ class MediaService
 
     public function getMimes()
     {
-        return Hook::filter( 'ns-media-mimes', $this->mimeExtensions );
+        return Hook::filter( 'sb-media-mimes', $this->mimeExtensions );
     }
 
     public function getMimeExtensions()
@@ -52,7 +52,7 @@ class MediaService
      */
     public function getImageMimes(): Collection
     {
-        return Hook::filter( 'ns-media-image-ext', collect( $this->mimeExtensions )
+        return Hook::filter( 'sb-media-image-ext', collect( $this->mimeExtensions )
             ->filter( fn( $value, $key ) => in_array( $key, $this->imageExtensions ) ) );
     }
 
@@ -90,7 +90,7 @@ class MediaService
 
             $year = $this->dateService->year;
             $month = sprintf( '%02d', $this->dateService->month );
-            $folderPath = Hook::filter( 'ns-media-path', $year . DIRECTORY_SEPARATOR . $month . DIRECTORY_SEPARATOR );
+            $folderPath = Hook::filter( 'sb-media-path', $year . DIRECTORY_SEPARATOR . $month . DIRECTORY_SEPARATOR );
             $indexPath = $folderPath . 'index.html';
 
             /**
@@ -124,7 +124,7 @@ class MediaService
             $media = new Media;
             $media->name = $fileName;
             $media->extension = $extension;
-            $media->slug = Hook::filter( 'ns-media-path', $year . '/' . $month . '/' . $fileName );
+            $media->slug = Hook::filter( 'sb-media-path', $year . '/' . $month . '/' . $fileName );
             $media->user_id = Auth::id();
             $media->save();
 

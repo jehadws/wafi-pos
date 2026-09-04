@@ -20,9 +20,9 @@ class SetupCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Install JgremPOS from the command line.';
+    protected $description = 'Install Subul from the command line.';
 
-    private $ns_store_name;
+    private $sb_store_name;
 
     private $admin_username;
 
@@ -61,7 +61,7 @@ class SetupCommand extends Command
             ! empty( $this->option( 'admin_username' ) ) &&
             ! empty( $this->option( 'admin_password' ) )
         ) {
-            $this->ns_store_name = $this->option( 'store_name' );
+            $this->sb_store_name = $this->option( 'store_name' );
             $this->admin_email = $this->option( 'admin_email' );
             $this->admin_username = $this->option( 'admin_username' );
             $this->admin_password = $this->option( 'admin_password' );
@@ -80,7 +80,7 @@ class SetupCommand extends Command
         }
 
         if ( Helper::installed() ) {
-            return $this->error( __( 'JgremPOS is already installed.' ) );
+            return $this->error( __( 'Subul is already installed.' ) );
         }
 
         $this->setupLanguage();
@@ -103,10 +103,10 @@ class SetupCommand extends Command
                 'admin_username' => $this->admin_username,
                 'admin_email' => $this->admin_email,
                 'password' => $this->admin_password,
-                'ns_store_name' => $this->ns_store_name,
+                'sb_store_name' => $this->sb_store_name,
             ] );
 
-            return $this->info( 'Thank you, JgremPOS has been successfully installed.' );
+            return $this->info( 'Thank you, Subul has been successfully installed.' );
         } else {
             return $this->info( 'The installation has been aborded.' );
         }
@@ -114,17 +114,17 @@ class SetupCommand extends Command
 
     private function setupStoreName()
     {
-        while ( empty( $this->ns_store_name ) ) {
-            $this->ns_store_name = $this->ask( __( 'What is the store name ? [Q] to quit.' ) );
+        while ( empty( $this->sb_store_name ) ) {
+            $this->sb_store_name = $this->ask( __( 'What is the store name ? [Q] to quit.' ) );
 
-            if ( $this->ns_store_name === 'Q' ) {
+            if ( $this->sb_store_name === 'Q' ) {
                 $this->info( 'the setup has been interrupted' );
                 exit;
             }
 
-            if ( strlen( $this->ns_store_name ) < 6 ) {
+            if ( strlen( $this->sb_store_name ) < 6 ) {
                 $this->error( __( 'Please provide at least 6 characters for store name.' ) );
-                $this->ns_store_name = null;
+                $this->sb_store_name = null;
             }
         }
     }
@@ -149,12 +149,12 @@ class SetupCommand extends Command
     private function setupLanguage()
     {
         while (empty($this->language)) {
-            $languages = config('jgrem.languages');
+            $languages = config('subul.languages');
             $languageValues = array_values($languages);
             $languageKeys = array_keys($languages);
             
             $selectedLanguage = $this->choice(
-                __('In which language would you like to install JgremPOS ?'), 
+                __('In which language would you like to install Subul ?'), 
                 $languageValues
             );
             

@@ -6,7 +6,7 @@ use App\Casts\DateCast;
 use App\Classes\Output;
 use App\Events\CrudHookEvent;
 use App\Exceptions\NotAllowedException;
-use App\Traits\NsForms;
+use App\Traits\SbForms;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Contracts\View\View as ContractView;
@@ -23,7 +23,7 @@ use TorMorten\Eventy\Facades\Events as Hook;
 
 class CrudService
 {
-  use NsForms;
+  use SbForms;
 
   /**
    * Toggle feature array
@@ -355,8 +355,8 @@ class CrudService
        */
       if (! empty($entry->created_at) || ! empty($entry->updated_at)) {
         $entry->timestamps = false;
-        $entry->created_at = $entry->created_at ?: ns()->date->toDateTimeString();
-        $entry->updated_at = $entry->updated_at ?: ns()->date->toDateTimeString();
+        $entry->created_at = $entry->created_at ?: sb()->date->toDateTimeString();
+        $entry->updated_at = $entry->updated_at ?: sb()->date->toDateTimeString();
       }
 
       $entry->save();
@@ -411,13 +411,24 @@ class CrudService
       $resource->afterPut($unfiltredInputs, $entry, $inputs);
     }
 
+    $message = $id === null ? __('A new entry has been successfully created.') : __('The entry has been successfully updated.');
+
+    /**
+     * API clients (axios) can't follow Inertia/Laravel redirects:
+     * respond with a JSON payload that includes the redirect target
+     * so the frontend can navigate explicitly.
+     */
+    if (request()->expectsJson()) {
+      return response()->json([
+        'status' => 'success',
+        'message' => $message,
+        'redirect' => route($resource->to_route),
+      ]);
+    }
+
     return to_route($resource->to_route, [
       'status' => 'success',
-      // 'data' => [
-      //   'entry' => $entry,
-      //   'editUrl' => str_contains($resource->getLinks()['edit'], '{id}') ? Str::replace('{id}', $entry->id, $resource->getLinks()['edit']) : false,
-      // ],
-      'message' => $id === null ? __('A new entry has been successfully created.') : __('The entry has been successfully updated.'),
+      'message' => $message,
     ]);
   }
 
@@ -971,7 +982,7 @@ class CrudService
 
   protected function hookTableName($tableName): string
   {
-    return Hook::filter('ns-model-table', $tableName);
+    return Hook::filter('sb-model-table', $tableName);
   }
 
   public function hook($query): void
@@ -1040,7 +1051,7 @@ class CrudService
    */
   public function getCrudInstance($namespace)
   {
-    $crudClass = Hook::filter('ns-crud-resource', $namespace);
+    $crudClass = Hook::filter('sb-crud-resource', $namespace);
 
     /**
      * In case nothing handle this crud
@@ -1155,7 +1166,7 @@ class CrudService
       /**
        * This create the src URL using the "namespace".
        */
-      'src' => ns()->url('/api/crud/' . $instance->namespace),
+      'src' => sb()->url('/api/crud/' . $instance->namespace),
 
       /**
        * This pull the creation link. That link should takes the user
@@ -1285,7 +1296,7 @@ class CrudService
        * this automatically build a source URL based on the identifier
        * provided. But can be overwritten with the config.
        */
-      'src' => $config['src'] ?? (ns()->url('/api/crud/' . $instance->namespace . '/' . (! empty($entry) ? 'form-config/' . $entry->id : 'form-config'))),
+      'src' => $config['src'] ?? (sb()->url('/api/crud/' . $instance->namespace . '/' . (! empty($entry) ? 'form-config/' . $entry->id : 'form-config'))),
 
       /**
        * this use the built in links to create a return URL.
@@ -1313,7 +1324,7 @@ class CrudService
   public function allowedTo(string $permission): void
   {
     if (isset($this->permissions) && $this->permissions[$permission] !== false) {
-      ns()->restrict($this->permissions[$permission]);
+      sb()->restrict($this->permissions[$permission]);
     } else {
       throw new NotAllowedException;
     }

@@ -20,7 +20,7 @@ class CheckApplicationHealthMiddleware
          * Will check if either "redis" or "supervisor" is configured
          * and will emit a notification if it's not the case.
          */
-        ns()->checkTaskSchedulingConfiguration();
+        sb()->checkTaskSchedulingConfiguration();
 
         /**
          * We'll only perform this is the QUEUE_CONNECTION
@@ -29,15 +29,15 @@ class CheckApplicationHealthMiddleware
         if ( in_array( env( 'QUEUE_CONNECTION' ), [ 'sync' ] ) ) {
             /**
              * Will check if Cron Jobs are
-             * correctly set for JgremPOS
+             * correctly set for Subul
              */
-            ns()->checkCronConfiguration();
+            sb()->checkCronConfiguration();
 
             /**
              * Will check wether symbolic link
              * is created to the storage
              */
-            ns()->checkSymbolicLinks();
+            sb()->checkSymbolicLinks();
         }
 
         /**

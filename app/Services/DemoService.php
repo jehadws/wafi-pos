@@ -60,7 +60,7 @@ class DemoService extends DemoCoreService
          * they are complex (array), this methods allow
          * external script to reinject those complex fields.
          */
-        $primary = Hook::filter( 'ns-create-products-inputs', $primary, $source );
+        $primary = Hook::filter( 'sb-create-products-inputs', $primary, $source );
 
         /**
          * the method "create" is capable of
@@ -153,7 +153,7 @@ class DemoService extends DemoCoreService
                             ->units->map( function ( $unit ) use ( $product ) {
                                 return [
                                     'sale_price_edit' => $product->price * $unit->value,
-                                    'wholesale_price_edit' => ns()->currency->getPercentageValue( $product->price, 10, 'substract' ) * $unit->value,
+                                    'wholesale_price_edit' => sb()->currency->getPercentageValue( $product->price, 10, 'substract' ) * $unit->value,
                                     'unit_id' => $unit->id,
                                     'preview_url' => asset( $product->image ),
                                 ];

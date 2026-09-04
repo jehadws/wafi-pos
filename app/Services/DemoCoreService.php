@@ -114,17 +114,17 @@ class DemoCoreService
         $optionService = app()->make( Options::class );
 
         $optionService->set(
-            'ns_jgrem_order_types',
+            'sb_subul_order_types',
             array_keys( $orderTypes )
         );
 
         $optionService->set(
-            'ns_currency_symbol',
+            'sb_currency_symbol',
             '$'
         );
 
         $optionService->set(
-            'ns_currency_iso',
+            'sb_currency_iso',
             'USD'
         );
     }
@@ -134,13 +134,13 @@ class DemoCoreService
         $register = new Register;
         $register->name = __( 'Terminal A' );
         $register->status = Register::STATUS_CLOSED;
-        $register->author = ns()->getValidAuthor();
+        $register->author = sb()->getValidAuthor();
         $register->save();
 
         $register = new Register;
         $register->name = __( 'Terminal B' );
         $register->status = Register::STATUS_CLOSED;
-        $register->author = ns()->getValidAuthor();
+        $register->author = sb()->getValidAuthor();
         $register->save();
     }
 
@@ -288,7 +288,7 @@ class DemoCoreService
          */
         $reportService = app()->make( ReportService::class );
         $dates = [];
-        $startOfRange = ns()->date->clone()->subDays( $this->daysRange );
+        $startOfRange = sb()->date->clone()->subDays( $this->daysRange );
 
         for ( $i = 0; $i <= $this->daysRange; $i++ ) {
             $dates[] = $startOfRange->clone();
@@ -330,7 +330,7 @@ class DemoCoreService
             $customerFirstPurchases = $customer->purchases_amount;
             $customerFirstOwed = $customer->owed_amount;
 
-            $subtotal = ns()->currency->define( $products->map( function ( $product ) use ( $currency ) {
+            $subtotal = sb()->currency->define( $products->map( function ( $product ) use ( $currency ) {
                 return $currency
                     ->define( $product[ 'unit_price' ] )
                     ->multiplyBy( $product[ 'quantity' ] )

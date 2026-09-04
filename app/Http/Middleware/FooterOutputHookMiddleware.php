@@ -19,11 +19,11 @@ class FooterOutputHookMiddleware
     {
         /**
          * This allows creating custom header and footer hook action
-         * using the route name. For example a route having as name "ns.dashboard.home"
-         * Will now have 2 hooks "ns-dashboard-home-header" and "ns-dashboard-home-footer"
+         * using the route name. For example a route having as name "sb.dashboard.home"
+         * Will now have 2 hooks "sb-dashboard-home-header" and "sb-dashboard-home-footer"
          */
         collect( [ 'header', 'footer' ] )->each( function ( $arg ) {
-            $hookName = 'ns-dashboard-' . $arg;
+            $hookName = 'sb-dashboard-' . $arg;
 
             Hook::addAction( $hookName, function ( Output $output ) use ( $arg ) {
                 $exploded = explode( '.', request()->route()->getName() );

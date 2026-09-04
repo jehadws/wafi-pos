@@ -17,10 +17,10 @@ class CheckMigrationStatus
    */
   public function handle(Request $request, Closure $next)
   {
-    if (ns()->update->getMigrations()->count() > 0) {
+    if (sb()->update->getMigrations()->count() > 0) {
       session(['after_update' => url()->current()]);
 
-      return redirect(ns()->route('database-update'));
+      return redirect(sb()->route('sb.database-update'));
     }
 
     if (Helper::installed()) {
@@ -32,7 +32,7 @@ class CheckMigrationStatus
       $total = $modules->filter(fn($module) => count($module['migrations']) > 0);
 
       if ($total->count() > 0) {
-        return redirect(ns()->route('database-update'));
+        return redirect(sb()->route('sb.database-update'));
       }
     }
 

@@ -34,7 +34,7 @@ class OrderAfterDeletedEventListener
         $this->cashRegistersService->deleteRegisterHistoryUsingOrder( $event->order );
 
         /**
-         * We'll instruct JgremPOS to perform
+         * We'll instruct Subul to perform
          * a backend jobs to update the report.
          */
         ShouldRefreshReportEvent::dispatch( now()->parse( $event->order->updated_at ) );

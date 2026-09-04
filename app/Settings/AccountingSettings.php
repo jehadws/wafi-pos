@@ -29,7 +29,7 @@ class AccountingSettings extends SettingsPage
           label: __('General'),
           fields: include(dirname(__FILE__) . '/accounting/general.php'),
           // footer: SettingForm::tabFooter(
-          //   extraComponents: ['nsDefaultAccounting'] // components defined on "resources/ts/components"
+          //   extraComponents: ['sbDefaultAccounting'] // components defined on "resources/ts/components"
           // )
         ),
       ),
@@ -39,8 +39,8 @@ class AccountingSettings extends SettingsPage
   public function getPayload()
   {
     return [
-      'ns_accounting_expenses_accounts' => ns()->option->get('ns_accounting_expenses_accounts'),
-      'ns_accounting_default_paid_expense_offset_account' => ns()->option->get('ns_accounting_default_paid_expense_offset_account'),
+      'sb_accounting_expenses_accounts' => sb()->option->get('sb_accounting_expenses_accounts'),
+      'sb_accounting_default_paid_expense_offset_account' => sb()->option->get('sb_accounting_default_paid_expense_offset_account'),
     ];
   }
 
@@ -52,8 +52,8 @@ class AccountingSettings extends SettingsPage
     });
 
     return [
-      'ns_accounting_expenses_accounts' => $accounts['expenses'],
-      'ns_accounting_default_paid_expense_offset_account' =>  $accounts['assets'],
+      'sb_accounting_expenses_accounts' => $accounts['expenses'],
+      'sb_accounting_default_paid_expense_offset_account' =>  $accounts['assets'],
     ];
   }
 }

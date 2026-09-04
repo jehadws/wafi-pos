@@ -11,5 +11,5 @@ Route::get( 'crud/{namespace}/form-config/{id?}', [ CrudController::class, 'getF
 Route::put( 'crud/{namespace}/{id}', [ CrudController::class, 'crudPut' ] )->where( ['id' => '[0-9]+'] );
 Route::post( 'crud/{namespace}', [ CrudController::class, 'crudPost' ] );
 Route::post( 'crud/{namespace}/export', [ CrudController::class, 'exportCrud' ] );
-Route::post( 'crud/{namespace}/bulk-actions', [ CrudController::class, 'crudBulkActions' ] )->name( Hook::filter( 'ns-route-name', 'ns.api.crud-bulk-actions' ) );
+Route::post( 'crud/{namespace}/bulk-actions', [ CrudController::class, 'crudBulkActions' ] )->name( Hook::filter( 'sb-route-name', 'sb.api.crud-bulk-actions' ) );
 Route::delete( 'crud/{namespace}/{id}', [ CrudController::class, 'crudDelete' ] );

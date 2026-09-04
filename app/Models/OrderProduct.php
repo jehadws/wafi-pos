@@ -7,8 +7,8 @@ use App\Events\OrderProductAfterCreatedEvent;
 use App\Events\OrderProductAfterUpdatedEvent;
 use App\Events\OrderProductBeforeCreatedEvent;
 use App\Events\OrderProductBeforeUpdatedEvent;
-use App\Traits\NsFiltredAttributes;
-use App\Traits\NsFlashData;
+use App\Traits\SbFiltredAttributes;
+use App\Traits\SbFlashData;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
@@ -46,15 +46,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property Unit    $unit
  * @property Product $product
  */
-class OrderProduct extends NsModel
+class OrderProduct extends SbModel
 {
-    use HasFactory, NsFiltredAttributes, NsFlashData;
+    use HasFactory, SbFiltredAttributes, SbFlashData;
 
     const CONDITION_DAMAGED = 'damaged';
 
     const CONDITION_UNSPOILED = 'unspoiled';
 
-    protected $table = 'jgrem_' . 'orders_products';
+    protected $table = 'subul_' . 'orders_products';
 
     protected $casts = [
         'id' => 'integer',

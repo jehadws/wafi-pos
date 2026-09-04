@@ -19,24 +19,24 @@ class ProviderCrud extends CrudService
   /**
    * Define the identifier
    */
-  const IDENTIFIER = 'ns.providers';
+  const IDENTIFIER = 'sb.providers';
 
   /**
    * define the base table
    */
-  protected $table = 'jgrem_providers';
+  protected $table = 'subul_providers';
 
   /**
    * base route name
    */
-  protected $mainRoute = 'ns.providers';
+  protected $mainRoute = 'sb.providers';
 
   /**
    * Define namespace
    *
    * @param  string
    */
-  protected $namespace = 'ns.providers';
+  protected $namespace = 'sb.providers';
 
   /**
    * Model Used
@@ -47,7 +47,7 @@ class ProviderCrud extends CrudService
    * Adding relation
    */
   public $relations = [
-    ['jgrem_users', 'jgrem_users.id', '=', 'jgrem_providers.author'],
+    ['subul_users', 'subul_users.id', '=', 'subul_providers.author'],
   ];
 
 
@@ -55,7 +55,7 @@ class ProviderCrud extends CrudService
    * redirect to route after creating
    *
    */
-  public $to_route = 'ns.dashboard.providers';
+  public $to_route = 'sb.dashboard.providers';
 
   /**
    * Define where statement
@@ -82,10 +82,10 @@ class ProviderCrud extends CrudService
    * @param  array
    */
   protected $permissions = [
-    'create' => 'jgrem.create.providers',
-    'read' => 'jgrem.read.providers',
-    'update' => 'jgrem.update.providers',
-    'delete' => 'jgrem.delete.providers',
+    'create' => 'subul.create.providers',
+    'read' => 'subul.read.providers',
+    'update' => 'subul.update.providers',
+    'delete' => 'subul.delete.providers',
   ];
 
   /**
@@ -288,7 +288,7 @@ class ProviderCrud extends CrudService
    */
   public function beforeDelete($namespace, $id, $model)
   {
-    if ($namespace == 'ns.providers') {
+    if ($namespace == 'sb.providers') {
       $this->allowedTo('delete');
     }
   }
@@ -324,7 +324,7 @@ class ProviderCrud extends CrudService
         '$direction' => '',
         '$sort' => false,
       ],
-      'jgrem_users_username' => [
+      'subul_users_username' => [
         'label' => __('Author'),
         '$direction' => '',
         '$sort' => false,
@@ -345,15 +345,15 @@ class ProviderCrud extends CrudService
     $entry->phone = $entry->phone ?? __('N/A');
     $entry->email = $entry->email ?? __('N/A');
 
-    $entry->amount_due = ns()->currency->define($entry->amount_due)->format();
-    $entry->amount_paid = ns()->currency->define($entry->amount_paid)->format();
+    $entry->amount_due = sb()->currency->define($entry->amount_due)->format();
+    $entry->amount_paid = sb()->currency->define($entry->amount_paid)->format();
 
     // Snippet 1
     $entry->action(
       identifier: 'edit',
       label: __('Edit'),
       type: 'GOTO',
-      url: ns()->url('/dashboard/' . 'providers' . '/edit/' . $entry->id)
+      url: sb()->url('/dashboard/' . 'providers' . '/edit/' . $entry->id)
     );
 
     // Snippet 2
@@ -361,7 +361,7 @@ class ProviderCrud extends CrudService
       identifier: 'see-procurements',
       label: __('See Procurements'),
       type: 'GOTO',
-      url: ns()->url('/dashboard/' . 'providers/' . $entry->id . '/procurements/')
+      url: sb()->url('/dashboard/' . 'providers/' . $entry->id . '/procurements/')
     );
 
     // Snippet 3
@@ -369,7 +369,7 @@ class ProviderCrud extends CrudService
       identifier: 'see-products',
       label: __('See Products'),
       type: 'GOTO',
-      url: ns()->url('/dashboard/' . 'providers/' . $entry->id . '/products/')
+      url: sb()->url('/dashboard/' . 'providers/' . $entry->id . '/products/')
     );
 
     // Snippet 4
@@ -377,7 +377,7 @@ class ProviderCrud extends CrudService
       identifier: 'delete',
       label: __('Delete'),
       type: 'DELETE',
-      url: ns()->url('/api/crud/ns.providers/' . $entry->id),
+      url: sb()->url('/api/crud/sb.providers/' . $entry->id),
       confirm: [
         'message' => __('Would you like to delete this ?'),
       ]
@@ -436,11 +436,11 @@ class ProviderCrud extends CrudService
   public function getLinks(): array
   {
     return [
-      'list' => ns()->url('dashboard/' . 'providers'),
-      'create' => ns()->url('dashboard/' . 'providers/create'),
-      'edit' => ns()->url('dashboard/' . 'providers/edit/'),
-      'post' => ns()->url('api/crud/' . 'ns.providers'),
-      'put' => ns()->url('api/crud/' . 'ns.providers/{id}' . ''),
+      'list' => sb()->url('dashboard/' . 'providers'),
+      'create' => sb()->url('dashboard/' . 'providers/create'),
+      'edit' => sb()->url('dashboard/' . 'providers/edit/'),
+      'post' => sb()->url('api/crud/' . 'sb.providers'),
+      'put' => sb()->url('api/crud/' . 'sb.providers/{id}' . ''),
     ];
   }
 
@@ -455,7 +455,7 @@ class ProviderCrud extends CrudService
       [
         'label' => __('Delete Selected Groups'),
         'identifier' => 'delete_selected',
-        'url' => ns()->route('ns.api.crud-bulk-actions', [
+        'url' => sb()->route('sb.api.crud-bulk-actions', [
           'namespace' => $this->namespace,
         ]),
       ],

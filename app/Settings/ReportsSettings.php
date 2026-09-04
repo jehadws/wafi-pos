@@ -25,14 +25,14 @@ class ReportsSettings extends SettingsPage
   public function getPayload()
   {
     return [
-      'ns_reports_email' => ns()->option->get('ns_reports_email'),
+      'sb_reports_email' => sb()->option->get('sb_reports_email'),
     ];
   }
 
   public function getOptions()
   {
     return [
-      'ns_reports_email' =>  Helper::kvToJsOptions([
+      'sb_reports_email' =>  Helper::kvToJsOptions([
         'yes' => __('Yes'),
         'no' => __('No'),
       ]),

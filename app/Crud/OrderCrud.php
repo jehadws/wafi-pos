@@ -33,25 +33,25 @@ class OrderCrud extends CrudService
   /**
    * Define the identifier
    */
-  const IDENTIFIER = 'ns.orders';
+  const IDENTIFIER = 'sb.orders';
 
   /**
    * define the base table
    */
-  protected $table = 'jgrem_orders';
+  protected $table = 'subul_orders';
 
   /**
    * base route name
    */
-  protected $mainRoute = 'ns.orders';
+  protected $mainRoute = 'sb.orders';
 
   /**
    * Define namespace
    *
    * @param  string
    */
-  protected $namespace = 'ns.orders';
-  protected $to_route = 'ns.dashboard.orders';
+  protected $namespace = 'sb.orders';
+  protected $to_route = 'sb.dashboard.orders';
 
   /**
    * Model Used
@@ -62,8 +62,8 @@ class OrderCrud extends CrudService
    * Adding relation
    */
   public $relations = [
-    ['jgrem_users as author', 'jgrem_orders.author', '=', 'author.id'],
-    ['jgrem_users as customer', 'jgrem_orders.customer_id', '=', 'customer.id'],
+    ['subul_users as author', 'subul_orders.author', '=', 'author.id'],
+    ['subul_users as customer', 'subul_orders.customer_id', '=', 'customer.id'],
   ];
 
   public $pick = [
@@ -99,10 +99,10 @@ class OrderCrud extends CrudService
   public $fillable = [];
 
   protected $permissions = [
-    'create' => 'jgrem.create.orders',
-    'read' => 'jgrem.read.orders',
-    'update' => 'jgrem.update.orders',
-    'delete' => 'jgrem.delete.orders',
+    'create' => 'subul.create.orders',
+    'read' => 'subul.read.orders',
+    'update' => 'subul.update.orders',
+    'delete' => 'subul.delete.orders',
   ];
 
   protected $casts = [
@@ -138,7 +138,7 @@ class OrderCrud extends CrudService
     $this->queryFilters = [
       [
         'type' => 'daterangepicker',
-        'name' => 'jgrem_orders.created_at',
+        'name' => 'subul_orders.created_at',
         'description' => __('Restrict the orders by the creation date.'),
         'label' => __('Created Between'),
       ],
@@ -162,7 +162,7 @@ class OrderCrud extends CrudService
       [
         'type' => 'select',
         'label' => __('Author'),
-        'name' => 'jgrem_orders.author',
+        'name' => 'subul_orders.author',
         'description' => __('Filter the orders by the author.'),
         'options' => Helper::toJsOptions($UserClass::get(), ['id', 'username']),
       ],
@@ -315,7 +315,7 @@ class OrderCrud extends CrudService
    */
   public function beforeDelete($namespace, $id, $model)
   {
-    if ($namespace == 'ns.orders') {
+    if ($namespace == 'sb.orders') {
       $this->allowedTo('delete');
 
       /**
@@ -379,17 +379,17 @@ class OrderCrud extends CrudService
     };
 
     $entry->action(
-      identifier: 'ns.order-options',
+      identifier: 'sb.order-options',
       label: '<i class="mr-2 las la-cogs"></i> ' . __('Options'),
       type: 'POPUP',
-      url: ns()->url('/dashboard/' . 'orders' . '/edit/' . $entry->id)
+      url: sb()->url('/dashboard/' . 'orders' . '/edit/' . $entry->id)
     );
 
     /**
      * We'll check if the order has refunds
      * to add a refund receipt for printing
      */
-    $refundCount = DB::table(Hook::filter('ns-model-table', 'jgrem_orders_refunds'))
+    $refundCount = DB::table(Hook::filter('sb-model-table', 'subul_orders_refunds'))
       ->where('order_id', $entry->id)
       ->count();
 
@@ -397,30 +397,30 @@ class OrderCrud extends CrudService
 
     if ($hasRefunds) {
       $entry->action(
-        identifier: 'ns.order-refunds',
+        identifier: 'sb.order-refunds',
         label: '<i class="mr-2 las la-receipt"></i> ' . __('Refund Receipt'),
         type: 'POPUP',
-        url: ns()->url('/dashboard/' . 'orders' . '/refund-receipt/' . $entry->id),
+        url: sb()->url('/dashboard/' . 'orders' . '/refund-receipt/' . $entry->id),
       );
     }
 
     $entry->action(
       identifier: 'invoice',
       label: '<i class="mr-2 las la-file-invoice-dollar"></i> ' . __('Invoice'),
-      url: ns()->url('/dashboard/' . 'orders' . '/invoice/' . $entry->id),
+      url: sb()->url('/dashboard/' . 'orders' . '/invoice/' . $entry->id),
     );
 
     $entry->action(
       identifier: 'receipt',
       label: '<i class="mr-2 las la-receipt"></i> ' . __('Receipt'),
-      url: ns()->url('/dashboard/' . 'orders' . '/receipt/' . $entry->id),
+      url: sb()->url('/dashboard/' . 'orders' . '/receipt/' . $entry->id),
     );
 
     $entry->action(
       identifier: 'delete',
       label: '<i class="mr-2 las la-trash"></i> ' . __('Delete'),
       type: 'DELETE',
-      url: ns()->url('/api/crud/ns.orders/' . $entry->id),
+      url: sb()->url('/api/crud/sb.orders/' . $entry->id),
       confirm: [
         'message' => __('Would you like to delete this ?'),
       ],
@@ -440,7 +440,7 @@ class OrderCrud extends CrudService
     if ($request->input('action') == 'delete_selected') {
 
       if ($this->permissions['delete'] !== false) {
-        ns()->restrict($this->permissions['delete']);
+        sb()->restrict($this->permissions['delete']);
       } else {
         throw new NotAllowedException(__('Deleting has been explicitely disabled on this component.'));
       }
@@ -474,9 +474,9 @@ class OrderCrud extends CrudService
   public function getLinks(): array
   {
     return [
-      'list' => 'ns.orders',
-      'create' => ns()->route('ns.dashboard.pos'),
-      'edit' => 'ns.orders/edit/#',
+      'list' => 'sb.orders',
+      'create' => sb()->route('sb.dashboard.pos'),
+      'edit' => 'sb.orders/edit/#',
     ];
   }
 
@@ -491,7 +491,7 @@ class OrderCrud extends CrudService
       [
         'label' => __('Delete Selected Groups'),
         'identifier' => 'delete_selected',
-        'url' => ns()->route('ns.api.crud-bulk-actions', [
+        'url' => sb()->route('sb.api.crud-bulk-actions', [
           'namespace' => $this->namespace,
         ]),
       ],

@@ -14,8 +14,8 @@ return [
     'label' => __( 'Layout' ),
     'fields' => [
         [
-            'name' => 'ns_jgrem_layout',
-            'value' => ns()->option->get( 'ns_jgrem_layout' ),
+            'name' => 'sb_subul_layout',
+            'value' => sb()->option->get( 'sb_subul_layout' ),
             'options' => Helper::kvToJsOptions( [
                 'grocery_shop' => __( 'Retail Layout' ),
                 'clothing_shop' => __( 'Clothing Shop' ),
@@ -24,15 +24,15 @@ return [
             'type' => 'select',
             'description' => __( 'Change the layout of the POS.' ),
         ], [
-            'name' => 'ns_jgrem_complete_sale_audio',
-            'value' => ns()->option->get( 'ns_jgrem_complete_sale_audio' ),
+            'name' => 'sb_subul_complete_sale_audio',
+            'value' => sb()->option->get( 'sb_subul_complete_sale_audio' ),
             'options' => $audios,
             'label' => __( 'Sale Complete Sound' ),
             'type' => 'select-audio',
             'description' => __( 'Change the layout of the POS.' ),
         ], [
-            'name' => 'ns_jgrem_new_item_audio',
-            'value' => ns()->option->get( 'ns_jgrem_new_item_audio' ),
+            'name' => 'sb_subul_new_item_audio',
+            'value' => sb()->option->get( 'sb_subul_new_item_audio' ),
             'options' => $audios,
             'label' => __( 'New Item Audio' ),
             'type' => 'select-audio',

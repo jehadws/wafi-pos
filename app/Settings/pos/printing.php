@@ -5,10 +5,10 @@ use App\Services\Helper;
 
 return [
     'label' => __( 'Printing' ),
-    'fields' => Hook::filter( 'ns-printing-settings-fields', [
+    'fields' => Hook::filter( 'sb-printing-settings-fields', [
         [
-            'name' => 'ns_jgrem_printing_document',
-            'value' => ns()->option->get( 'ns_jgrem_printing_document' ),
+            'name' => 'sb_subul_printing_document',
+            'value' => sb()->option->get( 'sb_subul_printing_document' ),
             'label' => __( 'Printed Document' ),
             'type' => 'select',
             'options' => Helper::kvToJsOptions( [
@@ -17,8 +17,8 @@ return [
             ] ),
             'description' => __( 'Choose the document used for printing aster a sale.' ),
         ], [
-            'name' => 'ns_jgrem_printing_enabled_for',
-            'value' => ns()->option->get( 'ns_jgrem_printing_enabled_for' ),
+            'name' => 'sb_subul_printing_enabled_for',
+            'value' => sb()->option->get( 'sb_subul_printing_enabled_for' ),
             'label' => __( 'Printing Enabled For' ),
             'type' => 'select',
             'options' => Helper::kvToJsOptions( [
@@ -29,8 +29,8 @@ return [
             ] ),
             'description' => __( 'Determine when the printing should be enabled.' ),
         ], [
-            'name' => 'ns_jgrem_printing_gateway',
-            'value' => ns()->option->get( 'ns_jgrem_printing_gateway' ),
+            'name' => 'sb_subul_printing_gateway',
+            'value' => sb()->option->get( 'sb_subul_printing_gateway' ),
             'label' => __( 'Printing Gateway' ),
             'type' => 'select',
             'options' => Helper::kvToJsOptions( [
@@ -38,8 +38,8 @@ return [
             ] ),
             'description' => __( 'Determine what is the gateway used for printing.' ),
         ], [
-            'name' => 'ns_jgrem_printing_auto',
-            'value' => ns()->option->get( 'ns_jgrem_printing_auto', 'yes' ),
+            'name' => 'sb_subul_printing_auto',
+            'value' => sb()->option->get( 'sb_subul_printing_auto', 'yes' ),
             'label' => __( 'Automatic Printing' ),
             'type' => 'select',
             'options' => Helper::kvToJsOptions( [

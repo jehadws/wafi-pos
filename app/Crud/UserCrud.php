@@ -38,24 +38,24 @@ class UserCrud extends CrudService
   /**
    * Define the identifier
    */
-  const IDENTIFIER = 'ns.users';
+  const IDENTIFIER = 'sb.users';
 
   /**
    * define the base table
    */
-  protected $table = 'jgrem_users';
+  protected $table = 'subul_users';
 
   /**
    * base route name
    */
-  protected $mainRoute = 'ns.users';
+  protected $mainRoute = 'sb.users';
 
   /**
    * Define namespace
    *
    * @param  string
    */
-  protected $namespace = 'ns.users';
+  protected $namespace = 'sb.users';
 
   /**
    * Model Used
@@ -68,14 +68,14 @@ class UserCrud extends CrudService
    */
   protected $prependOptions = true;
 
-  public $to_route = 'ns.dashboard.users';
+  public $to_route = 'sb.dashboard.users';
   /**
    * Adding relation
    */
   public $relations = [
     'leftJoin' => [
-      ['jgrem_customers_groups as group', 'jgrem_users.group_id', '=', 'group.id'],
-      ['jgrem_users as author', 'jgrem_users.author', '=', 'author.id'],
+      ['subul_customers_groups as group', 'subul_users.group_id', '=', 'group.id'],
+      ['subul_users as author', 'subul_users.author', '=', 'author.id'],
     ],
   ];
 
@@ -198,9 +198,9 @@ class UserCrud extends CrudService
         'label' => __('Username'),
         'name' => 'username',
         'value' => $entry->username ?? '',
-        'validation' => $entry === null ? 'required|unique:jgrem_users,username' : [
+        'validation' => $entry === null ? 'required|unique:subul_users,username' : [
           'required',
-          Rule::unique('jgrem_users', 'username')->ignore($entry->id),
+          Rule::unique('subul_users', 'username')->ignore($entry->id),
         ],
         'description' => __('Provide a name to the resource.'),
       ],
@@ -212,10 +212,10 @@ class UserCrud extends CrudService
               'type' => 'text',
               'name' => 'email',
               'label' => __('Email'),
-              'validation' => $entry === null ? 'required|email|unique:jgrem_users,email' : [
+              'validation' => $entry === null ? 'required|email|unique:subul_users,email' : [
                 'required',
                 'email',
-                Rule::unique('jgrem_users', 'email')->ignore($entry->id),
+                Rule::unique('subul_users', 'email')->ignore($entry->id),
               ],
               'description' => __('Will be used for various purposes such as email recovery.'),
               'value' => $entry->email ?? '',
@@ -304,8 +304,8 @@ class UserCrud extends CrudService
               'value' => $entry?->phone,
               'label' => __('Phone'),
               'validation' => collect([
-                ns()->option->get('ns_customers_force_unique_phone', 'no') === 'yes' ? (
-                  $entry instanceof User && ! empty($entry->phone) ? Rule::unique('jgrem_users', 'phone')->ignore($entry->id) : Rule::unique('jgrem_users', 'phone')
+                sb()->option->get('sb_customers_force_unique_phone', 'no') === 'yes' ? (
+                  $entry instanceof User && ! empty($entry->phone) ? Rule::unique('subul_users', 'phone')->ignore($entry->id) : Rule::unique('subul_users', 'phone')
                 ) : '',
               ])->toArray(),
               'description' => __('Set the user phone number.'),
@@ -495,7 +495,7 @@ class UserCrud extends CrudService
 
     return collect($inputs)->map(function ($value, $key) {
       if ($key === 'group_id' && empty($value)) {
-        $value = $this->options->get('ns_customers_default_group', false);
+        $value = $this->options->get('sb_customers_default_group', false);
         $group = CustomerGroup::find($value);
 
         if (! $group instanceof CustomerGroup) {
@@ -529,7 +529,7 @@ class UserCrud extends CrudService
 
     return collect($inputs)->map(function ($value, $key) {
       if ($key === 'group_id' && empty($value)) {
-        $value = $this->options->get('ns_customers_default_group', false);
+        $value = $this->options->get('sb_customers_default_group', false);
         $group = CustomerGroup::find($value);
 
         if (! $group instanceof CustomerGroup) {
@@ -636,7 +636,7 @@ class UserCrud extends CrudService
    */
   public function beforeDelete($namespace, int $id, $model)
   {
-    if ($namespace == 'ns.users') {
+    if ($namespace == 'sb.users') {
       $this->allowedTo('delete');
 
       if ($id === Auth::id()) {
@@ -697,38 +697,38 @@ class UserCrud extends CrudService
     $entry->action(
       identifier: 'edit_customers_group',
       label: __('Edit'),
-      url: ns()->url('dashboard/users/edit/' . $entry->id),
+      url: sb()->url('dashboard/users/edit/' . $entry->id),
     );
 
     $entry->action(
       identifier: 'customers_orders',
       label: __('Orders'),
-      url: ns()->url('dashboard/users/' . $entry->id . '/orders'),
+      url: sb()->url('dashboard/users/' . $entry->id . '/orders'),
     );
 
     $entry->action(
       identifier: 'customers_rewards',
       label: __('Rewards'),
-      url: ns()->url('dashboard/users/' . $entry->id . '/rewards'),
+      url: sb()->url('dashboard/users/' . $entry->id . '/rewards'),
     );
 
     $entry->action(
       identifier: 'customers_coupons',
       label: __('Coupons'),
-      url: ns()->url('dashboard/users/' . $entry->id . '/coupons'),
+      url: sb()->url('dashboard/users/' . $entry->id . '/coupons'),
     );
 
     $entry->action(
       identifier: 'customers_history',
       label: __('Wallet History'),
-      url: ns()->url('dashboard/users/' . $entry->id . '/account-history'),
+      url: sb()->url('dashboard/users/' . $entry->id . '/account-history'),
     );
 
     $entry->action(
       identifier: 'delete',
       label: __('Delete'),
       type: 'DELETE',
-      url: ns()->url('/api/crud/ns.users/' . $entry->id),
+      url: sb()->url('/api/crud/sb.users/' . $entry->id),
       confirm: [
         'message' => __('Would you like to delete this ?'),
         'title' => __('Delete a user'),
@@ -797,11 +797,11 @@ class UserCrud extends CrudService
   public function getLinks(): array
   {
     return [
-      'list' => ns()->url('dashboard/' . 'users'),
-      'create' => ns()->url('dashboard/' . 'users/create'),
-      'edit' => ns()->url('dashboard/' . 'users/edit/'),
-      'post' => ns()->url('api/crud/' . 'ns.users'),
-      'put' => ns()->url('api/crud/' . 'ns.users/{id}' . ''),
+      'list' => sb()->url('dashboard/' . 'users'),
+      'create' => sb()->url('dashboard/' . 'users/create'),
+      'edit' => sb()->url('dashboard/' . 'users/edit/'),
+      'post' => sb()->url('api/crud/' . 'sb.users'),
+      'put' => sb()->url('api/crud/' . 'sb.users/{id}' . ''),
     ];
   }
 
@@ -816,7 +816,7 @@ class UserCrud extends CrudService
       [
         'label' => __('Delete Selected Groups'),
         'identifier' => 'delete_selected',
-        'url' => ns()->route('ns.api.crud-bulk-actions', [
+        'url' => sb()->route('sb.api.crud-bulk-actions', [
           'namespace' => $this->namespace,
         ]),
       ],

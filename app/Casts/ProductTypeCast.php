@@ -21,7 +21,7 @@ class ProductTypeCast implements CastsAttributes
             default => 'text-info-tertiary'
         };
 
-        $productTypes = Hook::filter( 'ns-products-type', [
+        $productTypes = Hook::filter( 'sb-products-type', [
             'materialized' => __( 'Materialized Product' ),
             'dematerialized' => __( 'Dematerialized Product' ),
             'grouped' => __( 'Grouped Product' ),

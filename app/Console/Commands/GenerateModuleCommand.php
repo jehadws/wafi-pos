@@ -28,7 +28,7 @@ class GenerateModuleCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Create a new JgremPOS module';
+    protected $description = 'Create a new Subul module';
 
     /**
      * Create a new command instance.
@@ -51,7 +51,7 @@ class GenerateModuleCommand extends Command
         if ( Helper::installed() ) {
             $this->askInformations();
         } else {
-            $this->error( 'JgremPOS is not yet installed.' );
+            $this->error( 'Subul is not yet installed.' );
         }
     }
 

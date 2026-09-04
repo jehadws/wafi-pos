@@ -7,7 +7,7 @@ use App\Services\FieldsService;
 
 class ProcurementFields extends FieldsService
 {
-    protected static $identifier = 'ns.procurement-fields';
+    protected static $identifier = 'sb.procurement-fields';
 
     public function get( ?Procurement $model = null )
     {

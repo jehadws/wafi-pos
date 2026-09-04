@@ -28,13 +28,13 @@ class InvoiceSettings extends SettingsPage
   {
     return [
       'receipts' => [
-        'ns_invoice_receipt_template' => ns()->option->get('ns_invoice_receipt_template'),
-        'ns_invoice_receipt_logo' => ns()->option->get('ns_invoice_receipt_logo'),
-        'ns_invoice_merge_similar_products' => ns()->option->get('ns_invoice_merge_similar_products'),
-        'ns_invoice_display_tax_breakdown' => ns()->option->get('ns_invoice_display_tax_breakdown'),
-        'ns_invoice_receipt_footer' => ns()->option->get('ns_invoice_receipt_footer'),
-        'ns_invoice_receipt_column_a' => ns()->option->get('ns_invoice_receipt_column_a'),
-        'ns_invoice_receipt_column_b' => ns()->option->get('ns_invoice_receipt_column_b'),
+        'sb_invoice_receipt_template' => sb()->option->get('sb_invoice_receipt_template'),
+        'sb_invoice_receipt_logo' => sb()->option->get('sb_invoice_receipt_logo'),
+        'sb_invoice_merge_similar_products' => sb()->option->get('sb_invoice_merge_similar_products'),
+        'sb_invoice_display_tax_breakdown' => sb()->option->get('sb_invoice_display_tax_breakdown'),
+        'sb_invoice_receipt_footer' => sb()->option->get('sb_invoice_receipt_footer'),
+        'sb_invoice_receipt_column_a' => sb()->option->get('sb_invoice_receipt_column_a'),
+        'sb_invoice_receipt_column_b' => sb()->option->get('sb_invoice_receipt_column_b'),
       ],
     ];
   }
@@ -42,14 +42,14 @@ class InvoiceSettings extends SettingsPage
   public function getOptions()
   {
     return [
-      'ns_invoice_receipt_template' => Helper::kvToJsOptions([
+      'sb_invoice_receipt_template' => Helper::kvToJsOptions([
         'default' => __('Default'),
       ]),
-      'ns_invoice_merge_similar_products' => Helper::kvToJsOptions([
+      'sb_invoice_merge_similar_products' => Helper::kvToJsOptions([
         'no' => __('No'),
         'yes' => __('Yes'),
       ]),
-      'ns_invoice_display_tax_breakdown' => Helper::kvToJsOptions([
+      'sb_invoice_display_tax_breakdown' => Helper::kvToJsOptions([
         'no' => __('No'),
         'yes' => __('Yes'),
       ]),

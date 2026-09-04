@@ -38,11 +38,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property Product $product
  * @property Unit    $unit
  */
-class ProductUnitQuantity extends NsModel
+class ProductUnitQuantity extends SbModel
 {
     use BroadcastsEvents, HasFactory;
 
-    protected $table = 'jgrem_' . 'products_unit_quantities';
+    protected $table = 'subul_' . 'products_unit_quantities';
 
     protected $dispatchesEvents = [
         'created' => ProductUnitQuantityAfterCreatedEvent::class,

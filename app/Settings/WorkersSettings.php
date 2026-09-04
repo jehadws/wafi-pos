@@ -29,14 +29,14 @@ class WorkersSettings extends SettingsPage
   public function getPayload()
   {
     return [
-      'ns_workers_enabled' => ns()->option->get('ns_workers_enabled', 'no'),
+      'sb_workers_enabled' => sb()->option->get('sb_workers_enabled', 'no'),
     ];
   }
 
   public function getOptions()
   {
     return [
-      'ns_workers_enabled' =>  collect(Helper::kvToJsOptions([
+      'sb_workers_enabled' =>  collect(Helper::kvToJsOptions([
         'no' => __('No'),
         'await_confirm' => __('Test'),
         'yes' => __('Yes'),

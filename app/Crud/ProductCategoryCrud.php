@@ -24,38 +24,38 @@ class ProductCategoryCrud extends CrudService
   /**
    * Define the identifier
    */
-  const IDENTIFIER = 'ns.products-categories';
+  const IDENTIFIER = 'sb.products-categories';
 
   /**
    * define the base table
    */
-  protected $table = 'jgrem_products_categories';
+  protected $table = 'subul_products_categories';
 
   /**
    * base route name
    */
-  protected $mainRoute = 'ns.products-categories';
+  protected $mainRoute = 'sb.products-categories';
 
   /**
    * Define namespace
    *
    * @param  string
    */
-  protected $namespace = 'ns.products-categories';
+  protected $namespace = 'sb.products-categories';
 
   /**
    * Model Used
    */
   protected $model = ProductCategory::class;
 
-  public $to_route = 'ns.dashboard.products.categories';
+  public $to_route = 'sb.dashboard.products.categories';
   /**
    * Adding relation
    */
   public $relations = [
-    ['jgrem_users as user', 'jgrem_products_categories.author', '=', 'user.id'],
+    ['subul_users as user', 'subul_products_categories.author', '=', 'user.id'],
     'leftJoin' => [
-      ['jgrem_products_categories as parent', 'jgrem_products_categories.parent_id', '=', 'parent.id'],
+      ['subul_products_categories as parent', 'subul_products_categories.parent_id', '=', 'parent.id'],
     ],
   ];
 
@@ -65,10 +65,10 @@ class ProductCategoryCrud extends CrudService
   ];
 
   protected $permissions = [
-    'create' => 'jgrem.create.categories',
-    'read' => 'jgrem.read.categories',
-    'update' => 'jgrem.update.categories',
-    'delete' => 'jgrem.delete.categories',
+    'create' => 'subul.create.categories',
+    'read' => 'subul.read.categories',
+    'update' => 'subul.update.categories',
+    'delete' => 'subul.delete.categories',
   ];
 
   /**
@@ -302,7 +302,7 @@ class ProductCategoryCrud extends CrudService
    */
   public function beforeDelete($namespace, $id, $model)
   {
-    if ($namespace == 'ns.products-categories') {
+    if ($namespace == 'sb.products-categories') {
       $this->allowedTo('delete');
 
       ProductCategoryBeforeDeletedEvent::dispatch($model);
@@ -360,21 +360,21 @@ class ProductCategoryCrud extends CrudService
       identifier: 'edit',
       label: __('Edit'),
       type: 'GOTO',
-      url: ns()->url('/dashboard/' . 'products/categories' . '/edit/' . $entry->id),
+      url: sb()->url('/dashboard/' . 'products/categories' . '/edit/' . $entry->id),
     );
 
     $entry->action(
       identifier: 'compute',
       label: __('Compute Products'),
       type: 'GOTO',
-      url: ns()->url('/dashboard/' . 'products/categories' . '/compute-products/' . $entry->id),
+      url: sb()->url('/dashboard/' . 'products/categories' . '/compute-products/' . $entry->id),
     );
 
     $entry->action(
       identifier: 'delete',
       label: __('Delete'),
       type: 'DELETE',
-      url: ns()->url('/api/crud/ns.products-categories/' . $entry->id),
+      url: sb()->url('/api/crud/sb.products-categories/' . $entry->id),
       confirm: [
         'message' => __('Would you like to delete this ?'),
       ],
@@ -434,11 +434,11 @@ class ProductCategoryCrud extends CrudService
   public function getLinks(): array
   {
     return [
-      'list' => ns()->url('dashboard/' . 'products/categories'),
-      'create' => ns()->url('dashboard/' . 'products/categories/create'),
-      'edit' => ns()->url('dashboard/' . 'products/categories/edit/'),
-      'post' => ns()->url('api/crud/' . 'ns.products-categories'),
-      'put' => ns()->url('api/crud/' . 'ns.products-categories/{id}' . ''),
+      'list' => sb()->url('dashboard/' . 'products/categories'),
+      'create' => sb()->url('dashboard/' . 'products/categories/create'),
+      'edit' => sb()->url('dashboard/' . 'products/categories/edit/'),
+      'post' => sb()->url('api/crud/' . 'sb.products-categories'),
+      'put' => sb()->url('api/crud/' . 'sb.products-categories/{id}' . ''),
     ];
   }
 
@@ -453,7 +453,7 @@ class ProductCategoryCrud extends CrudService
       [
         'label' => __('Delete Selected Groups'),
         'identifier' => 'delete_selected',
-        'url' => ns()->route('ns.api.crud-bulk-actions', [
+        'url' => sb()->route('sb.api.crud-bulk-actions', [
           'namespace' => $this->namespace,
         ]),
       ],

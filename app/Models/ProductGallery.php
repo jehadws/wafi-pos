@@ -9,9 +9,9 @@ namespace App\Models;
  * @property bool           $featured
  * @property \Carbon\Carbon $updated_at
  */
-class ProductGallery extends NsModel
+class ProductGallery extends SbModel
 {
-    protected $table = 'jgrem_products_galleries';
+    protected $table = 'subul_products_galleries';
 
     protected $fillable = [
         'name',

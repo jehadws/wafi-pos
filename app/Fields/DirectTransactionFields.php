@@ -17,11 +17,11 @@ class DirectTransactionFields extends FieldsService
 
     public function __construct( ?Transaction $transaction = null )
     {
-        $allowedExpenseCategories = ns()->option->get( 'ns_accounting_expenses_accounts', [] );
+        $allowedExpenseCategories = sb()->option->get( 'sb_accounting_expenses_accounts', [] );
 
         $accountOptions = TransactionAccount::categoryIdentifier( 'expenses' )->whereIn( 'id', $allowedExpenseCategories )->get();
 
-        $this->fields = Hook::filter( 'ns-direct-transactions-fields', SettingForm::fields(
+        $this->fields = Hook::filter( 'sb-direct-transactions-fields', SettingForm::fields(
             FormInput::text(
                 label: __( 'Name' ),
                 description: __( 'Describe the direct transaction.' ),
@@ -43,7 +43,7 @@ class DirectTransactionFields extends FieldsService
                 validation: 'required',
                 name: 'account_id',
                 props: TransactionAccountCrud::getFormConfig(),
-                component: 'nsCrudForm',
+                component: 'sbCrudForm',
                 options: Helper::toJsOptions( $accountOptions, [ 'id', 'name' ] ),
                 value: $transaction ? $transaction->account_id : null
             ),

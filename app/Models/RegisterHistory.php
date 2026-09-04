@@ -19,11 +19,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string description
  * @property string uuid
  */
-class RegisterHistory extends NsModel
+class RegisterHistory extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'registers_history';
+    protected $table = 'subul_' . 'registers_history';
 
     const ACTION_OPENING = 'register-opening';
 

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * JgremPOS Controller
+ * Subul Controller
  *
  * @since  1.0
  **/
@@ -29,10 +29,10 @@ class CustomersGroupsController extends DashboardController
     $groups = CustomerGroup::select('*')
       ->addSelect([
         'author_name' => User::select('username')
-          ->whereColumn('jgrem_users.id', 'author')
+          ->whereColumn('subul_users.id', 'author')
           ->limit(1),
         'reward_name' => RewardSystem::select('name')
-          ->whereColumn('jgrem_rewards_system.id', 'reward_system_id')
+          ->whereColumn('subul_rewards_system.id', 'reward_system_id')
           ->limit(1),
       ])
       ->get();

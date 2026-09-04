@@ -26,14 +26,14 @@ class CustomerAccountCrud extends CrudService
     /**
      * Define the identifier
      */
-    const IDENTIFIER = 'ns.customers-account-history';
+    const IDENTIFIER = 'sb.customers-account-history';
 
     /**
      * define the base table
      *
      * @param  string
      */
-    protected $table = 'jgrem_customers_account_history';
+    protected $table = 'subul_customers_account_history';
 
     /**
      * default slug
@@ -47,7 +47,7 @@ class CustomerAccountCrud extends CrudService
      *
      * @param  string
      */
-    protected $namespace = 'ns.customers-account-history';
+    protected $namespace = 'sb.customers-account-history';
 
     /**
      * Model Used
@@ -62,10 +62,10 @@ class CustomerAccountCrud extends CrudService
      * @param  array
      */
     protected $permissions = [
-        'create' => 'jgrem.customers.manage-account-history',
-        'read' => 'jgrem.customers.manage-account-history',
-        'update' => 'jgrem.customers.manage-account-history',
-        'delete' => 'jgrem.customers.manage-account-history',
+        'create' => 'subul.customers.manage-account-history',
+        'read' => 'subul.customers.manage-account-history',
+        'update' => 'subul.customers.manage-account-history',
+        'delete' => 'subul.customers.manage-account-history',
     ];
 
     protected $queryFilters = [];
@@ -82,14 +82,14 @@ class CustomerAccountCrud extends CrudService
 
     /**
      * Adding relation
-     * Example : [ 'jgrem_users as user', 'user.id', '=', 'jgrem_orders.author' ]
+     * Example : [ 'subul_users as user', 'user.id', '=', 'subul_orders.author' ]
      *
      * @param  array
      */
     public $relations = [
-        [ 'jgrem_users as user', 'user.id', '=', 'jgrem_customers_account_history.author' ],
+        [ 'subul_users as user', 'user.id', '=', 'subul_customers_account_history.author' ],
         'leftJoin' => [
-            [ 'jgrem_orders as order', 'order.id', '=', 'jgrem_customers_account_history.order_id' ],
+            [ 'subul_orders as order', 'order.id', '=', 'subul_customers_account_history.order_id' ],
         ],
     ];
 
@@ -107,7 +107,7 @@ class CustomerAccountCrud extends CrudService
      * Should be an array of associative keys, where
      * keys are either the related table or alias name.
      * Example : [
-     *      'user'  =>  [ 'username' ], // here the relation on the table jgrem_users is using "user" as an alias
+     *      'user'  =>  [ 'username' ], // here the relation on the table subul_users is using "user" as an alias
      * ]
      */
     public $pick = [
@@ -185,7 +185,7 @@ class CustomerAccountCrud extends CrudService
         $this->queryFilters = [
             [
                 'type' => 'daterangepicker',
-                'name' => 'jgrem_customers_account_history.created_at',
+                'name' => 'subul_customers_account_history.created_at',
                 'description' => __( 'Restrict the records by the creation date.' ),
                 'label' => __( 'Created Between' ),
             ], [
@@ -202,7 +202,7 @@ class CustomerAccountCrud extends CrudService
             ], [
                 'type' => 'select',
                 'label' => __( 'Author' ),
-                'name' => 'jgrem_customers_account_history.author',
+                'name' => 'subul_customers_account_history.author',
                 'description' => __( 'Restrict the records by the author.' ),
                 'options' => Helper::toJsOptions( $UserClass::get(), [ 'id', 'username' ] ),
             ],
@@ -223,7 +223,7 @@ class CustomerAccountCrud extends CrudService
     public function hook( $query ): void
     {
         $query->orderBy( 'id', 'desc' );
-        $query->where( Hook::filter( 'ns-model-table', 'jgrem_customers_account_history.customer_id' ), request()->query( 'customer_id' ) );
+        $query->where( Hook::filter( 'sb-model-table', 'subul_customers_account_history.customer_id' ), request()->query( 'customer_id' ) );
     }
 
     public function addFooterSummary( CrudBeforeExportEvent $event )
@@ -255,7 +255,7 @@ class CustomerAccountCrud extends CrudService
         // total value
         $event->sheet->setCellValue(
             $event->sheetColumns[1] . ( $event->totalRows + 3 ),
-            ns()->currency->define( $totalPositive - $totalNegative )->format()
+            sb()->currency->define( $totalPositive - $totalNegative )->format()
         );
     }
 
@@ -369,7 +369,7 @@ class CustomerAccountCrud extends CrudService
     public function beforePost( $request )
     {
         if ( $this->permissions[ 'create' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'create' ] );
+            sb()->restrict( $this->permissions[ 'create' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -412,7 +412,7 @@ class CustomerAccountCrud extends CrudService
     public function beforePut( $request, $entry )
     {
         if ( $this->permissions[ 'update' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'update' ] );
+            sb()->restrict( $this->permissions[ 'update' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -439,7 +439,7 @@ class CustomerAccountCrud extends CrudService
      */
     public function beforeDelete( $namespace, $id, $model )
     {
-        if ( $namespace == 'ns.customers-account-history' ) {
+        if ( $namespace == 'sb.customers-account-history' ) {
             /**
              *  Perform an action before deleting an entry
              *  In case something wrong, this response can be returned
@@ -450,7 +450,7 @@ class CustomerAccountCrud extends CrudService
              *  ], 403 );
              **/
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -508,23 +508,23 @@ class CustomerAccountCrud extends CrudService
     {
         $entry->{ 'order_code' } = $entry->{ 'order_code' } === null ? __( 'N/A' ) : $entry->{ 'order_code' };
         $entry->operation = $this->customerService->getCustomerAccountOperationLabel( $entry->operation );
-        $entry->amount = (string) ns()->currency->define( $entry->amount );
-        $entry->previous_amount = (string) ns()->currency->define( $entry->previous_amount );
-        $entry->next_amount = (string) ns()->currency->define( $entry->next_amount );
+        $entry->amount = (string) sb()->currency->define( $entry->amount );
+        $entry->previous_amount = (string) sb()->currency->define( $entry->previous_amount );
+        $entry->next_amount = (string) sb()->currency->define( $entry->next_amount );
 
         // you can make changes here
         $entry->action(
             identifier: 'edit',
             label: __( 'Edit' ),
             type: 'GOTO',
-            url: ns()->url( '/dashboard/' . $this->slug . '/edit/' . $entry->id )
+            url: sb()->url( '/dashboard/' . $this->slug . '/edit/' . $entry->id )
         );
 
         $entry->action(
             identifier: 'delete',
             label: __( 'Delete' ),
             type: 'DELETE',
-            url: ns()->url( '/api/crud/ns.customers-account-history/' . $entry->id ),
+            url: sb()->url( '/api/crud/sb.customers-account-history/' . $entry->id ),
             confirm: [
                 'message' => __( 'Would you like to delete this?' ),
             ]
@@ -550,7 +550,7 @@ class CustomerAccountCrud extends CrudService
              * Will control if the user has the permissoin to do that.
              */
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -592,11 +592,11 @@ class CustomerAccountCrud extends CrudService
         }
 
         return [
-            'list' => ns()->url( 'dashboard/' . 'customers/' . $customerId . '/account-history' ),
-            'create' => ns()->url( 'dashboard/' . 'customers/' . $customerId . '/account-history/create' ),
-            'edit' => ns()->url( 'dashboard/' . 'customers/' . $customerId . '/account-history/edit/' ),
-            'post' => ns()->url( 'api/crud/' . 'ns.customers-account-history' ),
-            'put' => ns()->url( 'api/crud/' . 'ns.customers-account-history/{id}' ),
+            'list' => sb()->url( 'dashboard/' . 'customers/' . $customerId . '/account-history' ),
+            'create' => sb()->url( 'dashboard/' . 'customers/' . $customerId . '/account-history/create' ),
+            'edit' => sb()->url( 'dashboard/' . 'customers/' . $customerId . '/account-history/edit/' ),
+            'post' => sb()->url( 'api/crud/' . 'sb.customers-account-history' ),
+            'put' => sb()->url( 'api/crud/' . 'sb.customers-account-history/{id}' ),
         ];
     }
 
@@ -611,7 +611,7 @@ class CustomerAccountCrud extends CrudService
             [
                 'label' => __( 'Delete Selected Groups' ),
                 'identifier' => 'delete_selected',
-                'url' => ns()->route( 'ns.api.crud-bulk-actions', [
+                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
                     'namespace' => $this->namespace,
                 ] ),
             ],

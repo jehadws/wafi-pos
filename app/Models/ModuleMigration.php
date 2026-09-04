@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int    $id
  * @property string $file
  */
-class ModuleMigration extends NsModel
+class ModuleMigration extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'modules_migrations';
+    protected $table = 'subul_' . 'modules_migrations';
 
     public $timestamps = false;
 

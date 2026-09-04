@@ -19,14 +19,14 @@ class ProcurementProductCrud extends CrudService
   /**
    * Define the identifier
    */
-  const IDENTIFIER = 'ns.procurements-products';
+  const IDENTIFIER = 'sb.procurements-products';
 
   /**
    * define the base table
    *
    * @param  string
    */
-  protected $table = 'jgrem_procurements_products';
+  protected $table = 'subul_procurements_products';
 
   /**
    * default slug
@@ -40,7 +40,7 @@ class ProcurementProductCrud extends CrudService
    *
    * @param  string
    */
-  protected $namespace = 'ns.procurements-products';
+  protected $namespace = 'sb.procurements-products';
 
   /**
    * Model Used
@@ -48,7 +48,7 @@ class ProcurementProductCrud extends CrudService
    * @param  string
    */
   protected $model = ProcurementProduct::class;
-  public $to_route = 'ns.dashboard.procurement-products';
+  public $to_route = 'sb.dashboard.procurement-products';
   /**
    * Define permissions
    *
@@ -63,14 +63,14 @@ class ProcurementProductCrud extends CrudService
 
   /**
    * Adding relation
-   * Example : [ 'jgrem_users as user', 'user.id', '=', 'jgrem_orders.author' ]
+   * Example : [ 'subul_users as user', 'user.id', '=', 'subul_orders.author' ]
    *
    * @param  array
    */
   public $relations = [
-    ['jgrem_procurements as procurement', 'procurement.id', '=', 'jgrem_procurements_products.procurement_id'],
-    ['jgrem_units as unit', 'unit.id', '=', 'jgrem_procurements_products.unit_id'],
-    ['jgrem_users as user', 'user.id', '=', 'jgrem_procurements_products.author'],
+    ['subul_procurements as procurement', 'procurement.id', '=', 'subul_procurements_products.procurement_id'],
+    ['subul_units as unit', 'unit.id', '=', 'subul_procurements_products.unit_id'],
+    ['subul_users as user', 'user.id', '=', 'subul_procurements_products.author'],
   ];
 
   /**
@@ -87,7 +87,7 @@ class ProcurementProductCrud extends CrudService
    * Should be an array of associative keys, where
    * keys are either the related table or alias name.
    * Example : [
-   *      'user'  =>  [ 'username' ], // here the relation on the table jgrem_users is using "user" as an alias
+   *      'user'  =>  [ 'username' ], // here the relation on the table subul_users is using "user" as an alias
    * ]
    */
   public $pick = [
@@ -216,7 +216,7 @@ class ProcurementProductCrud extends CrudService
   public function beforePost($request)
   {
     if ($this->permissions['create'] !== false) {
-      ns()->restrict($this->permissions['create']);
+      sb()->restrict($this->permissions['create']);
     } else {
       throw new NotAllowedException;
     }
@@ -260,7 +260,7 @@ class ProcurementProductCrud extends CrudService
   public function beforePut($request, $entry)
   {
     if ($this->permissions['update'] !== false) {
-      ns()->restrict($this->permissions['update']);
+      sb()->restrict($this->permissions['update']);
     } else {
       throw new NotAllowedException;
     }
@@ -287,7 +287,7 @@ class ProcurementProductCrud extends CrudService
    */
   public function beforeDelete($namespace, $id, $model)
   {
-    if ($namespace == 'ns.procurements-products') {
+    if ($namespace == 'sb.procurements-products') {
       /**
        *  Perform an action before deleting an entry
        *  In case something wrong, this response can be returned
@@ -298,7 +298,7 @@ class ProcurementProductCrud extends CrudService
        *  ], 403 );
        **/
       if ($this->permissions['delete'] !== false) {
-        ns()->restrict($this->permissions['delete']);
+        sb()->restrict($this->permissions['delete']);
       } else {
         throw new NotAllowedException;
       }
@@ -365,14 +365,14 @@ class ProcurementProductCrud extends CrudService
   public function setActions(CrudEntry $entry): CrudEntry
   {
     foreach (['gross_purchase_price', 'net_purchase_price', 'total_purchase_price', 'purchase_price'] as $label) {
-      $entry->$label = (string) ns()->currency->define($entry->$label);
+      $entry->$label = (string) sb()->currency->define($entry->$label);
     }
 
     $entry->action(
       label: __('Edit'),
       identifier: 'edit',
       type: 'GOTO',
-      url: ns()->url('/dashboard/' . $this->slug . '/edit/' . $entry->id),
+      url: sb()->url('/dashboard/' . $this->slug . '/edit/' . $entry->id),
     );
 
     return $entry;
@@ -395,7 +395,7 @@ class ProcurementProductCrud extends CrudService
        * Will control if the user has the permissoin to do that.
        */
       if ($this->permissions['delete'] !== false) {
-        ns()->restrict($this->permissions['delete']);
+        sb()->restrict($this->permissions['delete']);
       } else {
         throw new NotAllowedException;
       }
@@ -429,11 +429,11 @@ class ProcurementProductCrud extends CrudService
   public function getLinks(): array
   {
     return [
-      'list' => ns()->url('dashboard/' . 'procurements/products'),
-      'create' => 'javascript:void(0)', // ns()->url( 'dashboard/' . '/procurements/products/create' ),
-      'edit' => ns()->url('dashboard/' . 'procurements/products/edit/'),
-      'post' => ns()->url('api/crud/' . 'ns.procurements-products'),
-      'put' => ns()->url('api/crud/' . 'ns.procurements-products/{id}' . ''),
+      'list' => sb()->url('dashboard/' . 'procurements/products'),
+      'create' => 'javascript:void(0)', // sb()->url( 'dashboard/' . '/procurements/products/create' ),
+      'edit' => sb()->url('dashboard/' . 'procurements/products/edit/'),
+      'post' => sb()->url('api/crud/' . 'sb.procurements-products'),
+      'put' => sb()->url('api/crud/' . 'sb.procurements-products/{id}' . ''),
     ];
   }
 

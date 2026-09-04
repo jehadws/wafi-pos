@@ -23,9 +23,9 @@ class DateService extends Carbon
             $this->options = app()->make( Options::class );
 
             if ( Auth::check() ) {
-                $language = Auth::user()->attribute->language ?: $this->options->get( 'ns_store_language', 'light' );
+                $language = Auth::user()->attribute->language ?: $this->options->get( 'sb_store_language', 'light' );
             } else {
-                $language = $this->options->get( 'ns_store_language', 'en' );
+                $language = $this->options->get( 'sb_store_language', 'en' );
             }
 
             $longForm = $this->getLongLocaleCode( $language );
@@ -63,8 +63,8 @@ class DateService extends Carbon
      */
     public function getFormatted( string $date, string $mode = 'full' ): string
     {
-        $dateFormat = $this->options ? $this->options->get( 'ns_date_format', 'Y-m-d' ) : 'Y-m-d';
-        $dateTimeFormat = $this->options ? $this->options->get( 'ns_datetime_format', 'Y-m-d H:i:s' ) : 'Y-m-d H:i:s';
+        $dateFormat = $this->options ? $this->options->get( 'sb_date_format', 'Y-m-d' ) : 'Y-m-d';
+        $dateTimeFormat = $this->options ? $this->options->get( 'sb_datetime_format', 'Y-m-d H:i:s' ) : 'Y-m-d H:i:s';
 
         switch ( $mode ) {
             case 'short':
@@ -91,8 +91,8 @@ class DateService extends Carbon
      */
     public function getNowFormatted( string $mode = 'full' ): string
     {
-        $dateFormat = $this->options ? $this->options->get( 'ns_date_format', 'Y-m-d' ) : 'Y-m-d';
-        $dateTimeFormat = $this->options ? $this->options->get( 'ns_datetime_format', 'Y-m-d H:i:s' ) : 'Y-m-d H:i:s';
+        $dateFormat = $this->options ? $this->options->get( 'sb_date_format', 'Y-m-d' ) : 'Y-m-d';
+        $dateTimeFormat = $this->options ? $this->options->get( 'sb_datetime_format', 'Y-m-d H:i:s' ) : 'Y-m-d H:i:s';
 
         switch ( $mode ) {
             case 'short':

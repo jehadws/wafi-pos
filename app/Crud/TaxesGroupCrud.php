@@ -19,24 +19,24 @@ class TaxesGroupCrud extends CrudService
   /**
    * Define the identifier
    */
-  const IDENTIFIER = 'ns.taxes-groups';
+  const IDENTIFIER = 'sb.taxes-groups';
 
   /**
    * define the base table
    */
-  protected $table = 'jgrem_taxes_groups';
+  protected $table = 'subul_taxes_groups';
 
   /**
    * base route name
    */
-  protected $mainRoute = 'ns.taxes-groups';
+  protected $mainRoute = 'sb.taxes-groups';
 
   /**
    * Define namespace
    *
    * @param  string
    */
-  protected $namespace = 'ns.taxes-groups';
+  protected $namespace = 'sb.taxes-groups';
 
   /**
    * Model Used
@@ -47,7 +47,7 @@ class TaxesGroupCrud extends CrudService
    * Adding relation
    */
   public $relations = [
-    ['jgrem_users as user', 'jgrem_taxes_groups.author', '=', 'user.id'],
+    ['subul_users as user', 'subul_taxes_groups.author', '=', 'user.id'],
   ];
 
   /**
@@ -69,7 +69,7 @@ class TaxesGroupCrud extends CrudService
    */
   public $fillable = [];
 
-  public $to_route = 'ns.dashboard.taxes.groups';
+  public $to_route = 'sb.dashboard.taxes.groups';
 
   /**
    * Define Constructor
@@ -80,10 +80,10 @@ class TaxesGroupCrud extends CrudService
   }
 
   protected $permissions = [
-    'create' => 'jgrem.create.taxes',
-    'read' => 'jgrem.read.taxes',
-    'update' => 'jgrem.update.taxes',
-    'delete' => 'jgrem.delete.taxes',
+    'create' => 'subul.create.taxes',
+    'read' => 'subul.read.taxes',
+    'update' => 'subul.update.taxes',
+    'delete' => 'subul.delete.taxes',
   ];
 
   /**
@@ -243,7 +243,7 @@ class TaxesGroupCrud extends CrudService
    */
   public function beforeDelete($namespace, $id, $model)
   {
-    if ($namespace == 'ns.taxes-groups') {
+    if ($namespace == 'sb.taxes-groups') {
       $this->allowedTo('delete');
     }
   }
@@ -282,14 +282,14 @@ class TaxesGroupCrud extends CrudService
       identifier: 'edit',
       label: __('Edit'),
       type: 'GOTO',
-      url: ns()->url('/dashboard/' . 'taxes/groups' . '/edit/' . $entry->id)
+      url: sb()->url('/dashboard/' . 'taxes/groups' . '/edit/' . $entry->id)
     );
 
     $entry->action(
       identifier: 'delete',
       label: __('Delete'),
       type: 'DELETE',
-      url: ns()->url('/api/crud/ns.taxes-groups/' . $entry->id),
+      url: sb()->url('/api/crud/sb.taxes-groups/' . $entry->id),
       confirm: [
         'message' => __('Would you like to delete this ?'),
       ]
@@ -348,11 +348,11 @@ class TaxesGroupCrud extends CrudService
   public function getLinks(): array
   {
     return [
-      'list' => ns()->url('dashboard/' . 'taxes/groups'),
-      'create' => ns()->url('dashboard/' . 'taxes/groups/create'),
-      'edit' => ns()->url('dashboard/' . 'taxes/groups/edit/{id}'),
-      'post' => ns()->url('api/crud/' . 'ns.taxes-groups'),
-      'put' => ns()->url('api/crud/' . 'ns.taxes-groups/' . '{id}'),
+      'list' => sb()->url('dashboard/' . 'taxes/groups'),
+      'create' => sb()->url('dashboard/' . 'taxes/groups/create'),
+      'edit' => sb()->url('dashboard/' . 'taxes/groups/edit/{id}'),
+      'post' => sb()->url('api/crud/' . 'sb.taxes-groups'),
+      'put' => sb()->url('api/crud/' . 'sb.taxes-groups/' . '{id}'),
     ];
   }
 
@@ -367,7 +367,7 @@ class TaxesGroupCrud extends CrudService
       [
         'label' => __('Delete Selected Groups'),
         'identifier' => 'delete_selected',
-        'url' => ns()->route('ns.api.crud-bulk-actions', [
+        'url' => sb()->route('sb.api.crud-bulk-actions', [
           'namespace' => $this->namespace,
         ]),
       ],

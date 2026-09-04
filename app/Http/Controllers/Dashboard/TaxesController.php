@@ -1,7 +1,7 @@
 <?php
 
 /**
- * JgremPOS Controller
+ * Subul Controller
  *
  * @since  1.0
  **/
@@ -178,10 +178,10 @@ class TaxesController extends DashboardController
   {
     $taxes = Tax::addSelect([
       'author_name' => User::select('username')
-        ->whereColumn('jgrem_users.id', 'author')
+        ->whereColumn('subul_users.id', 'author')
         ->limit(1),
       'parent_name' => TaxGroup::select('name')
-        ->whereColumn('jgrem_taxes_groups.id', 'tax_group_id')
+        ->whereColumn('subul_taxes_groups.id', 'tax_group_id')
         ->limit(1),
     ])
       ->get();
@@ -234,7 +234,7 @@ class TaxesController extends DashboardController
     $groups = TaxGroup::with('taxes')
       ->addSelect([
         'author_name' => User::select('username')
-          ->whereColumn('jgrem_users.id', 'author')
+          ->whereColumn('subul_users.id', 'author')
           ->limit(1),
       ])
       ->get();

@@ -1,11 +1,11 @@
 <?php
 
 use App\Http\Controllers\Dashboard\MediasController;
-use App\Http\Middleware\NsRestrictMiddleware;
+use App\Http\Middleware\SbRestrictMiddleware;
 use Illuminate\Support\Facades\Route;
 
-Route::get('medias', [MediasController::class, 'getMedias'])->middleware(NsRestrictMiddleware::arguments('jgrem.see.medias'));
-Route::delete('medias/{id}', [MediasController::class, 'deleteMedia'])->middleware(NsRestrictMiddleware::arguments('jgrem.see.medias'));
-Route::put('medias/{media}', [MediasController::class, 'updateMedia'])->middleware(NsRestrictMiddleware::arguments('jgrem.update.medias'));
-Route::post('medias/bulk-delete/', [MediasController::class, 'bulkDeleteMedias'])->middleware(NsRestrictMiddleware::arguments('jgrem.delete.medias'));
-Route::post('medias', [MediasController::class, 'uploadMedias'])->middleware(NsRestrictMiddleware::arguments('jgrem.upload.medias'));
+Route::get('medias', [MediasController::class, 'getMedias'])->middleware(SbRestrictMiddleware::arguments('subul.see.medias'));
+Route::delete('medias/{id}', [MediasController::class, 'deleteMedia'])->middleware(SbRestrictMiddleware::arguments('subul.see.medias'));
+Route::put('medias/{media}', [MediasController::class, 'updateMedia'])->middleware(SbRestrictMiddleware::arguments('subul.update.medias'));
+Route::post('medias/bulk-delete/', [MediasController::class, 'bulkDeleteMedias'])->middleware(SbRestrictMiddleware::arguments('subul.delete.medias'));
+Route::post('medias', [MediasController::class, 'uploadMedias'])->middleware(SbRestrictMiddleware::arguments('subul.upload.medias'));

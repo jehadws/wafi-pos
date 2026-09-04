@@ -22,12 +22,12 @@ class CustomerGroupCrud extends CrudService
   /**
    * Define the identifier
    */
-  const IDENTIFIER = 'ns.customers-groups';
+  const IDENTIFIER = 'sb.customers-groups';
 
   /**
    * define the base table
    */
-  protected $table = 'jgrem_customers_groups';
+  protected $table = 'subul_customers_groups';
 
   /**
    * base route name
@@ -39,7 +39,7 @@ class CustomerGroupCrud extends CrudService
    *
    * @param  string
    */
-  protected $namespace = 'ns.customers-groups';
+  protected $namespace = 'sb.customers-groups';
 
   /**
    * Model Used
@@ -50,18 +50,18 @@ class CustomerGroupCrud extends CrudService
    * Adding relation
    */
   public $relations = [
-    ['jgrem_users', 'jgrem_customers_groups.author', '=', 'jgrem_users.id'],
+    ['subul_users', 'subul_customers_groups.author', '=', 'subul_users.id'],
     'leftJoin' => [
-      ['jgrem_rewards_system as reward', 'reward.id', '=', 'jgrem_customers_groups.reward_system_id'],
+      ['subul_rewards_system as reward', 'reward.id', '=', 'subul_customers_groups.reward_system_id'],
     ],
   ];
 
   public $pick = [
-    'jgrem_users' => ['username'],
+    'subul_users' => ['username'],
     'reward' => ['name'],
   ];
 
-  public $to_route = 'ns.dashboard.customersgroups-list';
+  public $to_route = 'sb.dashboard.customersgroups-list';
 
   /**
    * Define where statement
@@ -91,10 +91,10 @@ class CustomerGroupCrud extends CrudService
   }
 
   protected $permissions = [
-    'create' => 'jgrem.create.customers-groups',
-    'read' => 'jgrem.read.customers-groups',
-    'update' => 'jgrem.update.customers-groups',
-    'delete' => 'jgrem.delete.customers-groups',
+    'create' => 'subul.create.customers-groups',
+    'read' => 'subul.read.customers-groups',
+    'update' => 'subul.update.customers-groups',
+    'delete' => 'subul.delete.customers-groups',
   ];
 
   /**
@@ -258,7 +258,7 @@ class CustomerGroupCrud extends CrudService
    */
   public function beforeDelete($namespace, $id)
   {
-    if ($namespace == 'ns.customers-groups') {
+    if ($namespace == 'sb.customers-groups') {
       $this->allowedTo('delete');
     }
   }
@@ -291,7 +291,7 @@ class CustomerGroupCrud extends CrudService
     return CrudTable::columns(
       CrudTable::column(__('Name'), 'name'),
       CrudTable::column(__('Reward System'), 'reward_name'),
-      CrudTable::column(__('Author'), 'jgrem_users_username'),
+      CrudTable::column(__('Author'), 'subul_users_username'),
       CrudTable::column(__('Created On'), 'created_at')
     );
   }
@@ -307,14 +307,14 @@ class CustomerGroupCrud extends CrudService
       identifier: 'edit_customers_group',
       label: __('Edit'),
       type: 'GOTO',
-      url: ns()->url('dashboard/customers/groups/edit/' . $entry->id)
+      url: sb()->url('dashboard/customers/groups/edit/' . $entry->id)
     );
 
     $entry->action(
       identifier: 'delete',
       label: __('Delete'),
       type: 'DELETE',
-      url: ns()->url('/api/crud/ns.customers-groups/' . $entry->id),
+      url: sb()->url('/api/crud/sb.customers-groups/' . $entry->id),
       confirm: [
         'message' => __('Would you like to delete this ?'),
         'title' => __('Delete a licence'),
@@ -377,11 +377,11 @@ class CustomerGroupCrud extends CrudService
   public function getLinks(): array
   {
     return [
-      'list' => ns()->url('dashboard/customers/groups'),
-      'create' => ns()->url('dashboard/customers/groups/create'),
-      'edit' => ns()->url('dashboard/customers/groups/edit'),
-      'post' => ns()->url('api/crud/' . 'ns.customers-groups'),
-      'put' => ns()->url('api/crud/' . 'ns.customers-groups/{id}' . ''),
+      'list' => sb()->url('dashboard/customers/groups'),
+      'create' => sb()->url('dashboard/customers/groups/create'),
+      'edit' => sb()->url('dashboard/customers/groups/edit'),
+      'post' => sb()->url('api/crud/' . 'sb.customers-groups'),
+      'put' => sb()->url('api/crud/' . 'sb.customers-groups/{id}' . ''),
     ];
   }
 
@@ -396,7 +396,7 @@ class CustomerGroupCrud extends CrudService
       [
         'label' => __('Delete Selected Groups'),
         'identifier' => 'delete_selected',
-        'url' => ns()->route('ns.api.crud-bulk-actions', [
+        'url' => sb()->route('sb.api.crud-bulk-actions', [
           'namespace' => $this->namespace,
         ]),
       ],

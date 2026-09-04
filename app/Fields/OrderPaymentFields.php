@@ -10,7 +10,7 @@ use App\Services\Helper;
 
 class OrderPaymentFields extends FieldsService
 {
-    protected static $identifier = 'ns.order-payments';
+    protected static $identifier = 'sb.order-payments';
 
     public function __construct()
     {
@@ -33,7 +33,7 @@ class OrderPaymentFields extends FieldsService
             validation: 'required',
         );
 
-        if ( ns()->option->get( 'ns_jgrem_registers_enabled', 'no' ) === 'yes' ) {
+        if ( sb()->option->get( 'sb_subul_registers_enabled', 'no' ) === 'yes' ) {
             $registers = Register::opened()->get();
             $fields[] = FormInput::select(
                 label: __( 'Select Register' ),

@@ -16,11 +16,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
-class Register extends NsModel
+class Register extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'registers';
+    protected $table = 'subul_' . 'registers';
 
     const STATUS_OPENED = 'opened';
 

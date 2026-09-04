@@ -86,7 +86,7 @@ class CrudEntry implements JsonSerializable
         if ( isset( $this->values[ '$actions' ] ) ) {
             $this->values[ '$actions' ] = collect( $this->values[ '$actions' ] )->filter( function ( $action ) {
                 return ( isset( $action[ 'permissions' ] ) && count( $action[ 'permissions' ] ) > 0 )
-                    ? ns()->allowedTo( $action[ 'permissions' ] ) : true;
+                    ? sb()->allowedTo( $action[ 'permissions' ] ) : true;
             } )->toArray();
         }
     }

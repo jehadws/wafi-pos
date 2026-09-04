@@ -31,7 +31,7 @@ return [
             'name' => 'language',
             'value' => Auth::user()->attribute->language ?? '',
             'type' => 'select',
-            'options' => Helper::kvToJsOptions( config( 'jgrem.languages' ) ),
+            'options' => Helper::kvToJsOptions( config( 'subul.languages' ) ),
             'description' => __( 'Choose the language for the current account.' ),
         ],
     ],

@@ -12,11 +12,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property int            $author
  * @property \Carbon\Carbon $updated_at
  */
-class CustomerGroup extends NsModel
+class CustomerGroup extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'customers_groups';
+    protected $table = 'subul_' . 'customers_groups';
 
     /**
      * define the relationship

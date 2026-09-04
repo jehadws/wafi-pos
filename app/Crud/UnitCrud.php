@@ -24,37 +24,37 @@ class UnitCrud extends CrudService
   /**
    * Define the identifier
    */
-  const IDENTIFIER = 'ns.units';
+  const IDENTIFIER = 'sb.units';
 
   /**
    * define the base table
    */
-  protected $table = 'jgrem_units';
+  protected $table = 'subul_units';
 
   /**
    * base route name
    */
-  protected $mainRoute = 'ns.units';
+  protected $mainRoute = 'sb.units';
 
   /**
    * Define namespace
    *
    * @param  string
    */
-  protected $namespace = 'ns.units';
+  protected $namespace = 'sb.units';
 
   /**
    * Model Used
    */
   protected $model = Unit::class;
-  public $to_route = 'ns.dashboard.units';
+  public $to_route = 'sb.dashboard.units';
 
   /**
    * Adding relation
    */
   public $relations = [
-    ['jgrem_users as user', 'jgrem_units.author', '=', 'user.id'],
-    ['jgrem_units_groups as group', 'jgrem_units.group_id', '=', 'group.id'],
+    ['subul_users as user', 'subul_units.author', '=', 'user.id'],
+    ['subul_units_groups as group', 'subul_units.group_id', '=', 'group.id'],
   ];
 
   /**
@@ -77,10 +77,10 @@ class UnitCrud extends CrudService
   public $fillable = [];
 
   protected $permissions = [
-    'create' => 'jgrem.create.products-units',
-    'read' => 'jgrem.read.products-units',
-    'update' => 'jgrem.update.products-units',
-    'delete' => 'jgrem.delete.products-units',
+    'create' => 'subul.create.products-units',
+    'read' => 'subul.read.products-units',
+    'update' => 'subul.update.products-units',
+    'delete' => 'subul.delete.products-units',
   ];
 
   /**
@@ -146,7 +146,7 @@ class UnitCrud extends CrudService
               label: __('Identifier'),
               name: 'identifier',
               description: __('Provide a unique value for this unit. Might be composed from a name but shouldn\'t include space or special characters.'),
-              validation: 'unique:' . Hook::filter('ns-table-name', 'jgrem_units') . ',identifier' . ($entry !== null ? ',' . $entry->id : ''),
+              validation: 'unique:' . Hook::filter('sb-table-name', 'subul_units') . ',identifier' . ($entry !== null ? ',' . $entry->id : ''),
               value: $entry->identifier ?? '',
             ),
             FormInput::media(
@@ -163,7 +163,7 @@ class UnitCrud extends CrudService
               value: $entry->value ?? '',
             ),
             FormInput::searchSelect(
-              component: 'nsCrudForm',
+              component: 'sbCrudForm',
               props: UnitGroupCrud::getFormConfig(),
               name: 'group_id',
               validation: 'required',
@@ -294,7 +294,7 @@ class UnitCrud extends CrudService
    */
   public function beforeDelete($namespace, $id, $model)
   {
-    if ($namespace == 'ns.units') {
+    if ($namespace == 'sb.units') {
       $this->allowedTo('delete');
     }
   }
@@ -350,7 +350,7 @@ class UnitCrud extends CrudService
       identifier: 'edit',
       label: __('Edit'),
       type: 'GOTO',
-      url: ns()->url('/dashboard/' . 'units' . '/edit/' . $entry->id)
+      url: sb()->url('/dashboard/' . 'units' . '/edit/' . $entry->id)
     );
 
     // Snippet 2
@@ -358,7 +358,7 @@ class UnitCrud extends CrudService
       identifier: 'delete',
       label: __('Delete'),
       type: 'DELETE',
-      url: ns()->url('/api/crud/ns.units/' . $entry->id),
+      url: sb()->url('/api/crud/sb.units/' . $entry->id),
       confirm: [
         'message' => __('Would you like to delete this ?'),
       ]
@@ -417,11 +417,11 @@ class UnitCrud extends CrudService
   public function getLinks(): array
   {
     return [
-      'list' => ns()->url('dashboard/' . 'units'),
-      'create' => ns()->url('dashboard/' . 'units/create'),
-      'edit' => ns()->url('dashboard/' . 'units/edit/'),
-      'post' => ns()->url('api/crud/' . 'ns.units'),
-      'put' => ns()->url('api/crud/' . 'ns.units/{id}' . ''),
+      'list' => sb()->url('dashboard/' . 'units'),
+      'create' => sb()->url('dashboard/' . 'units/create'),
+      'edit' => sb()->url('dashboard/' . 'units/edit/'),
+      'post' => sb()->url('api/crud/' . 'sb.units'),
+      'put' => sb()->url('api/crud/' . 'sb.units/{id}' . ''),
     ];
   }
 
@@ -436,7 +436,7 @@ class UnitCrud extends CrudService
       [
         'label' => __('Delete Selected Groups'),
         'identifier' => 'delete_selected',
-        'url' => ns()->route('ns.api.crud-bulk-actions', [
+        'url' => sb()->route('sb.api.crud-bulk-actions', [
           'namespace' => $this->namespace,
         ]),
       ],

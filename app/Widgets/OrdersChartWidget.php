@@ -6,12 +6,12 @@ use App\Services\WidgetService;
 
 class OrdersChartWidget extends WidgetService
 {
-    protected $vueComponent = 'nsOrdersChart';
+    protected $vueComponent = 'sbOrdersChart';
 
     public function __construct()
     {
         $this->name = __( 'Orders Chart' );
         $this->description = __( 'Will display a chart of weekly sales.' );
-        $this->permission = 'jgrem.see.orders-chart-widget';
+        $this->permission = 'subul.see.orders-chart-widget';
     }
 }

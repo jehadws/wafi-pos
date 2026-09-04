@@ -277,8 +277,8 @@ class UnitService
    */
   public function getConvertedQuantity(Unit $from, Unit $to, float $quantity): float|int
   {
-    return ns()->currency->define(
-      ns()->currency
+    return sb()->currency->define(
+      sb()->currency
         ->define($from->value)
         ->multipliedBy($quantity)
         ->toFloat()
@@ -293,8 +293,8 @@ class UnitService
    */
   public function getPurchasePriceFromUnit($purchasePrice, Unit $from, Unit $to)
   {
-    return ns()->currency->define(
-      ns()->currency->define($purchasePrice)->dividedBy($from->value)->toFloat()
+    return sb()->currency->define(
+      sb()->currency->define($purchasePrice)->dividedBy($from->value)->toFloat()
     )->multipliedBy($to->value)->toFloat();
   }
 

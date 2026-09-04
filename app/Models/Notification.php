@@ -16,11 +16,11 @@ use Illuminate\Notifications\Notifiable;
  * @property bool           $dismissable
  * @property \Carbon\Carbon $updated_at
  */
-class Notification extends NsModel
+class Notification extends SbModel
 {
     use HasFactory, Notifiable;
 
-    protected $table = 'jgrem_notifications';
+    protected $table = 'subul_notifications';
 
     protected $dispatchesEvents = [
         'created' => NotificationCreatedEvent::class,

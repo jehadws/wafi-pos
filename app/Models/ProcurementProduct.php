@@ -35,11 +35,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
-class ProcurementProduct extends NsModel
+class ProcurementProduct extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'procurements_products';
+    protected $table = 'subul_' . 'procurements_products';
 
     const STOCK_INCREASE = 'increase';
 

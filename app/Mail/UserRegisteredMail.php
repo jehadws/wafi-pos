@@ -34,8 +34,8 @@ class UserRegisteredMail extends Mailable
     public function build()
     {
         return $this
-            ->subject( ns()->option->get( 'ns_notifications_registrations_administrator_email_title', __( '[JgremPOS] A New User Has Registered' ) ) )
-            ->from( ns()->option->get( 'ns_store_email', 'notifications@jgrem.com' ) )
+            ->subject( sb()->option->get( 'sb_notifications_registrations_administrator_email_title', __( '[Subul] A New User Has Registered' ) ) )
+            ->from( sb()->option->get( 'sb_store_email', 'notifications@subul.com' ) )
             ->markdown( 'mails/user-registered-mail' );
     }
 }

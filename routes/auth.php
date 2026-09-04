@@ -33,11 +33,11 @@ Route::middleware('guest')->group(function () {
 
 
 
-    // Route::get('/sign-in', [AuthController::class, 'signIn'])->name(ns()->routeName('ns.login'));
-    // Route::get('/auth/activate/{user}/{token}', [AuthController::class, 'activateAccount'])->name(ns()->routeName('ns.activate-account'));
-    // Route::get('/new-password/{user}/{token}', [AuthController::class, 'newPassword'])->name(ns()->routeName('ns.new-password'));
-    // Route::get('/sign-out', [AuthController::class, 'signOut'])->name(ns()->routeName('ns.logout'));
-    // Route::post('/auth/sign-in', [AuthController::class, 'postSignIn'])->name(ns()->routeName('ns.login.post'));
+    // Route::get('/sign-in', [AuthController::class, 'signIn'])->name(sb()->routeName('sb.login'));
+    // Route::get('/auth/activate/{user}/{token}', [AuthController::class, 'activateAccount'])->name(sb()->routeName('sb.activate-account'));
+    // Route::get('/new-password/{user}/{token}', [AuthController::class, 'newPassword'])->name(sb()->routeName('sb.new-password'));
+    // Route::get('/sign-out', [AuthController::class, 'signOut'])->name(sb()->routeName('sb.logout'));
+    // Route::post('/auth/sign-in', [AuthController::class, 'postSignIn'])->name(sb()->routeName('sb.login.post'));
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');

@@ -56,7 +56,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @method static Builder notInGroup(): Product
  * @method static Builder inGroup(): Product
  */
-class Product extends NsModel
+class Product extends SbModel
 {
     use HasFactory;
 
@@ -78,7 +78,7 @@ class Product extends NsModel
 
     const STATUS_UNAVAILABLE = 'unavailable';
 
-    protected $table = 'jgrem_' . 'products';
+    protected $table = 'subul_' . 'products';
 
     protected $casts = [
         'accurate_tracking' => 'boolean',

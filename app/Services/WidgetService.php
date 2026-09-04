@@ -56,7 +56,7 @@ class WidgetService
 
     public function __construct( private UsersService $usersService )
     {
-        $this->widgets = Hook::filter( 'ns-dashboard-widgets', [
+        $this->widgets = Hook::filter( 'sb-dashboard-widgets', [
             IncompleteSaleCardWidget::class,
             ExpenseCardWidget::class,
             SaleCardWidget::class,
@@ -259,6 +259,6 @@ class WidgetService
             } )->toArray();
         };
 
-        $this->registerWidgetsArea( 'ns-dashboard-widgets', $widgetArea );
+        $this->registerWidgetsArea( 'sb-dashboard-widgets', $widgetArea );
     }
 }

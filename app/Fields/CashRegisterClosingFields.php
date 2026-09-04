@@ -8,11 +8,11 @@ use App\Services\FieldsService;
 
 class CashRegisterClosingFields extends FieldsService
 {
-    protected static $identifier = 'ns.cash-registers-closing';
+    protected static $identifier = 'sb.cash-registers-closing';
 
     public function get()
     {
-        $fields = Hook::filter( 'ns-cash-register-closing-fields', [
+        $fields = Hook::filter( 'sb-cash-register-closing-fields', [
             FormInput::hidden(
                 label: __( 'Amount' ),
                 name: 'amount',

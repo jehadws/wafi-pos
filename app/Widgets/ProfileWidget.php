@@ -6,12 +6,12 @@ use App\Services\WidgetService;
 
 class ProfileWidget extends WidgetService
 {
-    protected $vueComponent = 'nsProfileWidget';
+    protected $vueComponent = 'sbProfileWidget';
 
     public function __construct()
     {
         $this->name = __( 'Profile' );
         $this->description = __( 'Will display a profile widget with user stats.' );
-        $this->permission = 'jgrem.see.profile-widget';
+        $this->permission = 'subul.see.profile-widget';
     }
 }

@@ -37,7 +37,7 @@ class CashRegistersService
         $registerHistory->description = $description;
         $registerHistory->balance_before = $register->balance;
         $registerHistory->value = $amount;
-        $registerHistory->balance_after = ns()->currency->define( $register->balance )->additionateBy( $amount )->toFloat();
+        $registerHistory->balance_after = sb()->currency->define( $register->balance )->additionateBy( $amount )->toFloat();
         $registerHistory->save();
 
         return [
@@ -61,18 +61,18 @@ class CashRegistersService
             );
         }
 
-        if ( ns()->currency->getRaw( $register->balance ) === ns()->currency->getRaw( $amount ) ) {
+        if ( sb()->currency->getRaw( $register->balance ) === sb()->currency->getRaw( $amount ) ) {
             $diffType = 'unchanged';
         } else {
-            $diffType = ns()->currency->getRaw( $register->balance ) < ns()->currency->getRaw( $amount ) ? 'positive' : 'negative';
+            $diffType = sb()->currency->getRaw( $register->balance ) < sb()->currency->getRaw( $amount ) ? 'positive' : 'negative';
         }
 
         $registerHistory = new RegisterHistory;
         $registerHistory->register_id = $register->id;
         $registerHistory->action = RegisterHistory::ACTION_CLOSING;
         $registerHistory->transaction_type = $diffType;
-        $registerHistory->balance_after = ns()->currency->define( $register->balance )->subtractBy( $amount )->toFloat();
-        $registerHistory->value = ns()->currency->define( $amount )->toFloat();
+        $registerHistory->balance_after = sb()->currency->define( $register->balance )->subtractBy( $amount )->toFloat();
+        $registerHistory->value = sb()->currency->define( $amount )->toFloat();
         $registerHistory->balance_before = $register->balance;
         $registerHistory->author = Auth::id();
         $registerHistory->description = $description;
@@ -114,8 +114,8 @@ class CashRegistersService
         $registerHistory->author = Auth::id();
         $registerHistory->description = $description;
         $registerHistory->balance_before = $register->balance;
-        $registerHistory->value = ns()->currency->define( $amount )->toFloat();
-        $registerHistory->balance_after = ns()->currency->define( $register->balance )->additionateBy( $amount )->toFloat();
+        $registerHistory->value = sb()->currency->define( $amount )->toFloat();
+        $registerHistory->balance_after = sb()->currency->define( $register->balance )->additionateBy( $amount )->toFloat();
         $registerHistory->save();
 
         return [
@@ -154,8 +154,8 @@ class CashRegistersService
             $cashRegisterHistory->action = RegisterHistory::ACTION_ORDER_PAYMENT;
             $cashRegisterHistory->author = $orderPayment->order->author;
             $cashRegisterHistory->balance_before = $register->balance;
-            $cashRegisterHistory->value = ns()->currency->define( $orderPayment->value )->toFloat();
-            $cashRegisterHistory->balance_after = ns()->currency->define( $register->balance )->additionateBy( $orderPayment->value )->toFloat();
+            $cashRegisterHistory->value = sb()->currency->define( $orderPayment->value )->toFloat();
+            $cashRegisterHistory->balance_after = sb()->currency->define( $register->balance )->additionateBy( $orderPayment->value )->toFloat();
             $cashRegisterHistory->save();
 
             return [
@@ -229,9 +229,9 @@ class CashRegistersService
         $registerHistory->action = RegisterHistory::ACTION_CASHOUT;
         $registerHistory->author = Auth::id();
         $registerHistory->description = $description;
-        $registerHistory->balance_before = ns()->currency->define( $register->balance )->toFloat();
-        $registerHistory->value = ns()->currency->define( $amount )->toFloat();
-        $registerHistory->balance_after = ns()->currency->define( $register->balance )->subtractBy( $amount )->toFloat();
+        $registerHistory->balance_before = sb()->currency->define( $register->balance )->toFloat();
+        $registerHistory->value = sb()->currency->define( $amount )->toFloat();
+        $registerHistory->balance_after = sb()->currency->define( $register->balance )->subtractBy( $amount )->toFloat();
         $registerHistory->save();
 
         return [
@@ -302,7 +302,7 @@ class CashRegistersService
             ->where( 'created_at', '>=', $lastOpeningAction->created_at )
             ->where( 'register_id', $cashRegister->id )->sum( 'value' );
 
-        $cashRegister->balance = ns()->currency->define( $totalInActions )->subtractBy( $totalOutActions )->toFloat();
+        $cashRegister->balance = sb()->currency->define( $totalInActions )->subtractBy( $totalOutActions )->toFloat();
 
         $cashRegister->save();
 
@@ -330,15 +330,15 @@ class CashRegistersService
                     ->where( 'action', RegisterHistory::ACTION_ORDER_CHANGE )
                     ->firstOrNew();
 
-                $registerHistory->payment_type_id = ns()->option->get( 'ns_jgrem_registers_default_change_payment_type' );
+                $registerHistory->payment_type_id = sb()->option->get( 'sb_subul_registers_default_change_payment_type' );
                 $registerHistory->register_id = $register->id;
                 $registerHistory->order_id = $order->id;
                 $registerHistory->action = RegisterHistory::ACTION_ORDER_CHANGE;
                 $registerHistory->author = $order->author;
                 $registerHistory->description = __( 'Change on cash' );
                 $registerHistory->balance_before = $register->balance;
-                $registerHistory->value = ns()->currency->define( $order->change )->toFloat();
-                $registerHistory->balance_after = ns()->currency->define( $register->balance )->subtractBy( $order->change )->toFloat();
+                $registerHistory->value = sb()->currency->define( $order->change )->toFloat();
+                $registerHistory->balance_after = sb()->currency->define( $register->balance )->subtractBy( $order->change )->toFloat();
                 $registerHistory->save();
             }
         }
@@ -476,9 +476,9 @@ class CashRegistersService
             ->get();
 
         $payments = OrderPayment::whereIn( 'order_id', $orders->pluck( 'id' ) )
-            ->select( 'jgrem_payments_types.identifier', DB::raw( 'SUM(value) as total_amount' ), 'label' )
+            ->select( 'subul_payments_types.identifier', DB::raw( 'SUM(value) as total_amount' ), 'label' )
             ->groupBy( [ 'identifier', 'label' ] )
-            ->join( 'jgrem_payments_types', 'jgrem_payments_types.identifier', '=', 'jgrem_orders_payments.identifier' )
+            ->join( 'subul_payments_types', 'subul_payments_types.identifier', '=', 'subul_orders_payments.identifier' )
             ->get();
 
         $totalCashPayment = OrderPayment::whereIn( 'order_id', $orders->pluck( 'id' ) )
@@ -486,16 +486,16 @@ class CashRegistersService
             ->sum( 'value' );
 
         $totalChange = $orders->sum( 'change' );
-        $cashOnHand = ns()->currency->define( $opening->value )
+        $cashOnHand = sb()->currency->define( $opening->value )
             ->additionateBy( $totalCashPayment )
             ->subtractBy( $totalChange )
             ->toFloat();
 
-        $openedOn = ns()->date->getFormatted( $opening->created_at );
-        $closedOn = $closing ? ns()->date->getFormatted( $closing->created_at ) : __( 'Session Ongoing' );
+        $openedOn = sb()->date->getFormatted( $opening->created_at );
+        $closedOn = $closing ? sb()->date->getFormatted( $closing->created_at ) : __( 'Session Ongoing' );
 
-        $openingBalance = ns()->currency->define( $opening->value );
-        $closingBalance = ns()->currency->define( $closing->value ?? 0 );
+        $openingBalance = sb()->currency->define( $opening->value );
+        $closingBalance = sb()->currency->define( $closing->value ?? 0 );
 
         $rawTotalSales = $orders->sum( 'total' );
         $rawTotalShippings = $orders->sum( 'shipping' );
@@ -503,20 +503,20 @@ class CashRegistersService
         $rawTotalGrossSales = $orders->sum( 'subtotal' );
         $rawTotalTaxes = $orders->sum( 'tax_value' );
 
-        $totalDiscounts = ns()->currency->define( $rawTotalDiscounts );
-        $totalSales = ns()->currency->define( $rawTotalSales );
-        $totalGrossSales = ns()->currency->define( $rawTotalGrossSales );
-        $totalShippings = ns()->currency->define( $rawTotalShippings );
-        $totalTaxes = ns()->currency->define( $rawTotalTaxes );
+        $totalDiscounts = sb()->currency->define( $rawTotalDiscounts );
+        $totalSales = sb()->currency->define( $rawTotalSales );
+        $totalGrossSales = sb()->currency->define( $rawTotalGrossSales );
+        $totalShippings = sb()->currency->define( $rawTotalShippings );
+        $totalTaxes = sb()->currency->define( $rawTotalTaxes );
 
         $sessionDuration = $this->diffInTime(
             $closing->created_at ?? now()->toDateTimeString(),
             $opening->created_at,
         );
 
-        $difference = ns()->currency->define( $closing->value ?? 0 )
+        $difference = sb()->currency->define( $closing->value ?? 0 )
             ->subtractBy(
-                ns()->currency
+                sb()->currency
                     ->define( $opening->value )
                     ->additionateBy( $rawTotalSales )
                     ->additionateBy( $rawTotalShippings )

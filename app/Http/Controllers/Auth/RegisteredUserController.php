@@ -46,7 +46,7 @@ class RegisteredUserController extends Controller
         //
         // Auth::login($user);
 
-        Hook::action('ns-register-form', $request);
+        Hook::action('sb-register-form', $request);
 
         try {
             $response = $this->userService->setUser($request->only([

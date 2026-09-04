@@ -22,7 +22,7 @@ class NotInstalledStateMiddleware
          * from the query string.
          */
         if ( ! empty( $request->query( 'lang' ) ) ) {
-            $validLanguage = in_array( $request->query( 'lang' ), array_keys( config( 'jgrem.languages' ) ) ) ? $request->query( 'lang' ) : 'en';
+            $validLanguage = in_array( $request->query( 'lang' ), array_keys( config( 'subul.languages' ) ) ) ? $request->query( 'lang' ) : 'en';
             App::setLocale( $validLanguage );
         }
 

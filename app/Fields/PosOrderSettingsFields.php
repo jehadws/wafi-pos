@@ -6,7 +6,7 @@ use App\Services\FieldsService;
 
 class PosOrderSettingsFields extends FieldsService
 {
-    protected static $identifier = 'ns.pos-order-settings';
+    protected static $identifier = 'sb.pos-order-settings';
 
     public function get()
     {

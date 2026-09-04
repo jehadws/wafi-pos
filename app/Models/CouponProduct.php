@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int $id
  * @property int $product_id
  */
-class CouponProduct extends NsModel
+class CouponProduct extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'coupons_products';
+    protected $table = 'subul_' . 'coupons_products';
 
     public $timestamps = false;
 

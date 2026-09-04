@@ -42,7 +42,7 @@ class AuthenticatedSessionController extends Controller
         //
         // return redirect()->intended(route('dashboard', absolute: false));
 
-        Hook::action('ns-login-form', $request);
+        Hook::action('sb-login-form', $request);
 
         // Set remember me cookie to 30 days (industry standard: security + convenience)
         Auth::guard('web')->setRememberDuration(60 * 24 * 30);
@@ -89,7 +89,7 @@ class AuthenticatedSessionController extends Controller
                 return redirect(route('login'))->witherrors($validator);
             }
 
-            // return redirect()->intended(Hook::filter('ns-login-redirect'));
+            // return redirect()->intended(Hook::filter('sb-login-redirect'));
             $request->session()->regenerate();
             return redirect()->intended(route('dashboard', absolute: false));
         }
@@ -121,8 +121,8 @@ class AuthenticatedSessionController extends Controller
             message: __('You have been successfully connected.'),
             data: [
                 'redirectTo' => Hook::filter(
-                    'ns-login-redirect',
-                    // ($intended) === url('/') ? ns()->route('ns.dashboard.home') : $intended,
+                    'sb-login-redirect',
+                    // ($intended) === url('/') ? sb()->route('sb.dashboard.home') : $intended,
                     ($intended) === url('/') ? route('dashboard') : $intended,
                     redirect()->intended()->getTargetUrl() ? true : false
                 ),

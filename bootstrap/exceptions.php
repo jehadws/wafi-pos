@@ -26,7 +26,7 @@ $exceptions->render( function ( AuthenticationException $exception, Request $req
     if ( $request->expectsJson() ) {
         return response()->json( [ 'message' => $exception->getMessage() ], 401 );
     } else {
-        return redirect()->guest( ns()->route( 'ns.login' ) );
+        return redirect()->guest( sb()->route( 'sb.login' ) );
     }
 } );
 

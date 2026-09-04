@@ -57,7 +57,7 @@ class DeactivateLicenseCommand extends Command
         $license->delete();
         Cache::forget("license_{$hwid}");
 
-        $this->info("✓ Wafi POS license successfully revoked for device: {$deviceName}");
+        $this->info("✓ Subul license successfully revoked for device: {$deviceName}");
         $this->table(
             ['Property', 'Status'],
             [

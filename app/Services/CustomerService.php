@@ -37,7 +37,7 @@ class CustomerService
         ->with('shipping')
         ->addSelect([
           'author_name' => User::select('username')
-            ->whereColumn('jgrem_users.id', 'author')
+            ->whereColumn('subul_users.id', 'author')
             ->limit(1),
         ])
         ->where('group_id', '<>', null)
@@ -136,7 +136,7 @@ class CustomerService
        * Let's find if a similar customer exist using the provided email.
        */
       $customer = Customer::byEmail($fields['email'])
-        ->where('jgrem_users.id', '<>', $id)
+        ->where('subul_users.id', '<>', $id)
         ->first();
     }
 
@@ -498,7 +498,7 @@ class CustomerService
         $customerCoupon->coupon_id = $coupon->id;
         $customerCoupon->name = $coupon->name;
         $customerCoupon->active = true;
-        $customerCoupon->code = $coupon->code . '-' . ns()->date->format('dmi');
+        $customerCoupon->code = $coupon->code . '-' . sb()->date->format('dmi');
         $customerCoupon->customer_id = $customer->id;
         $customerCoupon->limit_usage = $coupon->limit_usage;
         $customerCoupon->author = $customerReward->reward->author;
@@ -518,8 +518,8 @@ class CustomerService
             $reward->name
           ),
           'identifier' => 'coupon-issuing-issue-' . $reward->id,
-          'url' => ns()->route('ns.dashboard.rewards-edit', ['reward' => $reward->id]),
-        ])->dispatchForGroupNamespaces(['admin', 'jgrem.store.administrator']);
+          'url' => sb()->route('sb.dashboard.rewards-edit', ['reward' => $reward->id]),
+        ])->dispatchForGroupNamespaces(['admin', 'subul.store.administrator']);
       }
     }
   }
@@ -640,7 +640,7 @@ class CustomerService
 
     $change = abs($orders->sum('change'));
 
-    $customer->owed_amount = ns()->currency->define($unpaid)->additionateBy($change)->toFloat();
+    $customer->owed_amount = sb()->currency->define($unpaid)->additionateBy($change)->toFloat();
     $customer->save();
   }
 
@@ -753,7 +753,7 @@ class CustomerService
     /**
      * we'll check if the coupon is still valid.
      */
-    if ( $coupon->valid_until !== null && ns()->date->isAfter( Carbon::parse( $coupon->valid_until ) ) ) {
+    if ( $coupon->valid_until !== null && sb()->date->isAfter( Carbon::parse( $coupon->valid_until ) ) ) {
       throw new NotAllowedException( sprintf( __( 'Unable to use the coupon %s as it has expired.' ), $coupon->name ) );
     }
 
@@ -776,11 +776,11 @@ class CustomerService
       $hourStarts !== null &&
       $hoursEnds !== null
     ) {
-      $todayStartDate = ns()->date->format('Y-m-d') . ' ' . $hourStarts;
-      $todayEndDate = ns()->date->format('Y-m-d') . ' ' . $hoursEnds;
+      $todayStartDate = sb()->date->format('Y-m-d') . ' ' . $hourStarts;
+      $todayEndDate = sb()->date->format('Y-m-d') . ' ' . $hoursEnds;
 
       if (
-        ns()->date->between(
+        sb()->date->between(
           date1: Carbon::parse($todayStartDate),
           date2: Carbon::parse($todayEndDate)
         )

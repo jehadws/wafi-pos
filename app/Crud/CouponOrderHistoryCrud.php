@@ -23,14 +23,14 @@ class CouponOrderHistoryCrud extends CrudService
     /**
      * Define the identifier
      */
-    const IDENTIFIER = 'ns.coupons-orders-history';
+    const IDENTIFIER = 'sb.coupons-orders-history';
 
     /**
      * define the base table
      *
      * @param string
      */
-    protected $table = 'jgrem_orders_coupons';
+    protected $table = 'subul_orders_coupons';
 
     /**
      * default slug
@@ -44,7 +44,7 @@ class CouponOrderHistoryCrud extends CrudService
      *
      * @param string
      */
-    protected $namespace = 'ns.coupons-orders-history';
+    protected $namespace = 'sb.coupons-orders-history';
 
     /**
      * Model Used
@@ -73,14 +73,14 @@ class CouponOrderHistoryCrud extends CrudService
 
     /**
      * Adding relation
-     * Example : [ 'jgrem_users as user', 'user.id', '=', 'jgrem_orders.author' ]
+     * Example : [ 'subul_users as user', 'user.id', '=', 'subul_orders.author' ]
      *
      * @param array
      */
     public $relations = [
-        [ 'jgrem_users as user', 'user.id', '=', 'jgrem_orders_coupons.author' ],
-        [ 'jgrem_orders as order', 'order.id', '=', 'jgrem_orders_coupons.order_id' ],
-        [ 'jgrem_users as customer', 'customer.id', '=', 'order.customer_id' ],
+        [ 'subul_users as user', 'user.id', '=', 'subul_orders_coupons.author' ],
+        [ 'subul_orders as order', 'order.id', '=', 'subul_orders_coupons.order_id' ],
+        [ 'subul_users as customer', 'customer.id', '=', 'order.customer_id' ],
     ];
 
     /**
@@ -103,7 +103,7 @@ class CouponOrderHistoryCrud extends CrudService
      * Should be an array of associative keys, where
      * keys are either the related table or alias name.
      * Example : [
-     *      'user'  =>  [ 'username' ], // here the relation on the table jgrem_users is using "user" as an alias
+     *      'user'  =>  [ 'username' ], // here the relation on the table subul_users is using "user" as an alias
      * ]
      */
     public $pick = [
@@ -215,7 +215,7 @@ class CouponOrderHistoryCrud extends CrudService
     public function beforePost( $request )
     {
         if ( $this->permissions[ 'create' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'create' ] );
+            sb()->restrict( $this->permissions[ 'create' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -258,7 +258,7 @@ class CouponOrderHistoryCrud extends CrudService
     public function beforePut( $request, $entry )
     {
         if ( $this->permissions[ 'update' ] !== false ) {
-            ns()->restrict( $this->permissions[ 'update' ] );
+            sb()->restrict( $this->permissions[ 'update' ] );
         } else {
             throw new NotAllowedException;
         }
@@ -285,7 +285,7 @@ class CouponOrderHistoryCrud extends CrudService
      */
     public function beforeDelete( $namespace, $id, $model )
     {
-        if ( $namespace == 'ns.coupons-orders-hitory' ) {
+        if ( $namespace == 'sb.coupons-orders-hitory' ) {
             /**
              *  Perform an action before deleting an entry
              *  In case something wrong, this response can be returned
@@ -296,7 +296,7 @@ class CouponOrderHistoryCrud extends CrudService
              *  ], 403 );
              **/
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -332,13 +332,13 @@ class CouponOrderHistoryCrud extends CrudService
         $entry->action(
             label: __( 'Edit' ),
             identifier: 'edit',
-            url: ns()->url( '/dashboard/' . $this->slug . '/edit/' . $entry->id )
+            url: sb()->url( '/dashboard/' . $this->slug . '/edit/' . $entry->id )
         );
 
         $entry->action(
             label: __( 'Delete' ),
             identifier: 'delete',
-            url: ns()->url( '/api/crud/ns.coupons-orders-hitory/' . $entry->id ),
+            url: sb()->url( '/api/crud/sb.coupons-orders-hitory/' . $entry->id ),
             type: 'DELETE',
             confirm: [
                 'message' => __( 'Would you like to delete this?' ),
@@ -365,7 +365,7 @@ class CouponOrderHistoryCrud extends CrudService
              * Will control if the user has the permissoin to do that.
              */
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -399,11 +399,11 @@ class CouponOrderHistoryCrud extends CrudService
     public function getLinks(): array
     {
         return CrudTable::links(
-            list: ns()->url( 'dashboard/' . $this->slug ),
-            create: ns()->url( 'dashboard/' . $this->slug . '/create' ),
-            edit: ns()->url( 'dashboard/' . $this->slug . '/edit/' ),
-            post: ns()->url( 'api/crud/' . $this->namespace ),
-            put: ns()->url( 'api/crud/' . $this->namespace . '/{id}' )
+            list: sb()->url( 'dashboard/' . $this->slug ),
+            create: sb()->url( 'dashboard/' . $this->slug . '/create' ),
+            edit: sb()->url( 'dashboard/' . $this->slug . '/edit/' ),
+            post: sb()->url( 'api/crud/' . $this->namespace ),
+            put: sb()->url( 'api/crud/' . $this->namespace . '/{id}' )
         );
     }
 
@@ -418,7 +418,7 @@ class CouponOrderHistoryCrud extends CrudService
             [
                 'label' => __( 'Delete Selected Groups' ),
                 'identifier' => 'delete_selected',
-                'url' => ns()->route( 'ns.api.crud-bulk-actions', [
+                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
                     'namespace' => $this->namespace,
                 ] ),
             ],

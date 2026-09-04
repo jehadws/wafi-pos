@@ -20,7 +20,7 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
     {
         return Attribute::make(
             get: function ( $value ) {
-                return $value === null ? null : ns()->date->copy()->parse( $value )->diffForHumans();
+                return $value === null ? null : sb()->date->copy()->parse( $value )->diffForHumans();
             }
         );
     }
@@ -29,7 +29,7 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
     {
         return Attribute::make(
             get: function ( $value ) {
-                return $value === null ? null : ns()->date->copy()->parse( $value )->diffForHumans();
+                return $value === null ? null : sb()->date->copy()->parse( $value )->diffForHumans();
             }
         );
     }
@@ -38,7 +38,7 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
     {
         return Attribute::make(
             get: function ( $value ) {
-                return $value === null ? null : ns()->date->copy()->parse( $value )->diffForHumans();
+                return $value === null ? null : sb()->date->copy()->parse( $value )->diffForHumans();
             }
         );
     }

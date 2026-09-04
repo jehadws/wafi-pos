@@ -30,9 +30,9 @@ BeforeStartApiRouteEvent::dispatch();
 /**
  * By default, wildcard is disabled
  * on the system. In order to enable it, the user
- * will have to follow these instructions https://my.nexopos.com/en/documentation/wildcards
+ * will have to follow these instructions https://my.subul.com/en/documentation/wildcards
  */
-if ( env( 'NS_WILDCARD_ENABLED' ) ) {
+if ( env( 'SB_WILDCARD_ENABLED' ) ) {
     /**
      * The defined route should only be applicable
      * to the main domain.

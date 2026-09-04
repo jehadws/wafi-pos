@@ -326,7 +326,7 @@ class ProductService
             $this->saveSubItems( $product, $fields[ 'groups' ] ?? [] );
         }
 
-        $editUrl = ns()->route( 'ns.dashboard.products.edit', [ 'product' => $product->id ] );
+        $editUrl = sb()->route( 'sb.dashboard.products.edit', [ 'product' => $product->id ] );
 
         event( new ProductAfterCreatedEvent( $product ) );
 
@@ -497,7 +497,7 @@ class ProductService
             $this->saveSubItems( $product, $fields[ 'groups' ] ?? [] );
         }
 
-        $editUrl = ns()->route( 'ns.dashboard.products.edit', [ 'product' => $product->id ] );
+        $editUrl = sb()->route( 'sb.dashboard.products.edit', [ 'product' => $product->id ] );
 
         event( new ProductAfterUpdatedEvent( $product ) );
 
@@ -760,7 +760,7 @@ class ProductService
                  * if some other fields should be retreived from the $group variable
                  * we can defined that on the array below
                  */
-                foreach ( Hook::filter( 'ns-products-units-quantities-fields-names', [] ) as $field ) {
+                foreach ( Hook::filter( 'sb-products-units-quantities-fields-names', [] ) as $field ) {
                     $unitQuantity->$field = $group[ $field ] ?? null;
                 }
 
@@ -810,7 +810,7 @@ class ProductService
         $sums = $productHistories->map( fn( $productHistory ) => $productHistory->total_price )->sum();
 
         if ( $sums > 0 && $totalQuantities > 0 ) {
-            $cogs = ns()->currency->define( $sums )->divideBy( $totalQuantities )->toFloat();
+            $cogs = sb()->currency->define( $sums )->divideBy( $totalQuantities )->toFloat();
 
             $productUnitQuantity = $productUnitQuantity ?: ProductUnitQuantity::where( 'unit_id', $unit_id )
                 ->where( 'product_id', $product_id )
@@ -2084,7 +2084,7 @@ class ProductService
             unit_price: $lastFromPurchasePrice,
             quantity: $quantity,
             procurementProduct: $procurementProduct,
-            total_price: ns()->currency->define( $lastFromPurchasePrice )->multipliedBy( $quantity )->toFloat(),
+            total_price: sb()->currency->define( $lastFromPurchasePrice )->multipliedBy( $quantity )->toFloat(),
         );
 
         /**
@@ -2092,7 +2092,7 @@ class ProductService
          * should be based on the last purchase price of the source unit
          * divided by the finalDestionaQuantity
          */
-        $lastToPurchasePrice = ns()->currency->define( $lastFromPurchasePrice )
+        $lastToPurchasePrice = sb()->currency->define( $lastFromPurchasePrice )
             ->divideBy( $finalDestinationQuantity )
             ->toFloat();
 
@@ -2103,7 +2103,7 @@ class ProductService
             unit_price: $lastToPurchasePrice,
             quantity: $finalDestinationQuantity,
             procurementProduct: $procurementProduct,
-            total_price: ns()->currency->define( $lastFromPurchasePrice )->multipliedBy( $quantity )->toFloat(),
+            total_price: sb()->currency->define( $lastFromPurchasePrice )->multipliedBy( $quantity )->toFloat(),
         );
 
         return [
@@ -2204,11 +2204,11 @@ class ProductService
 
     public function getReduceActions()
     {
-        return Hook::filter( 'ns-products-decrease-actions', ProductHistory::STOCK_REDUCE );
+        return Hook::filter( 'sb-products-decrease-actions', ProductHistory::STOCK_REDUCE );
     }
 
     public function getIncreaseActions()
     {
-        return Hook::filter( 'ns-products-increase-actions', ProductHistory::STOCK_INCREASE );
+        return Hook::filter( 'sb-products-increase-actions', ProductHistory::STOCK_INCREASE );
     }
 }

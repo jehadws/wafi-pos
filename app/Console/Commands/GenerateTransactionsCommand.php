@@ -45,7 +45,7 @@ class GenerateTransactionsCommand extends Command
         Auth::login( $user );
 
         $fromDate = Carbon::parse( $this->option( 'from' ) );
-        $toDate = $this->option( 'to' ) === null ? Carbon::parse( $this->option( 'to' ) ) : ns()->date->copy()->endOfDay()->toDateTimeString();
+        $toDate = $this->option( 'to' ) === null ? Carbon::parse( $this->option( 'to' ) ) : sb()->date->copy()->endOfDay()->toDateTimeString();
 
         /**
          * @var ReportService $reportService

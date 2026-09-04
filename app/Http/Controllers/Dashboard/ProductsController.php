@@ -1,7 +1,7 @@
 <?php
 
 /**
- * JgremPOS Controller
+ * Subul Controller
  *
  * @since  1.0
  **/
@@ -81,7 +81,7 @@ class ProductsController extends DashboardController
      * they are complex (array), this methods allow
      * external script to reinject those complex fields.
      */
-    $primary = Hook::filter('ns-create-products-inputs', $primary, $source);
+    $primary = Hook::filter('sb-create-products-inputs', $primary, $source);
 
     /**
      * the method "create" is capable of
@@ -89,12 +89,12 @@ class ProductsController extends DashboardController
      */
     $result = $this->productService->create($primary);
 
-    return to_route('ns.dashboard.products');
+    return to_route('sb.dashboard.products');
   }
 
   public function convertUnits(Request $request, Product $product)
   {
-    ns()->restrict(['jgrem.convert.products-units']);
+    sb()->restrict(['subul.convert.products-units']);
 
     return $this->productService->convertUnitQuantities(
       product: $product,
@@ -134,7 +134,7 @@ class ProductsController extends DashboardController
      */
     $result = $this->productService->update($product, $form);
 
-    return to_route('ns.dashboard.products');
+    return to_route('sb.dashboard.products');
   }
 
   public function searchProduct(Request $request)
@@ -325,9 +325,9 @@ class ProductsController extends DashboardController
 
   public function listProducts()
   {
-    ns()->restrict(['jgrem.read.products']);
+    sb()->restrict(['subul.read.products']);
 
-    Hook::addAction('ns-crud-footer', function (Output $output) {
+    Hook::addAction('sb-crud-footer', function (Output $output) {
       $output->addView('pages.dashboard.products.quantity-popup');
 
       return $output;
@@ -335,8 +335,8 @@ class ProductsController extends DashboardController
 
 
     $products =  Product::addSelect([
-      'author_name' => User::select('username')->whereColumn('jgrem_users.id', 'author')->limit(1),
-      'category_name' => ProductCategory::select('name')->whereColumn('jgrem_products_categories.id', 'category_id')->limit(1),
+      'author_name' => User::select('username')->whereColumn('subul_users.id', 'author')->limit(1),
+      'category_name' => ProductCategory::select('name')->whereColumn('subul_products_categories.id', 'category_id')->limit(1),
     ])->get();
     return Inertia::render('dashboard/products/page', [
       'title' => __('Dashboard'),
@@ -348,7 +348,7 @@ class ProductsController extends DashboardController
 
   public function editProduct(Product $product)
   {
-    ns()->restrict(['jgrem.update.products']);
+    sb()->restrict(['subul.update.products']);
     $product->unit_quantities;
     $unitsGroup = UnitGroup::with('units')->get(['id', 'name']);
     $categories = ProductCategory::get(['id', 'name']);
@@ -360,18 +360,18 @@ class ProductsController extends DashboardController
       'unitGroups' => $unitsGroup,
       'product' => $product,
       'taxes' => $taxes,
-      'submitUrl' => ns()->url('/api/products/' . $product->id),
-      'returnUrl' => ns()->url('/dashboard/products'),
-      'unitsUrl' => ns()->url('/api/units-groups/{id}/units'),
+      'submitUrl' => sb()->url('/api/products/' . $product->id),
+      'returnUrl' => sb()->url('/dashboard/products'),
+      'unitsUrl' => sb()->url('/api/units-groups/{id}/units'),
       'optionAttributes' => json_encode(UnitCrud::getFormConfig()['optionAttributes']),
       'submitMethod' => 'PUT',
-      'src' => ns()->url('/api/crud/ns.products/form-config/' . $product->id),
+      'src' => sb()->url('/api/crud/sb.products/form-config/' . $product->id),
     ]);
   }
 
   public function createProduct()
   {
-    ns()->restrict(['jgrem.create.products']);
+    sb()->restrict(['subul.create.products']);
 
     $unitsGroup = UnitGroup::with('units')->get(['id', 'name']);
     $categories = ProductCategory::get(['id', 'name']);
@@ -382,21 +382,21 @@ class ProductsController extends DashboardController
       'categories' => $categories,
       'taxes' => $taxes,
       'description' => __('Add a new product on the system'),
-      'submitUrl' => ns()->url('/api/products'),
-      'returnUrl' => ns()->url('/dashboard/products'),
-      'unitsUrl' => ns()->url('/api/units-groups/{id}/units'),
+      'submitUrl' => sb()->url('/api/products'),
+      'returnUrl' => sb()->url('/dashboard/products'),
+      'unitsUrl' => sb()->url('/api/units-groups/{id}/units'),
       'optionAttributes' => json_encode(UnitCrud::getFormConfig()['optionAttributes']),
-      'src' => ns()->url('/api/crud/ns.products/form-config'),
+      'src' => sb()->url('/api/crud/sb.products/form-config'),
     ]);
 
     // return view::make('pages.dashboard.products.create', [
     //   'title' => __('Create a product'),
     //   'description' => __('Add a new product on the system'),
-    //   'submitUrl' => ns()->url('/api/products'),
-    //   'returnUrl' => ns()->url('/dashboard/products'),
-    //   'unitsUrl' => ns()->url('/api/units-groups/{id}/units'),
+    //   'submitUrl' => sb()->url('/api/products'),
+    //   'returnUrl' => sb()->url('/dashboard/products'),
+    //   'unitsUrl' => sb()->url('/api/units-groups/{id}/units'),
     //   'optionAttributes' => json_encode(UnitCrud::getFormConfig()['optionAttributes']),
-    //   'src' => ns()->url('/api/crud/ns.products/form-config'),
+    //   'src' => sb()->url('/api/crud/sb.products/form-config'),
     // ]);
   }
 
@@ -423,7 +423,7 @@ class ProductsController extends DashboardController
    */
   public function productHistory($identifier)
   {
-    Hook::addAction('ns-crud-footer', function (Output $output, $identifier) {
+    Hook::addAction('sb-crud-footer', function (Output $output, $identifier) {
       $output->addView('pages.dashboard.products.history');
 
       return $output;
@@ -467,7 +467,7 @@ class ProductsController extends DashboardController
 
   public function deleteUnitQuantity(ProductUnitQuantity $unitQuantity)
   {
-    ns()->restrict(['jgrem.delete.products-units', 'jgrem.make.products-adjustments']);
+    sb()->restrict(['subul.delete.products-units', 'subul.make.products-adjustments']);
 
     if ($unitQuantity->quantity > 0) {
       $this->productService->stockAdjustment(ProductHistory::ACTION_DELETED, [
@@ -488,7 +488,7 @@ class ProductsController extends DashboardController
 
   public function createAdjustment(Request $request)
   {
-    ns()->restrict(['jgrem.make.products-adjustments']);
+    sb()->restrict(['subul.make.products-adjustments']);
 
     $validator = Validator::make($request->all(), [
       'products' => 'required',

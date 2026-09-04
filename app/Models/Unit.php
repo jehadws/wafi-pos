@@ -14,11 +14,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property bool           $base_unit
  * @property \Carbon\Carbon $updated_at
  */
-class Unit extends NsModel
+class Unit extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_units';
+    protected $table = 'subul_units';
 
     protected $casts = [
         'base_unit' => 'boolean',

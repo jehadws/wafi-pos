@@ -1,7 +1,7 @@
 <?php
 
 /**
- * JgremPOS Controller
+ * Subul Controller
  *
  * @since  1.0
  **/
@@ -23,13 +23,13 @@ class RewardsSystemController extends DashboardController
     $rewards = RewardSystem::select('*')
       ->addSelect([
         'author_name' => User::select('username')
-          ->whereColumn('jgrem_users.id', 'author')
+          ->whereColumn('subul_users.id', 'author')
           ->limit(1),
         'coupon_name' => Coupon::select('name')
-          ->whereColumn('jgrem_coupons.id', 'coupon_id')
+          ->whereColumn('subul_coupons.id', 'coupon_id')
           ->limit(1),
         'number_of_rules' => RewardSystemRule::selectRaw('COUNT(*)')
-          ->whereColumn('reward_id', 'jgrem_rewards_system.id'),
+          ->whereColumn('reward_id', 'subul_rewards_system.id'),
       ])
       ->get();
 

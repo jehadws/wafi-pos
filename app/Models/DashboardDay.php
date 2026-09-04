@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int            $day_of_year
  * @property \Carbon\Carbon $range_ends
  */
-class DashboardDay extends NsModel
+class DashboardDay extends SbModel
 {
     use HasFactory;
 
@@ -22,7 +22,7 @@ class DashboardDay extends NsModel
 
     protected $fillable = [ 'range_starts', 'range_ends', 'day_of_year' ];
 
-    protected $table = 'jgrem_' . 'dashboard_days';
+    protected $table = 'subul_' . 'dashboard_days';
 
     protected $dispatchEvents = [
         'created' => DashboardDayAfterCreatedEvent::class,

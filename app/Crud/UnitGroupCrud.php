@@ -19,36 +19,36 @@ class UnitGroupCrud extends CrudService
   /**
    * Define the identifier
    */
-  const IDENTIFIER = 'ns.units-groups';
+  const IDENTIFIER = 'sb.units-groups';
 
   /**
    * define the base table
    */
-  protected $table = 'jgrem_units_groups';
+  protected $table = 'subul_units_groups';
 
   /**
    * base route name
    */
-  protected $mainRoute = 'ns.units-groups';
+  protected $mainRoute = 'sb.units-groups';
 
   /**
    * Define namespace
    *
    * @param  string
    */
-  protected $namespace = 'ns.units-groups';
+  protected $namespace = 'sb.units-groups';
 
   /**
    * Model Used
    */
   protected $model = UnitGroup::class;
-  public $to_route = 'ns.dashboard.units.groups';
+  public $to_route = 'sb.dashboard.units.groups';
 
   /**
    * Adding relation
    */
   public $relations = [
-    ['jgrem_users as user', 'jgrem_units_groups.author', '=', 'user.id'],
+    ['subul_users as user', 'subul_units_groups.author', '=', 'user.id'],
   ];
 
   public $pick = [
@@ -56,10 +56,10 @@ class UnitGroupCrud extends CrudService
   ];
 
   public $permissions = [
-    'create' => 'jgrem.create.products-units',
-    'read' => 'jgrem.read.products-units',
-    'update' => 'jgrem.update.products-units',
-    'delete' => 'jgrem.delete.products-units',
+    'create' => 'subul.create.products-units',
+    'read' => 'subul.read.products-units',
+    'update' => 'subul.update.products-units',
+    'delete' => 'subul.delete.products-units',
   ];
 
   /**
@@ -245,7 +245,7 @@ class UnitGroupCrud extends CrudService
    */
   public function beforeDelete($namespace, $id, $model)
   {
-    if ($namespace == 'ns.units-groups') {
+    if ($namespace == 'sb.units-groups') {
       $this->allowedTo('delete');
     }
   }
@@ -283,7 +283,7 @@ class UnitGroupCrud extends CrudService
       identifier: 'edit',
       label: __('Edit'),
       type: 'GOTO',
-      url: ns()->url('/dashboard/units/groups/edit/' . $entry->id)
+      url: sb()->url('/dashboard/units/groups/edit/' . $entry->id)
     );
 
     // Snippet 2
@@ -291,7 +291,7 @@ class UnitGroupCrud extends CrudService
       identifier: 'delete',
       label: __('Delete'),
       type: 'DELETE',
-      url: ns()->url('/api/crud/ns.units-groups/' . $entry->id),
+      url: sb()->url('/api/crud/sb.units-groups/' . $entry->id),
       confirm: [
         'message' => __('Would you like to delete this ?'),
       ]
@@ -350,11 +350,11 @@ class UnitGroupCrud extends CrudService
   public function getLinks(): array
   {
     return [
-      'list' => ns()->url('dashboard/' . 'units/groups'),
-      'create' => ns()->url('dashboard/' . 'units/groups/create'),
-      'edit' => ns()->url('dashboard/' . 'units/groups/edit/'),
-      'post' => ns()->url('api/crud/' . 'ns.units-groups'),
-      'put' => ns()->url('api/crud/' . 'ns.units-groups/{id}' . ''),
+      'list' => sb()->url('dashboard/' . 'units/groups'),
+      'create' => sb()->url('dashboard/' . 'units/groups/create'),
+      'edit' => sb()->url('dashboard/' . 'units/groups/edit/'),
+      'post' => sb()->url('api/crud/' . 'sb.units-groups'),
+      'put' => sb()->url('api/crud/' . 'sb.units-groups/{id}' . ''),
     ];
   }
 
@@ -369,7 +369,7 @@ class UnitGroupCrud extends CrudService
       [
         'label' => __('Delete Selected Groups'),
         'identifier' => 'delete_selected',
-        'url' => ns()->route('ns.api.crud-bulk-actions', [
+        'url' => sb()->route('sb.api.crud-bulk-actions', [
           'namespace' => $this->namespace,
         ]),
       ],

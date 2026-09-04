@@ -7,7 +7,7 @@ use App\Events\CustomerCouponAfterUpdatedEvent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
- * This class is made to ensure that JgremPOS can count coupon usage
+ * This class is made to ensure that Subul can count coupon usage
  * for a specific customer. Additionnaly when a reward system issue a coupon for a customer, it creates an instance
  * of this class which can there after be used by the customer.
  */
@@ -18,11 +18,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property \Carbon\Carbon $updated_at
  * @property bool           $active
  */
-class CustomerCoupon extends NsModel
+class CustomerCoupon extends SbModel
 {
     use HasFactory;
 
-    protected $table = 'jgrem_' . 'customers_coupons';
+    protected $table = 'subul_' . 'customers_coupons';
 
     public $casts = [
         'active' => 'boolean',

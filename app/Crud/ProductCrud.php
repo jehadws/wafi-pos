@@ -28,24 +28,24 @@ class ProductCrud extends CrudService
     /**
      * Define the identifier
      */
-    const IDENTIFIER = 'ns.products';
+    const IDENTIFIER = 'sb.products';
 
     /**
      * define the base table
      */
-    protected $table = 'jgrem_products';
+    protected $table = 'subul_products';
 
     /**
      * base route name
      */
-    protected $mainRoute = 'ns.products';
+    protected $mainRoute = 'sb.products';
 
     /**
      * Define namespace
      *
      * @param  string
      */
-    protected $namespace = 'ns.products';
+    protected $namespace = 'sb.products';
 
     /**
      * Model Used
@@ -61,11 +61,11 @@ class ProductCrud extends CrudService
      * Adding relation
      */
     public $relations = [
-        [ 'jgrem_users as user', 'jgrem_products.author', '=', 'user.id' ],
+        [ 'subul_users as user', 'subul_products.author', '=', 'user.id' ],
         'leftJoin' => [
-            [ 'jgrem_products_categories as category', 'jgrem_products.category_id', '=', 'category.id' ],
-            [ 'jgrem_products as parent', 'jgrem_products.parent_id', '=', 'parent.id' ],
-            [ 'jgrem_taxes_groups as taxes_groups', 'jgrem_products.tax_group_id', '=', 'taxes_groups.id' ],
+            [ 'subul_products_categories as category', 'subul_products.category_id', '=', 'category.id' ],
+            [ 'subul_products as parent', 'subul_products.parent_id', '=', 'parent.id' ],
+            [ 'subul_taxes_groups as taxes_groups', 'subul_products.tax_group_id', '=', 'taxes_groups.id' ],
         ],
     ];
 
@@ -81,10 +81,10 @@ class ProductCrud extends CrudService
      * @param  array
      */
     protected $permissions = [
-        'create' => 'jgrem.create.products',
-        'read' => 'jgrem.read.products',
-        'update' => 'jgrem.update.products',
-        'delete' => 'jgrem.delete.products',
+        'create' => 'subul.create.products',
+        'read' => 'subul.read.products',
+        'update' => 'subul.update.products',
+        'delete' => 'subul.delete.products',
     ];
 
     /**
@@ -179,12 +179,12 @@ class ProductCrud extends CrudService
             }
         }
 
-        $fields = Hook::filter( 'ns-products-units-quantities-fields', CrudForm::fields(
+        $fields = Hook::filter( 'sb-products-units-quantities-fields', CrudForm::fields(
             FormInput::searchSelect(
                 errors: [],
                 label: __( 'Assigned Unit' ),
                 name: 'unit_id',
-                component: 'nsCrudForm',
+                component: 'sbCrudForm',
                 props: UnitCrud::getFormConfig(),
                 options: Helper::toJsOptions( $units, [ 'id', 'name' ] ),
                 description: __( 'The assigned unit for sale' ),
@@ -262,7 +262,7 @@ class ProductCrud extends CrudService
             ),
         ) );
 
-        return Hook::filter( 'ns-products-crud-form', [
+        return Hook::filter( 'sb-products-crud-form', [
             'main' => [
                 'label' => __( 'Name' ),
                 'name' => 'name',
@@ -280,7 +280,7 @@ class ProductCrud extends CrudService
                             'fields' => [
                                 [
                                     'type' => 'search-select',
-                                    'component' => 'nsCrudForm',
+                                    'component' => 'sbCrudForm',
                                     'props' => ProductCategoryCrud::getFormConfig(),
                                     'description' => __( 'Select to which category the item is assigned.' ),
                                     'options' => Helper::toJsOptions( ProductCategory::get(), [ 'id', 'name' ] ),
@@ -321,7 +321,7 @@ class ProductCrud extends CrudService
                                     'value' => $entry->barcode_type ?? 'code128',
                                 ], [
                                     'type' => 'select',
-                                    'options' => Helper::kvToJsOptions( Hook::filter( 'ns-products-type', [
+                                    'options' => Helper::kvToJsOptions( Hook::filter( 'sb-products-type', [
                                         'materialized' => __( 'Materialized Product' ),
                                         'dematerialized' => __( 'Dematerialized Product' ),
                                         'grouped' => __( 'Grouped Product' ),
@@ -389,7 +389,7 @@ class ProductCrud extends CrudService
                                     } ) : [],
                                 ],
                             ],
-                            'component' => 'nsProductGroup',
+                            'component' => 'sbProductGroup',
                         ],
                         'units' => [
                             'label' => __( 'Units' ),
@@ -402,7 +402,7 @@ class ProductCrud extends CrudService
                                     'label' => __( 'Unit Group' ),
                                     'validation' => 'required',
                                     'props' => UnitGroupCrud::getFormConfig(),
-                                    'component' => 'nsCrudForm',
+                                    'component' => 'sbCrudForm',
                                     'value' => $entry->unit_group ?? ( ! $groups->isEmpty() ? $groups->first()->id : '' ),
                                 ], [
                                     'type' => 'switch',
@@ -671,7 +671,7 @@ class ProductCrud extends CrudService
      */
     public function beforeDelete( $namespace, $id, $model )
     {
-        if ( $namespace == 'ns.products' ) {
+        if ( $namespace == 'sb.products' ) {
             $this->allowedTo( 'delete' );
         }
     }
@@ -744,35 +744,35 @@ class ProductCrud extends CrudService
             identifier: 'edit',
             label: '<i class="mr-2 las la-edit"></i> ' . __( 'Edit' ),
             type: 'GOTO',
-            url: ns()->url( '/dashboard/' . 'products' . '/edit/' . $entry->id ),
+            url: sb()->url( '/dashboard/' . 'products' . '/edit/' . $entry->id ),
         );
 
         $entry->action(
-            identifier: 'ns.quantities',
+            identifier: 'sb.quantities',
             label: '<i class="mr-2 las la-eye"></i> ' . __( 'Preview' ),
             type: 'POPUP',
-            url: ns()->url( '/dashboard/' . 'products' . '/edit/' . $entry->id ),
+            url: sb()->url( '/dashboard/' . 'products' . '/edit/' . $entry->id ),
         );
 
         $entry->action(
             identifier: 'units',
             label: '<i class="mr-2 las la-balance-scale-left"></i> ' . __( 'See Quantities' ),
             type: 'GOTO',
-            url: ns()->url( '/dashboard/' . 'products/' . $entry->id . '/units' ),
+            url: sb()->url( '/dashboard/' . 'products/' . $entry->id . '/units' ),
         );
 
         $entry->action(
             identifier: 'history',
             label: '<i class="mr-2 las la-history"></i> ' . __( 'See History' ),
             type: 'GOTO',
-            url: ns()->url( '/dashboard/' . 'products/' . $entry->id . '/history' ),
+            url: sb()->url( '/dashboard/' . 'products/' . $entry->id . '/history' ),
         );
 
         $entry->action(
             identifier: 'delete',
             label: '<i class="mr-2 las la-trash"></i> ' . __( 'Delete' ),
             type: 'DELETE',
-            url: ns()->url( '/api/crud/ns.products/' . $entry->id ),
+            url: sb()->url( '/api/crud/sb.products/' . $entry->id ),
             confirm: [
                 'message' => __( 'Would you like to delete this ?' ),
             ],
@@ -799,7 +799,7 @@ class ProductCrud extends CrudService
              * Will control if the user has the permissoin to do that.
              */
             if ( $this->permissions[ 'delete' ] !== false ) {
-                ns()->restrict( $this->permissions[ 'delete' ] );
+                sb()->restrict( $this->permissions[ 'delete' ] );
             } else {
                 throw new NotAllowedException;
             }
@@ -833,9 +833,9 @@ class ProductCrud extends CrudService
     public function getLinks(): array
     {
         return [
-            'list' => ns()->url( 'dashboard/' . 'products' ),
-            'create' => ns()->url( 'dashboard/' . 'products/create' ),
-            'edit' => ns()->url( 'dashboard/' . 'products/edit/' ),
+            'list' => sb()->url( 'dashboard/' . 'products' ),
+            'create' => sb()->url( 'dashboard/' . 'products/create' ),
+            'edit' => sb()->url( 'dashboard/' . 'products/edit/' ),
         ];
     }
 
@@ -851,7 +851,7 @@ class ProductCrud extends CrudService
                 'label' => __( 'Delete Selected Groups' ),
                 'identifier' => 'delete_selected',
                 'confirm' => __( 'Would you like to delete selected entries ?' ),
-                'url' => ns()->route( 'ns.api.crud-bulk-actions', [
+                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
                     'namespace' => $this->namespace,
                 ] ),
             ],
@@ -945,6 +945,6 @@ class ProductCrud extends CrudService
          * they are complex (array), this methods allow
          * external script to reinject those complex fields.
          */
-        return Hook::filter( 'ns-update-products-inputs', $primary, $source, $model );
+        return Hook::filter( 'sb-update-products-inputs', $primary, $source, $model );
     }
 }
