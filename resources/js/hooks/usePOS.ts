@@ -178,6 +178,17 @@ export const usePOS = create<POSStore>((set, get) => ({
                 }
 
                 order = { ...order, tax_value: 0 };
+
+                // Compute preliminary total so the payment dialog never
+                // shows 0 while the async tax API is still in-flight.
+                const prelimTotal = math
+                    .chain(order.subtotal)
+                    .add(order.shipping || 0)
+                    .subtract(order.discount)
+                    .subtract(order.total_coupons)
+                    .done();
+                order = { ...order, total: prelimTotal };
+
                 set({ order });
 
                 try {
