@@ -17,7 +17,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web'])->group(function () {
-  Route::get('/', [HomeController::class, 'welcome'])->name('home');
+  Route::get('/', [HomeController::class, 'welcome'])->name('home')->middleware([InstalledStateMiddleware::class]);
   Route::get('/activate', [\App\Http\Controllers\ActivationController::class, 'show'])->name('license.activate');
   Route::post('/activate', [\App\Http\Controllers\ActivationController::class, 'activate'])->name('license.activate.post');
 });
@@ -37,7 +37,7 @@ Route::middleware([
 
   Route::get('/database-update', [UpdateController::class, 'updateDatabase'])
     ->withoutMiddleware([CheckMigrationStatus::class])
-    ->name('ns.database-update');
+    ->name('sb.database-update');
 
   Route::middleware([
     Authenticate::class,
@@ -51,13 +51,13 @@ Route::middleware([
       Route::middleware([
         HandleCommonRoutesMiddleware::class,
       ])->group(function () {
-        require dirname(__FILE__) . '/jgrem.php';
+        require dirname(__FILE__) . '/subul.php';
       });
 
       // include dirname(__FILE__) . '/web/modules.php';
       include dirname(__FILE__) . '/web/users.php';
       //
-      Route::get('/crud/download/{hash}', [CrudController::class, 'downloadSavedFile'])->name('ns.dashboard.crud-download');
+      Route::get('/crud/download/{hash}', [CrudController::class, 'downloadSavedFile'])->name('sb.dashboard.crud-download');
     });
   });
 });
