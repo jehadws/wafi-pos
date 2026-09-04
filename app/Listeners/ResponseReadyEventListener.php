@@ -26,14 +26,14 @@ class ResponseReadyEventListener
      */
     public function handle( ResponseReadyEvent $event )
     {
-        Cache::forget( 'ns-core-installed' );
+        Cache::forget( 'sb-core-installed' );
 
         /**
          * if the user is authenticated
          * we'll clear all cached permissions
          */
-        if ( Auth::check() ) {
-            Cache::forget( 'ns-all-permissions-' . Auth::id() );
+        if ( \App\Services\Helper::installed() && Auth::check() ) {
+            Cache::forget( 'sb-all-permissions-' . Auth::id() );
         }
     }
 }

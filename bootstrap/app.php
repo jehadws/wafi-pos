@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
     $middleware->validateCsrfTokens(except: ['api/setup/*']);
 
     $middleware->web(append: [
+      \App\Http\Middleware\KillSessionIfNotInstalledMiddleware::class,
       HandleAppearance::class,
       LoadLangMiddleware::class,
       HandleInertiaRequests::class,

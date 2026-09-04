@@ -18,10 +18,12 @@ class LoadLangMiddleware
      */
     public function handle( Request $request, Closure $next )
     {
-        if ( Auth::check() ) {
+        $isInstalled = \App\Services\Helper::installed();
+
+        if ( $isInstalled && Auth::check() ) {
             $userAttribute = Auth::user()->attribute;
 
-            $language = ns()->option->get( 'ns_store_language', 'en' );
+            $language = sb()->option->get( 'sb_store_language', 'en' );
 
             /**
              * if the user attribute is not defined,
@@ -31,9 +33,10 @@ class LoadLangMiddleware
                 $language = Auth::user()->attribute->language;
             }
 
-            App::setLocale( in_array( $language, array_keys( config( 'jgrem.languages' ) ) ) ? $language : 'en' );
+            App::setLocale( in_array( $language, array_keys( config( 'subul.languages', [] ) ) ) ? $language : 'en' );
         } else {
-            App::setLocale( ns()->option->get( 'ns_store_language', 'en' ) );
+            $defaultLang = $isInstalled ? sb()->option->get( 'sb_store_language', 'en' ) : 'en';
+            App::setLocale( $defaultLang ?: 'en' );
         }
 
         /**

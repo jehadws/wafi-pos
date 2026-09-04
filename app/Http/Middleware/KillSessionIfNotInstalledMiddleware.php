@@ -18,7 +18,10 @@ class KillSessionIfNotInstalledMiddleware
     public function handle( Request $request, Closure $next )
     {
         if ( ! Helper::installed() ) {
-            Auth::logout();
+            if ( $request->hasSession() ) {
+                $request->session()->flush();
+            }
+            Auth::forgetUser();
         }
 
         return $next( $request );
