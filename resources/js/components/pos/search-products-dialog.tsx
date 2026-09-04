@@ -21,7 +21,7 @@ interface SearchProductsDialogProps {
 
 export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: SearchProductsDialogProps) {
   const { t } = useTranslation();
-  const { options } = usePage<{ options: NsPosOptions }>().props;
+  const { options } = usePage<{ options: SbPosOptions }>().props;
   const [products, setProducts] = useState<Product[]>([]);
   const [selectProduct, setSelectProduct] = useState<Product>();
   const [quantities, setQuantities] = useState<UnitQuantity[]>();
@@ -74,7 +74,7 @@ export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: 
         price_without_tax: selectedUnitQuantity.sale_price_without_tax,
         unit_name: selectedUnitQuantity.unit.name,
         total_price:
-          options.ns_jgrem_price_with_tax === 'yes'
+          options.sb_subul_price_with_tax === 'yes'
             ? selectedUnitQuantity.sale_price_with_tax * parseInt(quantity)
             : selectedUnitQuantity.sale_price_without_tax * parseInt(quantity),
         total_price_without_tax: selectedUnitQuantity.sale_price_without_tax * parseInt(quantity),
@@ -184,7 +184,7 @@ export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: 
                     {quantity.unit.name} ({quantity.quantity})
                   </div>
                   <div className="text-sm font-medium">
-                    {options.ns_jgrem_price_with_tax === 'yes'
+                    {options.sb_subul_price_with_tax === 'yes'
                       ? formatCurrency(quantity.sale_price_with_tax)
                       : formatCurrency(quantity.sale_price_without_tax)}
                   </div>

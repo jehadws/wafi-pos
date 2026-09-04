@@ -35,6 +35,6 @@ describe('receipt-template service', () => {
         expect(html).toContain('Jane Smith');
         expect(html).toContain('cashier_bob');
         expect(html).toContain('Caramel Macchiato');
-        expect(html).toContain('Powered by JGREM POS');
+        expect(html).toContain('Powered by Subul POS');
     });
 });

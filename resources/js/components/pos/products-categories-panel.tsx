@@ -240,7 +240,7 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
                                         ? 'relative aspect-square overflow-hidden rounded-lg'
                                         : 'bg-muted relative aspect-video overflow-hidden rounded-t-lg'}>
                                         <img
-                                            src={(product as any).preview_url || '/placeholder.svg'}
+                                            src={product.galleries?.[0]?.url || product.images?.[0] || '/placeholder.svg'}
                                             alt={product.name}
                                             className="h-full w-full object-cover"
                                         />

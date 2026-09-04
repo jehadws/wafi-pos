@@ -112,7 +112,7 @@ describe('services/cart-engine.ts', () => {
                 sale_price_without_tax: 100,
             } as any;
 
-            const result = getSalePrice(quantities, { ns_jgrem_price_with_tax: 'yes' } as any);
+            const result = getSalePrice(quantities, { sb_subul_price_with_tax: 'yes' } as any);
             expect(result).toBe(115);
         });
 
@@ -122,7 +122,7 @@ describe('services/cart-engine.ts', () => {
                 sale_price_without_tax: 100,
             } as any;
 
-            const result = getSalePrice(quantities, { ns_jgrem_price_with_tax: 'no' } as any);
+            const result = getSalePrice(quantities, { sb_subul_price_with_tax: 'no' } as any);
             expect(result).toBe(100);
         });
     });
@@ -134,7 +134,7 @@ describe('services/cart-engine.ts', () => {
                 wholesale_price_without_tax: 80,
             };
 
-            const result = getWholesalePrice(quantities, { ns_jgrem_price_with_tax: 'yes' } as any);
+            const result = getWholesalePrice(quantities, { sb_subul_price_with_tax: 'yes' } as any);
             expect(result).toBe(92);
         });
     });
@@ -146,7 +146,7 @@ describe('services/cart-engine.ts', () => {
                 custom_price_without_tax: 50,
             };
 
-            const result = getCustomPrice(quantities, { ns_jgrem_price_with_tax: 'no' } as any);
+            const result = getCustomPrice(quantities, { sb_subul_price_with_tax: 'no' } as any);
             expect(result).toBe(50);
         });
     });
@@ -205,8 +205,8 @@ describe('services/cart-engine.ts', () => {
         };
 
         const options = {
-            ns_jgrem_price_with_tax: 'no',
-            ns_jgrem_vat: 'products_vat',
+            sb_subul_price_with_tax: 'no',
+            sb_subul_vat: 'products_vat',
         } as any;
 
         it('computes normal mode pricing with tax-inclusive', () => {
@@ -326,8 +326,8 @@ describe('services/cart-engine.ts', () => {
         };
 
         const options = {
-            ns_jgrem_price_with_tax: 'no',
-            ns_jgrem_vat: 'products_vat',
+            sb_subul_price_with_tax: 'no',
+            sb_subul_vat: 'products_vat',
         } as any;
 
         it('validates product-specific coupons', () => {
@@ -442,8 +442,8 @@ describe('services/cart-engine.ts', () => {
         };
 
         const options = {
-            ns_jgrem_price_with_tax: 'no',
-            ns_jgrem_vat: 'products_vat',
+            sb_subul_price_with_tax: 'no',
+            sb_subul_vat: 'products_vat',
         } as any;
 
         it('computes multi-item cart totals', () => {
@@ -660,8 +660,8 @@ describe('services/cart-engine.ts', () => {
         } as any);
 
         const options = {
-            ns_jgrem_price_with_tax: 'no',
-            ns_jgrem_vat: 'products_vat',
+            sb_subul_price_with_tax: 'no',
+            sb_subul_vat: 'products_vat',
         } as any;
 
         it('computeItem returns new object', () => {
@@ -764,8 +764,8 @@ describe('services/cart-engine.ts', () => {
         } as any);
 
         const options = {
-            ns_jgrem_price_with_tax: 'no',
-            ns_jgrem_vat: 'products_vat',
+            sb_subul_price_with_tax: 'no',
+            sb_subul_vat: 'products_vat',
         } as any;
 
         it('computed line survives JSON round-trip with values intact', () => {

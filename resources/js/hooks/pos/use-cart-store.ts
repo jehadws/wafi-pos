@@ -151,7 +151,7 @@ export const createCartSlice: StateCreator<POSStore, [], [], CartSlice> = (set, 
 
         if (product.id) {
             try {
-                await usersApi.checkPermission('nexopos.pos.delete-order-product');
+                await usersApi.checkPermission('subul.pos.delete-order-product');
                 get().resumeRemovingProductUsingIndex(index, products);
             } catch {
                 toast.error('Forbidden Action', {

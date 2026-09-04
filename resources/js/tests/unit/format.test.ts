@@ -15,13 +15,13 @@ describe('format utilities', () => {
                 registration: {} as any,
                 date: {} as any,
                 currency: {
-                    ns_currency_symbol: ' SAR',
-                    ns_currency_iso: 'SAR',
-                    ns_currency_position: 'after',
-                    ns_currency_prefered: 'SAR',
-                    ns_currency_thousand_separator: ',',
-                    ns_currency_decimal_separator: '.',
-                    ns_currency_precision: 2,
+                    sb_currency_symbol: ' SAR',
+                    sb_currency_iso: 'SAR',
+                    sb_currency_position: 'after',
+                    sb_currency_prefered: 'SAR',
+                    sb_currency_thousand_separator: ',',
+                    sb_currency_decimal_separator: '.',
+                    sb_currency_precision: 2,
                 },
             });
 
@@ -49,9 +49,9 @@ describe('format utilities', () => {
                 registration: {} as any,
                 currency: {} as any,
                 date: {
-                    ns_date_format: 'Y-m-d',
-                    ns_datetime_format: 'Y-m-d H:i',
-                    ns_datetime_timezone: 'UTC',
+                    sb_date_format: 'Y-m-d',
+                    sb_datetime_format: 'Y-m-d H:i',
+                    sb_datetime_timezone: 'UTC',
                 },
             });
 

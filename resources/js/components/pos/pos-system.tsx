@@ -276,7 +276,10 @@ export default function PosSystem() {
       <div className="flex flex-1 overflow-hidden">
         {/* Left Panel - Cart and Actions */}
         <div className={cn('flex w-1/2 flex-col', isRTL ? 'border-l' : 'border-r')}>
-          <SecondaryNavigation setShowSelectCustomerDialog={checkout.setShowSelectCustomerDialog} />
+          <SecondaryNavigation
+            setShowSelectCustomerDialog={checkout.setShowSelectCustomerDialog}
+            onOpenSearchProductsDialog={() => dialogs.setShowSearchProductsDialog(true)}
+          />
 
           {/* Cart Table */}
           <CartTable
@@ -321,14 +324,14 @@ export default function PosSystem() {
         {/* Right Panel - Products & Scanner */}
         <div className="flex w-1/2 flex-col">
           <div className="border-b p-2">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
               <div className="relative flex-1">
-                <Barcode className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+                <Barcode className="text-muted-foreground absolute top-2.5 start-2.5 h-4 w-4" />
                 <Input
                   ref={barcodeSearch.inputRef}
                   type="search"
-                  placeholder={t('Search')}
-                  className="pl-8"
+                  placeholder={t('Scan barcode or search products...')}
+                  className="ps-8 pe-3"
                   value={barcodeSearch.searchQuery}
                   onChange={(e) => barcodeSearch.setSearchQuery(e.target.value)}
                   onKeyDown={barcodeSearch.handleKeyDown}
@@ -336,31 +339,49 @@ export default function PosSystem() {
                 />
               </div>
               <Button
-                variant="outline"
+                variant={barcodeSearch.isAutoFocusOpen ? 'default' : 'outline'}
                 size="icon"
-                className="active:scale-95 h-11 w-11"
+                className={cn(
+                  'active:scale-95 relative h-10 w-10 transition-all',
+                  barcodeSearch.isAutoFocusOpen && 'bg-primary text-primary-foreground shadow-sm',
+                )}
                 onClick={barcodeSearch.toggleAutoFocus}
-                title={t('Barcode')}
+                title={
+                  barcodeSearch.isAutoFocusOpen
+                    ? t('Barcode Autofocus (Active)')
+                    : t('Barcode Autofocus (Inactive)')
+                }
               >
-                <Barcode
-                  className={cn('h-5 w-5', barcodeSearch.isAutoFocusOpen ? 'text-primary' : '')}
-                />
+                <Barcode className="h-5 w-5" />
+                {barcodeSearch.isAutoFocusOpen && (
+                  <span className="absolute -top-1 -end-1 flex h-3 w-3">
+                    <span className="bg-emerald-400 absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"></span>
+                    <span className="bg-emerald-500 relative inline-flex h-3 w-3 rounded-full"></span>
+                  </span>
+                )}
               </Button>
               <Button
-                variant="outline"
+                variant={autoMerge ? 'default' : 'outline'}
                 size="icon"
-                className="active:scale-95 h-11 w-11"
+                className={cn(
+                  'active:scale-95 relative h-10 w-10 transition-all',
+                  autoMerge && 'bg-primary/90 text-primary-foreground',
+                )}
                 onClick={() => setAutoMerge(!autoMerge)}
-                title={t('Options')}
+                title={
+                  autoMerge
+                    ? t('Auto Merge Items (Enabled)')
+                    : t('Auto Merge Items (Disabled)')
+                }
               >
-                <Shrink className={cn('h-5 w-5', autoMerge ? 'text-primary' : '')} />
+                <Shrink className="h-5 w-5" />
               </Button>
               <Button
                 variant="outline"
                 size="icon"
-                className="active:scale-95 h-11 w-11"
+                className="active:scale-95 h-10 w-10 text-muted-foreground hover:text-foreground"
                 onClick={() => dialogs.setShowSearchProductsDialog(true)}
-                title={t('Products')}
+                title={t('Quick Search Catalog')}
               >
                 <Search className="h-5 w-5" />
               </Button>

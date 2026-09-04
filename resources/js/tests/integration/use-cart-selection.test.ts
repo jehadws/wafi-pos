@@ -77,4 +77,32 @@ describe('hooks/pos/use-cart-selection', () => {
         expect(onBatchRemove).toHaveBeenCalledWith([mockProducts[1]]); // Only item-2 remains
         expect(result.current.selectedItems).toEqual([]);
     });
+
+    it('retains selection when products list updates with surviving items', () => {
+        const onBatchRemove = vi.fn();
+        let products = [...mockProducts];
+        const { result, rerender } = renderHook(() =>
+            useCartSelection({ products, onBatchRemove }),
+        );
+
+        act(() => {
+            result.current.toggleItemSelection('item-2');
+        });
+        expect(result.current.selectedItems).toEqual(['item-2']);
+
+        // Simulate an item update (e.g. quantity change produces new array reference)
+        products = [
+            { ...mockProducts[0], quantity: 2 } as any,
+            { ...mockProducts[1], quantity: 3 } as any,
+        ];
+        rerender();
+
+        expect(result.current.selectedItems).toEqual(['item-2']);
+
+        // Simulate complete cart clear
+        products = [];
+        rerender();
+
+        expect(result.current.selectedItems).toEqual([]);
+    });
 });

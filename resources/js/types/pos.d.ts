@@ -124,38 +124,38 @@ type ProductSearchBarcode = {
   }
 }
 
-interface NsPosOptions {
-  ns_jgrem_printing_document: 'invoice' | 'receipt';
-  ns_orders_allow_partial: 'yes' | 'no';
-  ns_orders_allow_unpaid: 'yes' | 'no';
-  ns_jgrem_order_types: string[]; // from OrdersService::getTypeLabels()
-  ns_jgrem_quick_product: 'yes' | 'no';
-  ns_jgrem_quick_product_default_unit: number; // Unit id
-  ns_jgrem_price_with_tax: 'yes' | 'no';
-  ns_jgrem_unit_price_ediable: 'yes' | 'no';
-  ns_jgrem_printing_enabled_for:
+interface SbPosOptions {
+  sb_subul_printing_document: 'invoice' | 'receipt';
+  sb_orders_allow_partial: 'yes' | 'no';
+  sb_orders_allow_unpaid: 'yes' | 'no';
+  sb_subul_order_types: string[]; // from OrdersService::getTypeLabels()
+  sb_subul_quick_product: 'yes' | 'no';
+  sb_subul_quick_product_default_unit: number; // Unit id
+  sb_subul_price_with_tax: 'yes' | 'no';
+  sb_subul_unit_price_ediable: 'yes' | 'no';
+  sb_subul_printing_enabled_for:
   | 'disabled'
   | 'all_orders'
   | 'partially_paid_orders'
   | 'only_paid_orders';
-  ns_jgrem_registers_enabled: 'yes' | 'no';
-  ns_jgrem_idle_counter: 'disabled' | '5min' | '10min' | '15min' | '20min' | '30min' | number;
-  ns_jgrem_disbursement: 'yes' | 'no';
-  ns_customers_default: boolean;
-  ns_jgrem_vat: 'disabled' | 'flat_vat' | 'variable_vat' | 'products_vat';
-  ns_jgrem_tax_group: number | string | null; // TaxGroup id
-  ns_jgrem_tax_type: 'inclusive' | 'exclusive' | false;
-  ns_jgrem_printing_gateway: 'default';
-  ns_jgrem_printing_auto: 'yes' | 'no';
-  ns_jgrem_show_quantity: boolean;
-  ns_jgrem_new_item_audio: '' | 'disabled' | string; // '' or audio URL
-  ns_jgrem_complete_sale_audio: '' | 'disabled' | string;
-  ns_jgrem_numpad: 'default' | 'advanced';
-  ns_jgrem_allow_wholesale_price: boolean;
-  ns_jgrem_allow_decimal_quantities: boolean;
-  ns_jgrem_force_autofocus: boolean;
-  ns_jgrem_items_merge: 'yes' | 'no' | boolean;
-  ns_jgrem_layout: 'grocery_shop' | 'clothing_shop' | string;
+  sb_subul_registers_enabled: 'yes' | 'no';
+  sb_subul_idle_counter: 'disabled' | '5min' | '10min' | '15min' | '20min' | '30min' | number;
+  sb_subul_disbursement: 'yes' | 'no';
+  sb_customers_default: boolean;
+  sb_subul_vat: 'disabled' | 'flat_vat' | 'variable_vat' | 'products_vat';
+  sb_subul_tax_group: number | string | null; // TaxGroup id
+  sb_subul_tax_type: 'inclusive' | 'exclusive' | false;
+  sb_subul_printing_gateway: 'default';
+  sb_subul_printing_auto: 'yes' | 'no';
+  sb_subul_show_quantity: boolean;
+  sb_subul_new_item_audio: '' | 'disabled' | string; // '' or audio URL
+  sb_subul_complete_sale_audio: '' | 'disabled' | string;
+  sb_subul_numpad: 'default' | 'advanced';
+  sb_subul_allow_wholesale_price: boolean;
+  sb_subul_allow_decimal_quantities: boolean;
+  sb_subul_force_autofocus: boolean;
+  sb_subul_items_merge: 'yes' | 'no' | boolean;
+  sb_subul_layout: 'grocery_shop' | 'clothing_shop' | string;
 }
 
 

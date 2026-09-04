@@ -4,7 +4,7 @@
  * Zustand store — cash register session state.
  *
  * Mirrors the backend (`CashRegistersController` + `CashRegistersService`):
- *   - registersEnabled  → `ns_jgrem_registers_enabled` option gate
+ *   - registersEnabled  → `sb_subul_registers_enabled` option gate
  *   - currentRegister   → the register opened by the logged user
  *   - openRegister()    → POST /api/cash-registers/open/{id}
  *   - closeRegister()   → POST /api/cash-registers/close/{id}
@@ -21,7 +21,7 @@ import { create } from 'zustand';
 export type RegisterStatus = 'idle' | 'opening' | 'closing' | 'cash-moving';
 
 interface RegisterStoreState {
-    /** True when `ns_jgrem_registers_enabled === 'yes'`. */
+    /** True when `sb_subul_registers_enabled === 'yes'`. */
     registersEnabled: boolean;
     /** True once the initial "which register is mine?" probe completed. */
     initialized: boolean;

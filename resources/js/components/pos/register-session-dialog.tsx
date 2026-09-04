@@ -36,7 +36,7 @@ type MovementAction = 'cashIn' | 'cashOut';
 export function RegisterSessionDialog({ onClosed }: RegisterSessionDialogProps) {
     const { t } = useTranslation();
     const options = usePOS((s) => s.options);
-    // `ns_jgrem_disbursement === 'yes'` allows the cashier to take cash out.
+    // `sb_subul_disbursement === 'yes'` allows the cashier to take cash out.
     const disbursementEnabled = options[POS_OPTION_KEYS.disbursement] === 'yes';
     const open = useRegisterStore((s) => s.sessionDialogOpen);
     const setOpen = (value: boolean) =>

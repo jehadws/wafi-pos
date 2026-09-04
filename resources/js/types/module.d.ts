@@ -42,6 +42,7 @@ type Product = {
   author: number
   uuid: null | string
   unit_quantities: UnitQuantity[],
+  galleries?: { url: string; featured: boolean; name?: string }[],
   created_at: string
   updated_at: string
   quantity?: number
@@ -668,7 +669,7 @@ type TransactionHistory = {
   "register_history_id": 0,
   "customer_account_history_id": 0,
   "name": "Jehad Abdulwafi",
-  "type": "ns.direct-transaction",
+  "type": "sb.direct-transaction",
   "status": "active",
   "value": " 1,00 LYD",
   "trigger_date": "2025-08-16 11:43:21",
@@ -681,7 +682,7 @@ type TransactionHistory = {
   "transaction_media_id": 0,
   "transaction_value": 1,
   "transaction_recurring": 0,
-  "transaction_type": "ns.direct-transaction",
+  "transaction_type": "sb.direct-transaction",
   "transaction_active": 0,
   "transaction_group_id": null,
   "transaction_occurrence": null,
@@ -728,7 +729,7 @@ type TransactionAccount = {
   description: null | string
   author: number
   uuid: null | string
-  jgrem_users_username: string
+  subul_users_username: string
   subaccount_name: string
   created_at: string
   updated_at: string

@@ -156,13 +156,13 @@ export function computeTaxForGroup(
 
 /**
  * Returns the unit sale price for a product quantity entry,
- * respecting the ns_jgrem_price_with_tax option.
+ * respecting the sb_subul_price_with_tax option.
  */
 export function getSalePrice(
     item: ProductUnitQuantity | undefined,
     options: POSOptions,
 ): number {
-    if (options.ns_jgrem_price_with_tax === 'yes') {
+    if (options.sb_subul_price_with_tax === 'yes') {
         return rawCurrency(item?.sale_price_with_tax);
     }
     return rawCurrency(item?.sale_price_without_tax);
@@ -170,10 +170,10 @@ export function getSalePrice(
 
 /**
  * Returns the custom unit price for a product quantity entry,
- * respecting the ns_jgrem_price_with_tax option.
+ * respecting the sb_subul_price_with_tax option.
  */
 export function getCustomPrice(item: any, options: POSOptions): number {
-    if (options.ns_jgrem_price_with_tax === 'yes') {
+    if (options.sb_subul_price_with_tax === 'yes') {
         return rawCurrency(item.custom_price_with_tax);
     }
     return rawCurrency(item.custom_price_without_tax);
@@ -181,10 +181,10 @@ export function getCustomPrice(item: any, options: POSOptions): number {
 
 /**
  * Returns the wholesale unit price for a product quantity entry,
- * respecting the ns_jgrem_price_with_tax option.
+ * respecting the sb_subul_price_with_tax option.
  */
 export function getWholesalePrice(item: any, options: POSOptions): number {
-    if (options.ns_jgrem_price_with_tax === 'yes') {
+    if (options.sb_subul_price_with_tax === 'yes') {
         return rawCurrency(item.wholesale_price_with_tax);
     }
     return rawCurrency(item.wholesale_price_without_tax);
@@ -382,7 +382,7 @@ function computeProductTaxValue(product: OrderProduct): void {
  * single cart product. Returns a new object — never mutates the input.
  *
  * @param product  - The cart product to compute
- * @param options  - POS options (ns_jgrem_price_with_tax, etc.)
+ * @param options  - POS options (sb_subul_price_with_tax, etc.)
  */
 export function computeProduct(product: OrderProduct, options: POSOptions): OrderProduct {
     const computed: OrderProduct = { ...product };
@@ -454,7 +454,7 @@ export function sumProductsTaxes(
     products: OrderProduct[],
     options: POSOptions,
 ): Order {
-    const posVat = options.ns_jgrem_vat;
+    const posVat = options.sb_subul_vat;
 
     order.products = products as any;
     order.total_products = products.length;
@@ -469,7 +469,7 @@ export function sumProductsTaxes(
         }
     }
 
-    if (options.ns_jgrem_price_with_tax === 'no') {
+    if (options.sb_subul_price_with_tax === 'no') {
         order.subtotal = math.chain(order.subtotal).add(order.products_tax_value).done();
     }
 
@@ -518,7 +518,7 @@ export function sumProductsTotals(
  * depending on the POS VAT mode stored in options.
  */
 export function computeOrderTaxes(order: Order, options: POSOptions): Order {
-    const posVat = options.ns_jgrem_vat;
+    const posVat = options.sb_subul_vat;
 
     if (['flat_vat', 'variable_vat'].includes(posVat) && order.taxes && order.taxes.length > 0) {
         order.tax_value += order.taxes

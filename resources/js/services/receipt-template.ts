@@ -108,7 +108,7 @@ export function generateReceiptHtml(order: TOrder, orderProducts: TOrderProduct[
 
       <!-- Store Header -->
       <div class="store-header">
-        <div class="store-name">JGREM POS</div>
+        <div class="store-name">Subul POS</div>
       </div>
 
       <hr class="divider">
@@ -209,7 +209,7 @@ export function generateReceiptHtml(order: TOrder, orderProducts: TOrderProduct[
       <div class="receipt-footer">
         <div class="thank-you">Thank you!</div>
         <div>Please come again</div>
-        <div style="margin-top:6px; font-size:10px;">Powered by JGREM POS</div>
+        <div style="margin-top:6px; font-size:10px;">Powered by Subul POS</div>
       </div>
 
     </div>

@@ -13,8 +13,8 @@ interface OrderTypeDialogProps {
 
 export function OrderTypeDialog({ open, onOpenChange, orderType, onSelectOrderType }: OrderTypeDialogProps) {
   const { t } = useTranslation();
-  const { options } = usePage<{ options: NsPosOptions }>().props;
-  const enabledTypes = options.ns_jgrem_order_types || [];
+  const { options } = usePage<{ options: SbPosOptions }>().props;
+  const enabledTypes = options.sb_subul_order_types || [];
 
   const handleSelectType = (type: 'takeaway' | 'delivery') => {
     if (type === 'takeaway') {

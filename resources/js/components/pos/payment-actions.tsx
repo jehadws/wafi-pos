@@ -38,7 +38,13 @@ export default function PaymentActions({
       toast.error(t('You need to provide some products before proceeding'));
       return;
     }
-    if (!order.customer || !order.customer_id || !order.type) {
+    if (!order.customer || !order.customer_id) {
+      toast.warning(t('Please select a customer before proceeding to payment'));
+      setShouldValidate(true);
+      return;
+    }
+    if (!order.type) {
+      toast.warning(t('Please select an order type before proceeding to payment'));
       setShouldValidate(true);
       return;
     }
@@ -88,15 +94,23 @@ export default function PaymentActions({
 
   return (
     <>
-      <div className="grid grid-cols-4">
+      <div className="grid grid-cols-4 border-t">
         <Button
-          className={cn('active:scale-95 rounded-none bg-green-500 py-6 text-white hover:bg-green-600')}
+          className={cn(
+            'group relative flex h-14 flex-col items-center justify-center gap-0.5 rounded-none border-e font-semibold transition-all duration-150',
+            'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.98] dark:bg-emerald-600 dark:hover:bg-emerald-500',
+            'col-span-1 shadow-sm',
+          )}
           onClick={handleSubmit}
-          variant="default"
           type="button"
         >
-          <CreditCard className="mr-2 h-5 w-5" />
-          {t('Pay')}
+          <div className="flex items-center gap-1.5 text-sm leading-none">
+            <CreditCard className="h-4 w-4 transition-transform group-hover:scale-110" />
+            <span>{t('Pay')}</span>
+          </div>
+          <span className="text-xs font-bold tracking-wide opacity-95">
+            {formatCurrency(order.total || 0)}
+          </span>
         </Button>
         <Button
           onClick={() => {
@@ -108,27 +122,57 @@ export default function PaymentActions({
               toast.error(t('You need to provide some products before proceeding.'));
               return;
             }
-            if (!order.customer || !order.customer_id || !order.type) {
+            if (!order.customer || !order.customer_id) {
+              toast.warning(t('Please select a customer before holding the order'));
+              setShouldValidate(true);
+              return;
+            }
+            if (!order.type) {
+              toast.warning(t('Please select an order type before holding the order'));
               setShouldValidate(true);
               return;
             }
 
             setIsOpen(true);
           }}
-          className={cn('active:scale-95 rounded-none bg-blue-500 py-6 text-white hover:bg-blue-600')}
-          variant="secondary"
+          className={cn(
+            'group flex h-14 flex-col items-center justify-center gap-0.5 rounded-none border-e transition-all duration-150',
+            'bg-sky-600 text-white hover:bg-sky-700 active:scale-[0.98] dark:bg-sky-700 dark:hover:bg-sky-600',
+            'col-span-1 shadow-sm',
+          )}
           type="button"
         >
-          <PauseCircle className="mr-2 h-5 w-5" />
-          {t('Hold')}
-        </Button>
-        <Button className="active:scale-95 rounded-none border-0 py-6" variant="default" type="button" onClick={onOpenDiscountDialog}>
-          <Percent className="mr-2 h-5 w-5" />
-          {t('Discount')}
+          <div className="flex items-center gap-1.5 text-sm font-semibold leading-none">
+            <PauseCircle className="h-4 w-4 transition-transform group-hover:scale-110" />
+            <span>{t('Hold')}</span>
+          </div>
+          <span className="text-[11px] opacity-85">{t('Save Order')}</span>
         </Button>
         <Button
-          className="active:scale-95 rounded-none py-6"
-          variant="destructive"
+          className={cn(
+            'group flex h-14 flex-col items-center justify-center gap-0.5 rounded-none border-e transition-all duration-150',
+            'bg-muted/70 text-foreground hover:bg-muted active:scale-[0.98]',
+            'col-span-1',
+          )}
+          variant="ghost"
+          type="button"
+          onClick={onOpenDiscountDialog}
+        >
+          <div className="flex items-center gap-1.5 text-sm font-semibold leading-none">
+            <Percent className="h-4 w-4 text-amber-500 transition-transform group-hover:scale-110" />
+            <span>{t('Discount')}</span>
+          </div>
+          <span className="text-[11px] text-muted-foreground">
+            {order.discount ? `-${formatCurrency(order.discount)}` : t('Add Promo')}
+          </span>
+        </Button>
+        <Button
+          className={cn(
+            'group flex h-14 flex-col items-center justify-center gap-0.5 rounded-none transition-all duration-150',
+            'bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground active:scale-[0.98]',
+            'col-span-1',
+          )}
+          variant="ghost"
           type="button"
           onClick={() => {
             if (!order.id) {
@@ -139,8 +183,11 @@ export default function PaymentActions({
             setIsVoidOpen(true);
           }}
         >
-          <XCircle className="mr-2 h-5 w-5" />
-          {t('Void')}
+          <div className="flex items-center gap-1.5 text-sm font-semibold leading-none">
+            <XCircle className="h-4 w-4 transition-transform group-hover:scale-110" />
+            <span>{t('Void')}</span>
+          </div>
+          <span className="text-[11px] opacity-80">{t('Cancel Order')}</span>
         </Button>
       </div>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>

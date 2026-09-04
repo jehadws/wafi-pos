@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 
 export default function SelectUnitQuantityDialog({ selectProduct }: { selectProduct: Product | undefined }) {
     const { t } = useTranslation();
-    const { options } = usePage<{ options: NsPosOptions }>().props;
+    const { options } = usePage<{ options: SbPosOptions }>().props;
     const { openDialogs, closeDialog } = usePOS();
     const open = openDialogs['selectQuantity'] || false;
     const [quantities, setQuantities] = useState<UnitQuantity[]>([]);
@@ -28,7 +28,7 @@ export default function SelectUnitQuantityDialog({ selectProduct }: { selectProd
             }
 
             // Auto-select: if exactly one unit, or if a default unit is configured and matches
-            const defaultUnitId = options.ns_jgrem_quick_product_default_unit;
+            const defaultUnitId = options.sb_subul_quick_product_default_unit;
             if (loadedQuantities.length === 1) {
                 return closeDialog('selectQuantity', loadedQuantities[0]);
             } else if (defaultUnitId) {
@@ -95,7 +95,7 @@ export default function SelectUnitQuantityDialog({ selectProduct }: { selectProd
                                         {quantity.unit.name} ({quantity.quantity})
                                     </div>
                                     <div className="text-sm font-medium">
-                                        {options.ns_jgrem_price_with_tax === 'yes'
+                                        {options.sb_subul_price_with_tax === 'yes'
                                             ? formatCurrency(quantity.sale_price_with_tax)
                                             : formatCurrency(quantity.sale_price_without_tax)}
                                     </div>

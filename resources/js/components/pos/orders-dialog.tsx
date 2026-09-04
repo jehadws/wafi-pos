@@ -31,7 +31,7 @@ export function OrdersDialog({ open, onOpenChange }: Props) {
   const getOnHoldOrders = async (search?: string, page = 1) => {
     setLoading(true);
     try {
-      const res = await crudApi.list('ns.hold-orders', { search, page });
+      const res = await crudApi.list('sb.hold-orders', { search, page });
       setOnHoldOrders({ data: res.data, page: res.current_page, lastPage: res.last_page });
     } catch (error) {
       console.error('Error fetching On Hold Orders:', error);
@@ -43,7 +43,7 @@ export function OrdersDialog({ open, onOpenChange }: Props) {
   const getUnpaidOrders = async (search?: string, page = 1) => {
     setLoading(true);
     try {
-      const res = await crudApi.list('ns.unpaid-orders', { search, page });
+      const res = await crudApi.list('sb.unpaid-orders', { search, page });
       setUnpaidOrders({ data: res.data, page: res.current_page, lastPage: res.last_page });
     } catch (error) {
       console.error('Error fetching Unpaid Orders:', error);
@@ -55,7 +55,7 @@ export function OrdersDialog({ open, onOpenChange }: Props) {
   const getPartiallyPaidOrders = async (search?: string, page = 1) => {
     setLoading(true);
     try {
-      const res = await crudApi.list('ns.partially-paid-orders', { search, page });
+      const res = await crudApi.list('sb.partially-paid-orders', { search, page });
       setPartiallyPaidOrders({ data: res.data, page: res.current_page, lastPage: res.last_page });
     } catch (error) {
       console.error('Error fetching Partially Paid Orders:', error);

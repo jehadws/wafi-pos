@@ -32,6 +32,7 @@ export function usePosCheckout({
                 setShowSelectCustomerDialog(true);
             } else if (!order.type) {
                 setShowOrderTypeDialog(true);
+            } else {
                 setShouldValidate(false);
             }
         }

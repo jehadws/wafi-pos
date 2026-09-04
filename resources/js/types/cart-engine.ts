@@ -56,9 +56,9 @@ export interface ComputedCart {
  */
 export interface POSOptions {
     /** Whether prices are displayed with tax included */
-    ns_jgrem_price_with_tax: 'yes' | 'no';
+    sb_subul_price_with_tax: 'yes' | 'no';
     /** VAT calculation mode */
-    ns_jgrem_vat: 'flat_vat' | 'variable_vat' | 'products_vat';
+    sb_subul_vat: 'flat_vat' | 'variable_vat' | 'products_vat';
     /** Allow other POS options as key-value pairs */
     [key: string]: any;
 }

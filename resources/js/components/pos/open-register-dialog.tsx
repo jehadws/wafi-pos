@@ -31,7 +31,7 @@ interface OpenRegisterDialogProps {
 
 /**
  * Blocks the POS until the cashier opens (or joins) a cash register.
- * Shown on POS load when `ns_jgrem_registers_enabled === 'yes'` and no
+ * Shown on POS load when `sb_subul_registers_enabled === 'yes'` and no
  * register is currently opened by the logged user.
  */
 export function OpenRegisterDialog({ onOpened }: OpenRegisterDialogProps) {

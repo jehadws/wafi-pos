@@ -49,20 +49,20 @@ export function SimplePrintInvoice({ invoice }: SimplePrintInvoiceProps) {
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     const formatCurrency = (amount: number) => {
-        const symbol = generalSettings?.currency?.ns_currency_symbol || '$';
-        const position = generalSettings?.currency?.ns_currency_position || 'before';
-        const formatted = amount.toFixed(generalSettings?.currency?.ns_currency_precision || 2);
+        const symbol = generalSettings?.currency?.sb_currency_symbol || '$';
+        const position = generalSettings?.currency?.sb_currency_position || 'before';
+        const formatted = amount.toFixed(generalSettings?.currency?.sb_currency_precision || 2);
         return position === 'before' ? `${symbol}${formatted}` : `${formatted}${symbol}`;
     };
 
-    const storeName = generalSettings?.identification?.ns_store_name || 'JGREM POS';
-    const storeAddress = generalSettings?.identification?.ns_store_address || '';
-    const storePhone = generalSettings?.identification?.ns_store_phone || '';
+    const storeName = generalSettings?.identification?.sb_store_name || 'Subul POS';
+    const storeAddress = generalSettings?.identification?.sb_store_address || '';
+    const storePhone = generalSettings?.identification?.sb_store_phone || '';
     const storeLogo =
-        generalSettings?.identification?.ns_store_square_logo ||
-        (options?.ns_invoice_receipt_logo as string | undefined) ||
+        generalSettings?.identification?.sb_store_square_logo ||
+        (options?.sb_invoice_receipt_logo as string | undefined) ||
         '';
-    const receiptFooter = options?.ns_invoice_receipt_footer || '';
+    const receiptFooter = options?.sb_invoice_receipt_footer || '';
 
     // Build standard receipt data payload
     const receiptData: FormattedReceiptData = {

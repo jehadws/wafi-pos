@@ -12,9 +12,17 @@ export function useCartSelection({ products, onBatchRemove }: UseCartSelectionOp
     const { t } = useTranslation();
     const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
-    // Clear selection whenever the products list changes
+    // Keep selection synchronized with current products (remove items no longer in the cart)
     useEffect(() => {
-        setSelectedItems([]);
+        if (products.length === 0) {
+            setSelectedItems([]);
+            return;
+        }
+        const activeIds = new Set(products.map((p) => p._uuid || `${p.product_id}-${p.unit_id}`));
+        setSelectedItems((prev) => {
+            const next = prev.filter((id) => activeIds.has(id));
+            return next.length === prev.length ? prev : next;
+        });
     }, [products]);
 
     const toggleItemSelection = useCallback((productId: string) => {

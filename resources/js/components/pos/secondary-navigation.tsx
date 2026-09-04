@@ -10,9 +10,10 @@ import { useState } from 'react';
 
 type Props = {
   setShowSelectCustomerDialog: (value: boolean) => void;
+  onOpenSearchProductsDialog?: () => void;
 };
 
-export default function SecondaryNavigation({ setShowSelectCustomerDialog }: Props) {
+export default function SecondaryNavigation({ setShowSelectCustomerDialog, onOpenSearchProductsDialog }: Props) {
   const { t } = useTranslation();
   const { order, products, options, setNote, pushCoupon, removeCoupon, updateCart, updateProduct, computeTaxes } = usePOS();
   const [isCommentsDialogOpen, setIsCommentsDialogOpen] = useState(false);
@@ -20,7 +21,7 @@ export default function SecondaryNavigation({ setShowSelectCustomerDialog }: Pro
   const [isTaxesDialogOpen, setIsTaxesDialogOpen] = useState(false);
   const [isCouponsDialogOpen, setIsCouponsDialogOpen] = useState(false);
 
-  const showTaxes = options.ns_jgrem_vat === 'variable_vat';
+  const showTaxes = options.sb_subul_vat === 'variable_vat';
 
   const handleSaveNote = (note: string, display: boolean) => {
     setNote(note, display ? 'visible' : 'hidden');
@@ -55,31 +56,36 @@ export default function SecondaryNavigation({ setShowSelectCustomerDialog }: Pro
   return (
     <>
       <div className="bg-background border-b p-2.5">
-        <div className="flex space-x-2">
-          <Button variant="outline" size="sm" className="active:scale-95 flex h-11 items-center" onClick={() => setIsCommentsDialogOpen(true)}>
-            <MessageSquare className="mr-2 h-4 w-4" />
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" className="active:scale-95 flex h-10 items-center text-xs font-medium" onClick={() => setIsCommentsDialogOpen(true)}>
+            <MessageSquare className="me-1.5 h-4 w-4 text-muted-foreground" />
             {t('Comments')}
-            {order.note && <span className="bg-primary ml-2 h-2 w-2 rounded-full"></span>}
+            {order.note && <span className="bg-primary ms-1.5 h-2 w-2 rounded-full"></span>}
           </Button>
           {showTaxes && (
-            <Button variant="outline" size="sm" className="active:scale-95 flex h-11 items-center" onClick={() => setIsTaxesDialogOpen(true)}>
-              <Receipt className="mr-2 h-4 w-4" />
+            <Button variant="outline" size="sm" className="active:scale-95 flex h-10 items-center text-xs font-medium" onClick={() => setIsTaxesDialogOpen(true)}>
+              <Receipt className="me-1.5 h-4 w-4 text-muted-foreground" />
               {t('Taxes')}
-              {order.tax_group_id && <span className="bg-primary ml-2 h-2 w-2 rounded-full"></span>}
+              {order.tax_group_id && <span className="bg-primary ms-1.5 h-2 w-2 rounded-full"></span>}
             </Button>
           )}
-          <Button variant="outline" size="sm" className="active:scale-95 flex h-11 items-center" onClick={() => setIsCouponsDialogOpen(true)}>
-            <Ticket className="mr-2 h-4 w-4" />
+          <Button variant="outline" size="sm" className="active:scale-95 flex h-10 items-center text-xs font-medium" onClick={() => setIsCouponsDialogOpen(true)}>
+            <Ticket className="me-1.5 h-4 w-4 text-muted-foreground" />
             {t('Coupons')}
-            {order.coupons.length > 0 && <span className="bg-primary ml-2 h-2 w-2 rounded-full"></span>}
+            {order.coupons.length > 0 && <span className="bg-primary ms-1.5 h-2 w-2 rounded-full"></span>}
           </Button>
-          <Button variant="outline" size="sm" className="active:scale-95 flex h-11 items-center" onClick={() => setIsSettingsDialogOpen(true)}>
-            <SettingsIcon className="mr-2 h-4 w-4" />
+          <Button variant="outline" size="sm" className="active:scale-95 flex h-10 items-center text-xs font-medium" onClick={() => setIsSettingsDialogOpen(true)}>
+            <SettingsIcon className="me-1.5 h-4 w-4 text-muted-foreground" />
             {t('Settings')}
-            {order.title && <span className="bg-primary ml-2 h-2 w-2 rounded-full"></span>}
+            {order.title && <span className="bg-primary ms-1.5 h-2 w-2 rounded-full"></span>}
           </Button>
-          <Button variant="outline" size="sm" className="active:scale-95 flex h-11 items-center">
-            <Package className="mr-2 h-4 w-4" />
+          <Button
+            variant="outline"
+            size="sm"
+            className="active:scale-95 flex h-10 items-center text-xs font-medium"
+            onClick={onOpenSearchProductsDialog}
+          >
+            <Package className="me-1.5 h-4 w-4 text-muted-foreground" />
             {t('Product')}
           </Button>
         </div>

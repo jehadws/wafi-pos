@@ -87,7 +87,7 @@ export function ThermalReceiptPreview({ data, onClose, autoPrint = false }: Ther
                             style={{ maxHeight: '60px', maxWidth: '140px' }}
                         />
                     )}
-                    <div className="text-lg uppercase tracking-wider">{data.storeName || 'JGREM POS'}</div>
+                    <div className="text-lg uppercase tracking-wider">{data.storeName || 'Subul POS'}</div>
                     {data.storeAddress && <div className="text-xs font-normal text-neutral-600 dark:text-neutral-400">{data.storeAddress}</div>}
                     {data.storePhone && <div className="text-xs font-normal text-neutral-600 dark:text-neutral-400">Tel: {data.storePhone}</div>}
                 </div>
@@ -215,7 +215,7 @@ export function ThermalReceiptPreview({ data, onClose, autoPrint = false }: Ther
                 {/* Footer */}
                 <div className="text-center text-xs space-y-0.5 pt-1">
                     <div className="font-semibold">{data.footer || t('Thank you for your business!')}</div>
-                    <div className="text-[10px] text-neutral-500">Powered by JGREM POS</div>
+                    <div className="text-[10px] text-neutral-500">Powered by Subul POS</div>
                 </div>
             </div>
         </div>

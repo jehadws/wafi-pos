@@ -118,7 +118,7 @@ export const createSessionSlice: StateCreator<POSStore, [], [], SessionSlice> = 
                                 label: 'Read More',
                                 onClick: () =>
                                     window.open(
-                                        'https://my.nexopos.com/en/documentation/troubleshooting/no-default-customer',
+                                        'https://my.subul.com/en/documentation/troubleshooting/no-default-customer',
                                         '_blank',
                                     ),
                             },

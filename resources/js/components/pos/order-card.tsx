@@ -140,7 +140,7 @@ export default function OrderCard({ order, onOpenChange }: Props) {
       const productsList = (await ordersApi.getProducts(order.id)) || [];
 
       // Canonical receipt path — Order → FormattedReceiptData mapping and
-      // printer configuration live in PrintAgentService (Wafi POS branding).
+      // printer configuration live in PrintAgentService (Subul branding).
       const receiptOrder = { ...order, products: productsList } as unknown as Order;
       const result = await PrintAgentService.printOrderReceipt(receiptOrder);
 

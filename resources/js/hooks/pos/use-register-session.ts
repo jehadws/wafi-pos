@@ -4,11 +4,11 @@
  * Orchestrates the cash-register lifecycle on the POS screen:
  *
  *   1. Probes the backend for the logged user's opened register when
- *      `ns_jgrem_registers_enabled === 'yes'`.
+ *      `sb_subul_registers_enabled === 'yes'`.
  *   2. Gates the POS behind an open-register dialog until a register is opened.
  *   3. Stamps submitted orders with `register_id` (the backend records
  *      payments/change against it via TrackCashRegisterJob).
- *   4. Auto-locks the session after `ns_jgrem_idle_counter` of inactivity.
+ *   4. Auto-locks the session after `sb_subul_idle_counter` of inactivity.
  */
 
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
@@ -48,7 +48,7 @@ function resolveIdleMs(idleCounter: unknown): number | null {
     return isNaN(parsed) ? null : parsed * IDLE_UNIT_MS;
 }
 
-export function useRegisterSession(options: NsPosOptions): RegisterSessionState {
+export function useRegisterSession(options: SbPosOptions): RegisterSessionState {
     const registersEnabled = options[POS_OPTION_KEYS.registersEnabled] === 'yes';
     const initialize = useRegisterStore((s) => s.initialize);
     const currentRegister = useRegisterStore((s) => s.currentRegister);
