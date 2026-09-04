@@ -33,7 +33,7 @@ export function DatabasePage({ onBack, onNext }: DatabasePageProps) {
         database_name: '',
         username: '',
         password: '',
-        database_prefix: 'ns_',
+        database_prefix: 'sb_',
     });
 
     const [processing, setProcessing] = useState(false);
@@ -173,7 +173,7 @@ export function DatabasePage({ onBack, onNext }: DatabasePageProps) {
             <p className="mb-1 text-[11px] font-semibold tracking-widest text-violet-400 uppercase">{t('Step 2 — Database')}</p>
             <h1 className="mb-1.5 text-[22px] font-semibold tracking-tight text-zinc-100">{t('Connect your database')}</h1>
             <p className="mb-6 text-[13px] leading-relaxed text-zinc-500">
-                {t('Enter your database credentials. NexoPOS will test the connection before continuing.')}
+                {t('Enter your database credentials. Subul will test the connection before continuing.')}
             </p>
 
             {errorMessage && (
@@ -201,7 +201,7 @@ export function DatabasePage({ onBack, onNext }: DatabasePageProps) {
                     <>
                         <Field name="hostname" label="Database host" placeholder="127.0.0.1" className="col-span-2" />
                         <Field name="database_port" label="Port" placeholder="3306" />
-                        <Field name="database_name" label="Database name" placeholder="nexopos_v4" />
+                        <Field name="database_name" label="Database name" placeholder="subul_v4" />
                         <Field name="username" label="Username" placeholder="root" />
                         <Field name="password" label="Password" type="password" placeholder="••••••••" />
                     </>
@@ -213,7 +213,7 @@ export function DatabasePage({ onBack, onNext }: DatabasePageProps) {
                     </div>
                 )}
 
-                <Field name="database_prefix" label="Database Prefix" placeholder="ns_" hint="Provide the database prefix." className="col-span-2" />
+                <Field name="database_prefix" label="Database Prefix" placeholder="sb_" hint="Provide the database prefix." className="col-span-2" />
             </div>
 
             {testStatus !== 'idle' && (

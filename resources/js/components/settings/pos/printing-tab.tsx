@@ -47,8 +47,8 @@ export function PrintingTab({ form, options }: PrintingTabProps) {
                     description={t('Choose the document used for printing after a sale.')}
                 >
                     <Select
-                        value={form.data.printing.ns_jgrem_printing_document || ''}
-                        onValueChange={(v) => form.setData('printing.ns_jgrem_printing_document', v)}
+                        value={form.data.printing.sb_subul_printing_document || ''}
+                        onValueChange={(v) => form.setData('printing.sb_subul_printing_document', v)}
                     >
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder={t('Select an option')} />
@@ -57,7 +57,7 @@ export function PrintingTab({ form, options }: PrintingTabProps) {
                             <SelectItem key="null" value="null">
                                 {t('Select an option')}
                             </SelectItem>
-                            {options.ns_jgrem_printing_document.map((l) => (
+                            {options.sb_subul_printing_document.map((l) => (
                                 <SelectItem key={l.value} value={l.value.toString()}>
                                     {l.label}
                                 </SelectItem>
@@ -71,8 +71,8 @@ export function PrintingTab({ form, options }: PrintingTabProps) {
                     description={t('Determine when the printing should be enabled.')}
                 >
                     <Select
-                        value={form.data.printing.ns_jgrem_printing_enabled_for || ''}
-                        onValueChange={(v) => form.setData('printing.ns_jgrem_printing_enabled_for', v)}
+                        value={form.data.printing.sb_subul_printing_enabled_for || ''}
+                        onValueChange={(v) => form.setData('printing.sb_subul_printing_enabled_for', v)}
                     >
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder={t('Select an option')} />
@@ -81,7 +81,7 @@ export function PrintingTab({ form, options }: PrintingTabProps) {
                             <SelectItem key="null" value="null">
                                 {t('Select an option')}
                             </SelectItem>
-                            {options.ns_jgrem_printing_enabled_for.map((l) => (
+                            {options.sb_subul_printing_enabled_for.map((l) => (
                                 <SelectItem key={l.value} value={l.value.toString()}>
                                     {l.label}
                                 </SelectItem>
@@ -92,8 +92,8 @@ export function PrintingTab({ form, options }: PrintingTabProps) {
 
                 <FormField label={t('Printing Gateway')} description={t('Determine what is the gateway used for printing.')}>
                     <Select
-                        value={form.data.printing.ns_jgrem_printing_gateway || ''}
-                        onValueChange={(v) => form.setData('printing.ns_jgrem_printing_gateway', v)}
+                        value={form.data.printing.sb_subul_printing_gateway || ''}
+                        onValueChange={(v) => form.setData('printing.sb_subul_printing_gateway', v)}
                     >
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder={t('Select an option')} />
@@ -102,7 +102,7 @@ export function PrintingTab({ form, options }: PrintingTabProps) {
                             <SelectItem key="null" value="null">
                                 {t('Select an option')}
                             </SelectItem>
-                            {options.ns_jgrem_printing_gateway.map((l) => (
+                            {options.sb_subul_printing_gateway.map((l) => (
                                 <SelectItem key={l.value} value={l.value.toString()}>
                                     {l.label}
                                 </SelectItem>
@@ -120,15 +120,15 @@ export function PrintingTab({ form, options }: PrintingTabProps) {
                     <div className="flex gap-2">
                         <Button
                             type="button"
-                            variant={(form.data.printing.ns_jgrem_printing_auto ?? 'yes') === 'yes' ? 'default' : 'outline'}
-                            onClick={() => form.setData('printing.ns_jgrem_printing_auto', 'yes')}
+                            variant={(form.data.printing.sb_subul_printing_auto ?? 'yes') === 'yes' ? 'default' : 'outline'}
+                            onClick={() => form.setData('printing.sb_subul_printing_auto', 'yes')}
                         >
                             {t('Yes')}
                         </Button>
                         <Button
                             type="button"
-                            variant={(form.data.printing.ns_jgrem_printing_auto ?? 'yes') === 'no' ? 'default' : 'outline'}
-                            onClick={() => form.setData('printing.ns_jgrem_printing_auto', 'no')}
+                            variant={(form.data.printing.sb_subul_printing_auto ?? 'yes') === 'no' ? 'default' : 'outline'}
+                            onClick={() => form.setData('printing.sb_subul_printing_auto', 'no')}
                         >
                             {t('No')}
                         </Button>

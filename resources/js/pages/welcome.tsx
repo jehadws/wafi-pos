@@ -36,7 +36,7 @@ export default function Welcome() {
             </svg>
           </div>
 
-          <h1 className="mb-1.5 text-2xl font-semibold tracking-tight text-card-foreground">Wafi</h1>
+          <h1 className="mb-1.5 text-2xl font-semibold tracking-tight text-card-foreground">Subul</h1>
           <p className="mb-8 max-w-[15rem] text-sm leading-relaxed text-muted-foreground">
             Your point of sale, ready when you are. Sign in to open the till.
           </p>

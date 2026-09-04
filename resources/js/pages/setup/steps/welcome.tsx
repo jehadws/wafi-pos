@@ -14,9 +14,9 @@ export function WelcomePage({ onNext, languages, default_lang }: { onNext: () =>
     return (
         <>
             <p className="mb-1 text-[11px] font-semibold tracking-widest text-violet-400 uppercase">{t('Installation wizard')}</p>
-            <h1 className="mb-1.5 text-[22px] font-semibold tracking-tight text-zinc-100">{t('Welcome to NexoPOS')}</h1>
+            <h1 className="mb-1.5 text-[22px] font-semibold tracking-tight text-zinc-100">{t('Welcome to Subul')}</h1>
             <p className="mb-8 text-[13px] leading-relaxed text-zinc-500">
-                {t('Thank you for using NexoPOS to manage your store. This installation wizard will help you running NexoPOS in no time.')}
+                {t('Thank you for using Subul to manage your store. This installation wizard will help you running Subul in no time.')}
             </p>
 
             <div className="flex flex-1 flex-col items-center justify-start gap-6 pb-6 text-left">
@@ -36,7 +36,7 @@ export function WelcomePage({ onNext, languages, default_lang }: { onNext: () =>
                             {(!languages || Object.keys(languages).length === 0) && <SelectItem value="en">{t('English')}</SelectItem>}
                         </SelectContent>
                     </Select>
-                    <p className="text-[11px] text-zinc-600">{t('Select what will be the default language of NexoPOS.')}</p>
+                    <p className="text-[11px] text-zinc-600">{t('Select what will be the default language of Subul.')}</p>
                 </div>
 
                 <div className="mt-4 w-full">

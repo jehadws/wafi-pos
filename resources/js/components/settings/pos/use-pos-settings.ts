@@ -24,37 +24,37 @@ export function usePosSettings(initialPayload: PosSettingsPayload) {
                 const data: PosSettingsPayload = {
                     layout: {
                         ...form.data.layout,
-                        ns_jgrem_layout: form.data.layout.ns_jgrem_layout === 'null' ? null : form.data.layout.ns_jgrem_layout,
-                        ns_jgrem_complete_sale_audio:
-                            form.data.layout.ns_jgrem_complete_sale_audio === 'null' ? null : form.data.layout.ns_jgrem_complete_sale_audio,
-                        ns_jgrem_new_item_audio:
-                            form.data.layout.ns_jgrem_new_item_audio === 'null' ? null : form.data.layout.ns_jgrem_new_item_audio,
+                        sb_subul_layout: form.data.layout.sb_subul_layout === 'null' ? null : form.data.layout.sb_subul_layout,
+                        sb_subul_complete_sale_audio:
+                            form.data.layout.sb_subul_complete_sale_audio === 'null' ? null : form.data.layout.sb_subul_complete_sale_audio,
+                        sb_subul_new_item_audio:
+                            form.data.layout.sb_subul_new_item_audio === 'null' ? null : form.data.layout.sb_subul_new_item_audio,
                     },
                     printing: {
                         ...form.data.printing,
-                        ns_jgrem_printing_document:
-                            form.data.printing.ns_jgrem_printing_document === 'null' ? null : form.data.printing.ns_jgrem_printing_document,
-                        ns_jgrem_printing_enabled_for:
-                            form.data.printing.ns_jgrem_printing_enabled_for === 'null' ? null : form.data.printing.ns_jgrem_printing_enabled_for,
-                        ns_jgrem_printing_gateway:
-                            form.data.printing.ns_jgrem_printing_gateway === 'null' ? null : form.data.printing.ns_jgrem_printing_gateway,
+                        sb_subul_printing_document:
+                            form.data.printing.sb_subul_printing_document === 'null' ? null : form.data.printing.sb_subul_printing_document,
+                        sb_subul_printing_enabled_for:
+                            form.data.printing.sb_subul_printing_enabled_for === 'null' ? null : form.data.printing.sb_subul_printing_enabled_for,
+                        sb_subul_printing_gateway:
+                            form.data.printing.sb_subul_printing_gateway === 'null' ? null : form.data.printing.sb_subul_printing_gateway,
                     },
                     registers: {
                         ...form.data.registers,
-                        ns_jgrem_registers_enabled:
-                            form.data.registers.ns_jgrem_registers_enabled === 'null' ? null : form.data.registers.ns_jgrem_registers_enabled,
+                        sb_subul_registers_enabled:
+                            form.data.registers.sb_subul_registers_enabled === 'null' ? null : form.data.registers.sb_subul_registers_enabled,
                     },
                     vat: {
                         ...form.data.vat,
-                        ns_jgrem_vat: form.data.vat.ns_jgrem_vat === 'null' ? null : form.data.vat.ns_jgrem_vat,
+                        sb_subul_vat: form.data.vat.sb_subul_vat === 'null' ? null : form.data.vat.sb_subul_vat,
                     },
                     shortcuts: { ...form.data.shortcuts },
                     features: {
                         ...form.data.features,
-                        ns_jgrem_quick_product_default_unit:
-                            form.data.features.ns_jgrem_quick_product_default_unit === 'null'
+                        sb_subul_quick_product_default_unit:
+                            form.data.features.sb_subul_quick_product_default_unit === 'null'
                                 ? null
-                                : form.data.features.ns_jgrem_quick_product_default_unit,
+                                : form.data.features.sb_subul_quick_product_default_unit,
                     },
                 };
                 await settingsApi.update('pos', data);

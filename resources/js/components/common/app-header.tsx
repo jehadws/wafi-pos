@@ -65,7 +65,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
               <SheetContent side="left" className="bg-sidebar flex h-full w-64 flex-col items-stretch justify-between">
                 <SheetTitle className="sr-only">{t('Navigation Menu')}</SheetTitle>
                 <SheetHeader className="flex justify-start text-left">
-                  <AppLogoIcon className="h-6 w-6 fill-current text-black dark:text-white" />
+                  <AppLogoIcon className="h-7 w-7 object-contain" />
                 </SheetHeader>
                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
                   <div className="flex h-full flex-col justify-between text-sm">

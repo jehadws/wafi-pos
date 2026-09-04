@@ -66,7 +66,7 @@ export default function SetupWizard({
                         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-600">
                             <ShieldCheck size={14} className="text-white" />
                         </div>
-                        <span className="text-[14px] font-semibold tracking-tight text-zinc-100">{t('NexoPOS')}</span>
+                        <span className="text-[14px] font-semibold tracking-tight text-zinc-100">{t('Subul')}</span>
                     </div>
 
                     {/* Steps */}

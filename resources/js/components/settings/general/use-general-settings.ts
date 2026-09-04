@@ -23,52 +23,52 @@ export function useGeneralSettings(initialSettings: GeneralSettingsPayload) {
                 const data: GeneralSettingsPayload = {
                     identification: {
                         ...form.data.identification,
-                        ns_store_language:
-                            form.data.identification.ns_store_language === 'null' ? null : form.data.identification.ns_store_language,
-                        ns_default_theme:
-                            form.data.identification.ns_default_theme === 'null' ? null : form.data.identification.ns_default_theme,
+                        sb_store_language:
+                            form.data.identification.sb_store_language === 'null' ? null : form.data.identification.sb_store_language,
+                        sb_default_theme:
+                            form.data.identification.sb_default_theme === 'null' ? null : form.data.identification.sb_default_theme,
                     },
                     currency: {
                         ...form.data.currency,
-                        ns_currency_position:
-                            form.data.currency.ns_currency_position === 'null' ? null : form.data.currency.ns_currency_position,
-                        ns_currency_prefered:
-                            form.data.currency.ns_currency_prefered === 'null' ? null : form.data.currency.ns_currency_prefered,
-                        ns_currency_precision:
-                            form.data.currency.ns_currency_precision === null ? null : Number(form.data.currency.ns_currency_precision),
+                        sb_currency_position:
+                            form.data.currency.sb_currency_position === 'null' ? null : form.data.currency.sb_currency_position,
+                        sb_currency_prefered:
+                            form.data.currency.sb_currency_prefered === 'null' ? null : form.data.currency.sb_currency_prefered,
+                        sb_currency_precision:
+                            form.data.currency.sb_currency_precision === null ? null : Number(form.data.currency.sb_currency_precision),
                     },
                     date: {
                         ...form.data.date,
-                        ns_date_format: form.data.date.ns_date_format === 'null' ? null : form.data.date.ns_date_format,
-                        ns_datetime_format:
-                            form.data.date.ns_datetime_format === 'null' ? null : form.data.date.ns_datetime_format,
-                        ns_datetime_timezone:
-                            form.data.date.ns_datetime_timezone === 'null' ? null : form.data.date.ns_datetime_timezone,
+                        sb_date_format: form.data.date.sb_date_format === 'null' ? null : form.data.date.sb_date_format,
+                        sb_datetime_format:
+                            form.data.date.sb_datetime_format === 'null' ? null : form.data.date.sb_datetime_format,
+                        sb_datetime_timezone:
+                            form.data.date.sb_datetime_timezone === 'null' ? null : form.data.date.sb_datetime_timezone,
                     },
                     registration: {
                         ...form.data.registration,
-                        ns_registration_enabled:
-                            form.data.registration.ns_registration_enabled === 'null'
+                        sb_registration_enabled:
+                            form.data.registration.sb_registration_enabled === 'null'
                                 ? null
-                                : form.data.registration.ns_registration_enabled,
-                        ns_registration_role:
-                            form.data.registration.ns_registration_role === 'null'
+                                : form.data.registration.sb_registration_enabled,
+                        sb_registration_role:
+                            form.data.registration.sb_registration_role === 'null'
                                 ? null
-                                : form.data.registration.ns_registration_role,
-                        ns_registration_validated:
-                            form.data.registration.ns_registration_validated === 'null'
+                                : form.data.registration.sb_registration_role,
+                        sb_registration_validated:
+                            form.data.registration.sb_registration_validated === 'null'
                                 ? null
-                                : form.data.registration.ns_registration_validated,
-                        ns_recovery_enabled:
-                            form.data.registration.ns_recovery_enabled === 'null'
+                                : form.data.registration.sb_registration_validated,
+                        sb_recovery_enabled:
+                            form.data.registration.sb_recovery_enabled === 'null'
                                 ? null
-                                : form.data.registration.ns_recovery_enabled,
+                                : form.data.registration.sb_recovery_enabled,
                     },
                 };
                 await settingsApi.update('general', data);
                 // Apply the default theme immediately so the admin sees
                 // the change without a reload.
-                const theme = data.identification.ns_default_theme;
+                const theme = data.identification.sb_default_theme;
                 if (theme === 'dark' || theme === 'light') {
                     applyTheme(theme);
                 }

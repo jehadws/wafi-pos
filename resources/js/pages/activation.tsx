@@ -39,21 +39,21 @@ export default function Activation({ hwid, isActivated, deviceName }: Activation
                 toast.error(t('Activation failed. Please check your key.'));
             },
             onSuccess: () => {
-                toast.success(t('Wafi POS successfully activated!'));
+                toast.success(t('Subul successfully activated!'));
             },
         });
     };
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
-            <Head title={t('System Activation - Wafi POS')} />
+            <Head title={t('System Activation - Subul')} />
 
             <div className="w-full max-w-lg space-y-6">
                 <div className="text-center space-y-2">
                     <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 text-primary mb-2">
                         <ShieldCheck className="w-8 h-8 text-primary" />
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight">Wafi POS Activation</h1>
+                    <h1 className="text-2xl font-bold tracking-tight">Subul Activation</h1>
                     <p className="text-sm text-muted-foreground">
                         {t('This terminal operates on a secure closed local network. Enter your product license key below to activate.')}
                     </p>

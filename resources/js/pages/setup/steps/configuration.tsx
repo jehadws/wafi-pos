@@ -7,7 +7,7 @@ import { StepActions } from '../components/step-actions';
 import { STEPS } from '../config';
 
 interface ConfigForm {
-    ns_store_name: string;
+    sb_store_name: string;
     admin_username: string;
     admin_email: string;
     password: string;
@@ -26,7 +26,7 @@ export function ConfigurationPage({ onBack, onNext, languages = {}, default_lang
     const { t } = useTranslation();
 
     const [data, setData] = useState<ConfigForm>({
-        ns_store_name: '',
+        sb_store_name: '',
         admin_username: '',
         admin_email: '',
         password: '',
@@ -45,7 +45,7 @@ export function ConfigurationPage({ onBack, onNext, languages = {}, default_lang
     const validate = (): boolean => {
         const newErrors: Record<string, string> = {};
 
-        if (!data.ns_store_name.trim()) newErrors.ns_store_name = t('The store name field is required.');
+        if (!data.sb_store_name.trim()) newErrors.sb_store_name = t('The store name field is required.');
         if (!data.admin_username.trim()) newErrors.admin_username = t('The username field is required.');
         else if (data.admin_username.trim().length < 5) newErrors.admin_username = t('The username must be at least 5 characters.');
 
@@ -147,7 +147,7 @@ export function ConfigurationPage({ onBack, onNext, languages = {}, default_lang
                     <h3 className="mb-3 border-b border-zinc-800 pb-2 text-sm font-medium text-zinc-300">{t('Store Details')}</h3>
                 </div>
 
-                <Field name="ns_store_name" label="Store Name" placeholder="e.g. My Store" className="col-span-2" />
+                <Field name="sb_store_name" label="Store Name" placeholder="e.g. My Store" className="col-span-2" />
 
                 <div className="col-span-2 mt-2">
                     <h3 className="mb-3 border-b border-zinc-800 pb-2 text-sm font-medium text-zinc-300">{t('Administrator Account')}</h3>

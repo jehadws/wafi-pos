@@ -15,7 +15,7 @@ import Settings from './lib/settings';
 // base URL, the X-Requested-With header, and the global error interceptor
 // (401/419 → login, 403 → access-denied).
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'Subul';
 
 createInertiaApp({
   title: (title) => `${title} - ${appName}`,

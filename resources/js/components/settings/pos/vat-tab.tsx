@@ -19,8 +19,8 @@ export function VatTab({ form, options }: VatTabProps) {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <FormField label={t('VAT Type')} description={t('Determine the VAT type that should be used.')}>
                 <Select
-                    value={form.data.vat.ns_jgrem_vat || ''}
-                    onValueChange={(v) => form.setData('vat.ns_jgrem_vat', v)}
+                    value={form.data.vat.sb_subul_vat || ''}
+                    onValueChange={(v) => form.setData('vat.sb_subul_vat', v)}
                 >
                     <SelectTrigger className="w-full">
                         <SelectValue placeholder={t('Select an option')} />
@@ -29,7 +29,7 @@ export function VatTab({ form, options }: VatTabProps) {
                         <SelectItem key="null" value="null">
                             {t('Select an option')}
                         </SelectItem>
-                        {options.ns_jgrem_vat.map((l) => (
+                        {options.sb_subul_vat.map((l) => (
                             <SelectItem key={l.value} value={l.value.toString()}>
                                 {l.label}
                             </SelectItem>

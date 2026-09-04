@@ -25,14 +25,14 @@ export function DateTab({ form, options }: DateTabProps) {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <FormField label={t('Date Format')} description={t('Define how the date should be formatted. Default is "Y-m-d".')}>
                 <Select
-                    value={form.data.date.ns_date_format ?? ''}
-                    onValueChange={(v) => form.setData('date.ns_date_format', v)}
+                    value={form.data.date.sb_date_format ?? ''}
+                    onValueChange={(v) => form.setData('date.sb_date_format', v)}
                 >
                     <SelectTrigger className="w-full">
                         <SelectValue placeholder={t('Choose an option')} />
                     </SelectTrigger>
                     <SelectContent>
-                        {options.ns_date_format.map((f) => (
+                        {options.sb_date_format.map((f) => (
                             <SelectItem key={f.value} value={f.value.toString()}>
                                 {f.label}
                             </SelectItem>
@@ -46,14 +46,14 @@ export function DateTab({ form, options }: DateTabProps) {
                 description={t('Define how date and time should be formatted. Default is "Y-m-d H:i".')}
             >
                 <Select
-                    value={form.data.date.ns_datetime_format ?? ''}
-                    onValueChange={(v) => form.setData('date.ns_datetime_format', v)}
+                    value={form.data.date.sb_datetime_format ?? ''}
+                    onValueChange={(v) => form.setData('date.sb_datetime_format', v)}
                 >
                     <SelectTrigger className="w-full">
                         <SelectValue placeholder={t('Choose an option')} />
                     </SelectTrigger>
                     <SelectContent>
-                        {options.ns_datetime_format.map((f) => (
+                        {options.sb_datetime_format.map((f) => (
                             <SelectItem key={f.value} value={f.value.toString()}>
                                 {f.label}
                             </SelectItem>
@@ -69,9 +69,9 @@ export function DateTab({ form, options }: DateTabProps) {
                 <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
                         <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
-                            {form.data.date.ns_datetime_timezone
-                                ? options.ns_datetime_timezone.find(
-                                      (tz) => tz.value === form.data.date.ns_datetime_timezone,
+                            {form.data.date.sb_datetime_timezone
+                                ? options.sb_datetime_timezone.find(
+                                      (tz) => tz.value === form.data.date.sb_datetime_timezone,
                                   )?.label
                                 : t('Select timezone...')}
                             <ChevronsUpDown className="opacity-50" />
@@ -83,12 +83,12 @@ export function DateTab({ form, options }: DateTabProps) {
                             <CommandList>
                                 <CommandEmpty>{t('No timezone found.')}</CommandEmpty>
                                 <CommandGroup>
-                                    {options.ns_datetime_timezone.map((tz) => (
+                                    {options.sb_datetime_timezone.map((tz) => (
                                         <CommandItem
                                             key={tz.value}
                                             value={tz.value.toString()}
                                             onSelect={(currentValue) => {
-                                                form.setData('date.ns_datetime_timezone', currentValue);
+                                                form.setData('date.sb_datetime_timezone', currentValue);
                                                 setOpen(false);
                                             }}
                                         >
@@ -96,7 +96,7 @@ export function DateTab({ form, options }: DateTabProps) {
                                             <Check
                                                 className={cn(
                                                     'ml-auto',
-                                                    form.data.date.ns_datetime_timezone === tz.value
+                                                    form.data.date.sb_datetime_timezone === tz.value
                                                         ? 'opacity-100'
                                                         : 'opacity-0',
                                                 )}

@@ -20,8 +20,8 @@ export function RegistrationTab({ form, options }: RegistrationTabProps) {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <FormField label={t('Registration Open')} description={t('Determine if everyone can register.')}>
                 <Select
-                    value={form.data.registration.ns_registration_enabled ?? 'no'}
-                    onValueChange={(v) => form.setData('registration.ns_registration_enabled', v)}
+                    value={form.data.registration.sb_registration_enabled ?? 'no'}
+                    onValueChange={(v) => form.setData('registration.sb_registration_enabled', v)}
                 >
                     <SelectTrigger className="w-full">
                         <SelectValue placeholder={t('Choose an option')} />
@@ -35,14 +35,14 @@ export function RegistrationTab({ form, options }: RegistrationTabProps) {
 
             <FormField label={t('Registration Role')} description={t('Select the registration role.')}>
                 <Select
-                    value={form.data.registration.ns_registration_role ?? ''}
-                    onValueChange={(v) => form.setData('registration.ns_registration_role', v)}
+                    value={form.data.registration.sb_registration_role ?? ''}
+                    onValueChange={(v) => form.setData('registration.sb_registration_role', v)}
                 >
                     <SelectTrigger className="w-full">
                         <SelectValue placeholder={t('Choose an option')} />
                     </SelectTrigger>
                     <SelectContent>
-                        {options.ns_registration_role.map((r) => (
+                        {options.sb_registration_role.map((r) => (
                             <SelectItem key={r.value} value={r.value.toString()}>
                                 {r.label}
                             </SelectItem>
@@ -53,8 +53,8 @@ export function RegistrationTab({ form, options }: RegistrationTabProps) {
 
             <FormField label={t('Requires Validation')} description={t('Force account validation after registration.')}>
                 <Select
-                    value={form.data.registration.ns_registration_validated ?? ''}
-                    onValueChange={(v) => form.setData('registration.ns_registration_validated', v)}
+                    value={form.data.registration.sb_registration_validated ?? ''}
+                    onValueChange={(v) => form.setData('registration.sb_registration_validated', v)}
                 >
                     <SelectTrigger className="w-full">
                         <SelectValue placeholder={t('Choose an option')} />
@@ -70,15 +70,15 @@ export function RegistrationTab({ form, options }: RegistrationTabProps) {
                 <div className="flex gap-2">
                     <Button
                         type="button"
-                        variant={(form.data.registration.ns_recovery_enabled ?? 'yes') === 'yes' ? 'default' : 'outline'}
-                        onClick={() => form.setData('registration.ns_recovery_enabled', 'yes')}
+                        variant={(form.data.registration.sb_recovery_enabled ?? 'yes') === 'yes' ? 'default' : 'outline'}
+                        onClick={() => form.setData('registration.sb_recovery_enabled', 'yes')}
                     >
                         {t('Yes')}
                     </Button>
                     <Button
                         type="button"
-                        variant={(form.data.registration.ns_recovery_enabled ?? 'yes') === 'no' ? 'default' : 'outline'}
-                        onClick={() => form.setData('registration.ns_recovery_enabled', 'no')}
+                        variant={(form.data.registration.sb_recovery_enabled ?? 'yes') === 'no' ? 'default' : 'outline'}
+                        onClick={() => form.setData('registration.sb_recovery_enabled', 'no')}
                     >
                         {t('No')}
                     </Button>

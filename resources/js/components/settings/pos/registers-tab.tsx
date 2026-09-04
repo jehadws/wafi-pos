@@ -22,8 +22,8 @@ export function RegistersTab({ form, options }: RegistersTabProps) {
                 description={t('Determine if the POS will support cash registers.')}
             >
                 <Select
-                    value={form.data.registers.ns_jgrem_registers_enabled || ''}
-                    onValueChange={(v) => form.setData('registers.ns_jgrem_registers_enabled', v)}
+                    value={form.data.registers.sb_subul_registers_enabled || ''}
+                    onValueChange={(v) => form.setData('registers.sb_subul_registers_enabled', v)}
                 >
                     <SelectTrigger className="w-full">
                         <SelectValue placeholder={t('Select an option')} />
@@ -32,7 +32,7 @@ export function RegistersTab({ form, options }: RegistersTabProps) {
                         <SelectItem key="null" value="null">
                             {t('Select an option')}
                         </SelectItem>
-                        {options.ns_jgrem_registers_enabled.map((l) => (
+                        {options.sb_subul_registers_enabled.map((l) => (
                             <SelectItem key={l.value} value={l.value.toString()}>
                                 {l.label}
                             </SelectItem>

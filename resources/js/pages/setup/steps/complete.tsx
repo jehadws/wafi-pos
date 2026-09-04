@@ -16,7 +16,7 @@ export function CompletePage({ storeName }: { storeName?: string }) {
 
                 <div>
                     <h1 className="text-[20px] font-semibold tracking-tight text-zinc-100">{t('Installation complete')}</h1>
-                    <p className="mt-1.5 text-[13px] text-zinc-500">{t("NexoPOS is ready. Here's a summary of what was set up.")}</p>
+                    <p className="mt-1.5 text-[13px] text-zinc-500">{t("Subul is ready. Here's a summary of what was set up.")}</p>
                 </div>
 
                 <div className="grid w-full max-w-xs grid-cols-2 gap-2">
@@ -45,7 +45,7 @@ export function CompletePage({ storeName }: { storeName?: string }) {
 
             <div className="mt-auto flex items-center justify-end gap-2 border-t border-zinc-800 pt-5">
                 <Button variant="outline" size="sm" asChild>
-                    <a href="https://my.nexopos.com/en/documentation" target="_blank" rel="noreferrer">
+                    <a href="https://my.subul.com/en/documentation" target="_blank" rel="noreferrer">
                         {t('View documentation')}
                     </a>
                 </Button>
