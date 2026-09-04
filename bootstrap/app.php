@@ -37,7 +37,13 @@ return Application::configure(basePath: dirname(__DIR__))
      */
     $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
       if ($request->expectsJson()) {
-        $status = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
+        $status = match (true) {
+          $e instanceof \Illuminate\Auth\AuthenticationException => 401,
+          $e instanceof \Illuminate\Validation\ValidationException => $e->status,
+          $e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface => $e->getStatusCode(),
+          method_exists($e, 'getStatusCode') => $e->getStatusCode(),
+          default => 500,
+        };
 
         return response()->json([
           'success' => false,

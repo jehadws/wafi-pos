@@ -26,5 +26,7 @@ export { couponsApi } from './coupons';
 export { providersApi } from './providers';
 export { paymentTypesApi } from './payment-types';
 export { rewardsApi } from './rewards';
+export { notificationsApi } from './notifications';
+export type { NotificationActionResponse } from './notifications';
 export { resetApi } from './reset';
 export type { ResetPayload, ResetResponse, ResetMode } from './reset';

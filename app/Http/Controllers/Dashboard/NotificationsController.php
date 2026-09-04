@@ -24,36 +24,56 @@ class NotificationsController extends DashboardController
     }
 
     /**
-     * @return array
+     * @return \Illuminate\Http\JsonResponse
      */
     public function getNotifications()
     {
-        return Notification::for( Auth::id() )->orderBy( 'id', 'desc' )->get();
+        return response()->json(
+            Notification::for( Auth::id() )->orderBy( 'id', 'desc' )->get()
+        );
     }
 
     /**
-     * @return array
+     * @param int|string $id
+     * @return \Illuminate\Http\JsonResponse
      */
     public function deleteSingleNotification( $id )
     {
-        $this->notificationService->deleteSingleNotification( $id );
+        try {
+            $this->notificationService->deleteSingleNotification( $id );
 
-        return [
-            'status' => 'success',
-            'message' => __( 'The notification has been successfully deleted' ),
-        ];
+            return response()->json([
+                'status' => 'success',
+                'message' => __( 'The notification has been successfully deleted' ),
+            ]);
+        } catch ( \Exception $e ) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 404);
+        }
     }
 
     /**
-     * @return array
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function deletAllNotifications()
+    public function deleteAllNotifications()
     {
         $this->notificationService->deleteNotificationsFor( Auth::user() );
 
-        return [
+        return response()->json([
             'status' => 'success',
             'message' => __( 'All the notifications have been cleared.' ),
-        ];
+        ]);
+    }
+
+    /**
+     * Alias for backwards compatibility
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deletAllNotifications()
+    {
+        return $this->deleteAllNotifications();
     }
 }

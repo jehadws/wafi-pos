@@ -22,6 +22,16 @@ class Notification extends SbModel
 
     protected $table = 'subul_notifications';
 
+    protected $fillable = [
+        'user_id',
+        'identifier',
+        'title',
+        'description',
+        'url',
+        'source',
+        'dismissable',
+    ];
+
     protected $dispatchesEvents = [
         'created' => NotificationCreatedEvent::class,
         'updated' => NotificationUpdatedEvent::class,

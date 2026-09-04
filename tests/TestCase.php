@@ -28,6 +28,8 @@ abstract class TestCase extends BaseTestCase
                 sb()->update->executeMigrationFromFileName( $file );
             } );
 
+        \Illuminate\Support\Facades\Cache::forget( 'sb-core-installed' );
+
         /**
          * LicenseMiddleware enforces an activated terminal license for every
          * non-auth route. Tests run without a signed license key, so record

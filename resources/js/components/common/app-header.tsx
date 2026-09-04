@@ -15,6 +15,7 @@ import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
 import AppLogo from '@/components/common/app-logo';
 import AppLogoIcon from '@/components/common/app-logo-icon';
+import { NotificationBell } from '@/components/common/notification-bell';
 
 
 
@@ -156,6 +157,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                 ))}
               </div>
             </div>
+            <NotificationBell />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="size-10 rounded-full p-1">

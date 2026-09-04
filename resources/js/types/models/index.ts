@@ -19,3 +19,4 @@ export * from './product-unit-quantity';
 export * from './product';
 export * from './tax';
 export * from './unit';
+export * from './notification';
