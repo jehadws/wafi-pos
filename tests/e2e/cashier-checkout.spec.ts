@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * End-to-End Tests for Wafi POS Critical Cashier Journeys
+ * End-to-End Tests for Subul Critical Cashier Journeys
  */
 
 test.describe('POS Cashier Critical Path Journeys', () => {
@@ -26,9 +26,9 @@ test.describe('POS Cashier Critical Path Journeys', () => {
                 status: 200,
                 contentType: 'application/json',
                 body: JSON.stringify({
-                    ns_pos_printing: 'enabled',
-                    ns_pos_tax_type: 'inclusive',
-                    ns_jgrem_items_merge: 'yes',
+                    sb_pos_printing: 'enabled',
+                    sb_pos_tax_type: 'inclusive',
+                    sb_subul_items_merge: 'yes',
                 }),
             });
         });
