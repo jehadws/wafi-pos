@@ -1,4 +1,4 @@
-import { get, post } from './http';
+import { get, post, put } from './http';
 
 /**
  * Cash Registers API — `/api/cash-registers/*`
@@ -69,4 +69,16 @@ export const cashRegistersApi = {
     getUsedRegister,
     performRegisterAction,
     getSessionHistory,
+
+    // ── CRUD — sb.cash-registers ────────────────────────────────────────────
+
+    /** Create a new cash register. */
+    create: (data: unknown) => post('/crud/sb.cash-registers', data),
+
+    /** Update an existing cash register. */
+    update: (id: number | string, data: unknown) => put(`/crud/sb.cash-registers/${id}`, data),
+
+    /** Bulk-delete cash registers by ID. */
+    bulkDelete: (ids: Array<number | string>) =>
+        post('/crud/sb.cash-registers/bulk-actions', { action: 'delete_selected', entries: ids }),
 };

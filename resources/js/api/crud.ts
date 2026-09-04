@@ -4,7 +4,7 @@ import { del, get } from './http';
  * Generic CRUD API — `/api/crud/{table}`
  *
  * The backend exposes a generic CRUD endpoint for many resources
- * (ns.orders, ns.transactions-accounts, ...). Pagination goes through
+ * (sb.orders, sb.transactions-accounts, ...). Pagination goes through
  * `page` / `per_page` params; any extra filters are passed as-is.
  *
  * Responses are Laravel paginators — pass an explicit type parameter

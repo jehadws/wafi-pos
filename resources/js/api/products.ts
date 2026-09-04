@@ -1,7 +1,7 @@
-import { get, post } from './http';
+import { del, get, post } from './http';
 
 /**
- * Products API — `/api/products/*`
+ * Products API — `/api/products/*`, `/api/crud/sb.products`
  */
 export const productsApi = {
     /** Fetch all products. */
@@ -18,4 +18,13 @@ export const productsApi = {
 
     /** Submit a stock adjustment for a set of products. */
     createAdjustment: (products: unknown[]) => post<{ message: string }>('/products/adjustments', { products }),
+
+    // ── CRUD — sb.products ──────────────────────────────────────────────────
+
+    /** Delete a single product. */
+    remove: (id: number | string) => del(`/crud/sb.products/${id}`),
+
+    /** Bulk-delete products by ID. */
+    bulkDelete: (ids: Array<number | string>) =>
+        post('/crud/sb.products/bulk-actions', { action: 'delete_selected', entries: ids }),
 };

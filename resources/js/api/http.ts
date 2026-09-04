@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 /**
- * Shared HTTP client for the Wafi POS backend API.
+ * Shared HTTP client for the Subul backend API.
  *
  * All API resource modules (customers, orders, products, ...) go through
  * this instance so that base URL, headers, and error handling live in
