@@ -52,9 +52,9 @@ export default function page() {
       if (product) {
         if (!['added', 'set'].includes(product.adjust_action)) {
           if (product.accurate_tracking !== undefined && +quantity > product.available_quantity) {
-            return toast('The specified quantity exceed the available quantity.');
+            return toast(t('The specified quantity exceed the available quantity.'));
           } else if (product?.adjust_unit !== null && +quantity > product?.adjust_unit?.quantity) {
-            return toast('The specified quantity exceed the available quantity.');
+            return toast(t('The specified quantity exceed the available quantity.'));
           }
         }
         product.adjust_quantity = Number(quantity);
@@ -67,7 +67,7 @@ export default function page() {
   const quantityKeypad = useNumericKeypad({
     onConfirm: handleQuantity,
     initialValue: "",
-    title: "Define Quantity",
+    title: t("Define Quantity"),
     maxLength: 6,
     allowDecimal: true,
   })
@@ -81,12 +81,12 @@ export default function page() {
           setSuggestions(data.products)
         } else {
           closeSearch();
-          return toast('Looks like no valid products matched the searched term.');
+          return toast(t('Looks like no valid products matched the searched term.'));
         }
       } else if (data.from === 'procurements') {
         if (data.product === null) {
           closeSearch();
-          return toast('Looks like no valid products matched the searched term.');
+          return toast(t('Looks like no valid products matched the searched term.'));
         } else {
           addProductToList(data.product);
         }
@@ -102,7 +102,7 @@ export default function page() {
 
     if (exists.length > 0) {
       closeSearch();
-      return toast('The product already exists on the table.');
+      return toast(t('The product already exists on the table.'));
     }
 
     const action = actions.filter(action => action.value === 'deleted');
@@ -155,7 +155,7 @@ export default function page() {
 
     if (alreadyAdded) {
       closeSearch();
-      return toast('The product already exists on the table.');
+      return toast(t('The product already exists on the table.'));
     }
 
     const data = await productsApi.getUnitQuantities(suggestion.id);
@@ -185,7 +185,7 @@ export default function page() {
       setProducts(prev => [modified, ...prev]);
       closeSearch();
     } else {
-      return toast(`This product doesn't have any stock to adjust.`);
+      return toast(t("This product doesn't have any stock to adjust."));
     }
 
     if (suggestion.accurate_tracking) {
@@ -199,10 +199,10 @@ export default function page() {
   }
   const removeProduct = async (product: StockAdjustmentProduct) => {
     const ok = await confirm({
-      title: "Confirm Your Action",
-      message: "Would you like to remove this product from the table?",
-      confirmText: "Remove",
-      cancelText: "Cancel",
+      title: t("Confirm Your Action"),
+      message: t("Would you like to remove this product from the table?"),
+      confirmText: t("Remove"),
+      cancelText: t("Cancel"),
     })
 
     if (ok) {
@@ -221,7 +221,7 @@ export default function page() {
       .filter(__product => __product.adjust_unit !== null && __product.adjust_unit.unit.id === unitQuantity.unit.id && __product.adjust_unit.product_id === unitQuantity.product_id).length > 0;
 
     if (exists) {
-      return toast('A similar product with the same unit already exists.');
+      return toast(t('A similar product with the same unit already exists.'));
     }
 
     product.adjust_unit = unitQuantity;
@@ -246,13 +246,13 @@ export default function page() {
 
   const proceedStockAdjustment = async () => {
     if (products.length === 0) {
-      return toast('Unable to proceed as the table is empty.');
+      return toast(t('Unable to proceed as the table is empty.'));
     }
     const ok = await confirm({
-      title: "Confirm Your Action",
-      message: "The stock adjustment is about to be made. Would you like to confirm ?",
-      confirmText: "Proceed",
-      cancelText: "Cancel",
+      title: t("Confirm Your Action"),
+      message: t("The stock adjustment is about to be made. Would you like to confirm ?"),
+      confirmText: t("Proceed"),
+      cancelText: t("Cancel"),
     })
 
     if (ok) {
@@ -277,7 +277,7 @@ export default function page() {
         <div>
           {/* Search Input */}
           <Command shouldFilter={false}>
-            <CommandInput placeholder={"Search Products..."} value={searchQuery} onValueChange={(e) => handleSearch(e)} />
+            <CommandInput placeholder={t("Search Products...")} value={searchQuery} onValueChange={(e) => handleSearch(e)} />
             <CommandList>
               <CommandGroup>
                 {suggestions.map((product) => (

@@ -75,7 +75,7 @@ export default function TotalsSummary({
                 {t('Order Type')}
               </p>
               <p className="text-foreground truncate text-xs font-semibold">
-                {orderType ? orderType.label : t('Select Type')}
+                {orderType ? t(orderType.label) : t('Select Type')}
               </p>
             </div>
           </div>

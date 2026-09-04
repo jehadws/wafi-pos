@@ -23,21 +23,21 @@ export default function AccessDenied() {
                     <div className="mb-2 w-full px-2 md:w-auto">
                         <Button asChild className="w-full">
                             <a href={back || document.referrer}>
-                                <ArrowLeft className="mr-1" />
+                                <ArrowLeft className="me-1" />
                                 {t('Go Back')}
                             </a>
                         </Button>
                     </div>
                     <div className="mb-2 w-full px-2 md:w-auto">
                         <Button onClick={() => router.post(route('logout'))} className="w-full">
-                            <LogOut className="mr-1" />
+                            <LogOut className="me-1" />
                             {t('Logout')}
                         </Button>
                     </div>
                     <div className="mb-2 w-full px-2 md:w-auto">
                         <Button asChild className="w-full">
                             <Link href="/">
-                                <Home className="mr-1" />
+                                <Home className="me-1" />
                                 {t('Home')}
                             </Link>
                         </Button>

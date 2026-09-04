@@ -352,9 +352,9 @@ export default function OrderRefundTab({ order, onSuccess }: Props) {
                     </DialogHeader>
                     <div className="flex flex-col gap-2">
                         <div className="relative">
-                            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                            <Search className="text-muted-foreground absolute top-1/2 start-3 h-4 w-4 -translate-y-1/2" />
                             <Input
-                                className="pl-10"
+                                className="ps-10"
                                 placeholder={t('Search...')}
                                 value={paymentSearchQuery}
                                 onChange={(e) => setPaymentSearchQuery(e.target.value)}

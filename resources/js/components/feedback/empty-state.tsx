@@ -18,7 +18,7 @@ export default function EmptyState({ onCreateCategories }: EmptyStateProps) {
                 {t('Looks like there is either no products and no categories. How about creating those first to get started?')}
             </p>
             <Button className="mt-4" onClick={onCreateCategories}>
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="me-2 h-4 w-4" />
                 {t('Create Categories')}
             </Button>
         </div>

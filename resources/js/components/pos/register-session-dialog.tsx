@@ -167,7 +167,7 @@ export function RegisterSessionDialog({ onClosed }: RegisterSessionDialogProps) 
                                     className="flex-1"
                                     onClick={() => setMovementAction('cashIn')}
                                 >
-                                    <ArrowDownCircle className="mr-2 h-4 w-4" />
+                                    <ArrowDownCircle className="me-2 h-4 w-4" />
                                     {t('Cash In')}
                                 </Button>
                                 {disbursementEnabled && (
@@ -177,7 +177,7 @@ export function RegisterSessionDialog({ onClosed }: RegisterSessionDialogProps) 
                                         className="flex-1"
                                         onClick={() => setMovementAction('cashOut')}
                                     >
-                                        <ArrowUpCircle className="mr-2 h-4 w-4" />
+                                        <ArrowUpCircle className="me-2 h-4 w-4" />
                                         {t('Cash Out')}
                                     </Button>
                                 )}
@@ -200,7 +200,7 @@ export function RegisterSessionDialog({ onClosed }: RegisterSessionDialogProps) 
                             <Button className="w-full" onClick={handleMovement} disabled={status === 'cash-moving'}>
                                 {status === 'cash-moving' ? (
                                     <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        <Loader2 className="me-2 h-4 w-4 animate-spin" />
                                         {t('Processing…')}
                                     </>
                                 ) : (
@@ -266,12 +266,12 @@ export function RegisterSessionDialog({ onClosed }: RegisterSessionDialogProps) 
                         >
                             {closing ? (
                                 <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    <Loader2 className="me-2 h-4 w-4 animate-spin" />
                                     {t('Closing…')}
                                 </>
                             ) : (
                                 <>
-                                    <LockKeyhole className="mr-2 h-4 w-4" />
+                                    <LockKeyhole className="me-2 h-4 w-4" />
                                     {t('Close Register')}
                                 </>
                             )}

@@ -14,6 +14,15 @@ export function LanguageSwitcher() {
     const languages = [
         { code: 'en', name: t('English') },
         { code: 'ar', name: t('Arabic') },
+        { code: 'de', name: t('Deutsch') },
+        { code: 'fr', name: t('Français') },
+        { code: 'es', name: t('Espanol') },
+        { code: 'it', name: t('Italian') },
+        { code: 'pt', name: t('Portuguese') },
+        { code: 'tr', name: t('Türkçe') },
+        { code: 'km', name: t('ភាសាខ្មែរ') },
+        { code: 'vi', name: t('Vietnamese') },
+        { code: 'sq', name: t('Shqiptare') },
     ];
 
     return (
@@ -26,7 +35,7 @@ export function LanguageSwitcher() {
             <DropdownMenuContent align="end">
                 {languages.map((lang) => (
                     <DropdownMenuItem key={lang.code} className={locale === lang.code ? 'bg-muted' : ''} onClick={() => changeLocale(lang.code)}>
-                        <span className={lang.code === 'ar' ? 'w-full text-right' : ''}>{lang.name}</span>
+                        <span className="w-full text-start">{lang.name}</span>
                     </DropdownMenuItem>
                 ))}
             </DropdownMenuContent>

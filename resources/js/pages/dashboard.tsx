@@ -235,15 +235,16 @@ function EmptyState({ message }: { message: string }) {
 
 // ─── Custom chart tooltip ────────────────────────────────────────────────────
 function WeekTooltip({ active, payload, label }: any) {
+  const { t } = useTranslation();
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-popover border-border rounded-lg border p-3 text-sm shadow-lg">
       <p className="font-semibold">{label}</p>
       <p className="text-primary mt-1">
-        This week: <strong>{formatCurrency(payload[0]?.value ?? 0)}</strong>
+        {t('This week')}: <strong>{formatCurrency(payload[0]?.value ?? 0)}</strong>
       </p>
       <p className="text-muted-foreground">
-        Last week: <strong>{formatCurrency(payload[1]?.value ?? 0)}</strong>
+        {t('Last week')}: <strong>{formatCurrency(payload[1]?.value ?? 0)}</strong>
       </p>
     </div>
   );
@@ -415,7 +416,7 @@ export default function Dashboard() {
                 <CardDescription>{t('Ranked by purchase value')}</CardDescription>
               </CardHeader>
               <CardContent>
-                <ScrollArea className="h-[320px] pr-2">
+                <ScrollArea className="h-[320px] pe-2">
                   {loading ? (
                     <SectionSkeleton />
                   ) : !data?.bestCustomers?.length ? (
@@ -430,7 +431,7 @@ export default function Dashboard() {
                           <div className="relative">
                             <AvatarBadge name={c.name ?? c.username} />
                             {idx < 3 && (
-                              <span className="bg-primary text-primary-foreground absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold">
+                              <span className="bg-primary text-primary-foreground absolute -end-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold">
                                 {idx + 1}
                               </span>
                             )}
@@ -463,7 +464,7 @@ export default function Dashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-[320px] pr-2">
+              <ScrollArea className="h-[320px] pe-2">
                 {loading ? (
                   <SectionSkeleton />
                 ) : !data?.recentOrders?.length ? (
@@ -491,7 +492,7 @@ export default function Dashboard() {
                           <div className="flex flex-col items-end gap-1">
                             <span className="text-sm font-semibold">{formatCurrency(order.total)}</span>
                             <Badge variant={variant} className="text-[10px]">
-                              {label}
+                              {t(label)}
                             </Badge>
                           </div>
                         </div>
@@ -514,7 +515,7 @@ export default function Dashboard() {
                 <CardDescription>{t('Ranked by total sales')}</CardDescription>
               </CardHeader>
               <CardContent>
-                <ScrollArea className="h-[320px] pr-2">
+                <ScrollArea className="h-[320px] pe-2">
                   {loading ? (
                     <SectionSkeleton />
                   ) : !data?.bestCashiers?.length ? (
@@ -529,7 +530,7 @@ export default function Dashboard() {
                           <div className="relative">
                             <AvatarBadge name={cashier.username} />
                             {idx < 3 && (
-                              <span className="bg-amber-500 text-white absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold">
+                              <span className="bg-amber-500 text-white absolute -end-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold">
                                 {idx + 1}
                               </span>
                             )}

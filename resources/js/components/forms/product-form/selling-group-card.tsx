@@ -196,9 +196,9 @@ export default function SellingGroupCard({ form, units, index, onRemove }: Selli
                             value={form.data.units_selling_group[index].preview_url}
                             onChange={handleGroupChange}
                             placeholder={t('Enter preview URL')}
-                            className="rounded-r-none"
+                            className="rounded-e-none"
                         />
-                        <Button type="button" variant="outline" className="rounded-l-none border-l-0">
+                        <Button type="button" variant="outline" className="rounded-s-none border-s-0">
                             <Upload className="h-4 w-4" />
                         </Button>
                     </div>

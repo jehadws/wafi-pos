@@ -182,7 +182,7 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
                                 <div className="flex gap-2">
                                     <Input
                                         id="receiptPrinter"
-                                        placeholder="e.g. XP-80C or 127.0.0.1:9100"
+                                        placeholder={t('e.g. XP-80C or 127.0.0.1:9100')}
                                         value={settings.receiptPrinter}
                                         onChange={(e) => handleSettingChange('receiptPrinter', e.target.value)}
                                         className="flex-1 font-mono text-sm"
@@ -352,7 +352,7 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
                                 <div className="flex gap-2">
                                     <Input
                                         id="labelPrinter"
-                                        placeholder="e.g. XP-365B or 127.0.0.1:9100"
+                                        placeholder={t('e.g. XP-365B or 127.0.0.1:9100')}
                                         value={settings.labelPrinter}
                                         onChange={(e) => handleSettingChange('labelPrinter', e.target.value)}
                                         className="flex-1 font-mono text-sm"

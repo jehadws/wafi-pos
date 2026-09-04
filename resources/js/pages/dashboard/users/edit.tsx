@@ -34,7 +34,7 @@ export default function EditUserPage() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={t('Edit user') + ' - Subul'} />
+            <Head title={t('Edit user')} />
 
             <form onSubmit={handleSubmit}>
                 <div className="bg-background flex h-full min-h-screen flex-1 flex-col gap-4 p-4">

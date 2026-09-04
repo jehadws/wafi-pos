@@ -221,10 +221,10 @@ export default function CreateProductPage({ infoMessage }: { infoMessage?: strin
                     <DialogHeader>
                         <div className="flex items-center gap-3">
                             <div className="flex-1">
-                                <DialogTitle className="text-left">{t('Expense Type')}</DialogTitle>
+                                <DialogTitle className="text-start">{t('Expense Type')}</DialogTitle>
                             </div>
                         </div>
-                        <DialogDescription className="sr-only mt-2 text-left"></DialogDescription>
+                        <DialogDescription className="sr-only mt-2 text-start"></DialogDescription>
                     </DialogHeader>
                     <div>
                         {configurations?.warningMessage && (

@@ -19,7 +19,7 @@ export function WelcomePage({ onNext, languages, default_lang }: { onNext: () =>
                 {t('Thank you for using Subul to manage your store. This installation wizard will help you running Subul in no time.')}
             </p>
 
-            <div className="flex flex-1 flex-col items-center justify-start gap-6 pb-6 text-left">
+            <div className="flex flex-1 flex-col items-center justify-start gap-6 pb-6 text-start">
                 <div className="flex w-full flex-col gap-1.5">
                     <Label className="text-[12px] font-medium text-zinc-400">{t('Choose your language to get started.')}</Label>
                     <Select value={default_lang} onValueChange={handleLanguageChange}>

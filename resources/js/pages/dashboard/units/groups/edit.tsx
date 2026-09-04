@@ -22,7 +22,7 @@ export default function EditUnitGroupPage() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={t('Edit unit group - Subul')} />
+            <Head title={t('Edit unit group')} />
             <form onSubmit={handleSubmit}>
                 <div className="bg-background flex h-full min-h-screen flex-1 flex-col gap-4 p-4">
                     <FormHeader

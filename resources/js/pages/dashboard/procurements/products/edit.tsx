@@ -80,7 +80,7 @@ export default function CreateProductPage() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={t('Edit procurement product - Subul')} />
+            <Head title={t('Edit procurement product')} />
 
             <form onSubmit={handleSubmit}>
                 <div className="bg-background flex h-full min-h-screen flex-1 flex-col gap-4 p-4">

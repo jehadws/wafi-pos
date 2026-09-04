@@ -19,20 +19,20 @@ export default function TopNavigation({ isListeningForBarcodes, toggleBarcodeLis
     return (
         <header className="bg-card border-b px-4 py-2">
             <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2">
                     <h1 className="text-xl font-bold">{t('POS System')}</h1>
                 </div>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center gap-4">
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <div className="flex items-center space-x-2">
+                                <div className="flex items-center gap-2">
                                     <Switch id="barcode-mode" checked={isListeningForBarcodes} onCheckedChange={toggleBarcodeListening} />
                                     <Label htmlFor="barcode-mode" className="flex cursor-pointer items-center">
-                                        <Barcode className="mr-1 h-4 w-4" />
+                                        <Barcode className="me-1 h-4 w-4" />
                                         {t('Barcode Mode')}
                                         {isListeningForBarcodes && (
-                                            <Badge variant="outline" className="ml-2 border-green-200 bg-green-100 text-green-800">
+                                            <Badge variant="outline" className="ms-2 border-green-200 bg-green-100 text-green-800">
                                                 {t('Active')}
                                             </Badge>
                                         )}
@@ -49,7 +49,7 @@ export default function TopNavigation({ isListeningForBarcodes, toggleBarcodeLis
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Button variant="outline" size="sm" onClick={applyAutoMargin} className="flex items-center">
-                                    <Percent className="mr-2 h-4 w-4" />
+                                    <Percent className="me-2 h-4 w-4" />
                                     {t('Auto-Margin')}
                                 </Button>
                             </TooltipTrigger>
@@ -60,7 +60,7 @@ export default function TopNavigation({ isListeningForBarcodes, toggleBarcodeLis
                     </TooltipProvider>
 
                     <Button variant="outline" size="sm">
-                        <Home className="mr-2 h-4 w-4" />
+                        <Home className="me-2 h-4 w-4" />
                         {t('Home')}
                     </Button>
                 </div>

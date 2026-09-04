@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "@/lib/i18n"
 import { X, ChevronDown, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -30,13 +31,14 @@ export function MultiSelector({
   options,
   value,
   onChange,
-  placeholder = "Select items...",
-  searchPlaceholder = "Search...",
-  emptyText = "No items found",
+  placeholder,
+  searchPlaceholder,
+  emptyText,
   className,
   disabled = false,
   maxItems,
 }: MultiSelectorProps) {
+  const { t } = useTranslation()
   const [open, setOpen] = React.useState(false)
   const [searchValue, setSearchValue] = React.useState("")
 
@@ -96,7 +98,7 @@ export function MultiSelector({
                   </Badge>
                 ))
               ) : (
-                <span className="text-muted-foreground">{placeholder}</span>
+                <span className="text-muted-foreground">{t(placeholder || 'Select items...')}</span>
               )}
             </div>
             <div className="flex items-center gap-2">
@@ -118,9 +120,9 @@ export function MultiSelector({
         </PopoverTrigger>
         <PopoverContent className="w-full p-0" align="start">
           <Command>
-            <CommandInput placeholder={searchPlaceholder} value={searchValue} onValueChange={setSearchValue} />
+            <CommandInput placeholder={t(searchPlaceholder || 'Search...')} value={searchValue} onValueChange={setSearchValue} />
             <CommandList>
-              <CommandEmpty>{emptyText}</CommandEmpty>
+              <CommandEmpty>{t(emptyText || 'No items found')}</CommandEmpty>
               <CommandGroup>
                 {filteredOptions.map((option) => (
                   <CommandItem

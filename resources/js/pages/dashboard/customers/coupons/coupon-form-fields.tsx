@@ -148,15 +148,15 @@ export function CouponFormFields({
                             value={form.data.discount_value}
                             onChange={handleInputChange}
                             className={cn(
-                                form.data.type === 'percentage_discount' ? 'pr-8' : 'pl-8',
+                                form.data.type === 'percentage_discount' ? 'pe-8' : 'ps-8',
                                 form.errors.discount_value && 'border-destructive',
                             )}
                             required
                         />
                         {form.data.type === 'percentage_discount' ? (
-                            <PercentIcon className="text-muted-foreground absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transform" />
+                            <PercentIcon className="text-muted-foreground absolute top-1/2 end-3 h-4 w-4 -translate-y-1/2 transform" />
                         ) : (
-                            <DollarSignIcon className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+                            <DollarSignIcon className="text-muted-foreground absolute top-1/2 start-3 h-4 w-4 -translate-y-1/2 transform" />
                         )}
                     </div>
                 </FormField>
@@ -216,9 +216,9 @@ export function CouponFormFields({
                             name="minimum_cart_value"
                             value={form.data.minimum_cart_value}
                             onChange={handleInputChange}
-                            className={cn('pl-8', form.errors.minimum_cart_value && 'border-destructive')}
+                            className={cn('ps-8', form.errors.minimum_cart_value && 'border-destructive')}
                         />
-                        <DollarSignIcon className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+                        <DollarSignIcon className="text-muted-foreground absolute top-1/2 start-3 h-4 w-4 -translate-y-1/2 transform" />
                     </div>
                 </FormField>
 
@@ -237,9 +237,9 @@ export function CouponFormFields({
                             name="maximum_cart_value"
                             value={form.data.maximum_cart_value}
                             onChange={handleInputChange}
-                            className={cn('pl-8', form.errors.maximum_cart_value && 'border-destructive')}
+                            className={cn('ps-8', form.errors.maximum_cart_value && 'border-destructive')}
                         />
-                        <DollarSignIcon className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+                        <DollarSignIcon className="text-muted-foreground absolute top-1/2 start-3 h-4 w-4 -translate-y-1/2 transform" />
                     </div>
                 </FormField>
 
@@ -267,7 +267,7 @@ export function CouponFormFields({
                         <PackageIcon className="h-4 w-4" />
                         {t('Products')}
                         {form.data.selected_products.length > 0 && (
-                            <Badge variant="secondary" className="ml-1">
+                            <Badge variant="secondary" className="ms-1">
                                 {form.data.selected_products.length}
                             </Badge>
                         )}
@@ -276,7 +276,7 @@ export function CouponFormFields({
                         <TagIcon className="h-4 w-4" />
                         {t('Categories')}
                         {form.data.selected_categories.length > 0 && (
-                            <Badge variant="secondary" className="ml-1">
+                            <Badge variant="secondary" className="ms-1">
                                 {form.data.selected_categories.length}
                             </Badge>
                         )}
@@ -285,7 +285,7 @@ export function CouponFormFields({
                         <UsersIcon className="h-4 w-4" />
                         {t('Customer Groups')}
                         {form.data.selected_groups.length > 0 && (
-                            <Badge variant="secondary" className="ml-1">
+                            <Badge variant="secondary" className="ms-1">
                                 {form.data.selected_groups.length}
                             </Badge>
                         )}

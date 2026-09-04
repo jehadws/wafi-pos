@@ -234,7 +234,7 @@ export default function RolePermissionsPanel({
                         title={t('Reset to saved state')}
                         className="h-8 px-2 sm:px-3"
                     >
-                        <RotateCcw className="h-3.5 w-3.5 sm:mr-1.5" />
+                        <RotateCcw className="h-3.5 w-3.5 sm:me-1.5" />
                         <span className="hidden sm:inline">{t('Reset')}</span>
                     </Button>
                     <Button

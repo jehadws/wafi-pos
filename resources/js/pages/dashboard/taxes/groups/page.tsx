@@ -149,7 +149,7 @@ export default function RewardSystemPage() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={title || t('Taxes Groups List')} />
+            <Head title={t('Taxes Groups List')} />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="grid w-full">
                     <DataTable

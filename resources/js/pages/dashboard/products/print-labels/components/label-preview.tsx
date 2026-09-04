@@ -63,24 +63,24 @@ export function LabelPreview({ products, settings }: LabelPreviewProps) {
                             {settings.showProductName && (
                                 <div className="flex justify-between">
                                     <span className="font-medium">{t('Product')}</span>
-                                    <span className="text-right">{product.name}</span>
+                                    <span className="text-end">{product.name}</span>
                                 </div>
                             )}
 
                             <div className="flex justify-between">
                                 <span className="font-medium">{t('Unit')}</span>
-                                <span className="text-right">{product.selectedUnitQuantity?.unit.name}</span>
+                                <span className="text-end">{product.selectedUnitQuantity?.unit.name}</span>
                             </div>
 
                             <div className="flex justify-between">
                                 <span className="font-medium">{t('Barcode')}</span>
-                                <span className="text-right">{product.selectedUnitQuantity?.barcode}</span>
+                                <span className="text-end">{product.selectedUnitQuantity?.barcode}</span>
                             </div>
 
                             {settings.showProductPrice && (
                                 <div className="flex justify-between">
                                     <span className="font-medium">{t('Price')}</span>
-                                    <span className="text-right">
+                                    <span className="text-end">
                                         {t('ly')}
                                         {product.selectedUnitQuantity?.sale_price.toFixed(2)}
                                     </span>

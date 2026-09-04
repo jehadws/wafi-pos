@@ -182,12 +182,12 @@ export default function CashRegistersList() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel className="inline-flex items-center">
-                                <List className="mr-2 h-4 w-4" />
+                                <List className="me-2 h-4 w-4" />
                                 {t('Options')}
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => router.get(`/dashboard/cash-registers/edit/${item.id}`)}>
-                                <Edit className="mr-2 h-4 w-4" />
+                                <Edit className="me-2 h-4 w-4" />
                                 {t('Edit')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
@@ -195,7 +195,7 @@ export default function CashRegistersList() {
                                 disabled={item.status === 'opened'}
                                 className="text-destructive"
                             >
-                                <Trash2 className="text-destructive mr-2 h-4 w-4" />
+                                <Trash2 className="text-destructive me-2 h-4 w-4" />
                                 {t('Delete')}
                             </DropdownMenuItem>
                         </DropdownMenuContent>

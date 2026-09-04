@@ -63,7 +63,7 @@ export default function PosPage() {
   if (license && (license.isRestricted || !license.isValid)) {
     return (
       <>
-        <Head title={t('License Required — Subul')} />
+        <Head title={t('License Required')} />
         <main className="bg-background min-h-screen flex items-center justify-center p-6">
           <div className="max-w-md w-full bg-card border border-border shadow-xl rounded-xl p-8 text-center space-y-6">
             <div className="w-16 h-16 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mx-auto">
@@ -77,7 +77,7 @@ export default function PosPage() {
                 {t('This POS terminal requires an active, cryptographically signed offline license key to operate.')}
               </p>
             </div>
-            <div className="bg-muted/50 rounded-lg p-3 text-left space-y-1 text-xs">
+            <div className="bg-muted/50 rounded-lg p-3 text-start space-y-1 text-xs">
               <span className="text-muted-foreground font-medium">{t('Hardware Fingerprint (HWID):')}</span>
               <p className="font-mono break-all select-all text-foreground font-semibold">{license.hwid}</p>
             </div>

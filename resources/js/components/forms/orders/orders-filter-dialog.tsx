@@ -68,8 +68,8 @@ export default function OrderFilterDialog({ isFilterOpen, setIsFilterOpen, handl
                                 <SelectValue placeholder={t('Payment Status')} />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="paid">Paid</SelectItem>
-                                <SelectItem value="pending">Pending</SelectItem>
+                                <SelectItem value="paid">{t('Paid')}</SelectItem>
+                                <SelectItem value="pending">{t('Pending')}</SelectItem>
                             </SelectContent>
                         </Select>
                     </FormField>

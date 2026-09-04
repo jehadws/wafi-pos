@@ -167,7 +167,7 @@ export default function SalesPage() {
                                 <SelectContent className="">
                                     {sortOptions.map((option) => (
                                         <SelectItem key={option.value} value={option.value} className="">
-                                            {option.label}
+                                            {t(option.label)}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

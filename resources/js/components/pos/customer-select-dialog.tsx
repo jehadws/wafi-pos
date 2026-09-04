@@ -89,15 +89,15 @@ export function SelectCustomerDialog({ open, onOpenChange, selectedCustomer, han
           )}
 
           <div className="relative">
-            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
-            <Input placeholder={t('Search')} value={searchQuery} onChange={(e) => handleSearch(e.target.value)} className="pl-10" />
+            <Search className="absolute top-1/2 start-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+            <Input placeholder={t('Search')} value={searchQuery} onChange={(e) => handleSearch(e.target.value)} className="ps-10" />
           </div>
 
           <ScrollArea className="min-h-0 w-full flex-1">
             {loading ? (
               <div className="flex items-center justify-center p-4">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-muted-foreground ml-2 text-sm">{t('Loading...')}</span>
+                <span className="text-muted-foreground ms-2 text-sm">{t('Loading...')}</span>
               </div>
             ) : customers.length > 0 ? (
               <div className='space-y-2'>

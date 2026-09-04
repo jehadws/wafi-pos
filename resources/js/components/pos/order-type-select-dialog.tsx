@@ -36,10 +36,10 @@ export function OrderTypeDialog({ open, onOpenChange, onSelectOrderType }: Order
             <div className="relative mb-4">
               <div className="relative">
                 <ShoppingBasket className="h-16 w-16 text-white" />
-                <div className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-orange-400"></div>
-                <div className="absolute -top-1 left-2 h-6 w-4 rounded-t-full bg-green-400"></div>
-                <div className="absolute top-1 right-1 h-3 w-3 rounded-full bg-red-400"></div>
-                <div className="absolute top-2 -left-1 h-4 w-5 rounded bg-yellow-300"></div>
+                <div className="absolute -top-2 -end-2 h-6 w-6 rounded-full bg-orange-400"></div>
+                <div className="absolute -top-1 start-2 h-6 w-4 rounded-t-full bg-green-400"></div>
+                <div className="absolute top-1 end-1 h-3 w-3 rounded-full bg-red-400"></div>
+                <div className="absolute top-2 -start-1 h-4 w-5 rounded bg-yellow-300"></div>
               </div>
             </div>
             <span className="text-lg font-medium">{t('Take Away')}</span>
@@ -52,9 +52,9 @@ export function OrderTypeDialog({ open, onOpenChange, onSelectOrderType }: Order
             <div className="relative mb-4">
               <div className="relative">
                 <Bike className="h-16 w-16 text-red-500" />
-                <div className="absolute -top-4 -left-2 h-6 w-6 rounded-full bg-red-400"></div>
-                <div className="absolute -top-2 -left-1 h-4 w-4 rounded-full bg-pink-300"></div>
-                <div className="absolute -top-1 -right-3 h-3 w-4 rounded bg-red-500"></div>
+                <div className="absolute -top-4 -start-2 h-6 w-6 rounded-full bg-red-400"></div>
+                <div className="absolute -top-2 -start-1 h-4 w-4 rounded-full bg-pink-300"></div>
+                <div className="absolute -top-1 -end-3 h-3 w-4 rounded bg-red-500"></div>
               </div>
             </div>
             <span className="text-lg font-medium">{t('Delivery')}</span>

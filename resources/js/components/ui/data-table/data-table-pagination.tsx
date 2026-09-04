@@ -103,8 +103,8 @@ export function DataTablePagination<TData>({
           ? t('displaying {perPage} on {items} items', { perPage: Math.min(currentPage * pageSize, totalItems) - (currentPage - 1) * pageSize, items: totalItems })
           : t('{entries} entries selected', { entries: selectedRowsCount })}
       </div>
-      <div className="flex items-center space-x-6 rtl:space-x-reverse lg:space-x-8 rtl:lg:space-x-reverse">
-        <div className="flex items-center space-x-2 rtl:space-x-reverse" dir="ltr">
+      <div className="flex items-center gap-6 lg:gap-8">
+        <div className="flex items-center gap-2" dir="ltr">
           <Button
             variant="outline"
             className="hidden h-8 w-8 p-0 lg:flex bg-transparent"

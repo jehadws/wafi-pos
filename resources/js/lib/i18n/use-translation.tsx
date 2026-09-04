@@ -32,7 +32,7 @@ export function TranslationProvider({ children, locale }: { children: ReactNode;
         try {
             await i18n.loadTranslations(String(newLocale));
             i18n.setLocale(String(newLocale));
-            window.location.href = `/set-locale?locale=${newLocale}`;
+            window.location.reload();
         } catch (error) {
             console.error('Failed to change locale:', error);
         } finally {

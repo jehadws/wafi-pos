@@ -11,7 +11,15 @@
         "test": "vitest run",
         "test:e2e": "playwright test",
         "test:watch": "vitest",
-        "types": "tsc --noEmit"
+        "types": "tsc --noEmit",
+        "translation:check": "node scripts/translation/check-all.mjs",
+        "translation:sync": "node scripts/translation/check-sync.mjs",
+        "translation:missing": "node scripts/translation/check-missing.mjs",
+        "translation:duplicates": "node scripts/translation/check-duplicates.mjs",
+        "translation:untranslated": "node scripts/translation/check-untranslated.mjs",
+        "translation:unused": "node scripts/translation/check-unused.mjs",
+        "translation:scan-ar": "node scripts/translation/scan-missing-ar.mjs",
+        "translation:fix-ar": "node scripts/translation/scan-missing-ar.mjs --fix"
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",

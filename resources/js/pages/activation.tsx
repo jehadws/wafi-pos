@@ -46,7 +46,7 @@ export default function Activation({ hwid, isActivated, deviceName }: Activation
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
-            <Head title={t('System Activation - Subul')} />
+            <Head title={t('System Activation')} />
 
             <div className="w-full max-w-lg space-y-6">
                 <div className="text-center space-y-2">
@@ -123,7 +123,7 @@ export default function Activation({ hwid, isActivated, deviceName }: Activation
                             </div>
 
                             <Button type="submit" className="w-full" disabled={processing}>
-                                {processing && <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />}
+                                {processing && <LoaderCircle className="w-4 h-4 me-2 animate-spin" />}
                                 {t('Activate Terminal')}
                             </Button>
                         </form>

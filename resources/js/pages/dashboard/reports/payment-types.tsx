@@ -116,21 +116,21 @@ export default function Component() {
                             <TableHeader>
                                 <TableRow className="dark:border-gray-700">
                                     <TableHead className="dark:text-gray-300">{t('Summary')}</TableHead>
-                                    <TableHead className="text-right dark:text-gray-300">Total</TableHead>
+                                    <TableHead className="text-end dark:text-gray-300">{t('Total')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {data.summary.map((payment, i) => (
                                     <TableRow key={i} className="dark:border-gray-700">
                                         <TableCell className="font-medium text-gray-900 dark:text-gray-100">{payment.label}</TableCell>
-                                        <TableCell className="text-right font-medium text-blue-600 dark:text-blue-400">
+                                        <TableCell className="text-end font-medium text-blue-600 dark:text-blue-400">
                                             {formatCurrency(payment.total)}
                                         </TableCell>
                                     </TableRow>
                                 ))}
                                 <TableRow key={'total'} className="dark:border-gray-700">
                                     <TableCell className="font-medium text-gray-900 dark:text-gray-100">{t('Total')}</TableCell>
-                                    <TableCell className="text-right font-medium text-blue-600 dark:text-blue-400">
+                                    <TableCell className="text-end font-medium text-blue-600 dark:text-blue-400">
                                         {formatCurrency(data.total)}
                                     </TableCell>
                                 </TableRow>

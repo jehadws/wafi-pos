@@ -113,13 +113,13 @@ export default function EditPaymentType() {
                 onValueChange={(value) => handleInputChange('active', +value)}
                 className="flex gap-6 py-3"
               >
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2">
                   <RadioGroupItem value={`1`} id="yes" />
                   <Label htmlFor="yes" className="cursor-pointer">
                     {t('Yes')}
                   </Label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2">
                   <RadioGroupItem value={`0`} id="no" />
                   <Label htmlFor="no" className="cursor-pointer">
                     {t('No')}

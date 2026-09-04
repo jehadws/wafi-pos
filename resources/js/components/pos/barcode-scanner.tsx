@@ -64,7 +64,7 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center">
-            <Barcode className="mr-2 h-5 w-5" />
+            <Barcode className="me-2 h-5 w-5" />
             {t('Barcode Scanner')}
           </DialogTitle>
         </DialogHeader>
@@ -81,16 +81,16 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
               </div>
 
               {/* Scanning animation */}
-              <div className="bg-primary absolute right-0 left-0 h-0.5 animate-[scan_2s_ease-in-out_infinite]" />
+              <div className="bg-primary absolute end-0 start-0 h-0.5 animate-[scan_2s_ease-in-out_infinite]" />
 
-              <Button variant="secondary" size="sm" className="absolute top-2 right-2" onClick={stopScanning}>
-                <X className="mr-1 h-4 w-4" />
+              <Button variant="secondary" size="sm" className="absolute top-2 end-2" onClick={stopScanning}>
+                <X className="me-1 h-4 w-4" />
                 {t('Cancel')}
               </Button>
             </div>
           ) : (
             <>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
                 <Input
                   placeholder={t('Enter barcode manually')}
                   value={barcode}
@@ -107,7 +107,7 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
               </div>
 
               <Button onClick={startScanning} variant="outline" className="w-full">
-                <Camera className="mr-2 h-4 w-4" />
+                <Camera className="me-2 h-4 w-4" />
                 {t('Scan Barcode')}
               </Button>
             </>

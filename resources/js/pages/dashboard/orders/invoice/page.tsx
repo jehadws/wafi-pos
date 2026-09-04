@@ -65,7 +65,7 @@ export default function OrderInvoicePage() {
                                     <h2 className="text-3xl font-bold text-gray-900 tracking-tight">{storeName}</h2>
                                     <p className="text-gray-500 text-sm mt-1">{t('Point of Sale System')}</p>
                                 </div>
-                                <div className="text-right">
+                                <div className="text-end">
                                     <div className="text-2xl font-bold text-gray-700">{t('INVOICE')}</div>
                                     <div className="text-gray-500 text-sm mt-1">#{order.code}</div>
                                 </div>
@@ -152,12 +152,12 @@ export default function OrderInvoicePage() {
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="border-b-2 border-gray-300 text-gray-500 text-xs uppercase tracking-wider">
-                                        <th className="text-left py-3 font-semibold">{t('Product')}</th>
+                                        <th className="text-start py-3 font-semibold">{t('Product')}</th>
                                         <th className="text-center py-3 font-semibold">{t('Unit Price')}</th>
                                         <th className="text-center py-3 font-semibold">{t('Quantity')}</th>
                                         <th className="text-center py-3 font-semibold">{t('Discount')}</th>
                                         <th className="text-center py-3 font-semibold">{t('Tax')}</th>
-                                        <th className="text-right py-3 font-semibold">{t('Total')}</th>
+                                        <th className="text-end py-3 font-semibold">{t('Total')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -173,7 +173,7 @@ export default function OrderInvoicePage() {
                                             <td className="py-3 text-center text-gray-600">{product.quantity}</td>
                                             <td className="py-3 text-center text-gray-600">{formatCurrency(product.discount)}</td>
                                             <td className="py-3 text-center text-gray-600">{formatCurrency(product.tax_value * product.quantity)}</td>
-                                            <td className="py-3 text-right font-semibold text-gray-800">{formatCurrency(product.total_price)}</td>
+                                            <td className="py-3 text-end font-semibold text-gray-800">{formatCurrency(product.total_price)}</td>
                                         </tr>
                                     ))}
                                 </tbody>

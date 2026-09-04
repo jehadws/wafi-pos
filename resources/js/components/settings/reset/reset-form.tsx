@@ -51,7 +51,7 @@ export function ResetForm({ form, options, disabled = false }: ResetFormProps) {
 
                     <div className="space-y-3">
                         <div className="flex items-center justify-between rounded-lg border p-3.5 bg-card/50">
-                            <div className="space-y-0.5 pr-4">
+                            <div className="space-y-0.5 pe-4">
                                 <Label htmlFor="create-procurements" className="text-sm font-medium flex items-center gap-2 cursor-pointer">
                                     <Truck className="h-4 w-4 text-primary" />
                                     {t('Generate Sample Procurements')}
@@ -76,7 +76,7 @@ export function ResetForm({ form, options, disabled = false }: ResetFormProps) {
                         </div>
 
                         <div className="flex items-center justify-between rounded-lg border p-3.5 bg-card/50">
-                            <div className="space-y-0.5 pr-4">
+                            <div className="space-y-0.5 pe-4">
                                 <Label htmlFor="create-sales" className="text-sm font-medium flex items-center gap-2 cursor-pointer">
                                     <ShoppingBag className="h-4 w-4 text-primary" />
                                     {t('Generate Sample Sales (Orders)')}

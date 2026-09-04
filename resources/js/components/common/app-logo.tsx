@@ -8,7 +8,7 @@ export default function AppLogo() {
             <div className="flex aspect-square size-8 items-center justify-center rounded-md overflow-hidden shrink-0">
                 <AppLogoIcon className="size-8 object-contain" />
             </div>
-            <div className="ml-1 grid flex-1 text-left text-sm leading-tight">
+            <div className="ms-1 grid flex-1 text-start text-sm leading-tight">
                 <span className="truncate font-semibold">{t('Subul')}</span>
             </div>
         </>

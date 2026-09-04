@@ -105,7 +105,7 @@ export default function UnitsTab({ form, handleInputChange }: UnitsTabProps) {
                     <div className="flex items-center justify-between">
                         <Label className="text-base font-medium">{t('Selling Groups')}</Label>
                         <Button type="button" onClick={addSellingGroup} variant="outline" size="sm">
-                            <Plus className="mr-2 h-4 w-4" />
+                            <Plus className="me-2 h-4 w-4" />
                             {t('New Group')}
                         </Button>
                     </div>

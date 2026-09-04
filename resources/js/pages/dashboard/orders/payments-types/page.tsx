@@ -152,19 +152,19 @@ export default function Dashboard() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel className="inline-flex items-center">
-                                <List className="mr-2 h-4 w-4" />
+                                <List className="me-2 h-4 w-4" />
                                 {t('Options')}
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => router.get(`/dashboard/orders/payments-types/edit/${item.id}`)}>
-                                <Edit className="mr-2 h-4 w-4" />
+                                <Edit className="me-2 h-4 w-4" />
                                 {t('Edit')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => setDeleteDialog({ isOpen: true, loading: false, item: row.original })}
                                 className="text-destructive"
                             >
-                                <Trash2 className="text-destructive mr-2 h-4 w-4" />
+                                <Trash2 className="text-destructive me-2 h-4 w-4" />
                                 {t('Delete')}
                             </DropdownMenuItem>
                         </DropdownMenuContent>

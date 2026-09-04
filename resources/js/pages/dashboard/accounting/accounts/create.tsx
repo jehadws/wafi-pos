@@ -90,7 +90,7 @@ export default function CreateProductPage() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={'Create a new Account - Subul'} />
+            <Head title={`${t('Create a new Account')}`} />
 
             <form onSubmit={handleSubmit}>
                 <div className="bg-background flex h-full min-h-screen flex-1 flex-col gap-4 p-4">
@@ -121,15 +121,15 @@ export default function CreateProductPage() {
                     {/* Tabs */}
                     <Tabs defaultValue="general" className="w-full">
                         <TabsList className="grid w-full grid-cols-3">
-                            <TabsTrigger value="general">General</TabsTrigger>
+                            <TabsTrigger value="general">{t('General')}</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="general" className="mt-6">
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                                 <FormField
-                                    label="Main Account"
+                                    label={t('Main Account')}
                                     htmlFor="general_category_identifier"
-                                    description="Select the category of this account."
+                                    description={t('Select the category of this account.')}
                                     error={form.errors?.['general.category_identifier']}
                                     required
                                 >
@@ -155,9 +155,9 @@ export default function CreateProductPage() {
                                 </FormField>
 
                                 <FormField
-                                    label="Sub Account"
+                                    label={t('Sub Account')}
                                     htmlFor="general_sub_category_id"
-                                    description="Assign to a sub category."
+                                    description={t('Assign to a sub category.')}
                                     error={form.errors?.['general.sub_category_id']}
                                 >
                                     <Select
@@ -177,9 +177,9 @@ export default function CreateProductPage() {
                                     </Select>
                                 </FormField>
                                 <FormField
-                                    label="Account"
+                                    label={t('Account')}
                                     htmlFor="general_last_name"
-                                    description="Provide the accounting number for this category. If left empty, it will be generated automatically."
+                                    description={t('Provide the accounting number for this category. If left empty, it will be generated automatically.')}
                                     error={form.errors?.['general.account']}
                                 >
                                     <Input
@@ -190,7 +190,7 @@ export default function CreateProductPage() {
                                         className={form.errors?.['general.account'] ? 'border-red-500' : ''}
                                     />
                                 </FormField>
-                                <FormField label="Description" htmlFor="general_description" error={form.errors?.['general.description'] || ''}>
+                                <FormField label={t('Description')} htmlFor="general_description" error={form.errors?.['general.description'] || ''}>
                                     <Textarea
                                         id="general_description"
                                         name="general_description"

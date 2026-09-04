@@ -93,16 +93,16 @@ export function ProductSearch({ selectedProducts, onProductsChange, onPrint }: P
                     <h3 className="mb-3 font-semibold">{t('Products')}</h3>
 
                     <div className="bg-background relative">
-                        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+                        <Search className="absolute top-1/2 start-3 h-4 w-4 -translate-y-1/2 transform" />
                         <Input
                             placeholder={t('Search Products...')}
                             value={searchQuery}
                             onChange={(e) => handleSearch(e.target.value)}
-                            className="pl-10"
+                            className="ps-10"
                         />
 
                         {showResults && searchResults.length > 0 && (
-                            <div className="bg-background absolute top-full right-0 left-0 z-10 max-h-48 overflow-y-auto rounded-md border shadow-lg">
+                            <div className="bg-background absolute top-full end-0 start-0 z-10 max-h-48 overflow-y-auto rounded-md border shadow-lg">
                                 {searchResults.map((product) => (
                                     <div key={product.id} className="cursor-pointer border-b p-3 last:border-b-0" onClick={() => addProduct(product)}>
                                         <div className="text-sm font-medium">{product.name}</div>
@@ -126,7 +126,7 @@ export function ProductSearch({ selectedProducts, onProductsChange, onPrint }: P
                                         </div>
                                         <div className="text-xs text-gray-500">{product.barcode}</div>
                                     </div>
-                                    <div className="flex items-center space-x-1">
+                                    <div className="flex items-center gap-1">
                                         <Button size="sm" variant="outline" className="h-6 w-6 p-0" onClick={() => handleOpenSettings(product)}>
                                             <Settings className="h-3 w-3" />
                                         </Button>
@@ -141,7 +141,7 @@ export function ProductSearch({ selectedProducts, onProductsChange, onPrint }: P
                 </div>
 
                 <Button onClick={onPrint} className="w-full bg-green-600 hover:bg-green-700" disabled={selectedProducts.length === 0}>
-                    <Printer className="mr-2 h-4 w-4" />
+                    <Printer className="me-2 h-4 w-4" />
                     {t('Print Labels')}
                 </Button>
             </div>
@@ -151,7 +151,7 @@ export function ProductSearch({ selectedProducts, onProductsChange, onPrint }: P
                     <DialogHeader>
                         <div className="flex items-center gap-3">
                             <div className="flex-1">
-                                <DialogTitle className="text-left">{t('Settings')}</DialogTitle>
+                                <DialogTitle className="text-start">{t('Settings')}</DialogTitle>
                             </div>
                         </div>
                         <DialogDescription className="sr-only">{t('Settings')}</DialogDescription>

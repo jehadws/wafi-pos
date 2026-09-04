@@ -4,6 +4,7 @@ import * as React from "react"
 import { Command, CommandInput, CommandList, CommandEmpty, CommandItem } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
+import { useTranslation } from "@/lib/i18n"
 import { ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -26,6 +27,7 @@ export function DropdownSearch({
   placeholder = "Search...",
   className
 }: DropdownSearchProps) {
+  const { t } = useTranslation()
   const [open, setOpen] = React.useState(false)
 
   return (
@@ -52,7 +54,7 @@ export function DropdownSearch({
             }}
           />
           <CommandList>
-            <CommandEmpty>{!value ? "Type to search..." : "No results found."}</CommandEmpty>
+            <CommandEmpty>{!value ? t("Type to search...") : t("No results found.")}</CommandEmpty>
             {results.map((item) => (
               <CommandItem
                 key={item.id}

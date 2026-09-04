@@ -23,6 +23,12 @@ export const procurementsApi = {
     bulkDelete: (ids: Array<number | string>) =>
         post('/crud/sb.procurements/bulk-actions', { action: 'delete_selected', entries: ids }),
 
+    /** Mark a procurement as paid. */
+    setAsPaid: (id: number | string) => get(`/procurements/${id}/set-as-paid`),
+
+    /** Trigger a procurement refresh. */
+    refresh: (id: number | string) => get(`/procurements/${id}/refresh`),
+
     // ── CRUD — sb.procurements-products ────────────────────────────────────
 
     /** Update a procurement product. */

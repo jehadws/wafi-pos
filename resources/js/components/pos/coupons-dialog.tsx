@@ -83,7 +83,7 @@ export default function CouponsDialog({
             </TabsList>
 
             <TabsContent value="apply" className="space-y-4 py-4">
-              <div className="flex space-x-2">
+              <div className="flex gap-2">
                 <Input
                   placeholder={t('Coupon Code')}
                   value={couponCode}

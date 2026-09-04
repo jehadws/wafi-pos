@@ -125,16 +125,16 @@ export default function OrderOptionsDialog({ open, orderId, onOpenChange }: Prop
                             <div>
                                 {!isFinalized && (
                                     <Button variant="destructive" onClick={() => setIsVoidDialogOpen(true)} disabled={isVoiding}>
-                                        <XCircle className="mr-2 h-4 w-4" />
+                                        <XCircle className="me-2 h-4 w-4" />
                                         {t('Void')}
                                     </Button>
                                 )}
                             </div>
                             <Button variant="default" onClick={handlePrint} disabled={!order || isPrinting}>
                                 {isPrinting ? (
-                                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                                    <LoaderCircle className="me-2 h-4 w-4 animate-spin" />
                                 ) : (
-                                    <Printer className="mr-2 h-4 w-4" />
+                                    <Printer className="me-2 h-4 w-4" />
                                 )}
                                 {t('Print')}
                             </Button>

@@ -176,7 +176,7 @@ export default function PermissionManager() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             {/* Bug fix #1: was t('Category Products') — wrong title */}
-            <Head title={title || t('Permission Manager')} />
+            <Head title={t('Permission Manager')} />
 
             <div className="flex h-full w-full flex-1 flex-col overflow-hidden p-2 sm:p-4">
                 {/* Header */}

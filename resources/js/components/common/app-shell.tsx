@@ -1,4 +1,5 @@
 import { SidebarProvider } from '@/components/ui/sidebar';
+import { isRTLLocale } from '@/lib/i18n/direction';
 import { SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
 
@@ -14,5 +15,5 @@ export function AppShell({ children, variant = 'header' }: AppShellProps) {
     return <div className="flex min-h-screen w-full flex-col">{children}</div>;
   }
 
-  return <SidebarProvider defaultOpen={sidebarOpen} dir={locale === 'ar' ? 'rtl' : 'ltr'}>{children}</SidebarProvider>;
+  return <SidebarProvider defaultOpen={sidebarOpen} dir={isRTLLocale(String(locale)) ? 'rtl' : 'ltr'}>{children}</SidebarProvider>;
 }

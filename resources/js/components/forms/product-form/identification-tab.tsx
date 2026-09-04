@@ -57,7 +57,7 @@ export default function IdentificationTab({ form, handleInputChange }: Identific
                         name="identification_sku"
                         value={form.data.identification_sku}
                         onChange={(e) => handleChange('identification_sku', e.target.value)}
-                        placeholder="Enter SKU"
+                        placeholder={t('Enter SKU')}
                         className={form.errors?.identification_sku ? 'border-red-500' : ''}
                     />
                 </FormField>
@@ -73,7 +73,7 @@ export default function IdentificationTab({ form, handleInputChange }: Identific
                         name="identification_barcode"
                         value={form.data.identification_barcode}
                         onChange={(e) => handleChange('identification_barcode', e.target.value)}
-                        placeholder="Enter barcode"
+                        placeholder={t('Enter barcode')}
                         className={form.errors?.identification_barcode ? 'border-red-500' : ''}
                     />
                 </FormField>

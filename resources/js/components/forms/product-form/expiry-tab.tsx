@@ -24,7 +24,7 @@ export default function ExpiryTab({ form, handleInputChange }: ExpiryTabProps) {
                 <CardDescription>{t('Configure product expiration settings')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2">
                     <Switch
                         checked={form.data.expiracy_expires}
                         onCheckedChange={(checked) => handleChange('expiracy_expires', checked)}

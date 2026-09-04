@@ -100,7 +100,7 @@ export function CustomerDetailsDialog({ open, onOpenChange, customer }: Customer
                   {loadingOrders ? (
                     <div className="flex flex-1 items-center justify-center p-8">
                       <Loader2 className="h-6 w-6 animate-spin" />
-                      <span className="ml-2">{t('Loading...')}</span>
+                      <span className="ms-2">{t('Loading...')}</span>
                     </div>
                   ) : (
                     <div className="flex flex-col flex-1 min-h-0 rounded-lg border">

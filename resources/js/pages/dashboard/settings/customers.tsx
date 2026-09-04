@@ -70,11 +70,11 @@ export default function SettingsGeneral() {
                     <div className="relative overflow-hidden rounded-xl border">
                         <div className="relative p-6 md:p-8">
                             <h1 className="text-2xl font-semibold">{t('General Settings')}</h1>
-                            <p className="text-muted-foreground text-sm">Configure the general settings of the application.</p>
+                            <p className="text-muted-foreground text-sm">{t('Configure the general settings of the application.')}</p>
                             <div className="mt-4"></div>
 
                             <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                <FormField label="Enable Reward" description="Will activate the reward system for the customers.">
+                                <FormField label={t('Enable Reward')} description={t('Will activate the reward system for the customers.')}>
                                     <Select
                                         value={form.data.general.sb_customers_rewards_enabled === 'yes' ? 'yes' : 'no'}
                                         onValueChange={(v) => form.setData('general.sb_customers_rewards_enabled', v)}
@@ -91,7 +91,7 @@ export default function SettingsGeneral() {
                                         </SelectContent>
                                     </Select>
                                 </FormField>
-                                <FormField label="Require Valid Email" description="Will for valid unique email for every customer.">
+                                <FormField label={t('Require Valid Email')} description={t('Will for valid unique email for every customer.')}>
                                     <Select
                                         value={form.data.general.sb_customers_force_valid_email ?? 'no'}
                                         onValueChange={(v) => form.setData('general.sb_customers_force_valid_email', v)}
@@ -108,7 +108,7 @@ export default function SettingsGeneral() {
                                         </SelectContent>
                                     </Select>
                                 </FormField>
-                                <FormField label="Require Unique Phone" description="Every customer should have a unique phone number.">
+                                <FormField label={t('Require Unique Phone')} description={t('Every customer should have a unique phone number.')}>
                                     <Select
                                         value={form.data.general.sb_customers_force_unique_phone ?? 'no'}
                                         onValueChange={(v) => form.setData('general.sb_customers_force_unique_phone', v)}
@@ -127,8 +127,8 @@ export default function SettingsGeneral() {
                                 </FormField>
 
                                 <FormField
-                                    label="Default Customer Account"
-                                    description="You must create a customer to which each sales are attributed when the walking customer doesn't register."
+                                    label={t('Default Customer Account')}
+                                    description={t("You must create a customer to which each sales are attributed when the walking customer doesn't register.")}
                                 >
                                     <Popover>
                                         <PopoverTrigger asChild>
@@ -136,8 +136,8 @@ export default function SettingsGeneral() {
                                                 {form.data.general.sb_customers_default && form.data.general.sb_customers_default !== 'no'
                                                     ? options.sb_customers_default.find(
                                                           (tz) => tz.value.toString() === form.data.general.sb_customers_default?.toString()
-                                                      )?.label ?? 'Select default...'
-                                                    : 'None'}
+                                                      )?.label ?? t('Select default...')
+                                                    : t('None')}
                                                 <ChevronsUpDown className="opacity-50" />
                                             </Button>
                                         </PopoverTrigger>
@@ -145,7 +145,7 @@ export default function SettingsGeneral() {
                                             <Command>
                                                 <CommandInput placeholder={t('Search') + '...'} className="h-9" />
                                                 <CommandList>
-                                                    <CommandEmpty>No framework found.</CommandEmpty>
+                                                    <CommandEmpty>{t('No framework found.')}</CommandEmpty>
                                                     <CommandGroup>
                                                         <CommandItem
                                                             value="no"
@@ -156,7 +156,7 @@ export default function SettingsGeneral() {
                                                             {t('None')}
                                                             <Check
                                                                 className={cn(
-                                                                    'ml-auto',
+                                                                    'ms-auto',
                                                                     form.data.general.sb_customers_default === 'no' || !form.data.general.sb_customers_default
                                                                         ? 'opacity-100'
                                                                         : 'opacity-0',
@@ -174,7 +174,7 @@ export default function SettingsGeneral() {
                                                                 {tz.label}
                                                                 <Check
                                                                     className={cn(
-                                                                        'ml-auto',
+                                                                        'ms-auto',
                                                                         form.data.general.sb_customers_default?.toString() === tz.value.toString()
                                                                             ? 'opacity-100'
                                                                             : 'opacity-0',
@@ -189,8 +189,8 @@ export default function SettingsGeneral() {
                                     </Popover>
                                 </FormField>
                                 <FormField
-                                    label="Default Customer Group"
-                                    description="Select to which group each new created customers are assigned to."
+                                    label={t('Default Customer Group')}
+                                    description={t('Select to which group each new created customers are assigned to.')}
                                 >
                                     <Select
                                         value={form.data.general.sb_customers_default_group?.toString() ?? 'no'}
@@ -208,7 +208,7 @@ export default function SettingsGeneral() {
                                         </SelectContent>
                                     </Select>
                                 </FormField>
-                                <FormField label="Store P.O.Box" description="The store mail box number.">
+                                <FormField label={t('Store P.O.Box')} description={t('The store mail box number.')}>
                                     <Select
                                         value={form.data.general.sb_customers_credit_enabled ?? 'no'}
                                         onValueChange={(v) => form.setData('general.sb_customers_credit_enabled', v)}
@@ -229,7 +229,7 @@ export default function SettingsGeneral() {
                         </div>
                         <div className="mt-6 flex items-center justify-end rounded-b-xl border-t p-3">
                             <Button onClick={() => handleSave()} disabled={isPending}>
-                                {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                {isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Save className="me-2 h-4 w-4" />}
                                 {t('Save Settings')}
                             </Button>
                         </div>

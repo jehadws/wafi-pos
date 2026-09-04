@@ -58,14 +58,14 @@ export function ProfileApiTokensTab({
                             description={t('A descriptive name to identify this token')}
                         >
                             <div className="relative">
-                                <FileText className="text-primary-400 absolute top-3 left-3 h-4 w-4" />
+                                <FileText className="text-primary-400 absolute top-3 start-3 h-4 w-4" />
                                 <Input
                                     id="tokenName"
                                     name="tokenName"
                                     value={tokenName}
                                     onChange={(e) => setTokenName(e.target.value)}
-                                    className="pr-10 pl-10"
-                                    placeholder="My API Token"
+                                    className="pe-10 ps-10"
+                                    placeholder={t('My API Token')}
                                 />
                             </div>
                         </FormField>
@@ -102,13 +102,13 @@ export function ProfileApiTokensTab({
                                             <Key className="h-5 w-5" />
                                             <div>
                                                 <div className="font-medium">{token.name}</div>
-                                                <div className="text-xs">Created {token.created_at}</div>
+                                                <div className="text-xs">{t('Created')} {token.created_at}</div>
                                             </div>
                                             <Badge
                                                 variant="outline"
-                                                className="ml-2 border-green-200 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-800 dark:text-green-400"
+                                                className="ms-2 border-green-200 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-800 dark:text-green-400"
                                             >
-                                                Active
+                                                {t('Active')}
                                             </Badge>
                                         </div>
                                         <div className="flex items-center gap-2">

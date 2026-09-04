@@ -49,13 +49,13 @@ export function ThermalReceiptPreview({ data, onClose, autoPrint = false }: Ther
                 <div className="flex items-center gap-2">
                     {agentOnline === true && (
                         <Badge variant="outline" className="border-green-500 bg-green-50 text-green-700 dark:bg-green-950/50 dark:text-green-300">
-                            <CheckCircle2 className="mr-1 h-3 w-3 text-green-500" />
+                            <CheckCircle2 className="me-1 h-3 w-3 text-green-500" />
                             {t('Print Agent Online')}
                         </Badge>
                     )}
                     {agentOnline === false && (
                         <Badge variant="destructive">
-                            <XCircle className="mr-1 h-3 w-3" />
+                            <XCircle className="me-1 h-3 w-3" />
                             {t('Print Agent Offline')}
                         </Badge>
                     )}
@@ -130,7 +130,7 @@ export function ThermalReceiptPreview({ data, onClose, autoPrint = false }: Ther
                 <div className="flex justify-between text-xs font-bold uppercase pb-1 border-b border-neutral-300 dark:border-neutral-700">
                     <span className="w-7/12">{t('Item')}</span>
                     <span className="w-2/12 text-center">{t('Qty')}</span>
-                    <span className="w-3/12 text-right">{t('Total')}</span>
+                    <span className="w-3/12 text-end">{t('Total')}</span>
                 </div>
 
                 {/* Products List */}
@@ -138,12 +138,12 @@ export function ThermalReceiptPreview({ data, onClose, autoPrint = false }: Ther
                     {data.items?.map((item, idx) => (
                         <div key={idx} className="py-1.5">
                             <div className="flex justify-between items-start">
-                                <span className="w-7/12 font-medium break-words pr-1">{item.name}</span>
+                                <span className="w-7/12 font-medium break-words pe-1">{item.name}</span>
                                 <span className="w-2/12 text-center">{item.quantity}x</span>
-                                <span className="w-3/12 text-right font-bold">{item.total}</span>
+                                <span className="w-3/12 text-end font-bold">{item.total}</span>
                             </div>
                             {item.price && (
-                                <div className="text-[10px] text-neutral-500 dark:text-neutral-400 pl-1">
+                                <div className="text-[10px] text-neutral-500 dark:text-neutral-400 ps-1">
                                     @ {item.price}
                                 </div>
                             )}
@@ -170,7 +170,7 @@ export function ThermalReceiptPreview({ data, onClose, autoPrint = false }: Ther
                     )}
                     {settings.showTaxBreakdown && data.taxes && data.taxes.length > 0 ? (
                         data.taxes.map((tx, idx) => (
-                            <div key={idx} className="flex justify-between text-[11px] text-neutral-600 dark:text-neutral-400 pl-2">
+                            <div key={idx} className="flex justify-between text-[11px] text-neutral-600 dark:text-neutral-400 ps-2">
                                 <span>{tx.name} ({tx.rate}%)</span>
                                 <span>{tx.tax_value}</span>
                             </div>

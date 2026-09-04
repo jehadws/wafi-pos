@@ -20,7 +20,7 @@ export default function CreateTaxPage() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={t('Create a new tax - Subul')} />
+            <Head title={t('Create a new tax')} />
 
             <form onSubmit={handleSubmit}>
                 <div className="bg-background flex h-full min-h-screen flex-1 flex-col gap-4 p-4">

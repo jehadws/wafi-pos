@@ -251,7 +251,7 @@ export default function SalesPage() {
                                 <DialogTrigger asChild>
                                     <Button variant="outline" className="flex items-center gap-2 bg-transparent">
                                         <Filter className="h-4 w-4" />
-                                        {t('By Type')} : {reportTypes.find((t) => t.value === reportType)?.label}
+                                        {t('By Type')} : {t(reportTypes.find((rt) => rt.value === reportType)?.label ?? '')}
                                     </Button>
                                 </DialogTrigger>
                                 <DialogContent className="sm:max-w-md">
@@ -263,7 +263,7 @@ export default function SalesPage() {
                                         {reportTypes.map((type) => (
                                             <SelectableItem
                                                 onChange={() => handleTypeChange(type.value)}
-                                                label={type.label}
+                                                label={t(type.label)}
                                                 value={type.value}
                                                 key={type.value}
                                                 selected={reportType === type.value}
@@ -400,7 +400,7 @@ export default function SalesPage() {
                                             <TableCell colSpan={5} className="py-8 text-center">
                                                 <div className="flex items-center justify-center">
                                                     <div className="border-primary h-8 w-8 animate-spin rounded-full border-b-2"></div>
-                                                    <span className="text-muted-foreground ml-2">{t('Loading report...')}</span>
+                                                    <span className="text-muted-foreground ms-2">{t('Loading report...')}</span>
                                                 </div>
                                             </TableCell>
                                         </TableRow>

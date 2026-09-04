@@ -115,7 +115,7 @@ export function DataTableToolbar<TData>({
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-1 items-center space-x-2 rtl:space-x-reverse">
+      <div className="flex flex-1 items-center gap-2">
         {onAddNew && (
           <Button onClick={onAddNew} size="sm" variant="outline" className="h-9">
             <Plus className="h-4 w-4" />
@@ -159,9 +159,9 @@ export function DataTableToolbar<TData>({
           </Button>
         )}
       </div>
-      <div className="flex items-center space-x-2 rtl:space-x-reverse">
+      <div className="flex items-center gap-2">
         {table.getFilteredSelectedRowModel().rows.length > 0 && bulkActions.length > 0 && (
-          <div className="flex items-center space-x-2 rtl:space-x-reverse">
+          <div className="flex items-center gap-2">
             <Select value={selectedAction || ""} onValueChange={setSelectedAction}>
               <SelectTrigger className="h-9 w-[150px]">
                 <SelectValue placeholder={t('Bulk Actions')} />

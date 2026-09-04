@@ -60,12 +60,12 @@ export function TokenQrDialog({ isOpen, onClose, tokenName, tokenValue }: TokenM
                     <Button type="button" onClick={copyToClipboard} className="bg-blue-600 hover:bg-blue-700">
                         {copied ? (
                             <>
-                                <Check className="mr-2 h-4 w-4" />
+                                <Check className="me-2 h-4 w-4" />
                                 {t('Copied')}
                             </>
                         ) : (
                             <>
-                                <Copy className="mr-2 h-4 w-4" />
+                                <Copy className="me-2 h-4 w-4" />
                                 {t('Copy And Close')}
                             </>
                         )}

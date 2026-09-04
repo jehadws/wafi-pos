@@ -110,38 +110,6 @@ export default function Dashboard() {
             header: t('Author'),
         },
         {
-            accessorKey: 'provider_name',
-            header: t('Provider'),
-        },
-        {
-            accessorKey: 'delivery_status',
-            header: t('Delivery Status'),
-        },
-        {
-            accessorKey: 'payment_status',
-            header: t('Payment Status'),
-        },
-        {
-            accessorKey: 'invoice_date',
-            header: t('Invoice Date'),
-        },
-        {
-            accessorKey: 'value',
-            header: t('Sale Value'),
-        },
-        {
-            accessorKey: 'cost',
-            header: t('Purchase Value'),
-        },
-        {
-            accessorKey: 'tax_value',
-            header: t('Tax Value'),
-        },
-        {
-            accessorKey: 'author_name',
-            header: t('Author'),
-        },
-        {
             id: 'actions',
             cell: ({ row }) => {
                 const item = row.original;
@@ -150,45 +118,63 @@ export default function Dashboard() {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
+                                <span className="sr-only">{t('Open menu')}</span>
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel className="inline-flex items-center">
-                                <List className="mr-2 h-4 w-4" />
+                                <List className="me-2 h-4 w-4" />
                                 {t('Options')}
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => navigator.clipboard.writeText(item.id.toString())}>
-                                <Copy className="mr-2 h-4 w-4" />
+                                <Copy className="me-2 h-4 w-4" />
                                 {t('Copy ID')}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => router.get(`/dashboard/procurements/edit/${item.id}`)}>
-                                <Edit className="mr-2 h-4 w-4" />
+                                <Edit className="me-2 h-4 w-4" />
                                 {t('Edit')}
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(item.id.toString())}>
-                                <ReceiptText className="mr-2 h-4 w-4" />
+                            <DropdownMenuItem onClick={() => router.get(`/dashboard/procurements/edit/${item.id}/invoice`)}>
+                                <ReceiptText className="me-2 h-4 w-4" />
                                 {t('Invoice')}
                             </DropdownMenuItem>
                             {item.payment_status === 'unpaid' && (
-                                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(item.id.toString())}>
-                                    <FileCheck className="mr-2 h-4 w-4" />
+                                <DropdownMenuItem
+                                    onClick={async () => {
+                                        try {
+                                            await procurementsApi.setAsPaid(item.id);
+                                            toast.success(t('Procurement marked as paid'));
+                                            router.reload();
+                                        } catch (error) {
+                                            toast.error(getApiErrorMessage(error, t('Operation failed')));
+                                        }
+                                    }}
+                                >
+                                    <FileCheck className="me-2 h-4 w-4" />
                                     {t('Set Paid')}
                                 </DropdownMenuItem>
                             )}
                             <DropdownMenuItem
-                                onClick={() => toast.success(t("The refresh process has started. You'll get informed once it's complete."))}
+                                onClick={async () => {
+                                    try {
+                                        await procurementsApi.refresh(item.id);
+                                        toast.success(t("The refresh process has started. You'll get informed once it's complete."));
+                                        router.reload();
+                                    } catch (error) {
+                                        toast.error(getApiErrorMessage(error, t('Operation failed')));
+                                    }
+                                }}
                             >
-                                <RefreshCw className="mr-2 h-4 w-4" />
+                                <RefreshCw className="me-2 h-4 w-4" />
                                 {t('Refresh')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => setDeleteDialog({ isOpen: true, loading: false, item: row.original })}
                                 className="text-destructive"
                             >
-                                <Trash2 className="text-destructive mr-2 h-4 w-4" />
+                                <Trash2 className="text-destructive me-2 h-4 w-4" />
                                 {t('Delete')}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -226,7 +212,7 @@ export default function Dashboard() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={title || 'Category Products'} />
+            <Head title={title || t('Procurements')} />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="grid w-full">
                     <DataTable

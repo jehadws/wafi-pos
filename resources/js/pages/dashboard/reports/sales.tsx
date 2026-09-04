@@ -368,7 +368,7 @@ export default function SalesPage() {
                                 <DialogTrigger asChild>
                                     <Button variant="outline" className="flex items-center gap-2 bg-transparent">
                                         <Filter className="h-4 w-4" />
-                                        {t('By Type')} : {reportTypes.find((t) => t.value === filters.type)?.label}
+                                        {t('By Type')} : {t(reportTypes.find((rt) => rt.value === filters.type)?.label ?? '')}
                                     </Button>
                                 </DialogTrigger>
                                 <DialogContent className="sm:max-w-md">
@@ -380,7 +380,7 @@ export default function SalesPage() {
                                         {reportTypes.map((reportType) => (
                                             <SelectableItem
                                                 onChange={() => handleTypeChange(reportType.value)}
-                                                label={reportType.label}
+                                                label={t(reportType.label)}
                                                 value={reportType.value}
                                                 key={reportType.value}
                                                 selected={filters.type === reportType.value}

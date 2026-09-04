@@ -125,8 +125,8 @@ export default function Component() {
                                 <TableHeader>
                                     <TableRow className="dark:border-gray-700">
                                         <TableHead className="dark:text-gray-300">{t('Account')}</TableHead>
-                                        <TableHead className="text-right font-semibold text-red-800 dark:text-red-400">{t('Debit')}</TableHead>
-                                        <TableHead className="text-right font-semibold text-green-800 dark:text-green-400">{t('Credit')}</TableHead>
+                                        <TableHead className="text-end font-semibold text-red-800 dark:text-red-400">{t('Debit')}</TableHead>
+                                        <TableHead className="text-end font-semibold text-green-800 dark:text-green-400">{t('Credit')}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -135,7 +135,7 @@ export default function Component() {
                                             <TableCell colSpan={3} className="py-8 text-center">
                                                 <div className="flex items-center justify-center">
                                                     <div className="border-primary h-8 w-8 animate-spin rounded-full border-b-2"></div>
-                                                    <span className="text-muted-foreground ml-2">{t('Loading report...')}</span>
+                                                    <span className="text-muted-foreground ms-2">{t('Loading report...')}</span>
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -148,22 +148,22 @@ export default function Component() {
                                                             <ArrowRight className="h-4 w-4" />
                                                             {category.name}
                                                         </TableCell>
-                                                        <TableCell className="text-right text-red-800 dark:text-red-400">
+                                                        <TableCell className="text-end text-red-800 dark:text-red-400">
                                                             {formatCurrency(category.debits)}
                                                         </TableCell>
-                                                        <TableCell className="text-right text-green-800 dark:text-green-400">
+                                                        <TableCell className="text-end text-green-800 dark:text-green-400">
                                                             {formatCurrency(category.credits)}
                                                         </TableCell>
                                                     </TableRow>
                                                     {category.transactions.map((transaction, index) => (
                                                         <TableRow key={`${category.name}-${index}`} className="dark:border-gray-700">
-                                                            <TableCell className="pl-8 text-gray-800 dark:text-gray-200">
+                                                            <TableCell className="ps-8 text-gray-800 dark:text-gray-200">
                                                                 {transaction.name}
                                                             </TableCell>
-                                                            <TableCell className="text-right text-gray-800 dark:text-gray-200">
+                                                            <TableCell className="text-end text-gray-800 dark:text-gray-200">
                                                                 {formatCurrency(transaction.debits)}
                                                             </TableCell>
-                                                            <TableCell className="text-right text-gray-800 dark:text-gray-200">
+                                                            <TableCell className="text-end text-gray-800 dark:text-gray-200">
                                                                 {formatCurrency(transaction.credits)}
                                                             </TableCell>
                                                         </TableRow>
@@ -173,10 +173,10 @@ export default function Component() {
                                             {/* Total Row */}
                                             <TableRow className="bg-muted/30 border-t-2 font-semibold dark:border-gray-600 dark:bg-gray-700/30">
                                                 <TableCell className="text-gray-900 dark:text-gray-100">{t('Total')}</TableCell>
-                                                <TableCell className="text-right text-red-800 dark:text-red-400">
+                                                <TableCell className="text-end text-red-800 dark:text-red-400">
                                                     {formatCurrency(Data?.debits || 0)}
                                                 </TableCell>
-                                                <TableCell className="text-right text-green-800 dark:text-green-400">
+                                                <TableCell className="text-end text-green-800 dark:text-green-400">
                                                     {formatCurrency(Data?.credits || 0)}
                                                 </TableCell>
                                             </TableRow>

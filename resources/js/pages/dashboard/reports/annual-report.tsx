@@ -166,7 +166,7 @@ export default function Component() {
                                             <TableCell colSpan={5} className="py-8 text-center">
                                                 <div className="flex items-center justify-center">
                                                     <div className="border-primary h-8 w-8 animate-spin rounded-full border-b-2"></div>
-                                                    <span className="text-muted-foreground ml-2">{t('Loading report...')}</span>
+                                                    <span className="text-muted-foreground ms-2">{t('Loading report...')}</span>
                                                 </div>
                                             </TableCell>
                                         </TableRow>

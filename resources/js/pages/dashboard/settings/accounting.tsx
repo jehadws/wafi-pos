@@ -133,7 +133,7 @@ export default function SettingsGeneral() {
                                                                 {t(tz.label)}
                                                                 <Check
                                                                     className={cn(
-                                                                        'ml-auto',
+                                                                        'ms-auto',
                                                                         form.data.general.sb_accounting_default_paid_expense_offset_account ===
                                                                             tz.value
                                                                             ? 'opacity-100'
@@ -152,11 +152,11 @@ export default function SettingsGeneral() {
                         </div>
                         <div className="mt-6 flex items-center justify-between rounded-b-xl border-t p-3">
                             <Button onClick={() => setIsOpen(true)} disabled={isPending} variant="destructive">
-                                {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                {isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Save className="me-2 h-4 w-4" />}
                                 {t('Reset Default')}
                             </Button>
                             <Button onClick={() => handleSave()} disabled={isPending}>
-                                {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                {isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Save className="me-2 h-4 w-4" />}
                                 {t('Save Settings')}
                             </Button>
                         </div>

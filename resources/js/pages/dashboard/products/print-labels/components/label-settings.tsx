@@ -103,7 +103,7 @@ export function LabelSettingsPanel({ settings, onSettingsChange }: LabelSettings
             <div>
                 <h3 className="mb-4 font-semibold">{t('Visibility Settings')}</h3>
                 <div className="space-y-3">
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center gap-2">
                         <Checkbox
                             id="showStoreName"
                             checked={settings.showStoreName}
@@ -114,7 +114,7 @@ export function LabelSettingsPanel({ settings, onSettingsChange }: LabelSettings
                         </Label>
                     </div>
 
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center gap-2">
                         <Checkbox
                             id="showBarcodeText"
                             checked={settings.showBarcodeText}
@@ -125,7 +125,7 @@ export function LabelSettingsPanel({ settings, onSettingsChange }: LabelSettings
                         </Label>
                     </div>
 
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center gap-2">
                         <Checkbox
                             id="showProductPrice"
                             checked={settings.showProductPrice}
@@ -136,7 +136,7 @@ export function LabelSettingsPanel({ settings, onSettingsChange }: LabelSettings
                         </Label>
                     </div>
 
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center gap-2">
                         <Checkbox
                             id="showProductName"
                             checked={settings.showProductName}

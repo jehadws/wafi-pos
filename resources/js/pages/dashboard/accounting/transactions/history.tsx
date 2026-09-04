@@ -144,7 +144,7 @@ export default function Dashboard() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel className="inline-flex items-center">
-                                <List className="mr-2 h-4 w-4" />
+                                <List className="me-2 h-4 w-4" />
                                 {t('Options')}
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
@@ -152,7 +152,7 @@ export default function Dashboard() {
                                 onClick={() => setDeleteDialog({ isOpen: true, loading: false, item: row.original })}
                                 className="text-destructive"
                             >
-                                <Trash2 className="text-destructive mr-2 h-4 w-4" />
+                                <Trash2 className="text-destructive me-2 h-4 w-4" />
                                 {t('Delete')}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -214,7 +214,7 @@ export default function Dashboard() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={t('Transactions History List') + ' - Subul'} />
+            <Head title={t('Transactions History List')} />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="grid w-full">
                     <DataTable

@@ -19,7 +19,7 @@ export function PaymentMethodSidebar({ selectedTab, onTabSelect, totalPayment }:
             key={identifier}
             onClick={() => onTabSelect(identifier as PaymentTypes)}
             className={cn(
-              'text-foreground relative w-full rounded px-3 py-2 text-left text-sm',
+              'text-foreground relative w-full rounded px-3 py-2 text-start text-sm',
               selectedTab === identifier ? 'text-primary bg-primary/10 shadow-sm' : 'hover:bg-muted/60',
             )}
           >
@@ -31,12 +31,12 @@ export function PaymentMethodSidebar({ selectedTab, onTabSelect, totalPayment }:
           key={'list'}
           onClick={() => onTabSelect('payment-list')}
           className={cn(
-            'text-foreground relative w-full rounded px-3 py-2 text-left text-sm',
+            'text-foreground relative w-full rounded px-3 py-2 text-start text-sm',
             selectedTab === 'payment-list' ? 'text-primary bg-primary/10 shadow-sm' : 'hover:bg-muted/60',
           )}
         >
           {t('List Of Payments')}
-          <span className="bg-primary text-primary-foreground absolute top-1/2 right-2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-xs">
+          <span className="bg-primary text-primary-foreground absolute top-1/2 end-2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-xs">
             {totalPayment}
           </span>
         </button>

@@ -66,16 +66,16 @@ export default function ResetSettingsPage() {
                                 variant="destructive"
                                 onClick={openConfirmation}
                                 disabled={isPending}
-                                className="w-full sm:w-auto ml-auto"
+                                className="w-full sm:w-auto ms-auto"
                             >
                                 {isPending ? (
                                     <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        <Loader2 className="me-2 h-4 w-4 animate-spin" />
                                         {t('Resetting Database...')}
                                     </>
                                 ) : (
                                     <>
-                                        <AlertTriangle className="mr-2 h-4 w-4" />
+                                        <AlertTriangle className="me-2 h-4 w-4" />
                                         {t('Reset Database')}
                                     </>
                                 )}

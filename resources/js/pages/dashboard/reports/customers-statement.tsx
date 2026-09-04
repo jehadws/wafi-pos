@@ -153,23 +153,23 @@ export default function Component() {
 
                         <div className="relative mb-6">
                             <div className="relative">
-                                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+                                <Search className="absolute top-1/2 start-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                                 <Input
                                     type="text"
                                     placeholder={t('Search Customer...')}
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-10"
+                                    className="w-full ps-10"
                                 />
                                 {isSearching && (
-                                    <div className="absolute top-1/2 right-3 -translate-y-1/2 transform">
+                                    <div className="absolute top-1/2 end-3 -translate-y-1/2 transform">
                                         <div className="border-primary h-4 w-4 animate-spin rounded-full border-b-2"></div>
                                     </div>
                                 )}
                             </div>
 
                             {showCustomerList && customers.length > 0 && (
-                                <div className="absolute top-full right-0 left-0 z-10 max-h-60 overflow-y-auto rounded-md border bg-white shadow-lg dark:border-gray-600 dark:bg-gray-700">
+                                <div className="absolute top-full end-0 start-0 z-10 max-h-60 overflow-y-auto rounded-md border bg-white shadow-lg dark:border-gray-600 dark:bg-gray-700">
                                     {customers.map((customer) => (
                                         <div
                                             key={customer.id}
@@ -291,7 +291,7 @@ export default function Component() {
                                             <TableHead className="dark:text-gray-300">{t('Type')}</TableHead>
                                             <TableHead className="dark:text-gray-300">{t('Status')}</TableHead>
                                             <TableHead className="dark:text-gray-300">{t('Date')}</TableHead>
-                                            <TableHead className="text-right dark:text-gray-300">{t('Total')}</TableHead>
+                                            <TableHead className="text-end dark:text-gray-300">{t('Total')}</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -309,7 +309,7 @@ export default function Component() {
                                                 <TableCell className="text-gray-600 dark:text-gray-400">
                                                     {new Date(order.created_at).toLocaleDateString()}
                                                 </TableCell>
-                                                <TableCell className="text-right font-medium text-blue-600 dark:text-blue-400">
+                                                <TableCell className="text-end font-medium text-blue-600 dark:text-blue-400">
                                                     {formatCurrency(order.total)}
                                                 </TableCell>
                                             </TableRow>

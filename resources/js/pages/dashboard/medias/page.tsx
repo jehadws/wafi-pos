@@ -346,12 +346,12 @@ export default function MediaManager() {
                                                     <div className="mt-3 flex items-center gap-2">
                                                         {isUploading && (
                                                             <Button size="sm" variant="ghost" onClick={() => cancelUpload(item.id)}>
-                                                                <PauseCircle className="mr-2 h-4 w-4" /> {t('Cancel')}
+                                                                <PauseCircle className="me-2 h-4 w-4" /> {t('Cancel')}
                                                             </Button>
                                                         )}
                                                         {(isError || isCanceled) && (
                                                             <Button size="sm" variant="outline" onClick={() => retryUpload(item.id)}>
-                                                                <PlayCircle className="mr-2 h-4 w-4" /> {t('Retry')}
+                                                                <PlayCircle className="me-2 h-4 w-4" /> {t('Retry')}
                                                             </Button>
                                                         )}
                                                         <Button
@@ -360,7 +360,7 @@ export default function MediaManager() {
                                                             className="text-red-600 hover:text-red-700"
                                                             onClick={() => removeItem(item.id)}
                                                         >
-                                                            <Trash2 className="mr-2 h-4 w-4" /> {t('Remove')}
+                                                            <Trash2 className="me-2 h-4 w-4" /> {t('Remove')}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -385,12 +385,12 @@ export default function MediaManager() {
             <CardContent className="flex-1 p-0">
                 <form onSubmit={onSearchSubmit} className="mb-4 flex items-center gap-2">
                     <div className="relative w-full">
-                        <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                        <Search className="text-muted-foreground absolute top-1/2 start-3 h-4 w-4 -translate-y-1/2" />
                         <Input
                             value={pendingQuery}
                             onChange={(e) => setPendingQuery(e.target.value)}
                             placeholder={t('Search Medias')}
-                            className="pl-9"
+                            className="ps-9"
                             aria-label={t('Search media')}
                         />
                     </div>
@@ -422,7 +422,7 @@ export default function MediaManager() {
                                             crossOrigin="anonymous"
                                         />
                                         {selectionMode && (
-                                            <div className="absolute top-2 left-2 rounded">
+                                            <div className="absolute top-2 start-2 rounded">
                                                 <Checkbox
                                                     checked={isSelected}
                                                     onCheckedChange={() => toggleSelect(m.id)}
@@ -444,7 +444,7 @@ export default function MediaManager() {
                                     {selectionMode ? t('Cancel') : t('Bulk Select')}
                                 </Button>
                                 <Button variant="destructive" disabled={!selectionMode || selected.size === 0} onClick={deleteSelected}>
-                                    <Trash2 className="mr-2 h-4 w-4" /> {t('Delete')}
+                                    <Trash2 className="me-2 h-4 w-4" /> {t('Delete')}
                                 </Button>
                                 {selectionMode && (
                                     <span className="text-muted-foreground text-sm">{t('{size} selected', { size: selected.size })}</span>

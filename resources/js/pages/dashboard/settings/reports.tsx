@@ -59,7 +59,7 @@ export default function SettingsGeneral() {
                             <div className="mt-4"></div>
 
                             <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-2">
-                                <FormField label={t('Enable Email Reporting')} description="Determine if the reporting should be enabled globally.">
+                                <FormField label={t('Enable Email Reporting')} description={t('Determine if the reporting should be enabled globally.')}>
                                     <div className="flex gap-2">
                                         <Button
                                             type="button"
@@ -81,7 +81,7 @@ export default function SettingsGeneral() {
                         </div>
                         <div className="mt-6 flex items-center justify-end rounded-b-xl border-t p-3">
                             <Button onClick={() => handleSave()} disabled={isPending}>
-                                {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                {isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Save className="me-2 h-4 w-4" />}
                                 {t('Save Settings')}
                             </Button>
                         </div>

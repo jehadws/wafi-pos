@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { useTranslation } from "@/lib/i18n"
 import { Delete } from "lucide-react"
 
 interface NumericKeypadDialogProps {
@@ -19,13 +20,14 @@ interface NumericKeypadDialogProps {
 export function NumericKeypadDialog({
   open,
   onOpenChange,
-  title = "Define Quantity",
+  title,
   initialValue = "",
   onConfirm,
   onCancel,
   maxLength = 10,
   allowDecimal = false,
 }: NumericKeypadDialogProps) {
+  const { t } = useTranslation()
   const [value, setValue] = useState<string>("")
 
   useEffect(() => {
@@ -80,7 +82,7 @@ export function NumericKeypadDialog({
       <DialogContent className="max-w-sm p-0 gap-0">
         <DialogHeader className="p-4 pb-2">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-lg font-medium">{title}</DialogTitle>
+            <DialogTitle className="text-lg font-medium">{t(title || 'Define Quantity')}</DialogTitle>
           </div>
         </DialogHeader>
 
@@ -129,10 +131,10 @@ export function NumericKeypadDialog({
             </Button>
             <Button
               variant="ghost"
-              className="h-16 rounded-none border-b text-lg font-medium hover:bg-gray-50 text-blue-600"
+              className="h-16 rounded-none border-e border-b text-lg font-medium hover:bg-gray-50 text-blue-600"
               onClick={handleEnter}
             >
-              Enter
+              {t('Enter')}
             </Button>
           </div>
 
@@ -144,7 +146,7 @@ export function NumericKeypadDialog({
                 className="h-16 rounded-none border-e text-lg font-medium hover:bg-gray-50"
                 onClick={handleClear}
               >
-                Clear
+                {t('Clear')}
               </Button>
               <Button
                 variant="ghost"

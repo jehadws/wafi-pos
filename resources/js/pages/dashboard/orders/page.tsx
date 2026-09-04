@@ -190,32 +190,32 @@ export default function Dashboard() {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
+                                <span className="sr-only">{t('Open menu')}</span>
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => setSelectedOrderId(row.original.id)}>
-                                <List className="mr-2 h-4 w-4" />
+                                <List className="me-2 h-4 w-4" />
                                 {t('Options')}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => navigator.clipboard.writeText(item.code.toString())}>
-                                <Copy className="mr-2 h-4 w-4" />
+                                <Copy className="me-2 h-4 w-4" />
                                 {t('Copy Code')}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => router.get(`/dashboard/orders/invoice/${item.id}`)}>
-                                <FileText className="mr-2 h-4 w-4" />
+                                <FileText className="me-2 h-4 w-4" />
                                 {t('Invoice')}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => router.get(`/dashboard/orders/receipt/${item.id}`)}>
-                                <ReceiptText className="mr-2 h-4 w-4" />
+                                <ReceiptText className="me-2 h-4 w-4" />
                                 {t('Receipt')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => setDeleteDialog({ isOpen: true, loading: false, item: row.original })}
                                 className="text-destructive"
                             >
-                                <Trash2 className="text-destructive mr-2 h-4 w-4" />
+                                <Trash2 className="text-destructive me-2 h-4 w-4" />
                                 {t('Delete')}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -296,7 +296,7 @@ export default function Dashboard() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={'Orders List'} />
+            <Head title={t('Orders List')} />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="grid w-full">
                     <DataTable

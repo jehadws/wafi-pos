@@ -52,13 +52,13 @@ export default function CommentsDialog({ isOpen, onClose, onSave, initialNote = 
             <RadioGroup
               value={displayOnReceipt ? 'yes' : 'no'}
               onValueChange={(value) => setDisplayOnReceipt(value === 'yes')}
-              className="flex space-x-4"
+              className="flex gap-4"
             >
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
                 <RadioGroupItem value="yes" id="yes" />
                 <Label htmlFor="yes">{t('Yes')}</Label>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
                 <RadioGroupItem value="no" id="no" />
                 <Label htmlFor="no">{t('No')}</Label>
               </div>

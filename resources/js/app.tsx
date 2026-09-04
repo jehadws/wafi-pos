@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { ConfirmDialogProvider } from './components/providers/confirm-dialog-provider';
 import { initializeTheme } from './hooks/use-appearance';
 import { RTLProvider } from './hooks/use-rtl';
+import { isRTLLocale } from './lib/i18n/direction';
 import { TranslationProvider } from './lib/i18n';
 import { DirectionProvider } from "@/components/ui/direction"
 import Settings from './lib/settings';
@@ -37,7 +38,7 @@ createInertiaApp({
       }, [locale]);
 
       return (
-        <DirectionProvider direction={locale === 'ar' ? 'rtl' : 'ltr'}>
+        <DirectionProvider direction={isRTLLocale(locale) ? 'rtl' : 'ltr'}>
           <RTLProvider locale={locale}>
             <TranslationProvider locale={locale}>
               <ConfirmDialogProvider>

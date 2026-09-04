@@ -72,7 +72,7 @@ export default function CreateProductPage() {
                 { title: t('Roles'), href: '/dashboard/users/roles' },
             ]}
         >
-            <Head title={t('Create a new role - Subul')} />
+            <Head title={t('Create a new role')} />
 
             <form onSubmit={handleSubmit}>
                 <div className="bg-background flex h-full min-h-screen flex-1 flex-col gap-4 p-4">

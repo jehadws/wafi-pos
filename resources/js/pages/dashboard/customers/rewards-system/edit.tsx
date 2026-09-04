@@ -182,7 +182,7 @@ export default function EditRewardSystemPage() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={t('Edit reward system - Subul')} />
+            <Head title={t('Edit reward system')} />
 
             <form onSubmit={handleSubmit}>
                 <div className="bg-background flex h-full min-h-screen flex-1 flex-col gap-4 p-4">
@@ -203,7 +203,7 @@ export default function EditRewardSystemPage() {
                                     onChange={handleInputChange}
                                     className={cn(form.errors.name && 'border-destructive')}
                                     value={form.data.name}
-                                    placeholder="e.g., Summer Sale 2024"
+                                    placeholder={t('e.g., Summer Sale 2024')}
                                 />
                             </FormField>
                             <FormField
@@ -235,7 +235,7 @@ export default function EditRewardSystemPage() {
                                 error={form.errors.target}
                             >
                                 <Input
-                                    placeholder="e.g., 200"
+                                    placeholder={t('e.g., 200')}
                                     id="target"
                                     name="target"
                                     value={form.data.target}
@@ -255,13 +255,13 @@ export default function EditRewardSystemPage() {
                                     name="description"
                                     value={form.data.description}
                                     onChange={handleInputChange}
-                                    placeholder="Describe the purpose of this coupon..."
+                                    placeholder={t('Describe the purpose of this coupon...')}
                                     className={cn(form.errors.description && 'border-destructive', 'min-h-[80px]')}
                                 />
                             </FormField>
 
                             <Button type="button" onClick={addRule} className="bg-blue-600 hover:bg-blue-700">
-                                <Plus className="mr-2 h-4 w-4" />
+                                <Plus className="me-2 h-4 w-4" />
                                 {t('Add Rule')}
                             </Button>
                         </div>
@@ -275,7 +275,7 @@ export default function EditRewardSystemPage() {
                                                 type="button"
                                                 variant="ghost"
                                                 size="icon"
-                                                className="absolute top-2 right-2 h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-700"
+                                                className="absolute top-2 end-2 h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-700"
                                                 onClick={() => removeRule(rule.id)}
                                             >
                                                 <X className="h-4 w-4" />
@@ -292,7 +292,7 @@ export default function EditRewardSystemPage() {
                                                         name="from"
                                                         className={cn(form.errors[`rules.${rule.id}.from`] && 'border-destructive')}
                                                         type="number"
-                                                        placeholder="e.g., 200"
+                                                        placeholder={t('e.g., 200')}
                                                         value={rule.from}
                                                         onChange={(e) => updateRule(rule.id, 'from', e.target.value)}
                                                     />
@@ -308,7 +308,7 @@ export default function EditRewardSystemPage() {
                                                         name="to"
                                                         className={cn(form.errors[`rules.${rule.id}.to`] && 'border-destructive')}
                                                         type="number"
-                                                        placeholder="e.g., 400"
+                                                        placeholder={t('e.g., 400')}
                                                         value={rule.to}
                                                         onChange={(e) => updateRule(rule.id, 'to', e.target.value)}
                                                     />
@@ -322,7 +322,7 @@ export default function EditRewardSystemPage() {
                                                         id="reward"
                                                         name="reward"
                                                         className={cn(form.errors[`rules.${rule.id}.reward`] && 'border-destructive')}
-                                                        placeholder="e.g., 200"
+                                                        placeholder={t('e.g., 200')}
                                                         value={rule.reward}
                                                         type="number"
                                                         onChange={(e) => updateRule(rule.id, 'reward', e.target.value)}

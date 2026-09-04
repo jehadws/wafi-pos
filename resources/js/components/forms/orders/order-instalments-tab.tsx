@@ -225,7 +225,7 @@ export default function OrderInstalmentsTab({ order, onSuccess }: Props) {
                         className="flex-1"
                     />
                     <Button onClick={handleAddInstalment} disabled={isSubmitting}>
-                        {isSubmitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Plus className="mr-1 h-4 w-4" />}
+                        {isSubmitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Plus className="me-1 h-4 w-4" />}
                         {t('Add')}
                     </Button>
                 </div>

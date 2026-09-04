@@ -13,7 +13,7 @@ interface UseNumericKeypadProps {
 export function useNumericKeypad({
   onConfirm,
   initialValue = "",
-  title = "Define Quantity",
+  title,
   maxLength = 10,
   allowDecimal = false,
 }: UseNumericKeypadProps) {

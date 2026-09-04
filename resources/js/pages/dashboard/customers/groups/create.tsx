@@ -20,7 +20,7 @@ export default function CreateCustomerGroupPage() {
                 { title: t('Create Customer Group'), href: '/dashboard/customers/groups/create' },
             ]}
         >
-            <Head title={t('Create a new Customers Group - Subul')} />
+            <Head title={t('Create a new Customers Group')} />
 
             <form onSubmit={handleSubmit}>
                 <div className="bg-background flex h-full min-h-screen flex-1 flex-col gap-4 p-4">

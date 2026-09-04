@@ -124,14 +124,14 @@ export default function AboutPage() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>{t('Property')}</TableHead>
-                                <TableHead className="w-[200px] text-right">{t('Value')}</TableHead>
+                                <TableHead className="w-[200px] text-end">{t('Value')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {Object.entries(configurations || {}).map(([k, v]) => (
                                 <TableRow key={k}>
                                     <TableCell className="font-medium">{k}</TableCell>
-                                    <TableCell className="text-right">
+                                    <TableCell className="text-end">
                                         {typeof v === 'boolean' ? (
                                             <Badge variant={v ? 'default' : 'secondary'}>{toYesNo(v, t)}</Badge>
                                         ) : (

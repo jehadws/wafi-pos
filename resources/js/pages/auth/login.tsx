@@ -63,7 +63,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         <div className="flex items-center">
                             <Label htmlFor="password">{t('Password')}</Label>
                             {canResetPassword && (
-                                <TextLink href={route('password.request')} className="ml-auto text-sm" tabIndex={5}>
+                                <TextLink href={route('password.request')} className="ms-auto text-sm" tabIndex={5}>
                                     {t('Forgot password')}
                                 </TextLink>
                             )}
@@ -81,7 +81,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         <InputError message={errors.password} />
                     </div>
 
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center gap-3">
                         <Checkbox
                             id="remember"
                             name="remember"

@@ -131,7 +131,7 @@ export default function Dashboard() {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
+                                <span className="sr-only">{t('Open menu')}</span>
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -139,18 +139,18 @@ export default function Dashboard() {
                             <DropdownMenuLabel>{t('Options')}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => navigator.clipboard.writeText(item.id.toString())}>
-                                <Copy className="mr-2 h-4 w-4" />
+                                <Copy className="me-2 h-4 w-4" />
                                 {t('Copy ID')}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => router.get(`/dashboard/products/categories/edit/${item.id}`)}>
-                                <Edit className="mr-2 h-4 w-4" />
+                                <Edit className="me-2 h-4 w-4" />
                                 {t('Edit')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => setDeleteDialog({ isOpen: true, loading: false, item: row.original })}
                                 className="text-destructive"
                             >
-                                <Trash2 className="text-destructive mr-2 h-4 w-4" />
+                                <Trash2 className="text-destructive me-2 h-4 w-4" />
                                 {t('Delete')}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -207,7 +207,7 @@ export default function Dashboard() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={(title as string) || 'Category Products'} />
+            <Head title={t('Category Products')} />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="grid w-full">
                     <DataTable

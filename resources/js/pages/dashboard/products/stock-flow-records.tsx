@@ -51,7 +51,7 @@ export default function Dashboard() {
         },
         {
             accessorKey: 'operation_type',
-            header: t('operation_type'),
+            header: t('Operation Type'),
         },
         {
             accessorKey: 'unit_name',
@@ -59,7 +59,7 @@ export default function Dashboard() {
         },
         {
             accessorKey: 'before_quantity',
-            header: t('initial_quantity'),
+            header: t('Initial Quantity'),
         },
         {
             accessorKey: 'quantity',
@@ -67,11 +67,11 @@ export default function Dashboard() {
         },
         {
             accessorKey: 'after_quantity',
-            header: t('new_quantity'),
+            header: t('New Quantity'),
         },
         {
             accessorKey: 'total_price',
-            header: t('total_price'),
+            header: t('Total Price'),
         },
         {
             accessorKey: 'user_username',
@@ -79,7 +79,7 @@ export default function Dashboard() {
         },
         {
             accessorKey: 'created_at',
-            header: t('created_at'),
+            header: t('Created At'),
             cell: ({ row }) => {
                 return formatDate(row.original.created_at);
             },
@@ -119,14 +119,14 @@ export default function Dashboard() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={t('product_histories')} />
+            <Head title={t('Product Histories')} />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="grid w-full">
                     <DataTable
                         columns={columns}
                         data={transaction}
-                        title={t('product_histories')}
-                        description={t('display_all_product_stock_flow')}
+                        title={t('Product Histories')}
+                        description={t('Display All Product Stock Flow')}
                         searchKey="name"
                         onRefresh={handleRefresh}
                         useCustomPagination

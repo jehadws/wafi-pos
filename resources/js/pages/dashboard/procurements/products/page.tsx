@@ -59,7 +59,7 @@ export default function Dashboard() {
         },
         {
             accessorKey: 'total_purchase_price',
-            header: t('total_price'),
+            header: t('Total Price'),
         },
         {
             accessorKey: 'barcode',
@@ -71,7 +71,7 @@ export default function Dashboard() {
         },
         {
             accessorKey: 'expiration_date',
-            header: t('expiration_date'),
+            header: t('Expiration Date'),
             cell: ({ row }) => {
                 const value = row.getValue('expiration_date') as string;
                 return value ? formatDateTime(value) : t('na');
@@ -93,22 +93,22 @@ export default function Dashboard() {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
+                                <span className="sr-only">{t('Open menu')}</span>
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel className="inline-flex items-center">
-                                <List className="mr-2 h-4 w-4" />
+                                <List className="me-2 h-4 w-4" />
                                 {t('options')}
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => navigator.clipboard.writeText(item.id.toString())}>
-                                <Copy className="mr-2 h-4 w-4" />
-                                {t('copy_id')}
+                                <Copy className="me-2 h-4 w-4" />
+                                {t('Copy ID')}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => router.get(`/dashboard/procurements/products/edit/${item.id}`)}>
-                                <Edit className="mr-2 h-4 w-4" />
+                                <Edit className="me-2 h-4 w-4" />
                                 {t('edit')}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -124,14 +124,14 @@ export default function Dashboard() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={title || t('procurement_products_list')} />
+            <Head title={title || t('Procurement Products List')} />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="grid w-full">
                     <DataTable
                         columns={columns}
                         data={products}
-                        title={t('procurement_products_list')}
-                        description={t('display_all_procurement_products')}
+                        title={t('Procurement Products List')}
+                        description={t('Display All Procurement Products')}
                         searchKey="name"
                         onRefresh={handleRefresh}
                     />
