@@ -1,4 +1,4 @@
-import { Database, PartyPopper, ShieldCheck, Store, UserCog } from "lucide-react";
+import { Database, PartyPopper, ShieldCheck, Store } from "lucide-react";
 import { StepConfig } from "./types";
 
 export const STEPS: StepConfig[] = [
@@ -33,3 +33,7 @@ export const STEPS: StepConfig[] = [
     icon: <PartyPopper size={14} />,
   },
 ];
+
+/** O(1) lookup from URL hash → step index. Derived from STEPS, single source of truth. */
+export const HASH_TO_STEP: ReadonlyMap<string, number> = new Map(STEPS.map((s) => [s.hash, s.id]));
+

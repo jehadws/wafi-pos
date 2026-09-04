@@ -1,8 +1,6 @@
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useTranslation } from '@/lib/i18n';
-import { cn } from '@/lib/utils';
 import React, { useState } from 'react';
+import { FormField } from '../components/form-field';
 import { StepActions } from '../components/step-actions';
 import { STEPS } from '../config';
 
@@ -17,7 +15,7 @@ interface ConfigForm {
 
 interface ConfigurationPageProps {
     onBack: () => void;
-    onNext: () => void;
+    onNext: (username: string) => void;
     languages?: Record<string, string>;
     default_lang?: string;
 }
@@ -40,6 +38,9 @@ export function ConfigurationPage({ onBack, onNext, languages = {}, default_lang
 
     const handleDataChange = (field: keyof ConfigForm, value: string) => {
         setData((prev) => ({ ...prev, [field]: value }));
+        if (errors[field]) {
+            setErrors((prev) => ({ ...prev, [field]: '' }));
+        }
     };
 
     const validate = (): boolean => {
@@ -92,7 +93,7 @@ export function ConfigurationPage({ onBack, onNext, languages = {}, default_lang
             }
 
             if (result.status !== 'failed' && result.status !== 'error') {
-                onNext();
+                onNext(data.admin_username);
             } else {
                 throw new Error(result.message || t('An error occurred during application configuration.'));
             }
@@ -104,33 +105,6 @@ export function ConfigurationPage({ onBack, onNext, languages = {}, default_lang
             setProcessing(false);
         }
     };
-
-    const Field = ({
-        name,
-        label,
-        hint,
-        className,
-        ...props
-    }: React.InputHTMLAttributes<HTMLInputElement> & {
-        name: keyof ConfigForm;
-        label: string;
-        hint?: string;
-        className?: string;
-    }) => (
-        <div className={cn('flex flex-col gap-1.5', className)}>
-            <Label className="text-[12px] font-medium text-zinc-400">{t(label)}</Label>
-            <Input
-                {...props}
-                value={data[name]}
-                onChange={(e) => {
-                    handleDataChange(name, e.target.value);
-                    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
-                }}
-            />
-            {hint && <p className="text-[11px] text-zinc-600">{t(hint)}</p>}
-            {errors[name] && <p className="text-[11px] text-red-400">{errors[name]}</p>}
-        </div>
-    );
 
     return (
         <>
@@ -147,19 +121,54 @@ export function ConfigurationPage({ onBack, onNext, languages = {}, default_lang
                     <h3 className="mb-3 border-b border-zinc-800 pb-2 text-sm font-medium text-zinc-300">{t('Store Details')}</h3>
                 </div>
 
-                <Field name="sb_store_name" label="Store Name" placeholder="e.g. My Store" className="col-span-2" />
+                <FormField
+                    label="Store Name"
+                    placeholder="e.g. My Store"
+                    containerClassName="col-span-2"
+                    value={data.sb_store_name}
+                    onChange={(e) => handleDataChange('sb_store_name', e.target.value)}
+                    error={errors.sb_store_name}
+                />
 
                 <div className="col-span-2 mt-2">
                     <h3 className="mb-3 border-b border-zinc-800 pb-2 text-sm font-medium text-zinc-300">{t('Administrator Account')}</h3>
                 </div>
 
-                <Field name="admin_username" label="Username" placeholder="admin" className="font-mono text-[12px]" />
+                <FormField
+                    label="Username"
+                    placeholder="admin"
+                    className="font-mono text-[12px]"
+                    value={data.admin_username}
+                    onChange={(e) => handleDataChange('admin_username', e.target.value)}
+                    error={errors.admin_username}
+                />
 
-                <Field name="admin_email" label="Email address" type="email" placeholder="admin@yourstore.com" />
+                <FormField
+                    label="Email address"
+                    type="email"
+                    placeholder="admin@yourstore.com"
+                    value={data.admin_email}
+                    onChange={(e) => handleDataChange('admin_email', e.target.value)}
+                    error={errors.admin_email}
+                />
 
-                <Field name="password" label="Password" type="password" placeholder="Min. 6 characters" />
+                <FormField
+                    label="Password"
+                    type="password"
+                    placeholder="Min. 6 characters"
+                    value={data.password}
+                    onChange={(e) => handleDataChange('password', e.target.value)}
+                    error={errors.password}
+                />
 
-                <Field name="confirm_password" label="Confirm password" type="password" placeholder="Repeat password" />
+                <FormField
+                    label="Confirm password"
+                    type="password"
+                    placeholder="Repeat password"
+                    value={data.confirm_password}
+                    onChange={(e) => handleDataChange('confirm_password', e.target.value)}
+                    error={errors.confirm_password}
+                />
             </div>
 
             <StepActions

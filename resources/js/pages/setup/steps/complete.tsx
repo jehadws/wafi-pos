@@ -1,11 +1,17 @@
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { router } from '@inertiajs/react';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 
-export function CompletePage({ storeName }: { storeName?: string }) {
+export function CompletePage({ storeName, adminUsername }: { storeName?: string; adminUsername?: string }) {
     const { t } = useTranslation();
+
+    const goToDashboard = () => {
+        // Clear wizard progress so the setup page doesn't resume at #/complete if revisited.
+        sessionStorage.removeItem('setup_wizard_step');
+        // Use a full-page navigation so the server re-evaluates the now-authenticated session.
+        window.location.href = route('dashboard');
+    };
 
     return (
         <>
@@ -24,7 +30,7 @@ export function CompletePage({ storeName }: { storeName?: string }) {
                         { label: t('Database'), value: t('Connected'), ok: true },
                         { label: t('Migrations'), value: t('Applied'), ok: true },
                         { label: t('Store'), value: storeName ?? t('My Store'), ok: false },
-                        { label: t('Admin'), value: 'admin', ok: false, mono: true },
+                        { label: t('Admin'), value: adminUsername || 'admin', ok: false, mono: true },
                     ].map((chip) => (
                         <div key={chip.label} className="flex flex-col gap-1 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2.5">
                             <span className="text-[10px] font-medium tracking-wider text-zinc-600 uppercase">{chip.label}</span>
@@ -49,7 +55,7 @@ export function CompletePage({ storeName }: { storeName?: string }) {
                         {t('View documentation')}
                     </a>
                 </Button>
-                <Button size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-500" onClick={() => router.visit(route('dashboard'))}>
+                <Button size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-500" onClick={goToDashboard}>
                     {t('Go to dashboard')} <ArrowRight size={13} />
                 </Button>
             </div>
