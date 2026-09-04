@@ -1,50 +1,50 @@
 /**
  * constants/pos-options.ts
  *
- * Central registry of POS option keys from the backend (NsPosOptions).
+ * Central registry of POS option keys from the backend (SbPosOptions).
  * Use these instead of raw string literals to avoid silent typos.
  */
 
 export const POS_OPTION_KEYS = {
     // Pricing & cart
-    priceWithTax: 'ns_jgrem_price_with_tax',
-    itemsMerge: 'ns_jgrem_items_merge',
-    allowWholesalePrice: 'ns_jgrem_allow_wholesale_price',
-    allowDecimalQuantities: 'ns_jgrem_allow_decimal_quantities',
-    showQuantity: 'ns_jgrem_show_quantity',
-    amountShortcut: 'ns_jgrem_amount_shortcut',
+    priceWithTax: 'sb_subul_price_with_tax',
+    itemsMerge: 'sb_subul_items_merge',
+    allowWholesalePrice: 'sb_subul_allow_wholesale_price',
+    allowDecimalQuantities: 'sb_subul_allow_decimal_quantities',
+    showQuantity: 'sb_subul_show_quantity',
+    amountShortcut: 'sb_subul_amount_shortcut',
 
     // Tax
-    taxType: 'ns_jgrem_tax_type',
-    taxGroup: 'ns_jgrem_tax_group',
+    taxType: 'sb_subul_tax_type',
+    taxGroup: 'sb_subul_tax_group',
 
     // Order types
-    orderTypes: 'ns_jgrem_order_types',
+    orderTypes: 'sb_subul_order_types',
 
     // Audio
-    newItemAudio: 'ns_jgrem_new_item_audio',
-    completeSaleAudio: 'ns_jgrem_complete_sale_audio',
+    newItemAudio: 'sb_subul_new_item_audio',
+    completeSaleAudio: 'sb_subul_complete_sale_audio',
 
     // Orders policy
-    allowPartial: 'ns_orders_allow_partial',
-    allowUnpaid: 'ns_orders_allow_unpaid',
+    allowPartial: 'sb_orders_allow_partial',
+    allowUnpaid: 'sb_orders_allow_unpaid',
 
     // Customers
-    defaultCustomer: 'ns_customers_default',
+    defaultCustomer: 'sb_customers_default',
 
     // Cash registers
-    registersEnabled: 'ns_jgrem_registers_enabled',
-    idleCounter: 'ns_jgrem_idle_counter',
-    disbursement: 'ns_jgrem_disbursement',
-    registerChangePaymentType: 'ns_jgrem_registers_default_change_payment_type',
+    registersEnabled: 'sb_subul_registers_enabled',
+    idleCounter: 'sb_subul_idle_counter',
+    disbursement: 'sb_subul_disbursement',
+    registerChangePaymentType: 'sb_subul_registers_default_change_payment_type',
 
     // Layout
-    layout: 'ns_jgrem_layout',
+    layout: 'sb_subul_layout',
 
     // Printing
-    printingEnabledFor: 'ns_jgrem_printing_enabled_for',
-    printingDocument: 'ns_jgrem_printing_document',
-    printingAuto: 'ns_jgrem_printing_auto',
+    printingEnabledFor: 'sb_subul_printing_enabled_for',
+    printingDocument: 'sb_subul_printing_document',
+    printingAuto: 'sb_subul_printing_auto',
 } as const;
 
 export type PosOptionKey = (typeof POS_OPTION_KEYS)[keyof typeof POS_OPTION_KEYS];

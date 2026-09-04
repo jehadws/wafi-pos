@@ -1,5 +1,8 @@
-import { useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import { router, useForm } from '@inertiajs/react';
 import { useTranslation } from '@/lib/i18n';
+import { customersApi } from '@/api';
+import { extractValidationErrors } from '@/utils/api-errors';
 import { toast } from 'sonner';
 
 export interface CustomerGroupFormData {
@@ -13,6 +16,7 @@ export type CustomerGroupFormMode = 'create' | 'edit';
 
 export function useCustomerGroupForm(mode: CustomerGroupFormMode, group?: any) {
     const { t } = useTranslation();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<CustomerGroupFormData>(
         mode === 'edit' && group
@@ -67,26 +71,33 @@ export function useCustomerGroupForm(mode: CustomerGroupFormMode, group?: any) {
         toast.error(t('Please fix the validation errors'));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        if (!validateForm()) return;
-        form.transform(() => buildTransform());
+        if (!validateForm() || isSubmitting) return;
 
-        if (mode === 'edit' && group) {
-            form.put(`/api/crud/ns.customers-groups/${group.id}`, {
-                preserveScroll: true,
-                onError,
-                onSuccess: () => toast.success(t('Successfully saved')),
-            });
-        } else {
-            form.post('/api/crud/ns.customers-groups', {
-                preserveScroll: true,
-                onError,
-                onSuccess: () => toast.success(t('Customer group created successfully')),
-            });
+        setIsSubmitting(true);
+        try {
+            if (mode === 'edit' && group) {
+                const res = await customersApi.updateGroup(group.id, buildTransform());
+                toast.success(t('Successfully saved'));
+                if (res?.redirect) router.visit(res.redirect);
+            } else {
+                const res = await customersApi.createGroup(buildTransform());
+                toast.success(t('Customer group created successfully'));
+                if (res?.redirect) router.visit(res.redirect);
+            }
+        } catch (err) {
+            onError(extractValidationErrors(err));
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
-    return { form, handleSubmit, handleInputChange, handleSelectChange };
+    return {
+        form: { ...form, processing: isSubmitting || form.processing },
+        handleSubmit,
+        handleInputChange,
+        handleSelectChange,
+    };
 }

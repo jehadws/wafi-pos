@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
+import { productsApi } from '@/api';
+import { getApiErrorMessage } from '@/utils/api-errors';
 import { formatDateTime } from '@/utils/format';
 import { Head, router, usePage } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
@@ -41,8 +43,11 @@ export default function Dashboard() {
         if (!deleteDialog.item || deleteDialog.loading) return;
 
         try {
-            router.delete(`/api/crud/ns.products/${deleteDialog.item.id}`);
+            await productsApi.remove(deleteDialog.item.id);
+            toast.success(t('Successfully deleted selected item'));
+            router.reload();
         } catch (error) {
+            toast.error(getApiErrorMessage(error, t('Operation failed')));
             console.error(error);
         } finally {
             setDeleteDialog({
@@ -146,28 +151,23 @@ export default function Dashboard() {
     const bulkActions = [
         {
             label: t('Delete Selected'),
-            action: (selectedRows: Product[]) => {
-                const payload = {
-                    action: 'delete_selected',
-                    entries: selectedRows.map((row) => row.id),
-                };
+            action: async (selectedRows: Product[]) => {
+                const entries = selectedRows.map((row) => row.id);
 
-                router.post('/api/crud/ns.products/bulk-actions', payload, {
-                    onError: (errors) => {
-                        toast.error(t('Operation failed'));
-                        console.error('Error:', errors);
-                    },
-                    onSuccess: () => {
-                        toast.success(t('Successfully processed selected items'));
-                        router.reload();
-                    },
-                });
+                try {
+                    await productsApi.bulkDelete(entries);
+                    toast.success(t('Successfully processed selected items'));
+                    router.reload();
+                } catch (error) {
+                    toast.error(getApiErrorMessage(error, t('Operation failed')));
+                    console.error('Error:', error);
+                }
             },
         },
     ];
 
     const handleAddNew = () => {
-        router.visit(route('ns.dashboard.products.create'));
+        router.visit(route('sb.dashboard.products.create'));
     };
 
     const handleRefresh = () => {
@@ -176,7 +176,7 @@ export default function Dashboard() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={'Products List - JGREM'} />
+            <Head title={'Products List - Subul'} />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="grid w-full">
                     <DataTable

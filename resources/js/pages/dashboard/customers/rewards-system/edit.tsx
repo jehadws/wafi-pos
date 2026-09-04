@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
-import { Head, usePage } from '@inertiajs/react';
-import React from 'react';
+import { Head, router, usePage } from '@inertiajs/react';
+import React, { useState } from 'react';
 
 import FormField from '@/components/forms/shared/form-field';
 import FormHeader from '@/components/forms/shared/form-header';
@@ -12,6 +12,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { useForm } from '@inertiajs/react';
+import { rewardsApi } from '@/api';
+import { extractValidationErrors } from '@/utils/api-errors';
 import { Select } from '@radix-ui/react-select';
 import { Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -43,6 +45,7 @@ export default function EditRewardSystemPage() {
         description: reward.description || '',
         rules: reward.rules,
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -97,33 +100,34 @@ export default function EditRewardSystemPage() {
         e.preventDefault();
         e.stopPropagation();
 
-        if (!validateForm()) return;
+        if (!validateForm() || isSubmitting) return;
+        setIsSubmitting(true);
+
         const rules = form.data.rules.map((rule) => ({
             from: +rule.from,
             to: +rule.to,
             reward: +rule.reward,
         }));
 
-        form.transform(() => ({
-            name: form.data.name,
-            general: {
-                coupon_id: form.data.coupon_id,
-                target: form.data.target,
-                description: form.data.description,
-            },
-            rules: rules,
-        }));
-
-        form.put(`/api/crud/ns.rewards-system/${reward.id}`, {
-            preserveScroll: true,
-            onError: (errors) => {
-                console.error('Validation errors:', errors);
-                toast.error(t('Please fix the validation errors'));
-            },
-            onSuccess: () => {
-                toast.success(t('Reward System updated successfully'));
-            },
-        });
+        try {
+            const res = await rewardsApi.update(reward.id, {
+                name: form.data.name,
+                general: {
+                    coupon_id: form.data.coupon_id,
+                    target: form.data.target,
+                    description: form.data.description,
+                },
+                rules: rules,
+            });
+            toast.success(t('Reward System updated successfully'));
+            if (res?.redirect) router.visit(res.redirect);
+        } catch (err) {
+            const errors = extractValidationErrors(err);
+            console.error('Validation errors:', errors);
+            toast.error(t('Please fix the validation errors'));
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const validateForm = () => {
@@ -178,7 +182,7 @@ export default function EditRewardSystemPage() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={t('Edit reward system - JGREM')} />
+            <Head title={t('Edit reward system - Subul')} />
 
             <form onSubmit={handleSubmit}>
                 <div className="bg-background flex h-full min-h-screen flex-1 flex-col gap-4 p-4">
@@ -187,7 +191,7 @@ export default function EditRewardSystemPage() {
                         description={t('Modify  Reward System.')}
                         onCancel={() => window.history.back()}
                         onSave={() => {}}
-                        form={form}
+                        form={{ ...form, processing: isSubmitting || form.processing }}
                     />
 
                     <div className="grid grid-cols-1 gap-6 space-y-6 md:grid-cols-3">

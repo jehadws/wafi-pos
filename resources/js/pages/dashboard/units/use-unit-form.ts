@@ -2,8 +2,11 @@
  * pages/dashboard/units/use-unit-form.ts
  * Shared hook for units create & edit.
  */
-import { useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import { router, useForm } from '@inertiajs/react';
 import { useTranslation } from '@/lib/i18n';
+import { unitsApi } from '@/api';
+import { extractValidationErrors } from '@/utils/api-errors';
 import { toast } from 'sonner';
 
 export interface UnitFormData {
@@ -20,6 +23,7 @@ export type UnitFormMode = 'create' | 'edit';
 
 export function useUnitForm(mode: UnitFormMode, unit?: any) {
     const { t } = useTranslation();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<UnitFormData>(
         mode === 'edit' && unit
@@ -67,25 +71,31 @@ export function useUnitForm(mode: UnitFormMode, unit?: any) {
         if (errors.error) alert(errors.error);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!validateForm()) return;
-        form.transform(() => buildTransform());
+        if (!validateForm() || isSubmitting) return;
 
-        if (mode === 'edit' && unit) {
-            form.put(`/api/crud/ns.units/${unit.id}`, {
-                showProgress: true,
-                onError,
-                onSuccess: () => toast.info(t('The entry has been successfully updated.')),
-            });
-        } else {
-            form.post('/api/crud/ns.units', {
-                showProgress: true,
-                onError,
-                onSuccess: () => toast.info(t('The Unit has been created.')),
-            });
+        setIsSubmitting(true);
+        try {
+            if (mode === 'edit' && unit) {
+                const res = await unitsApi.update(unit.id, buildTransform());
+                toast.info(t('The entry has been successfully updated.'));
+                if (res?.redirect) router.visit(res.redirect);
+            } else {
+                const res = await unitsApi.create(buildTransform());
+                toast.info(t('The Unit has been created.'));
+                if (res?.redirect) router.visit(res.redirect);
+            }
+        } catch (err) {
+            onError(extractValidationErrors(err));
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
-    return { form, handleSubmit, handleInputChange };
+    return {
+        form: { ...form, processing: isSubmitting || form.processing },
+        handleSubmit,
+        handleInputChange,
+    };
 }

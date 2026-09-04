@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
+import { unitsApi } from '@/api';
+import { getApiErrorMessage } from '@/utils/api-errors';
 import { formatDateTime } from '@/utils/format';
 import { Head, router, usePage } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
@@ -41,9 +43,11 @@ export default function Dashboard() {
         if (!deleteDialog.item || deleteDialog.loading) return;
 
         try {
-            router.delete(`/api/crud/ns.units-groups/${deleteDialog.item.id}`);
+            await unitsApi.removeGroup(deleteDialog.item.id);
             toast.success('Selected item deleted successfully');
+            router.reload();
         } catch (error) {
+            toast.error(getApiErrorMessage(error, t('Operation failed')));
             console.error(error);
         } finally {
             setDeleteDialog({
@@ -127,29 +131,23 @@ export default function Dashboard() {
     const bulkActions = [
         {
             label: t('Delete Selected'),
-            action: (selectedRows: UnitGroup[]) => {
-                const payload = {
-                    action: 'delete_selected',
-                    entries: selectedRows.map((row) => row.id),
-                };
+            action: async (selectedRows: UnitGroup[]) => {
+                const entries = selectedRows.map((row) => row.id);
 
-                // Get CSRF token from meta tag
-                router.post('/api/crud/ns.units-groups/bulk-actions', payload, {
-                    onError: (errors) => {
-                        toast.error(t('Operation failed'));
-                        console.error('Error:', errors);
-                    },
-                    onSuccess: () => {
-                        toast.success(t('Successfully processed selected'));
-                        router.reload();
-                    },
-                });
+                try {
+                    await unitsApi.bulkDeleteGroups(entries);
+                    toast.success(t('Successfully processed selected'));
+                    router.reload();
+                } catch (error) {
+                    toast.error(getApiErrorMessage(error, t('Operation failed')));
+                    console.error('Error:', error);
+                }
             },
         },
     ];
 
     const handleAddNew = () => {
-        router.visit(route('ns.dashboard.units.groups.create'));
+        router.visit(route('sb.dashboard.units.groups.create'));
     };
 
     const handleRefresh = () => {

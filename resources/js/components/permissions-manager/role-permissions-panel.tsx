@@ -34,8 +34,8 @@ function groupPermissionsByNamespace(permissions: Permission[]): NamespaceGroup[
     for (const permission of permissions) {
         const parts = permission.namespace.split('.');
         // Group by the last segment — that is the resource/entity
-        // e.g. "jgrem.create.categories"  → "categories"
-        //      "jgrem.customers.manage-account-history" → "manage-account-history"
+        // e.g. "subul.create.categories"  → "categories"
+        //      "subul.customers.manage-account-history" → "manage-account-history"
         //      "create.users" → "users"
         const groupKey = parts[parts.length - 1];
         if (!groups[groupKey]) {

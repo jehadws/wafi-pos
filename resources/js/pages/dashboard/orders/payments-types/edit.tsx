@@ -8,8 +8,11 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
+import { paymentTypesApi } from '@/api';
+import { extractValidationErrors } from '@/utils/api-errors';
 import { cn } from '@/lib/utils';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 
@@ -28,6 +31,7 @@ export default function EditPaymentType() {
     identifier: paymentType.identifier,
     description: paymentType.description,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (name: keyof typeof form.data, value: string | number | number[]) => {
     form.setData({ ...form.data, [name]: value });
@@ -38,7 +42,8 @@ export default function EditPaymentType() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateStep()) return;
+    if (!validateStep() || isSubmitting) return;
+    setIsSubmitting(true);
 
     const data = {
       label: form.data.label,
@@ -50,20 +55,19 @@ export default function EditPaymentType() {
       },
     };
 
-    form.transform(() => data);
-
-    form.put(`/api/crud/ns.payments-types/${paymentType.id}`, {
-      showProgress: true,
-      onError: (errors) => {
-        console.error('Validation errors:', errors);
-        if (errors.error) {
-          alert(errors.error);
-        }
-      },
-      onSuccess: () => {
-        toast.info(t('Successfully saved'));
-      },
-    });
+    try {
+      const res = await paymentTypesApi.update(paymentType.id, data);
+      toast.info(t('Successfully saved'));
+      if (res?.redirect) router.visit(res.redirect);
+    } catch (err) {
+      const errors = extractValidationErrors(err);
+      console.error('Validation errors:', errors);
+      if (errors.error) {
+        alert(errors.error);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const validateStep = () => {
@@ -87,7 +91,7 @@ export default function EditPaymentType() {
             description={t('Modify  Payment Type.')}
             onCancel={() => window.history.back()}
             onSave={() => { }}
-            form={form}
+            form={{ ...form, processing: isSubmitting || form.processing }}
           />
 
           <FormField label={t('Label')} error={form.errors.label} description={t('Provide a label to the resource.')} required>

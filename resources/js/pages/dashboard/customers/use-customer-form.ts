@@ -4,8 +4,11 @@
  * Shared hook for customers create & edit.
  */
 
-import { useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import { router, useForm } from '@inertiajs/react';
 import { useTranslation } from '@/lib/i18n';
+import { customersApi } from '@/api';
+import { extractValidationErrors } from '@/utils/api-errors';
 import { toast } from 'sonner';
 
 export interface CustomerFormData {
@@ -146,6 +149,7 @@ const buildTransform = (data: CustomerFormData) => ({
 
 export function useCustomerForm(mode: CustomerFormMode, customer?: any) {
     const { t } = useTranslation();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<CustomerFormData>(
         mode === 'edit' && customer ? editDefaults(customer) : emptyDefaults(),
@@ -180,33 +184,39 @@ export function useCustomerForm(mode: CustomerFormMode, customer?: any) {
         return isValid;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         e.stopPropagation();
 
-        if (!validateForm()) return;
-
-        form.transform(() => buildTransform(form.data));
+        if (!validateForm() || isSubmitting) return;
 
         const onError = (errors: Record<string, string>) => {
             console.error('Validation errors:', errors);
             toast.error(t('The form is not valid. Please check it and try again'));
         };
 
-        if (mode === 'edit' && customer) {
-            form.put(`/api/crud/ns.customers/${customer.id}`, {
-                preserveScroll: true,
-                onError,
-                onSuccess: () => toast.success(t('The customer has been updated.')),
-            });
-        } else {
-            form.post('/api/crud/ns.customers', {
-                preserveScroll: true,
-                onError,
-                onSuccess: () => toast.success(t('The customer has been created.')),
-            });
+        setIsSubmitting(true);
+        try {
+            if (mode === 'edit' && customer) {
+                const res = await customersApi.update(customer.id, buildTransform(form.data));
+                toast.success(t('The customer has been updated.'));
+                if (res?.redirect) router.visit(res.redirect);
+            } else {
+                const res = await customersApi.create(buildTransform(form.data));
+                toast.success(t('The customer has been created.'));
+                if (res?.redirect) router.visit(res.redirect);
+            }
+        } catch (err) {
+            onError(extractValidationErrors(err));
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
-    return { form, handleSubmit, handleInputChange, handleSelectChange };
+    return {
+        form: { ...form, processing: isSubmitting || form.processing },
+        handleSubmit,
+        handleInputChange,
+        handleSelectChange,
+    };
 }

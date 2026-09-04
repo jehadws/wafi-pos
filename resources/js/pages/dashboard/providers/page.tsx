@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
+import { providersApi } from '@/api';
+import { getApiErrorMessage } from '@/utils/api-errors';
 import { formatDateTime } from '@/utils/format';
 import { Head, router, usePage } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
@@ -41,8 +43,11 @@ export default function Dashboard() {
         if (!deleteDialog.provider || deleteDialog.loading) return;
 
         try {
-            router.delete(`/api/crud/ns.providers/${deleteDialog.provider.id}`);
+            await providersApi.remove(deleteDialog.provider.id);
+            toast.success(t('Successfully deleted selected item'));
+            router.reload();
         } catch (error) {
+            toast.error(getApiErrorMessage(error, t('Operation failed')));
             console.error(error);
         } finally {
             setDeleteDialog({
@@ -136,29 +141,23 @@ export default function Dashboard() {
     const bulkActions = [
         {
             label: t('Delete Selected'),
-            action: (selectedRows: Provider[]) => {
-                const payload = {
-                    action: 'delete_selected',
-                    entries: selectedRows.map((row) => row.id),
-                };
+            action: async (selectedRows: Provider[]) => {
+                const entries = selectedRows.map((row) => row.id);
 
-                // Get CSRF token from meta tag
-                router.post('/api/crud/ns.providers/bulk-actions', payload, {
-                    onError: (errors) => {
-                        toast.error(t('Operation failed'));
-                        console.error('Error:', errors);
-                    },
-                    onSuccess: () => {
-                        toast.success(t('Successfully processed selected roles'));
-                        router.reload();
-                    },
-                });
+                try {
+                    await providersApi.bulkDelete(entries);
+                    toast.success(t('Successfully processed selected roles'));
+                    router.reload();
+                } catch (error) {
+                    toast.error(getApiErrorMessage(error, t('Operation failed')));
+                    console.error('Error:', error);
+                }
             },
         },
     ];
 
     const handleAddNew = () => {
-        router.visit(route('ns.dashboard.providers.create'));
+        router.visit(route('sb.dashboard.providers.create'));
     };
 
     const handleRefresh = () => {

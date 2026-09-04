@@ -5,6 +5,8 @@ import { DataTable } from '@/components/ui/data-table/data-table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
+import { unitsApi } from '@/api';
+import { getApiErrorMessage } from '@/utils/api-errors';
 import { formatDateTime } from '@/utils/format';
 import { Head, router, usePage } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
@@ -34,9 +36,11 @@ export default function Dashboard() {
         if (!deleteDialog.item || deleteDialog.loading) return;
 
         try {
-            router.delete(`/api/crud/ns.units/${deleteDialog.item.id}`);
+            await unitsApi.remove(deleteDialog.item.id);
             toast.success(t('Successfully deleted selected item'));
+            router.reload();
         } catch (error) {
+            toast.error(getApiErrorMessage(error, t('Operation failed')));
             console.error(error);
         } finally {
             setDeleteDialog({
@@ -140,28 +144,23 @@ export default function Dashboard() {
     const bulkActions = [
         {
             label: t('Delete Selected'),
-            action: (selectedRows: Unit[]) => {
-                const payload = {
-                    action: 'delete_selected',
-                    entries: selectedRows.map((row) => row.id),
-                };
+            action: async (selectedRows: Unit[]) => {
+                const entries = selectedRows.map((row) => row.id);
 
-                router.post('/api/crud/ns.units/bulk-actions', payload, {
-                    onError: (errors) => {
-                        toast.error(t('Operation failed'));
-                        console.error('Error:', errors);
-                    },
-                    onSuccess: () => {
-                        toast.success(t('Successfully processed selected items'));
-                        router.reload();
-                    },
-                });
+                try {
+                    await unitsApi.bulkDelete(entries);
+                    toast.success(t('Successfully processed selected items'));
+                    router.reload();
+                } catch (error) {
+                    toast.error(getApiErrorMessage(error, t('Operation failed')));
+                    console.error('Error:', error);
+                }
             },
         },
     ];
 
     const handleAddNew = () => {
-        router.visit(route('ns.dashboard.units.create'));
+        router.visit(route('sb.dashboard.units.create'));
     };
 
     const handleRefresh = () => {

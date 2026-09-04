@@ -16,7 +16,8 @@ import { useTranslation } from '@/lib/i18n';
 import { formatCurrency, formatDateTime } from '@/utils/format';
 import { Head, router } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
-import { crudApi } from '@/api';
+import { crudApi, cashRegistersApi } from '@/api';
+import { getApiErrorMessage } from '@/utils/api-errors';
 import { Edit, List, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -44,7 +45,7 @@ export default function CashRegistersList() {
         last_page: 1,
         current_page: 1,
         next_page_url: null,
-        path: '/api/crud/ns.cash-registers',
+        path: '/api/crud/sb.cash-registers',
         per_page: 20,
         prev_page_url: null,
         to: 0,
@@ -70,7 +71,7 @@ export default function CashRegistersList() {
 
     const fetchData = async (page: number, size: number, search: string) => {
         try {
-            const data = await crudApi.list<CustomPaginationData<RegisterRow>>('ns.cash-registers', {
+            const data = await crudApi.list<CustomPaginationData<RegisterRow>>('sb.cash-registers', {
                 page,
                 per_page: size,
                 search,
@@ -97,11 +98,11 @@ export default function CashRegistersList() {
         if (!deleteDialog.item || deleteDialog.loading) return;
 
         try {
-            await crudApi.remove('ns.cash-registers', deleteDialog.item.id);
+            await crudApi.remove('sb.cash-registers', deleteDialog.item.id);
             toast.success(t('The item has been successfully deleted.'));
         } catch (error) {
             console.error(error);
-            toast.error(t('Operation failed'));
+            toast.error(getApiErrorMessage(error, t('Operation failed')));
         } finally {
             handleRefresh();
             setDeleteDialog({ isOpen: false, loading: false, item: null });
@@ -207,22 +208,18 @@ export default function CashRegistersList() {
     const bulkActions = [
         {
             label: t('Delete Selected'),
-            action: (selectedRows: RegisterRow[]) => {
-                const payload = {
-                    action: 'delete_selected',
-                    entries: selectedRows.map((row) => row.id),
-                };
+            action: async (selectedRows: RegisterRow[]) => {
+                const entries = selectedRows.map((row) => row.id);
 
-                router.post('/api/crud/ns.cash-registers/bulk-actions', payload, {
-                    onError: (errors) => {
-                        toast.error(t('Operation failed'));
-                        console.error('Error:', errors);
-                    },
-                    onSuccess: () => {
-                        toast.success(t('Successfully processed selected items'));
-                        router.reload();
-                    },
-                });
+                try {
+                    await cashRegistersApi.bulkDelete(entries);
+                    toast.success(t('Successfully processed selected items'));
+                } catch (error) {
+                    toast.error(getApiErrorMessage(error, t('Operation failed')));
+                    console.error('Error:', error);
+                } finally {
+                    handleRefresh();
+                }
             },
         },
     ];

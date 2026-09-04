@@ -9,7 +9,7 @@ import { useTransition } from 'react';
 import { toast } from 'sonner';
 
 type General = {
-    ns_workers_enabled: string | null;
+    sb_workers_enabled: string | null;
 };
 
 type Payload = {
@@ -22,7 +22,7 @@ type Option = {
 };
 
 type Options = {
-    ns_reports_email: Option[];
+    sb_reports_email: Option[];
 };
 
 export default function SettingsGeneral() {
@@ -69,28 +69,28 @@ export default function SettingsGeneral() {
                                 <FormField
                                     label={t('Enable Workers')}
                                     description={t(
-                                        'Enable background services for NexoPOS. Refresh to check whether the option has turned to "Yes".',
+                                        'Enable background services for Subul. Refresh to check whether the option has turned to "Yes".',
                                     )}
                                 >
                                     <div className="flex gap-2">
                                         <Button
                                             type="button"
-                                            variant={(form.data.general.ns_workers_enabled ?? 'no') === 'yes' ? 'default' : 'outline'}
-                                            onClick={() => form.setData('general.ns_workers_enabled', 'await_confirm')}
+                                            variant={(form.data.general.sb_workers_enabled ?? 'no') === 'yes' ? 'default' : 'outline'}
+                                            onClick={() => form.setData('general.sb_workers_enabled', 'await_confirm')}
                                         >
                                             {t('Yes')}
                                         </Button>
                                         <Button
                                             type="button"
-                                            variant={(form.data.general.ns_workers_enabled ?? 'no') === 'await_confirm' ? 'default' : 'outline'}
-                                            onClick={() => form.setData('general.ns_workers_enabled', 'await_confirm')}
+                                            variant={(form.data.general.sb_workers_enabled ?? 'no') === 'await_confirm' ? 'default' : 'outline'}
+                                            onClick={() => form.setData('general.sb_workers_enabled', 'await_confirm')}
                                         >
                                             {t('Test')}
                                         </Button>
                                         <Button
                                             type="button"
-                                            variant={(form.data.general.ns_workers_enabled ?? 'no') === 'no' ? 'default' : 'outline'}
-                                            onClick={() => form.setData('general.ns_workers_enabled', 'no')}
+                                            variant={(form.data.general.sb_workers_enabled ?? 'no') === 'no' ? 'default' : 'outline'}
+                                            onClick={() => form.setData('general.sb_workers_enabled', 'no')}
                                         >
                                             {t('No')}
                                         </Button>

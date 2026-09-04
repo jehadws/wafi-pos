@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
+import { categoriesApi } from '@/api';
+import { getApiErrorMessage } from '@/utils/api-errors';
 import { formatDateTime } from '@/utils/format';
 import { Head, router, usePage } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
@@ -40,8 +42,11 @@ export default function Dashboard() {
         if (!deleteDialog.item || deleteDialog.loading) return;
 
         try {
-            router.delete(`/api/crud/ns.products-categories/${deleteDialog.item.id}`);
+            await categoriesApi.remove(deleteDialog.item.id);
+            toast.success(t('Successfully deleted selected item'));
+            router.reload();
         } catch (error) {
+            toast.error(getApiErrorMessage(error, t('Operation failed')));
             console.error(error);
         } finally {
             setDeleteDialog({
@@ -157,28 +162,23 @@ export default function Dashboard() {
     const bulkActions = [
         {
             label: t('Delete Selected'),
-            action: (selectedRows: CategoryProduct[]) => {
-                const payload = {
-                    action: 'delete_selected',
-                    entries: selectedRows.map((row) => row.id),
-                };
+            action: async (selectedRows: CategoryProduct[]) => {
+                const entries = selectedRows.map((row) => row.id);
 
-                router.post('/api/crud/ns.products-categories/bulk-actions', payload, {
-                    onError: (errors) => {
-                        toast.error(t('Operation failed'));
-                        console.error('Error:', errors);
-                    },
-                    onSuccess: () => {
-                        toast.success(t('Successfully processed selected items'));
-                        router.reload();
-                    },
-                });
+                try {
+                    await categoriesApi.bulkDelete(entries);
+                    toast.success(t('Successfully processed selected items'));
+                    router.reload();
+                } catch (error) {
+                    toast.error(getApiErrorMessage(error, t('Operation failed')));
+                    console.error('Error:', error);
+                }
             },
         },
     ];
 
     const handleAddNew = () => {
-        router.visit(route('ns.dashboard.products.categories.create'));
+        router.visit(route('sb.dashboard.products.categories.create'));
     };
 
     const handleRefresh = () => {

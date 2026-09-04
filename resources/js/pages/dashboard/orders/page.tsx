@@ -11,18 +11,19 @@ import { useTranslation } from '@/lib/i18n';
 import { formatDateTime } from '@/utils/format';
 import { Head, router } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
-import { crudApi } from '@/api';
+import { crudApi, ordersApi } from '@/api';
+import { getApiErrorMessage } from '@/utils/api-errors';
 import { Copy, FileText, List, MoreHorizontal, ReceiptText, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 type TFilter = {
-    'jgrem_orders.created_at': {
+    'subul_orders.created_at': {
         startDate: null | string;
         endDate: null | string;
     };
     payment_status: null | string;
-    'jgrem_orders.author': null | string;
+    'subul_orders.author': null | string;
     customer_id: null | string;
     register_id: null | string;
     customer_phone: null | string;
@@ -39,7 +40,7 @@ export default function Dashboard() {
         last_page: 1,
         current_page: 1,
         next_page_url: null,
-        path: 'http://127.0.0.1:8000/api/crud/ns.orders',
+        path: 'http://127.0.0.1:8000/api/crud/sb.orders',
         per_page: 20,
         prev_page_url: null,
         to: 0,
@@ -54,12 +55,12 @@ export default function Dashboard() {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [filters, setFilters] = useState<TFilter | {}>({
-        'jgrem_orders.created_at': {
+        'subul_orders.created_at': {
             startDate: null,
             endDate: null,
         },
         payment_status: null,
-        'jgrem_orders.author': null,
+        'subul_orders.author': null,
         customer_id: null,
         register_id: null,
         customer_phone: null,
@@ -82,12 +83,12 @@ export default function Dashboard() {
 
         setDeleteDialog((prev) => ({ ...prev, loading: true }));
         try {
-            await crudApi.remove('ns.orders', deleteDialog.item.id);
+            await crudApi.remove('sb.orders', deleteDialog.item.id);
             toast.success(t('The order and the attached products has been deleted.'));
             setCurrentPage(1);
             getOrders(1, pageSize, filters);
         } catch (error) {
-            toast.error(t('An unexpected error occurred.'));
+            toast.error(getApiErrorMessage(error, t('An unexpected error occurred.')));
         } finally {
             setDeleteDialog({
                 isOpen: false,
@@ -227,22 +228,18 @@ export default function Dashboard() {
     const bulkActions = [
         {
             label: t('Delete Selected'),
-            action: (selectedRows: Order[]) => {
-                const payload = {
-                    action: 'delete_selected',
-                    entries: selectedRows.map((row) => row.id),
-                };
+            action: async (selectedRows: Order[]) => {
+                const entries = selectedRows.map((row) => row.id);
 
-                router.post('/api/crud/ns.orders/bulk-actions', payload, {
-                    onError: (errors) => {
-                        toast.error(t('Operation failed'));
-                        console.error('Error:', errors);
-                    },
-                    onSuccess: () => {
-                        toast.success(t('Successfully processed selected items'));
-                        router.reload();
-                    },
-                });
+                try {
+                    await ordersApi.bulkDelete(entries);
+                    toast.success(t('Successfully processed selected items'));
+                    setCurrentPage(1);
+                    getOrders(1, pageSize, filters);
+                } catch (error) {
+                    toast.error(getApiErrorMessage(error, t('Operation failed')));
+                    console.error('Error:', error);
+                }
             },
         },
     ];
@@ -257,7 +254,7 @@ export default function Dashboard() {
 
     const getOrders = async (page: number, pageSize: number, filters: object) => {
         try {
-            const orders = await crudApi.list('ns.orders', {
+            const orders = await crudApi.list('sb.orders', {
                 page,
                 per_page: pageSize,
                 queryFilters: JSON.stringify(filters),

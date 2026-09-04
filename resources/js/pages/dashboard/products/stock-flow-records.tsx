@@ -22,7 +22,7 @@ export default function Dashboard() {
         last_page: 1,
         current_page: 1,
         next_page_url: null,
-        path: 'http://127.0.0.1:8000/api/crud/ns.global-products-history',
+        path: 'http://127.0.0.1:8000/api/crud/sb.global-products-history',
         per_page: 20,
         prev_page_url: null,
         to: 0,
@@ -92,7 +92,7 @@ export default function Dashboard() {
 
     const getOrders = async (page: number, pageSize: number) => {
         try {
-            const history = await crudApi.list('ns.global-products-history', { page, per_page: pageSize, search: searchTerm });
+            const history = await crudApi.list('sb.global-products-history', { page, per_page: pageSize, search: searchTerm });
             setTransaction(history);
         } catch (error) {
             console.error('Error fetching Orders:', error);
@@ -119,7 +119,7 @@ export default function Dashboard() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={t('product_histories_jgrem')} />
+            <Head title={t('product_histories')} />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="grid w-full">
                     <DataTable

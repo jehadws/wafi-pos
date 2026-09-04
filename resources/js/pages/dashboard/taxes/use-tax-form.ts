@@ -1,5 +1,8 @@
-import { useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import { router, useForm } from '@inertiajs/react';
 import { useTranslation } from '@/lib/i18n';
+import { taxesApi } from '@/api';
+import { extractValidationErrors } from '@/utils/api-errors';
 import { toast } from 'sonner';
 
 export interface TaxFormData {
@@ -13,6 +16,7 @@ export type TaxFormMode = 'create' | 'edit';
 
 export function useTaxForm(mode: TaxFormMode, tax?: any) {
     const { t } = useTranslation();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<TaxFormData>(
         mode === 'edit' && tax
@@ -77,27 +81,34 @@ export function useTaxForm(mode: TaxFormMode, tax?: any) {
         toast.error(t('Please fix the validation errors'));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         e.stopPropagation();
 
-        if (!validateForm()) return;
-        form.transform(() => buildTransform());
+        if (!validateForm() || isSubmitting) return;
 
-        if (mode === 'edit' && tax) {
-            form.put(`/api/crud/ns.taxes/${tax.id}`, {
-                preserveScroll: true,
-                onError,
-                onSuccess: () => toast.success(t('Successfully saved')),
-            });
-        } else {
-            form.post('/api/crud/ns.taxes', {
-                preserveScroll: true,
-                onError,
-                onSuccess: () => toast.success(t('Tax created successfully')),
-            });
+        setIsSubmitting(true);
+        try {
+            if (mode === 'edit' && tax) {
+                const res = await taxesApi.update(tax.id, buildTransform());
+                toast.success(t('Successfully saved'));
+                if (res?.redirect) router.visit(res.redirect);
+            } else {
+                const res = await taxesApi.create(buildTransform());
+                toast.success(t('Tax created successfully'));
+                if (res?.redirect) router.visit(res.redirect);
+            }
+        } catch (err) {
+            onError(extractValidationErrors(err));
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
-    return { form, handleSubmit, handleInputChange, handleSelectChange };
+    return {
+        form: { ...form, processing: isSubmitting || form.processing },
+        handleSubmit,
+        handleInputChange,
+        handleSelectChange,
+    };
 }

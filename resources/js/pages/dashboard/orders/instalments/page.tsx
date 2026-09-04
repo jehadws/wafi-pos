@@ -36,7 +36,7 @@ export default function InstalmentsList() {
     last_page: 1,
     current_page: 1,
     next_page_url: null,
-    path: '/api/crud/ns.orders-instalments',
+    path: '/api/crud/sb.orders-instalments',
     per_page: 20,
     prev_page_url: null,
     to: 0,
@@ -52,7 +52,7 @@ export default function InstalmentsList() {
 
   const fetchData = async (page: number, size: number, search: string) => {
     try {
-      const data = await crudApi.list<CustomPaginationData<InstalmentRow>>('ns.orders-instalments', {
+      const data = await crudApi.list<CustomPaginationData<InstalmentRow>>('sb.orders-instalments', {
         page,
         per_page: size,
         search,

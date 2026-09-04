@@ -34,7 +34,7 @@ export function ProcurementGeneralTab({ form, providers, handleInputChange }: Pr
             <FormField
                 label={t('Invoice Number')}
                 htmlFor="general_invoice_reference"
-                description={t('If the procurement has been issued outside of JGREMOS, please provide a unique reference.')}
+                description={t('If the procurement has been issued outside of Subul POS, please provide a unique reference.')}
                 error={form.errors?.general_invoice_reference}
             >
                 <Input

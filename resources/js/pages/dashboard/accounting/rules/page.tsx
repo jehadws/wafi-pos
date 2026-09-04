@@ -76,7 +76,7 @@ export default function AccountingRulesManager() {
                 { title: t('Rules'), href: '/dashboard/accounting/rules' },
             ]}
         >
-            <Head title={t('Rules - JGREM')} />
+            <Head title={t('Rules - Subul')} />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="grid w-full">
                     <div className="">

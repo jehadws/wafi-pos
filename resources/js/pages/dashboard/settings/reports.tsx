@@ -9,7 +9,7 @@ import { useTransition } from 'react';
 import { toast } from 'sonner';
 
 type General = {
-    ns_reports_email: string | null;
+    sb_reports_email: string | null;
 };
 
 type Payload = {
@@ -22,7 +22,7 @@ type Option = {
 };
 
 type Options = {
-    ns_reports_email: Option[];
+    sb_reports_email: Option[];
 };
 
 export default function SettingsGeneral() {
@@ -63,15 +63,15 @@ export default function SettingsGeneral() {
                                     <div className="flex gap-2">
                                         <Button
                                             type="button"
-                                            variant={(form.data.general.ns_reports_email ?? 'no') === 'yes' ? 'default' : 'outline'}
-                                            onClick={() => form.setData('general.ns_reports_email', 'yes')}
+                                            variant={(form.data.general.sb_reports_email ?? 'no') === 'yes' ? 'default' : 'outline'}
+                                            onClick={() => form.setData('general.sb_reports_email', 'yes')}
                                         >
                                             {t('Yes')}
                                         </Button>
                                         <Button
                                             type="button"
-                                            variant={(form.data.general.ns_reports_email ?? 'no') === 'no' ? 'default' : 'outline'}
-                                            onClick={() => form.setData('general.ns_reports_email', 'no')}
+                                            variant={(form.data.general.sb_reports_email ?? 'no') === 'no' ? 'default' : 'outline'}
+                                            onClick={() => form.setData('general.sb_reports_email', 'no')}
                                         >
                                             {t('No')}
                                         </Button>

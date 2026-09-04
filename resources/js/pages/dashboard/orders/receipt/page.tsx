@@ -8,10 +8,10 @@ import React, { useEffect } from 'react';
 export default function OrderReceiptPage({ order, optionsService, title }: any) {
     const { t } = useTranslation();
     const generalSettings = Settings.get();
-    const storeName = generalSettings?.identification?.ns_store_name || 'JGREM POS';
-    const receiptLogo = optionsService?.ns_invoice_receipt_logo || generalSettings?.identification?.ns_store_square_logo || '';
-    const receiptFooter = optionsService?.ns_invoice_receipt_footer || '';
-    const showTaxBreakdown = optionsService?.ns_invoice_display_tax_breakdown === 'yes';
+    const storeName = generalSettings?.identification?.sb_store_name || 'Subul POS';
+    const receiptLogo = optionsService?.sb_invoice_receipt_logo || generalSettings?.identification?.sb_store_square_logo || '';
+    const receiptFooter = optionsService?.sb_invoice_receipt_footer || '';
+    const showTaxBreakdown = optionsService?.sb_invoice_display_tax_breakdown === 'yes';
 
     useEffect(() => {
         // Optional: automatically open print dialog when page loads

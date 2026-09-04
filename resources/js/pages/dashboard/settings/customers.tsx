@@ -13,12 +13,12 @@ import { useTransition } from 'react';
 import { toast } from 'sonner';
 
 type General = {
-    ns_customers_credit_enabled: string | null;
-    ns_customers_default: string | null;
-    ns_customers_default_group: string | null;
-    ns_customers_force_unique_phone: string | null;
-    ns_customers_force_valid_email: string | null;
-    ns_customers_rewards_enabled: string | null;
+    sb_customers_credit_enabled: string | null;
+    sb_customers_default: string | null;
+    sb_customers_default_group: string | null;
+    sb_customers_force_unique_phone: string | null;
+    sb_customers_force_valid_email: string | null;
+    sb_customers_rewards_enabled: string | null;
 };
 
 type Payload = {
@@ -31,12 +31,12 @@ type Option = {
 };
 
 type Options = {
-    ns_customers_credit_enabled: Option[];
-    ns_customers_default: Option[];
-    ns_customers_default_group: Option[];
-    ns_customers_force_unique_phone: Option[];
-    ns_customers_force_valid_email: Option[];
-    ns_customers_rewards_enabled: Option[];
+    sb_customers_credit_enabled: Option[];
+    sb_customers_default: Option[];
+    sb_customers_default_group: Option[];
+    sb_customers_force_unique_phone: Option[];
+    sb_customers_force_valid_email: Option[];
+    sb_customers_rewards_enabled: Option[];
 };
 
 export default function SettingsGeneral() {
@@ -76,14 +76,14 @@ export default function SettingsGeneral() {
                             <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                                 <FormField label="Enable Reward" description="Will activate the reward system for the customers.">
                                     <Select
-                                        value={form.data.general.ns_customers_rewards_enabled === 'yes' ? 'yes' : 'no'}
-                                        onValueChange={(v) => form.setData('general.ns_customers_rewards_enabled', v)}
+                                        value={form.data.general.sb_customers_rewards_enabled === 'yes' ? 'yes' : 'no'}
+                                        onValueChange={(v) => form.setData('general.sb_customers_rewards_enabled', v)}
                                     >
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder={t('Select an option')} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {options.ns_customers_rewards_enabled.map((l) => (
+                                            {options.sb_customers_rewards_enabled.map((l) => (
                                                 <SelectItem key={l.value} value={l.value.toString()}>
                                                     {l.label}
                                                 </SelectItem>
@@ -93,14 +93,14 @@ export default function SettingsGeneral() {
                                 </FormField>
                                 <FormField label="Require Valid Email" description="Will for valid unique email for every customer.">
                                     <Select
-                                        value={form.data.general.ns_customers_force_valid_email ?? 'no'}
-                                        onValueChange={(v) => form.setData('general.ns_customers_force_valid_email', v)}
+                                        value={form.data.general.sb_customers_force_valid_email ?? 'no'}
+                                        onValueChange={(v) => form.setData('general.sb_customers_force_valid_email', v)}
                                     >
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder={t('Select an option')} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {options.ns_customers_force_valid_email.map((l) => (
+                                            {options.sb_customers_force_valid_email.map((l) => (
                                                 <SelectItem key={l.value} value={l.value.toString()}>
                                                     {l.label}
                                                 </SelectItem>
@@ -110,14 +110,14 @@ export default function SettingsGeneral() {
                                 </FormField>
                                 <FormField label="Require Unique Phone" description="Every customer should have a unique phone number.">
                                     <Select
-                                        value={form.data.general.ns_customers_force_unique_phone ?? 'no'}
-                                        onValueChange={(v) => form.setData('general.ns_customers_force_unique_phone', v)}
+                                        value={form.data.general.sb_customers_force_unique_phone ?? 'no'}
+                                        onValueChange={(v) => form.setData('general.sb_customers_force_unique_phone', v)}
                                     >
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder={t('Select an option')} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {options.ns_customers_force_unique_phone.map((l) => (
+                                            {options.sb_customers_force_unique_phone.map((l) => (
                                                 <SelectItem key={l.value} value={l.value.toString()}>
                                                     {l.label}
                                                 </SelectItem>
@@ -133,9 +133,9 @@ export default function SettingsGeneral() {
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
-                                                {form.data.general.ns_customers_default && form.data.general.ns_customers_default !== 'no'
-                                                    ? options.ns_customers_default.find(
-                                                          (tz) => tz.value.toString() === form.data.general.ns_customers_default?.toString()
+                                                {form.data.general.sb_customers_default && form.data.general.sb_customers_default !== 'no'
+                                                    ? options.sb_customers_default.find(
+                                                          (tz) => tz.value.toString() === form.data.general.sb_customers_default?.toString()
                                                       )?.label ?? 'Select default...'
                                                     : 'None'}
                                                 <ChevronsUpDown className="opacity-50" />
@@ -150,32 +150,32 @@ export default function SettingsGeneral() {
                                                         <CommandItem
                                                             value="no"
                                                             onSelect={() => {
-                                                                form.setData('general.ns_customers_default', 'no');
+                                                                form.setData('general.sb_customers_default', 'no');
                                                             }}
                                                         >
                                                             {t('None')}
                                                             <Check
                                                                 className={cn(
                                                                     'ml-auto',
-                                                                    form.data.general.ns_customers_default === 'no' || !form.data.general.ns_customers_default
+                                                                    form.data.general.sb_customers_default === 'no' || !form.data.general.sb_customers_default
                                                                         ? 'opacity-100'
                                                                         : 'opacity-0',
                                                                 )}
                                                             />
                                                         </CommandItem>
-                                                        {options.ns_customers_default.map((tz) => (
+                                                        {options.sb_customers_default.map((tz) => (
                                                             <CommandItem
                                                                 key={tz.value}
                                                                 value={tz.value.toString()}
                                                                 onSelect={(currentValue) => {
-                                                                    form.setData('general.ns_customers_default', currentValue);
+                                                                    form.setData('general.sb_customers_default', currentValue);
                                                                 }}
                                                             >
                                                                 {tz.label}
                                                                 <Check
                                                                     className={cn(
                                                                         'ml-auto',
-                                                                        form.data.general.ns_customers_default?.toString() === tz.value.toString()
+                                                                        form.data.general.sb_customers_default?.toString() === tz.value.toString()
                                                                             ? 'opacity-100'
                                                                             : 'opacity-0',
                                                                     )}
@@ -193,14 +193,14 @@ export default function SettingsGeneral() {
                                     description="Select to which group each new created customers are assigned to."
                                 >
                                     <Select
-                                        value={form.data.general.ns_customers_default_group?.toString() ?? 'no'}
-                                        onValueChange={(v) => form.setData('general.ns_customers_default_group', v)}
+                                        value={form.data.general.sb_customers_default_group?.toString() ?? 'no'}
+                                        onValueChange={(v) => form.setData('general.sb_customers_default_group', v)}
                                     >
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder={t('Select an option')} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {options.ns_customers_default_group.map((l) => (
+                                            {options.sb_customers_default_group.map((l) => (
                                                 <SelectItem key={l.value} value={l.value.toString()}>
                                                     {l.label}
                                                 </SelectItem>
@@ -210,14 +210,14 @@ export default function SettingsGeneral() {
                                 </FormField>
                                 <FormField label="Store P.O.Box" description="The store mail box number.">
                                     <Select
-                                        value={form.data.general.ns_customers_credit_enabled ?? 'no'}
-                                        onValueChange={(v) => form.setData('general.ns_customers_credit_enabled', v)}
+                                        value={form.data.general.sb_customers_credit_enabled ?? 'no'}
+                                        onValueChange={(v) => form.setData('general.sb_customers_credit_enabled', v)}
                                     >
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder={t('Select an option')} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {options.ns_customers_credit_enabled.map((l) => (
+                                            {options.sb_customers_credit_enabled.map((l) => (
                                                 <SelectItem key={l.value} value={l.value.toString()}>
                                                     {l.label}
                                                 </SelectItem>

@@ -13,9 +13,10 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { formatDate } from '@/utils/format';
-import { Head, router } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
-import { crudApi } from '@/api';
+import { crudApi, transactionsApi } from '@/api';
+import { getApiErrorMessage } from '@/utils/api-errors';
 import { List, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -35,7 +36,7 @@ export default function Dashboard() {
         last_page: 1,
         current_page: 1,
         next_page_url: null,
-        path: 'http://127.0.0.1:8000/api/crud/ns.transactions-history',
+        path: 'http://127.0.0.1:8000/api/crud/sb.transactions-history',
         per_page: 20,
         prev_page_url: null,
         to: 0,
@@ -63,8 +64,11 @@ export default function Dashboard() {
         if (!deleteDialog.item || deleteDialog.loading) return;
 
         try {
-            router.delete(`/api/crud/ns.transactions-history/${deleteDialog.item.id}`);
+            await transactionsApi.removeHistory(deleteDialog.item.id);
+            toast.success(t('Successfully deleted selected item'));
+            handleRefresh();
         } catch (error) {
+            toast.error(getApiErrorMessage(error, t('Operation failed')));
             console.error(error);
         } finally {
             setDeleteDialog({
@@ -161,22 +165,18 @@ export default function Dashboard() {
     const bulkActions = [
         {
             label: t('Delete Selected'),
-            action: (selectedRows: TransactionHistory[]) => {
-                const payload = {
-                    action: 'delete_selected',
-                    entries: selectedRows.map((row) => row.id),
-                };
+            action: async (selectedRows: TransactionHistory[]) => {
+                const entries = selectedRows.map((row) => row.id);
 
-                router.post('/api/crud/ns.transactions-history/bulk-actions', payload, {
-                    onError: (errors) => {
-                        toast.error(t('Operation failed'));
-                        console.error('Error:', errors);
-                    },
-                    onSuccess: () => {
-                        toast.success(t('Successfully processed selected items'));
-                        router.reload();
-                    },
-                });
+                try {
+                    await transactionsApi.bulkDeleteHistory(entries);
+                    toast.success(t('Successfully processed selected items'));
+                } catch (error) {
+                    toast.error(getApiErrorMessage(error, t('Operation failed')));
+                    console.error('Error:', error);
+                } finally {
+                    handleRefresh();
+                }
             },
         },
     ];
@@ -187,7 +187,7 @@ export default function Dashboard() {
 
     const getOrders = async (page: number, pageSize: number) => {
         try {
-            const history = await crudApi.list('ns.transactions-history', { page, per_page: pageSize, search: searchTerm });
+            const history = await crudApi.list('sb.transactions-history', { page, per_page: pageSize, search: searchTerm });
             setTransaction(history);
         } catch (error) {
             console.error('Error fetching Orders:', error);
@@ -214,7 +214,7 @@ export default function Dashboard() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={t('Transactions History List') + ' - JGREM'} />
+            <Head title={t('Transactions History List') + ' - Subul'} />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="grid w-full">
                     <DataTable

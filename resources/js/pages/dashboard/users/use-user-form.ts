@@ -7,8 +7,11 @@
  * ('create' | 'edit') and the optional existing user data.
  */
 
-import { useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import { router, useForm } from '@inertiajs/react';
 import { useTranslation } from '@/lib/i18n';
+import { usersApi } from '@/api';
+import { extractValidationErrors } from '@/utils/api-errors';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -145,6 +148,7 @@ const editDefaults = (user: any): UserFormData => ({
  */
 export function useUserForm(mode: UserFormMode, user?: any) {
     const { t } = useTranslation();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<UserFormData>(
         mode === 'edit' && user ? editDefaults(user) : emptyDefaults(),
@@ -256,38 +260,46 @@ export function useUserForm(mode: UserFormMode, user?: any) {
 
     // ── Submit handlers ──────────────────────────────────────────────────────
 
-    const handleCreate = (e: React.FormEvent) => {
+    const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         e.stopPropagation();
 
-        if (!validateForm()) return;
+        if (!validateForm() || isSubmitting) return;
+        setIsSubmitting(true);
 
-        form.transform(() => buildTransform());
-        form.post('/api/crud/ns.users', {
-            preserveScroll: true,
-            onError: handleErrors,
-            onSuccess: () => toast.success(t('Successfully saved')),
-        });
+        try {
+            const res = await usersApi.create(buildTransform());
+            toast.success(t('Successfully saved'));
+            if (res?.redirect) router.visit(res.redirect);
+        } catch (err) {
+            handleErrors(extractValidationErrors(err));
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
-    const handleEdit = (e: React.FormEvent) => {
+    const handleEdit = async (e: React.FormEvent) => {
         e.preventDefault();
         e.stopPropagation();
 
-        if (!validateForm()) return;
+        if (!validateForm() || isSubmitting || !user) return;
+        setIsSubmitting(true);
 
-        form.transform(() => buildTransform());
-        form.put(`/api/crud/ns.users/${user?.id}`, {
-            preserveScroll: true,
-            onError: handleErrors,
-            onSuccess: () => toast.success(t('Successfully saved')),
-        });
+        try {
+            const res = await usersApi.update(user.id, buildTransform());
+            toast.success(t('Successfully saved'));
+            if (res?.redirect) router.visit(res.redirect);
+        } catch (err) {
+            handleErrors(extractValidationErrors(err));
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleSubmit = mode === 'edit' ? handleEdit : handleCreate;
 
     return {
-        form,
+        form: { ...form, processing: isSubmitting || form.processing },
         handleSubmit,
         handleInputChange,
         handleSelectChange,

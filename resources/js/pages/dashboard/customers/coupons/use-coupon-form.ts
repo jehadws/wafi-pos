@@ -1,5 +1,8 @@
-import { useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import { router, useForm } from '@inertiajs/react';
 import { useTranslation } from '@/lib/i18n';
+import { couponsApi } from '@/api';
+import { extractValidationErrors } from '@/utils/api-errors';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -24,6 +27,7 @@ export type CouponFormMode = 'create' | 'edit';
 
 export function useCouponForm(mode: CouponFormMode, coupon?: any) {
     const { t } = useTranslation();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<CouponFormData>(
         mode === 'edit' && coupon
@@ -123,26 +127,34 @@ export function useCouponForm(mode: CouponFormMode, coupon?: any) {
         toast.error(t('Please fix the validation errors'));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        if (!validateForm()) return;
-        form.transform(() => buildTransform());
+        if (!validateForm() || isSubmitting) return;
 
-        if (mode === 'edit' && coupon) {
-            form.put(`/api/crud/ns.coupons/${coupon.id}`, {
-                preserveScroll: true,
-                onError,
-                onSuccess: () => toast.success(t('Successfully saved')),
-            });
-        } else {
-            form.post('/api/crud/ns.coupons', {
-                preserveScroll: true,
-                onError,
-                onSuccess: () => toast.success(t('Coupon created successfully')),
-            });
+        setIsSubmitting(true);
+        try {
+            if (mode === 'edit' && coupon) {
+                const res = await couponsApi.update(coupon.id, buildTransform());
+                toast.success(t('Successfully saved'));
+                if (res?.redirect) router.visit(res.redirect);
+            } else {
+                const res = await couponsApi.create(buildTransform());
+                toast.success(t('Coupon created successfully'));
+                if (res?.redirect) router.visit(res.redirect);
+            }
+        } catch (err) {
+            onError(extractValidationErrors(err));
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
-    return { form, handleSubmit, handleInputChange, handleSelectChange, generateCouponCode };
+    return {
+        form: { ...form, processing: isSubmitting || form.processing },
+        handleSubmit,
+        handleInputChange,
+        handleSelectChange,
+        generateCouponCode,
+    };
 }

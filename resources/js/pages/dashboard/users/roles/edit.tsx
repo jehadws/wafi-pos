@@ -4,8 +4,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
+import { rolesApi } from '@/api';
 import { cn } from '@/lib/utils';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { extractValidationErrors } from '@/utils/api-errors';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 export default function CreateProductPage() {
@@ -16,6 +19,7 @@ export default function CreateProductPage() {
         namespace: role.namespace,
         description: role.description,
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -28,26 +32,26 @@ export default function CreateProductPage() {
         e.preventDefault();
         e.stopPropagation();
 
-        if (!validateForm()) return;
+        if (!validateForm() || isSubmitting) return;
+        setIsSubmitting(true);
 
-        form.transform(() => ({
-            name: form.data.name,
-            general: {
-                namespace: form.data.namespace,
-                description: form.data.description,
-            },
-        }));
-
-        form.put(`/api/crud/ns.roles/${role.id}`, {
-            preserveScroll: true,
-            onError: (errors) => {
-                console.error('Validation errors:', errors);
-                toast.error(t('Please fix the validation errors'));
-            },
-            onSuccess: () => {
-                toast.success(t('Role updated successfully'));
-            },
-        });
+        try {
+            const res = await rolesApi.update(role.id, {
+                name: form.data.name,
+                general: {
+                    namespace: form.data.namespace,
+                    description: form.data.description,
+                },
+            });
+            toast.success(t('Role updated successfully'));
+            if (res?.redirect) router.visit(res.redirect);
+        } catch (err) {
+            const errors = extractValidationErrors(err);
+            console.error('Validation errors:', errors);
+            toast.error(t('Please fix the validation errors'));
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const validateForm = () => {
@@ -69,7 +73,7 @@ export default function CreateProductPage() {
                 { title: t('Roles'), href: '/dashboard/users/roles' },
             ]}
         >
-            <Head title={t('Edit role - JGREM')} />
+            <Head title={t('Edit role - Subul')} />
 
             <form onSubmit={handleSubmit}>
                 <div className="bg-background flex h-full min-h-screen flex-1 flex-col gap-4 p-4">
@@ -78,7 +82,7 @@ export default function CreateProductPage() {
                         description={t('Modify Role.')}
                         onCancel={() => window.history.back()}
                         onSave={() => {}}
-                        form={form}
+                        form={{ ...form, processing: isSubmitting || form.processing }}
                     />
 
                     <FormField label={t('Name')} error={form.errors.name} description={t('Provide a name to the role.')} className="mb-6">

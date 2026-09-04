@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { extractValidationErrors } from '@/utils/api-errors';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { transactionsApi } from '@/api';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -57,28 +58,33 @@ export default function EditTransactionPage() {
 
     const [loading, setLoading] = useState(false);
     const [accounts, setAccounts] = useState<{ label: string; value: number }[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         e.stopPropagation();
 
-        form.put(`/api/crud/ns.transactions/${transaction.id}`, {
-            preserveScroll: true,
-            onError: (errors) => {
-                form.clearErrors();
-                for (const key in errors) {
-                    const flatKey = key.replace(/\./g, '_') as keyof typeof form.data;
-                    if (flatKey in form.data) {
-                        form.setError(flatKey, errors[key]);
-                    }
+        if (isSubmitting) return;
+        setIsSubmitting(true);
+
+        try {
+            const res = await transactionsApi.update(transaction.id, { ...form.data });
+            toast.success(t('Transaction updated successfully'));
+            if (res?.redirect) router.visit(res.redirect);
+        } catch (err) {
+            const errors = extractValidationErrors(err);
+            form.clearErrors();
+            for (const key in errors) {
+                const flatKey = key.replace(/\./g, '_') as keyof typeof form.data;
+                if (flatKey in form.data) {
+                    form.setError(flatKey, errors[key]);
                 }
-                toast.error(t('Please fix the validation errors'));
-                console.error('Validation errors:', errors);
-            },
-            onSuccess: () => {
-                toast.success(t('Transaction updated successfully'));
-            },
-        });
+            }
+            toast.error(t('Please fix the validation errors'));
+            console.error('Validation errors:', errors);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const getSubAccounts = async () => {
@@ -108,7 +114,7 @@ export default function EditTransactionPage() {
                         description={t('Set direct, scheduled transactions.')}
                         onCancel={() => window.history.back()}
                         onSave={() => {}}
-                        form={form}
+                        form={{ ...form, processing: isSubmitting || form.processing }}
                     />
 
                     {infoMessage && (

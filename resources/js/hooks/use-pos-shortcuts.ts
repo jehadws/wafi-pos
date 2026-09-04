@@ -55,32 +55,32 @@ export function usePOSShortcuts({
       
       // Payment (configured or F4 / Ctrl+Enter)
       if (
-        matchesShortcut(e, o.ns_jgrem_keyboard_payment) ||
+        matchesShortcut(e, o.sb_subul_keyboard_payment) ||
         (e.key === 'F4' && !e.ctrlKey && !e.altKey)
       ) {
         e.preventDefault();
         onPayment();
       } else if (
-        matchesShortcut(e, o.ns_jgrem_keyboard_cancel_order)
+        matchesShortcut(e, o.sb_subul_keyboard_cancel_order)
       ) {
         e.preventDefault();
         onCancel();
-      } else if (matchesShortcut(e, o.ns_jgrem_keyboard_shipping)) {
+      } else if (matchesShortcut(e, o.sb_subul_keyboard_shipping)) {
         e.preventDefault();
         onShipping();
-      } else if (matchesShortcut(e, o.ns_jgrem_keyboard_order_type)) {
+      } else if (matchesShortcut(e, o.sb_subul_keyboard_order_type)) {
         e.preventDefault();
         onOrderType();
       } else if (
-        matchesShortcut(e, o.ns_jgrem_keyboard_quick_search) ||
+        matchesShortcut(e, o.sb_subul_keyboard_quick_search) ||
         (e.key === 'F2' && !e.ctrlKey && !e.altKey)
       ) {
         e.preventDefault();
         onQuickSearch();
-      } else if (matchesShortcut(e, o.ns_jgrem_keyboard_toggle_merge)) {
+      } else if (matchesShortcut(e, o.sb_subul_keyboard_toggle_merge)) {
         e.preventDefault();
         onToggleMerge();
-      } else if (matchesShortcut(e, o.ns_jgrem_keyboard_fullscreen) || e.key === 'F11') {
+      } else if (matchesShortcut(e, o.sb_subul_keyboard_fullscreen) || e.key === 'F11') {
         e.preventDefault();
         if (document.fullscreenElement) {
           document.exitFullscreen();

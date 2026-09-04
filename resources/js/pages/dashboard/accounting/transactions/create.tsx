@@ -8,7 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { Head, useForm } from '@inertiajs/react';
+import { extractValidationErrors } from '@/utils/api-errors';
+import { Head, router, useForm } from '@inertiajs/react';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { transactionsApi } from '@/api';
 import { useEffect, useState } from 'react';
@@ -41,31 +42,35 @@ export default function CreateProductPage({ infoMessage }: { infoMessage?: strin
     const [accounts, setAccounts] = useState<{ label: string; value: number }[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [configurations, setConfigurations] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         e.stopPropagation();
 
-        if (!validateForm()) {
+        if (!validateForm() || isSubmitting) {
             return;
         }
-        form.post('/api/crud/ns.transactions', {
-            preserveScroll: true,
-            onError: (errors) => {
-                form.clearErrors();
-                for (const key in errors) {
-                    const flatKey = key.replace(/\./g, '_') as keyof typeof form.data;
-                    if (flatKey in form.data) {
-                        form.setError(flatKey, errors[key]);
-                    }
+        setIsSubmitting(true);
+
+        try {
+            const res = await transactionsApi.create({ ...form.data });
+            toast.success(t('Successfully saved'));
+            if (res?.redirect) router.visit(res.redirect);
+        } catch (err) {
+            const errors = extractValidationErrors(err);
+            form.clearErrors();
+            for (const key in errors) {
+                const flatKey = key.replace(/\./g, '_') as keyof typeof form.data;
+                if (flatKey in form.data) {
+                    form.setError(flatKey, errors[key]);
                 }
-                toast.error(t('Please fix the validation errors'));
-                console.error('Validation errors:', errors);
-            },
-            onSuccess: () => {
-                toast.success(t('Successfully saved'));
-            },
-        });
+            }
+            toast.error(t('Please fix the validation errors'));
+            console.error('Validation errors:', errors);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const validateForm = () => {
@@ -114,7 +119,7 @@ export default function CreateProductPage({ infoMessage }: { infoMessage?: strin
                         description={t('Set direct, scheduled transactions.')}
                         onCancel={() => window.history.back()}
                         onSave={() => {}}
-                        form={form}
+                        form={{ ...form, processing: isSubmitting || form.processing }}
                     />
 
                     <div className="bg-accent/30 border-primary border-l border-l-3 p-2">{infoMessage}</div>
@@ -127,7 +132,7 @@ export default function CreateProductPage({ infoMessage }: { infoMessage?: strin
                         </div>
                     )}
 
-                    {form.data.general.type === 'ns.direct-transaction' && !loading && !showModal && (
+                    {form.data.general.type === 'sb.direct-transaction' && !loading && !showModal && (
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <FormField label={t('Name')} error={form.errors.name} description={t('Provide a name to the resource.')} required>
                                 <Input

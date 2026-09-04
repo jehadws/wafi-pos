@@ -34,12 +34,12 @@ export default function OrderFilterDialog({ isFilterOpen, setIsFilterOpen, handl
 
     const handleApplyFilter = () => {
         const queryFilters = {
-            'jgrem_orders.created_at': {
+            'subul_orders.created_at': {
                 startDate: dateRange?.from ? format(dateRange?.from!, 'yyyy-MM-dd HH:mm:ss') : null,
                 endDate: dateRange?.to ? format(dateRange?.to!, 'yyyy-MM-dd HH:mm:ss') : null,
             },
             payment_status: PaymentStatus ? PaymentStatus : null,
-            'jgrem_orders.author': Author ? Author : null,
+            'subul_orders.author': Author ? Author : null,
             customer_id: Customer ? Customer : null,
             register_id: Register ? Register : null,
             customer_phone: CustomerPhone ? CustomerPhone : null,

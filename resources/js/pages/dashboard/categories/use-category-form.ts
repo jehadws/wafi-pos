@@ -1,5 +1,8 @@
-import { useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import { router, useForm } from '@inertiajs/react';
 import { useTranslation } from '@/lib/i18n';
+import { categoriesApi } from '@/api';
+import { extractValidationErrors } from '@/utils/api-errors';
 import { toast } from 'sonner';
 
 export interface CategoryFormData {
@@ -14,6 +17,7 @@ export type CategoryFormMode = 'create' | 'edit';
 
 export function useCategoryForm(mode: CategoryFormMode, category?: any) {
     const { t } = useTranslation();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<CategoryFormData>(
         mode === 'edit' && category
@@ -64,25 +68,31 @@ export function useCategoryForm(mode: CategoryFormMode, category?: any) {
         if (errors.error) alert(errors.error);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!validateForm()) return;
-        form.transform(() => buildTransform());
+        if (!validateForm() || isSubmitting) return;
 
-        if (mode === 'edit' && category) {
-            form.put(`/api/crud/ns.products-categories/${category.id}`, {
-                showProgress: true,
-                onError,
-                onSuccess: () => toast.info(t('The entry has been successfully updated.')),
-            });
-        } else {
-            form.post('/api/crud/ns.products-categories', {
-                showProgress: true,
-                onError,
-                onSuccess: () => toast.info(t('The category has been created')),
-            });
+        setIsSubmitting(true);
+        try {
+            if (mode === 'edit' && category) {
+                const res = await categoriesApi.update(category.id, buildTransform());
+                toast.info(t('The entry has been successfully updated.'));
+                if (res?.redirect) router.visit(res.redirect);
+            } else {
+                const res = await categoriesApi.create(buildTransform());
+                toast.info(t('The category has been created'));
+                if (res?.redirect) router.visit(res.redirect);
+            }
+        } catch (err) {
+            onError(extractValidationErrors(err));
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
-    return { form, handleSubmit, handleInputChange };
+    return {
+        form: { ...form, processing: isSubmitting || form.processing },
+        handleSubmit,
+        handleInputChange,
+    };
 }

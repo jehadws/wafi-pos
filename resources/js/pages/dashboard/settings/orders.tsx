@@ -10,11 +10,11 @@ import { useTransition } from 'react';
 import { toast } from 'sonner';
 
 type General = {
-    ns_orders_code_type: string | null;
-    ns_orders_allow_unpaid: string | null;
-    ns_orders_allow_partial: string | null;
-    ns_orders_strict_instalments: string | null;
-    ns_orders_quotation_expiration: string | null;
+    sb_orders_code_type: string | null;
+    sb_orders_allow_unpaid: string | null;
+    sb_orders_allow_partial: string | null;
+    sb_orders_strict_instalments: string | null;
+    sb_orders_quotation_expiration: string | null;
 };
 
 type Payload = {
@@ -27,11 +27,11 @@ type Option = {
 };
 
 type Options = {
-    ns_orders_code_type: Option[];
-    ns_orders_allow_unpaid: Option[];
-    ns_orders_allow_partial: Option[];
-    ns_orders_strict_instalments: Option[];
-    ns_orders_quotation_expiration: Option[];
+    sb_orders_code_type: Option[];
+    sb_orders_allow_unpaid: Option[];
+    sb_orders_allow_partial: Option[];
+    sb_orders_strict_instalments: Option[];
+    sb_orders_quotation_expiration: Option[];
 };
 
 export default function SettingsGeneral() {
@@ -51,9 +51,9 @@ export default function SettingsGeneral() {
                 const data = {
                     general: {
                         ...form.data.general,
-                        ns_orders_code_type: form.data.general.ns_orders_code_type === 'null' ? null : form.data.general.ns_orders_code_type,
-                        ns_orders_quotation_expiration:
-                            form.data.general.ns_orders_quotation_expiration === 'null' ? null : form.data.general.ns_orders_quotation_expiration,
+                        sb_orders_code_type: form.data.general.sb_orders_code_type === 'null' ? null : form.data.general.sb_orders_code_type,
+                        sb_orders_quotation_expiration:
+                            form.data.general.sb_orders_quotation_expiration === 'null' ? null : form.data.general.sb_orders_quotation_expiration,
                     },
                 };
                 await settingsApi.update('orders', data);
@@ -79,8 +79,8 @@ export default function SettingsGeneral() {
                             <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                                 <FormField label={t('Enable Reward')} description={t('Will activate the reward system for the customers.')}>
                                     <Select
-                                        value={form.data.general.ns_orders_code_type || ''}
-                                        onValueChange={(v) => form.setData('general.ns_orders_code_type', v)}
+                                        value={form.data.general.sb_orders_code_type || ''}
+                                        onValueChange={(v) => form.setData('general.sb_orders_code_type', v)}
                                     >
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder={t('Select an option')} />
@@ -89,7 +89,7 @@ export default function SettingsGeneral() {
                                             <SelectItem key={'null'} value={'null'}>
                                                 {t('Select an option')}
                                             </SelectItem>
-                                            {options.ns_orders_code_type.map((l) => (
+                                            {options.sb_orders_code_type.map((l) => (
                                                 <SelectItem key={l.value} value={l.value.toString()}>
                                                     {l.label}
                                                 </SelectItem>
@@ -106,15 +106,15 @@ export default function SettingsGeneral() {
                                     <div className="flex gap-2">
                                         <Button
                                             type="button"
-                                            variant={(form.data.general.ns_orders_allow_unpaid ?? 'yes') === 'yes' ? 'default' : 'outline'}
-                                            onClick={() => form.setData('general.ns_orders_allow_unpaid', 'yes')}
+                                            variant={(form.data.general.sb_orders_allow_unpaid ?? 'yes') === 'yes' ? 'default' : 'outline'}
+                                            onClick={() => form.setData('general.sb_orders_allow_unpaid', 'yes')}
                                         >
                                             {t('Yes')}
                                         </Button>
                                         <Button
                                             type="button"
-                                            variant={(form.data.general.ns_orders_allow_unpaid ?? 'yes') === 'no' ? 'default' : 'outline'}
-                                            onClick={() => form.setData('general.ns_orders_allow_unpaid', 'no')}
+                                            variant={(form.data.general.sb_orders_allow_unpaid ?? 'yes') === 'no' ? 'default' : 'outline'}
+                                            onClick={() => form.setData('general.sb_orders_allow_unpaid', 'no')}
                                         >
                                             {t('No')}
                                         </Button>
@@ -124,15 +124,15 @@ export default function SettingsGeneral() {
                                     <div className="flex gap-2">
                                         <Button
                                             type="button"
-                                            variant={(form.data.general.ns_orders_allow_partial ?? 'yes') === 'yes' ? 'default' : 'outline'}
-                                            onClick={() => form.setData('general.ns_orders_allow_partial', 'yes')}
+                                            variant={(form.data.general.sb_orders_allow_partial ?? 'yes') === 'yes' ? 'default' : 'outline'}
+                                            onClick={() => form.setData('general.sb_orders_allow_partial', 'yes')}
                                         >
                                             {t('Yes')}
                                         </Button>
                                         <Button
                                             type="button"
-                                            variant={(form.data.general.ns_orders_allow_partial ?? 'yes') === 'no' ? 'default' : 'outline'}
-                                            onClick={() => form.setData('general.ns_orders_allow_partial', 'no')}
+                                            variant={(form.data.general.sb_orders_allow_partial ?? 'yes') === 'no' ? 'default' : 'outline'}
+                                            onClick={() => form.setData('general.sb_orders_allow_partial', 'no')}
                                         >
                                             {t('No')}
                                         </Button>
@@ -143,15 +143,15 @@ export default function SettingsGeneral() {
                                     <div className="flex gap-2">
                                         <Button
                                             type="button"
-                                            variant={(form.data.general.ns_orders_strict_instalments ?? 'yes') === 'yes' ? 'default' : 'outline'}
-                                            onClick={() => form.setData('general.ns_orders_strict_instalments', 'yes')}
+                                            variant={(form.data.general.sb_orders_strict_instalments ?? 'yes') === 'yes' ? 'default' : 'outline'}
+                                            onClick={() => form.setData('general.sb_orders_strict_instalments', 'yes')}
                                         >
                                             {t('Yes')}
                                         </Button>
                                         <Button
                                             type="button"
-                                            variant={(form.data.general.ns_orders_strict_instalments ?? 'yes') === 'no' ? 'default' : 'outline'}
-                                            onClick={() => form.setData('general.ns_orders_strict_instalments', 'no')}
+                                            variant={(form.data.general.sb_orders_strict_instalments ?? 'yes') === 'no' ? 'default' : 'outline'}
+                                            onClick={() => form.setData('general.sb_orders_strict_instalments', 'no')}
                                         >
                                             {t('No')}
                                         </Button>
@@ -164,8 +164,8 @@ export default function SettingsGeneral() {
                                     )}
                                 >
                                     <Select
-                                        value={form.data.general.ns_orders_quotation_expiration || ''}
-                                        onValueChange={(v) => form.setData('general.ns_orders_quotation_expiration', v)}
+                                        value={form.data.general.sb_orders_quotation_expiration || ''}
+                                        onValueChange={(v) => form.setData('general.sb_orders_quotation_expiration', v)}
                                     >
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder={t('Select an option')} />
@@ -174,7 +174,7 @@ export default function SettingsGeneral() {
                                             <SelectItem key={'null'} value={'null'}>
                                                 {t('Select an option')}
                                             </SelectItem>
-                                            {options.ns_orders_quotation_expiration.map((l) => (
+                                            {options.sb_orders_quotation_expiration.map((l) => (
                                                 <SelectItem key={l.value} value={l.value.toString()}>
                                                     {l.label}
                                                 </SelectItem>

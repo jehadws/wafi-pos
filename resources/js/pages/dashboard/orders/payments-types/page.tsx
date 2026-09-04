@@ -16,7 +16,8 @@ import { useTranslation } from '@/lib/i18n';
 import { formatDateTime } from '@/utils/format';
 import { Head, router } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
-import { crudApi } from '@/api';
+import { crudApi, paymentTypesApi } from '@/api';
+import { getApiErrorMessage } from '@/utils/api-errors';
 import { Edit, List, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -34,7 +35,7 @@ export default function Dashboard() {
         last_page: 1,
         current_page: 1,
         next_page_url: null,
-        path: 'http://127.0.0.1:8000/api/crud/ns.payments-types',
+        path: 'http://127.0.0.1:8000/api/crud/sb.payments-types',
         per_page: 20,
         prev_page_url: null,
         to: 0,
@@ -62,8 +63,10 @@ export default function Dashboard() {
         if (!deleteDialog.item || deleteDialog.loading) return;
 
         try {
-            router.delete(`/api/crud/ns.payments-types/${deleteDialog.item.id}`);
+            await paymentTypesApi.remove(deleteDialog.item.id);
+            toast.success(t('Successfully deleted selected item'));
         } catch (error) {
+            toast.error(getApiErrorMessage(error, t('Operation failed')));
             console.error(error);
         } finally {
             handleRefresh();
@@ -174,28 +177,24 @@ export default function Dashboard() {
     const bulkActions = [
         {
             label: t('Delete Selected'),
-            action: (selectedRows: PaymentType[]) => {
-                const payload = {
-                    action: 'delete_selected',
-                    entries: selectedRows.map((row) => row.id),
-                };
+            action: async (selectedRows: PaymentType[]) => {
+                const entries = selectedRows.map((row) => row.id);
 
-                router.post('/api/crud/ns.payments-types/bulk-actions', payload, {
-                    onError: (errors) => {
-                        toast.error(t('Operation failed'));
-                        console.error('Error:', errors);
-                    },
-                    onSuccess: () => {
-                        toast.success(t('Successfully processed selected items'));
-                        router.reload();
-                    },
-                });
+                try {
+                    await paymentTypesApi.bulkDelete(entries);
+                    toast.success(t('Successfully processed selected items'));
+                } catch (error) {
+                    toast.error(getApiErrorMessage(error, t('Operation failed')));
+                    console.error('Error:', error);
+                } finally {
+                    handleRefresh();
+                }
             },
         },
     ];
 
     const handleAddNew = () => {
-        router.visit(route('ns.dashboard.orders-create-types'));
+        router.visit(route('sb.dashboard.orders-create-types'));
     };
 
     const handleRefresh = () => {
@@ -204,7 +203,7 @@ export default function Dashboard() {
 
     const getOrders = async (page: number, pageSize: number) => {
         try {
-            const paymentTypes = await crudApi.list('ns.payments-types', { page, per_page: pageSize, search: searchTerm });
+            const paymentTypes = await crudApi.list('sb.payments-types', { page, per_page: pageSize, search: searchTerm });
 
             setPaymentTypes(paymentTypes);
         } catch (error) {

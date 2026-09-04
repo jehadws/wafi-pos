@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
+import { rewardsApi } from '@/api';
+import { getApiErrorMessage } from '@/utils/api-errors';
 import { formatDateTime } from '@/utils/format';
 import { Head, router, usePage } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
@@ -36,8 +38,11 @@ export default function RewardSystemPage() {
         if (!deleteDialog.rewardSystem || deleteDialog.loading) return;
 
         try {
-            router.delete(`/api/crud/ns.rewards-system/${deleteDialog.rewardSystem.id}`);
+            await rewardsApi.remove(deleteDialog.rewardSystem.id);
+            toast.success(t('Successfully deleted selected item'));
+            router.reload();
         } catch (error) {
+            toast.error(getApiErrorMessage(error, t('Operation failed')));
             console.error(error);
         } finally {
             setDeleteDialog({
@@ -127,28 +132,23 @@ export default function RewardSystemPage() {
     const bulkActions = [
         {
             label: t('Delete Selected'),
-            action: (selectedRows: RewardSystem[]) => {
-                const payload = {
-                    action: 'delete_selected',
-                    entries: selectedRows.map((row) => row.id),
-                };
+            action: async (selectedRows: RewardSystem[]) => {
+                const entries = selectedRows.map((row) => row.id);
 
-                router.post('/api/crud/ns.rewards-system/bulk-actions', payload, {
-                    onError: (errors) => {
-                        toast.error(t('Operation failed'));
-                        console.error('Error:', errors);
-                    },
-                    onSuccess: () => {
-                        toast.success(t('Successfully processed selected'));
-                        router.reload();
-                    },
-                });
+                try {
+                    await rewardsApi.bulkDelete(entries);
+                    toast.success(t('Successfully processed selected'));
+                    router.reload();
+                } catch (error) {
+                    toast.error(getApiErrorMessage(error, t('Operation failed')));
+                    console.error('Error:', error);
+                }
             },
         },
     ];
 
     const handleAddNew = () => {
-        router.visit(route('ns.dashboard.rewards-create'));
+        router.visit(route('sb.dashboard.rewards-create'));
     };
 
     const handleRefresh = () => {

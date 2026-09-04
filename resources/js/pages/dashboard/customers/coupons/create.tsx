@@ -38,7 +38,7 @@ export default function CreateCouponPage() {
                 { title: t('Create Coupon'), href: '/dashboard/customers/coupons/create' },
             ]}
         >
-            <Head title={t('Create a new coupon - JGREM')} />
+            <Head title={t('Create a new coupon - Subul')} />
 
             <form onSubmit={handleSubmit}>
                 <div className="bg-background flex h-full min-h-screen flex-1 flex-col gap-4 p-4">

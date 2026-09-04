@@ -20,7 +20,7 @@ export default function CreateUnitGroupPage() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={t('Create a new unit group - JGREM')} />
+            <Head title={t('Create a new unit group - Subul')} />
             <form onSubmit={handleSubmit}>
                 <div className="bg-background flex h-full min-h-screen flex-1 flex-col gap-4 p-4">
                     <FormHeader

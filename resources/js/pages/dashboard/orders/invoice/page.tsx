@@ -9,7 +9,7 @@ import { Printer } from 'lucide-react';
 export default function OrderInvoicePage() {
     const { t } = useTranslation();
     const generalSettings = Settings.get();
-    const storeName = generalSettings?.identification?.ns_store_name || 'JGREM POS';
+    const storeName = generalSettings?.identification?.sb_store_name || 'Subul POS';
 
     const { order, options, billing, shipping, title } = usePage<{
         order: any;

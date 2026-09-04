@@ -13,6 +13,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
+import { usersApi } from '@/api';
+import { getApiErrorMessage } from '@/utils/api-errors';
 import { Head, router, usePage } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
@@ -36,25 +38,21 @@ export default function Dashboard() {
         customer: null,
     });
 
-    const handleDeleteConfirm = () => {
+    const handleDeleteConfirm = async () => {
         if (!deleteDialog.customer || deleteDialog.loading) return;
 
         setDeleteDialog(prev => ({ ...prev, loading: true }));
 
-        router.delete(`/api/crud/ns.users/${deleteDialog.customer.id}`, {
-            onSuccess: () => {
-                toast.success(t('User deleted successfully'));
-                setDeleteDialog({ isOpen: false, loading: false, customer: null });
-            },
-            onError: (err) => {
-                toast.error(t('Failed to delete user'));
-                console.error(err);
-                setDeleteDialog(prev => ({ ...prev, loading: false }));
-            },
-            onFinish: () => {
-                setDeleteDialog(prev => ({ ...prev, loading: false }));
-            },
-        });
+        try {
+            await usersApi.remove(deleteDialog.customer.id);
+            toast.success(t('User deleted successfully'));
+            setDeleteDialog({ isOpen: false, loading: false, customer: null });
+            router.reload();
+        } catch (err) {
+            toast.error(t('Failed to delete user'));
+            console.error(err);
+            setDeleteDialog(prev => ({ ...prev, loading: false }));
+        }
     };
 
     const columns: ColumnDef<Customer>[] = [
@@ -148,29 +146,23 @@ export default function Dashboard() {
     const bulkActions = [
         {
             label: t('Delete Selected'),
-            action: (selectedRows: Customer[]) => {
-                const payload = {
-                    action: 'delete_selected',
-                    entries: selectedRows.map((row) => row.id),
-                };
+            action: async (selectedRows: Customer[]) => {
+                const entries = selectedRows.map((row) => row.id);
 
-                // Get CSRF token from meta tag
-                router.post('/api/crud/ns.users/bulk-actions', payload, {
-                    onError: (errors) => {
-                        toast.error(t('Operation failed'));
-                        console.error('Error:', errors);
-                    },
-                    onSuccess: () => {
-                        toast.success(t('Successfully processed selected roles'));
-                        router.reload();
-                    },
-                });
+                try {
+                    await usersApi.bulkDelete(entries);
+                    toast.success(t('Successfully processed selected roles'));
+                    router.reload();
+                } catch (errors) {
+                    toast.error(getApiErrorMessage(errors, t('Operation failed')));
+                    console.error('Error:', errors);
+                }
             },
         },
     ];
 
     const handleAddNew = () => {
-        router.visit(route('ns.dashboard.users-create'));
+        router.visit(route('sb.dashboard.users-create'));
     };
 
     const handleRefresh = () => {

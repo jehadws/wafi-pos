@@ -17,13 +17,13 @@ import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
 type General = {
-    ns_invoice_display_tax_breakdown: string | null;
-    ns_invoice_merge_similar_products: string | null;
-    ns_invoice_receipt_column_a: string | null;
-    ns_invoice_receipt_column_b: string | null;
-    ns_invoice_receipt_footer: string | null;
-    ns_invoice_receipt_logo: string | null;
-    ns_invoice_receipt_template: string | null;
+    sb_invoice_display_tax_breakdown: string | null;
+    sb_invoice_merge_similar_products: string | null;
+    sb_invoice_receipt_column_a: string | null;
+    sb_invoice_receipt_column_b: string | null;
+    sb_invoice_receipt_footer: string | null;
+    sb_invoice_receipt_logo: string | null;
+    sb_invoice_receipt_template: string | null;
 };
 
 type Payload = {
@@ -36,9 +36,9 @@ type Option = {
 };
 
 type Options = {
-    ns_invoice_receipt_template: Option[];
-    ns_invoice_merge_similar_products: Option[];
-    ns_invoice_display_tax_breakdown: Option[];
+    sb_invoice_receipt_template: Option[];
+    sb_invoice_merge_similar_products: Option[];
+    sb_invoice_display_tax_breakdown: Option[];
 };
 
 const availableTags = [
@@ -137,8 +137,8 @@ export default function ReceiptSettings() {
                                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                             <FormField label="Receipt Template" description="Choose the template that applies to receipts">
                                                 <Select
-                                                    value={form.data.receipts.ns_invoice_receipt_template}
-                                                    onValueChange={(value) => form.setData('receipts.ns_invoice_receipt_template', value)}
+                                                    value={form.data.receipts.sb_invoice_receipt_template}
+                                                    onValueChange={(value) => form.setData('receipts.sb_invoice_receipt_template', value)}
                                                 >
                                                     <SelectTrigger className="w-full">
                                                         <SelectValue placeholder="Choose a template" />
@@ -147,7 +147,7 @@ export default function ReceiptSettings() {
                                                         <SelectItem key={'null'} value={'null'}>
                                                             Select an option
                                                         </SelectItem>
-                                                        {options.ns_invoice_receipt_template.map((option) => (
+                                                        {options.sb_invoice_receipt_template.map((option) => (
                                                             <SelectItem key={option.value} value={option.value}>
                                                                 {option.label}
                                                             </SelectItem>
@@ -161,8 +161,8 @@ export default function ReceiptSettings() {
                                                     <Input
                                                         id="logoUrl"
                                                         placeholder="https://example.com/logo.png"
-                                                        value={form.data.receipts.ns_invoice_receipt_logo || ''}
-                                                        onChange={(e) => form.setData('receipts.ns_invoice_receipt_logo', e.target.value)}
+                                                        value={form.data.receipts.sb_invoice_receipt_logo || ''}
+                                                        onChange={(e) => form.setData('receipts.sb_invoice_receipt_logo', e.target.value)}
                                                     />
                                                     <Button variant="outline" size="icon">
                                                         <Upload className="h-4 w-4" />
@@ -180,22 +180,22 @@ export default function ReceiptSettings() {
                                                     <Button
                                                         type="button"
                                                         variant={
-                                                            (form.data.receipts.ns_invoice_display_tax_breakdown ?? 'no') === 'yes'
+                                                            (form.data.receipts.sb_invoice_display_tax_breakdown ?? 'no') === 'yes'
                                                                 ? 'default'
                                                                 : 'outline'
                                                         }
-                                                        onClick={() => form.setData('receipts.ns_invoice_display_tax_breakdown', 'yes')}
+                                                        onClick={() => form.setData('receipts.sb_invoice_display_tax_breakdown', 'yes')}
                                                     >
                                                         {t('Yes')}
                                                     </Button>
                                                     <Button
                                                         type="button"
                                                         variant={
-                                                            (form.data.receipts.ns_invoice_display_tax_breakdown ?? 'no') === 'no'
+                                                            (form.data.receipts.sb_invoice_display_tax_breakdown ?? 'no') === 'no'
                                                                 ? 'default'
                                                                 : 'outline'
                                                         }
-                                                        onClick={() => form.setData('receipts.ns_invoice_display_tax_breakdown', 'no')}
+                                                        onClick={() => form.setData('receipts.sb_invoice_display_tax_breakdown', 'no')}
                                                     >
                                                         {t('No')}
                                                     </Button>
@@ -210,22 +210,22 @@ export default function ReceiptSettings() {
                                                     <Button
                                                         type="button"
                                                         variant={
-                                                            (form.data.receipts.ns_invoice_merge_similar_products ?? 'no') === 'yes'
+                                                            (form.data.receipts.sb_invoice_merge_similar_products ?? 'no') === 'yes'
                                                                 ? 'default'
                                                                 : 'outline'
                                                         }
-                                                        onClick={() => form.setData('receipts.ns_invoice_merge_similar_products', 'yes')}
+                                                        onClick={() => form.setData('receipts.sb_invoice_merge_similar_products', 'yes')}
                                                     >
                                                         {t('Yes')}
                                                     </Button>
                                                     <Button
                                                         type="button"
                                                         variant={
-                                                            (form.data.receipts.ns_invoice_merge_similar_products ?? 'no') === 'no'
+                                                            (form.data.receipts.sb_invoice_merge_similar_products ?? 'no') === 'no'
                                                                 ? 'default'
                                                                 : 'outline'
                                                         }
-                                                        onClick={() => form.setData('receipts.ns_invoice_merge_similar_products', 'no')}
+                                                        onClick={() => form.setData('receipts.sb_invoice_merge_similar_products', 'no')}
                                                     >
                                                         {t('No')}
                                                     </Button>
@@ -263,8 +263,8 @@ export default function ReceiptSettings() {
                                                     <Textarea
                                                         id="headerContent"
                                                         placeholder="Add custom header content here..."
-                                                        value={form.data.receipts.ns_invoice_receipt_column_a || ''}
-                                                        onChange={(e) => form.setData('receipts.ns_invoice_receipt_column_a', e.target.value)}
+                                                        value={form.data.receipts.sb_invoice_receipt_column_a || ''}
+                                                        onChange={(e) => form.setData('receipts.sb_invoice_receipt_column_a', e.target.value)}
                                                         onFocus={() => setActiveTextarea('headerContent')}
                                                         className="min-h-[120px] font-mono text-sm"
                                                     />
@@ -280,8 +280,8 @@ export default function ReceiptSettings() {
                                                     <Textarea
                                                         id="footerContent"
                                                         placeholder="Add custom footer content here..."
-                                                        value={form.data.receipts.ns_invoice_receipt_footer || ''}
-                                                        onChange={(e) => form.setData('receipts.ns_invoice_receipt_footer', e.target.value)}
+                                                        value={form.data.receipts.sb_invoice_receipt_footer || ''}
+                                                        onChange={(e) => form.setData('receipts.sb_invoice_receipt_footer', e.target.value)}
                                                         onFocus={() => setActiveTextarea('footerContent')}
                                                         className="min-h-[120px] font-mono text-sm"
                                                     />

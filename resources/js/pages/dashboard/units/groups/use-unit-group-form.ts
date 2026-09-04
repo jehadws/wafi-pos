@@ -1,5 +1,8 @@
-import { useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import { router, useForm } from '@inertiajs/react';
 import { useTranslation } from '@/lib/i18n';
+import { unitsApi } from '@/api';
+import { extractValidationErrors } from '@/utils/api-errors';
 import { toast } from 'sonner';
 
 export interface UnitGroupFormData {
@@ -11,6 +14,7 @@ export type UnitGroupFormMode = 'create' | 'edit';
 
 export function useUnitGroupForm(mode: UnitGroupFormMode, group?: any) {
     const { t } = useTranslation();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<UnitGroupFormData>(
         mode === 'edit' && group
@@ -45,20 +49,23 @@ export function useUnitGroupForm(mode: UnitGroupFormMode, group?: any) {
         if (errors.error) alert(errors.error);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!validateForm()) return;
+        if (!validateForm() || isSubmitting) return;
 
         if (mode === 'edit' && group) {
-            form.put(`/api/crud/ns.units-groups/${group.id}`, {
-                showProgress: true,
-                onError,
-                onSuccess: () => {
-                    toast.success(t('Successfully saved'));
-                },
-            });
+            setIsSubmitting(true);
+            try {
+                const res = await unitsApi.updateGroup(group.id, { ...form.data });
+                toast.success(t('Successfully saved'));
+                if (res?.redirect) router.visit(res.redirect);
+            } catch (err) {
+                onError(extractValidationErrors(err));
+            } finally {
+                setIsSubmitting(false);
+            }
         } else {
-            form.post(route('ns.units.postGroup'), {
+            form.post(route('sb.units.postGroup'), {
                 showProgress: true,
                 onError,
                 onSuccess: () => {
@@ -68,5 +75,9 @@ export function useUnitGroupForm(mode: UnitGroupFormMode, group?: any) {
         }
     };
 
-    return { form, handleSubmit, handleInputChange };
+    return {
+        form: { ...form, processing: isSubmitting || form.processing },
+        handleSubmit,
+        handleInputChange,
+    };
 }

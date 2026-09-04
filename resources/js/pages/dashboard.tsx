@@ -31,7 +31,7 @@ import { SharedData } from '@/types';
 
 // ─── Role namespaces ────────────────────────────────────────────────────────
 const ROLE_ADMIN = 'admin';
-const ROLE_STORE_ADMIN = 'jgrem.store.administrator';
+const ROLE_STORE_ADMIN = 'subul.store.administrator';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 interface DashboardCard {

@@ -6,8 +6,11 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
+import { cashRegistersApi } from '@/api';
+import { extractValidationErrors } from '@/utils/api-errors';
 import { cn } from '@/lib/utils';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 type RegisterEntry = {
@@ -38,10 +41,12 @@ export default function EditCashRegister() {
 
         if (form.errors[name]) form.clearErrors(name);
     };
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!validateForm()) return;
+        if (!validateForm() || isSubmitting) return;
+        setIsSubmitting(true);
 
         const data = {
             name: form.data.name,
@@ -51,20 +56,19 @@ export default function EditCashRegister() {
             },
         };
 
-        form.transform(() => data);
-
-        form.put(`/api/crud/ns.cash-registers/${register.id}`, {
-            showProgress: true,
-            onError: (errors) => {
-                console.error('Validation errors:', errors);
-                if (errors.error) {
-                    toast.error(errors.error);
-                }
-            },
-            onSuccess: () => {
-                toast.info(t('Successfully saved'));
-            },
-        });
+        try {
+            const res = await cashRegistersApi.update(register.id, data);
+            toast.info(t('Successfully saved'));
+            if (res?.redirect) router.visit(res.redirect);
+        } catch (err) {
+            const errors = extractValidationErrors(err);
+            console.error('Validation errors:', errors);
+            if (errors.error) {
+                toast.error(errors.error);
+            }
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const validateForm = () => {
@@ -91,7 +95,7 @@ export default function EditCashRegister() {
                         description={t('Modify  Register.')}
                         onCancel={() => window.history.back()}
                         onSave={() => {}}
-                        form={form}
+                        form={{ ...form, processing: isSubmitting || form.processing }}
                     />
 
                     <FormField label={t('Name')} error={form.errors.name} description={t('Provide a name to the resource.')} required>

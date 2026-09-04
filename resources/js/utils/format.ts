@@ -6,11 +6,11 @@ import { parse } from "date-fns";
 
 export const formatCurrency = (amount: number) => {
   let currency: any = {
-    ns_currency_symbol: '$',
-    ns_currency_position: 'before',
-    ns_currency_thousand_separator: ',',
-    ns_currency_decimal_separator: '.',
-    ns_currency_precision: 2,
+    sb_currency_symbol: '$',
+    sb_currency_position: 'before',
+    sb_currency_thousand_separator: ',',
+    sb_currency_decimal_separator: '.',
+    sb_currency_precision: 2,
   };
 
   try {
@@ -22,15 +22,15 @@ export const formatCurrency = (amount: number) => {
     // fallback to default currency formatting
   }
 
-  const { ns_currency_symbol, ns_currency_position, ns_currency_thousand_separator, ns_currency_decimal_separator, ns_currency_precision } = currency;
+  const { sb_currency_symbol, sb_currency_position, sb_currency_thousand_separator, sb_currency_decimal_separator, sb_currency_precision } = currency;
   const num = typeof amount === 'number' && !isNaN(amount) ? amount : 0;
-  const formattedAmount = num.toFixed(ns_currency_precision || 2).replace('.', ns_currency_decimal_separator || '.').replace(/\B(?=(\d{3})+(?!\d))/g, ns_currency_thousand_separator || ',');
+  const formattedAmount = num.toFixed(sb_currency_precision || 2).replace('.', sb_currency_decimal_separator || '.').replace(/\B(?=(\d{3})+(?!\d))/g, sb_currency_thousand_separator || ',');
 
-  if (ns_currency_position === 'before') {
-    return `${ns_currency_symbol || '$'}${formattedAmount}`;
+  if (sb_currency_position === 'before') {
+    return `${sb_currency_symbol || '$'}${formattedAmount}`;
   }
 
-  return `${formattedAmount}${ns_currency_symbol || '$'}`;
+  return `${formattedAmount}${sb_currency_symbol || '$'}`;
 }
 
 export const rawCurrency = (value: any) => {
@@ -76,16 +76,16 @@ const phpToDateFnsParseFormat = (phpFormat: string): string => {
 
 // export const formatDate = (dateString: string) => {
 //   const { date } = Settings.get();
-//   const { ns_date_format } = date;
+//   const { sb_date_format } = date;
 //   if (!dateString) {
 //     return '';
 //   }
-//   const dateFnsFormat = phpToDateFnsFormat(ns_date_format || 'Y-m-d');
+//   const dateFnsFormat = phpToDateFnsFormat(sb_date_format || 'Y-m-d');
 //   return format(new Date(dateString), dateFnsFormat);
 // }
 
 export const formatDate = (dateString: string) => {
-  let dateConfig: any = { ns_date_format: 'Y-m-d', ns_datetime_timezone: 'UTC' };
+  let dateConfig: any = { sb_date_format: 'Y-m-d', sb_datetime_timezone: 'UTC' };
   try {
     const settings = Settings.get();
     if (settings?.date) {
@@ -95,7 +95,7 @@ export const formatDate = (dateString: string) => {
     // fallback
   }
 
-  const { ns_date_format, ns_datetime_timezone } = dateConfig;
+  const { sb_date_format, sb_datetime_timezone } = dateConfig;
   if (!dateString) {
     return '';
   }
@@ -112,17 +112,17 @@ export const formatDate = (dateString: string) => {
     }
   }
 
-  const zonedDate = toZonedTime(parsedDate, ns_datetime_timezone || 'UTC');
-  const dateFnsFormat = phpToDateFnsFormat(ns_date_format || 'Y-m-d');
+  const zonedDate = toZonedTime(parsedDate, sb_datetime_timezone || 'UTC');
+  const dateFnsFormat = phpToDateFnsFormat(sb_date_format || 'Y-m-d');
   
   return format(zonedDate, dateFnsFormat, {
     locale: enUS,
-    timeZone: ns_datetime_timezone || 'UTC'
+    timeZone: sb_datetime_timezone || 'UTC'
   });
 }
 
 export const formatDateTime = (dateString: string) => {
-  let dateConfig: any = { ns_datetime_format: 'Y-m-d H:i', ns_datetime_timezone: 'UTC' };
+  let dateConfig: any = { sb_datetime_format: 'Y-m-d H:i', sb_datetime_timezone: 'UTC' };
   try {
     const settings = Settings.get();
     if (settings?.date) {
@@ -132,7 +132,7 @@ export const formatDateTime = (dateString: string) => {
     // fallback
   }
 
-  const { ns_datetime_format, ns_datetime_timezone } = dateConfig;
+  const { sb_datetime_format, sb_datetime_timezone } = dateConfig;
 
   if (!dateString) {
     return '';
@@ -155,13 +155,13 @@ export const formatDateTime = (dateString: string) => {
   }
 
   // Convert to the desired timezone
-  const zonedDate = toZonedTime(parsedDate, ns_datetime_timezone || 'UTC');
+  const zonedDate = toZonedTime(parsedDate, sb_datetime_timezone || 'UTC');
 
   // Format for display
-  const displayFormat = phpToDateFnsFormat(ns_datetime_format || 'Y-m-d H:i');
+  const displayFormat = phpToDateFnsFormat(sb_datetime_format || 'Y-m-d H:i');
 
   return format(zonedDate, displayFormat, {
     locale: enUS,
-    timeZone: ns_datetime_timezone || 'UTC'
+    timeZone: sb_datetime_timezone || 'UTC'
   });
 };

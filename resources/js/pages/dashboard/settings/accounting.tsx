@@ -14,8 +14,8 @@ import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
 type General = {
-    ns_accounting_default_paid_expense_offset_account: string | null;
-    ns_accounting_expenses_accounts: number[] | null;
+    sb_accounting_default_paid_expense_offset_account: string | null;
+    sb_accounting_expenses_accounts: number[] | null;
 };
 
 type Payload = {
@@ -28,8 +28,8 @@ type Option = {
 };
 
 type Options = {
-    ns_accounting_default_paid_expense_offset_account: Option[];
-    ns_accounting_expenses_accounts: Option[];
+    sb_accounting_default_paid_expense_offset_account: Option[];
+    sb_accounting_expenses_accounts: Option[];
 };
 
 export default function SettingsGeneral() {
@@ -84,30 +84,32 @@ export default function SettingsGeneral() {
 
                             <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-2">
                                 <FormField
-                                    label="Expense Accounts"
-                                    description="Assign accounts that are likely to be used for creating direct, scheduled or recurring expenses."
+                                    label={t('Expense Accounts')}
+                                    description={t('Assign accounts that are likely to be used for creating direct, scheduled or recurring expenses.')}
                                 >
                                     <MultiSelector
-                                        options={options.ns_accounting_expenses_accounts.map((tz) => ({ name: tz.label, id: +tz.value }))}
-                                        value={form.data.general.ns_accounting_expenses_accounts || []}
-                                        onChange={(value) => form.setData('general.ns_accounting_expenses_accounts', value)}
+                                        options={options.sb_accounting_expenses_accounts.map((tz) => ({ name: t(tz.label), id: +tz.value }))}
+                                        value={form.data.general.sb_accounting_expenses_accounts || []}
+                                        onChange={(value) => form.setData('general.sb_accounting_expenses_accounts', value)}
                                         placeholder={t('Select roles...')}
                                         searchPlaceholder={t('Search roles...')}
                                         emptyText={t('No Roles found')}
                                     />
                                 </FormField>
                                 <FormField
-                                    label="Paid Expense Offset"
-                                    description="Assign the default account to be used as an offset account for paid expenses transactions."
+                                    label={t('Paid Expense Offset')}
+                                    description={t('Assign the default account to be used as an offset account for paid expenses transactions.')}
                                 >
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
-                                                {form.data.general.ns_accounting_default_paid_expense_offset_account
-                                                    ? options.ns_accounting_default_paid_expense_offset_account.find(
-                                                          (tz) => tz.value === +form.data.general.ns_accounting_default_paid_expense_offset_account,
-                                                      )?.label
-                                                    : 'Select default...'}
+                                                {form.data.general.sb_accounting_default_paid_expense_offset_account
+                                                    ? t(
+                                                          options.sb_accounting_default_paid_expense_offset_account.find(
+                                                              (tz) => tz.value === +form.data.general.sb_accounting_default_paid_expense_offset_account,
+                                                          )?.label ?? '',
+                                                      )
+                                                    : t('Select default...')}
                                                 <ChevronsUpDown className="opacity-50" />
                                             </Button>
                                         </PopoverTrigger>
@@ -117,22 +119,22 @@ export default function SettingsGeneral() {
                                                 <CommandList>
                                                     <CommandEmpty>{t('No result to display.')}</CommandEmpty>
                                                     <CommandGroup>
-                                                        {options.ns_accounting_default_paid_expense_offset_account.map((tz) => (
+                                                        {options.sb_accounting_default_paid_expense_offset_account.map((tz) => (
                                                             <CommandItem
                                                                 key={tz.value}
                                                                 value={tz.value.toString()}
                                                                 onSelect={(currentValue) => {
                                                                     form.setData(
-                                                                        'general.ns_accounting_default_paid_expense_offset_account',
+                                                                        'general.sb_accounting_default_paid_expense_offset_account',
                                                                         +currentValue,
                                                                     );
                                                                 }}
                                                             >
-                                                                {tz.label}
+                                                                {t(tz.label)}
                                                                 <Check
                                                                     className={cn(
                                                                         'ml-auto',
-                                                                        form.data.general.ns_accounting_default_paid_expense_offset_account ===
+                                                                        form.data.general.sb_accounting_default_paid_expense_offset_account ===
                                                                             tz.value
                                                                             ? 'opacity-100'
                                                                             : 'opacity-0',
@@ -151,7 +153,7 @@ export default function SettingsGeneral() {
                         <div className="mt-6 flex items-center justify-between rounded-b-xl border-t p-3">
                             <Button onClick={() => setIsOpen(true)} disabled={isPending} variant="destructive">
                                 {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                                Reset Default
+                                {t('Reset Default')}
                             </Button>
                             <Button onClick={() => handleSave()} disabled={isPending}>
                                 {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}

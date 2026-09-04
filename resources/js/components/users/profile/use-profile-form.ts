@@ -174,7 +174,7 @@ export function useProfileForm({ attributes = {}, currentShipping = {}, currentB
             token: {},
         }));
 
-        form.post('/api/forms/ns.user-profile', {
+        form.post('/api/forms/sb.user-profile', {
             preserveScroll: true,
             onError: () => {
                 toast.error(t('Please fix the validation errors'));

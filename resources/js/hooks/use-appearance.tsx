@@ -41,11 +41,11 @@ const handleSystemThemeChange = () => {
 
 /**
  * Reads the admin-configured default theme (General settings →
- * "ns_default_theme"). Falls back to 'system' when unset.
+ * "sb_default_theme"). Falls back to 'system' when unset.
  */
 const getConfiguredTheme = (): Appearance => {
   try {
-    const configured = Settings.get()?.identification?.ns_default_theme;
+    const configured = Settings.get()?.identification?.sb_default_theme;
     if (configured === 'dark' || configured === 'light') {
       return configured;
     }

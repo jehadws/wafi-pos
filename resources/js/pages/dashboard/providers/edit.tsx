@@ -1,6 +1,8 @@
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
-import { Head, usePage } from '@inertiajs/react';
+import { providersApi } from '@/api';
+import { extractValidationErrors } from '@/utils/api-errors';
+import { Head, router, usePage } from '@inertiajs/react';
 
 import FormField from '@/components/forms/shared/form-field';
 import FormHeader from '@/components/forms/shared/form-header';
@@ -8,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 export default function CreateProductPage() {
@@ -28,6 +31,7 @@ export default function CreateProductPage() {
         email: provider.email,
         phone: provider.phone,
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -40,30 +44,30 @@ export default function CreateProductPage() {
         e.preventDefault();
         e.stopPropagation();
 
-        if (!validateForm()) return;
+        if (!validateForm() || isSubmitting) return;
+        setIsSubmitting(true);
 
-        form.transform(() => ({
-            first_name: form.data.first_name,
-            general: {
-                last_name: form.data.last_name,
-                description: form.data.description,
-                address_1: form.data.address_1,
-                address_2: form.data.address_2,
-                email: form.data.email,
-                phone: form.data.phone,
-            },
-        }));
-
-        form.put(`/api/crud/ns.providers/${provider.id}`, {
-            preserveScroll: true,
-            onError: (errors) => {
-                console.error('Validation errors:', errors);
-                toast.error(t('Please fix the validation errors'));
-            },
-            onSuccess: () => {
-                toast.success(t('Provider updated successfully'));
-            },
-        });
+        try {
+            const res = await providersApi.update(provider.id, {
+                first_name: form.data.first_name,
+                general: {
+                    last_name: form.data.last_name,
+                    description: form.data.description,
+                    address_1: form.data.address_1,
+                    address_2: form.data.address_2,
+                    email: form.data.email,
+                    phone: form.data.phone,
+                },
+            });
+            toast.success(t('Provider updated successfully'));
+            if (res?.redirect) router.visit(res.redirect);
+        } catch (err) {
+            const errors = extractValidationErrors(err);
+            console.error('Validation errors:', errors);
+            toast.error(t('Please fix the validation errors'));
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const validateForm = () => {
@@ -89,7 +93,7 @@ export default function CreateProductPage() {
                         description={t('Modify  Provider.')}
                         onCancel={() => window.history.back()}
                         onSave={() => {}}
-                        form={form}
+                        form={{ ...form, processing: isSubmitting || form.processing }}
                     />
 
                     <FormField

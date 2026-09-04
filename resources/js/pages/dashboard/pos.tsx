@@ -21,7 +21,7 @@ export default function PosPage() {
   const { t } = useTranslation();
   const { settings, options, license } = usePage().props as unknown as { 
     settings: any; 
-    options: NsPosOptions;
+    options: SbPosOptions;
     license?: { isValid: boolean; isRestricted: boolean; hwid: string };
   };
   const { defineOptions, defineSettings, initialize, processInitialQueue, setAutoMerge, setOrderType, order } = usePOS();
@@ -63,7 +63,7 @@ export default function PosPage() {
   if (license && (license.isRestricted || !license.isValid)) {
     return (
       <>
-        <Head title={t('License Required — Wafi POS')} />
+        <Head title={t('License Required — Subul')} />
         <main className="bg-background min-h-screen flex items-center justify-center p-6">
           <div className="max-w-md w-full bg-card border border-border shadow-xl rounded-xl p-8 text-center space-y-6">
             <div className="w-16 h-16 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mx-auto">

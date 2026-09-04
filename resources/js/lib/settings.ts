@@ -1,39 +1,39 @@
 type Identification = {
-    ns_store_name: string | null
-    ns_store_address: string | null
-    ns_store_city: string | null
-    ns_store_phone: string | null
-    ns_store_email: string | null
-    ns_store_pobox: string | null
-    ns_store_fax: string | null
-    ns_store_additional: string | null
-    ns_store_square_logo: string | null
-    ns_store_rectangle_logo: string | null
-    ns_store_language: string | null
-    ns_default_theme: string | null
+    sb_store_name: string | null
+    sb_store_address: string | null
+    sb_store_city: string | null
+    sb_store_phone: string | null
+    sb_store_email: string | null
+    sb_store_pobox: string | null
+    sb_store_fax: string | null
+    sb_store_additional: string | null
+    sb_store_square_logo: string | null
+    sb_store_rectangle_logo: string | null
+    sb_store_language: string | null
+    sb_default_theme: string | null
 }
 
 type Currency = {
-    ns_currency_symbol: string | null
-    ns_currency_iso: string | null
-    ns_currency_position: string | null
-    ns_currency_prefered: string | null
-    ns_currency_thousand_separator: string | null
-    ns_currency_decimal_separator: string | null
-    ns_currency_precision: number | null
+    sb_currency_symbol: string | null
+    sb_currency_iso: string | null
+    sb_currency_position: string | null
+    sb_currency_prefered: string | null
+    sb_currency_thousand_separator: string | null
+    sb_currency_decimal_separator: string | null
+    sb_currency_precision: number | null
 }
 
 type DateCfg = {
-    ns_date_format: string | null
-    ns_datetime_format: string | null
-    ns_datetime_timezone: string | null
+    sb_date_format: string | null
+    sb_datetime_format: string | null
+    sb_datetime_timezone: string | null
 }
 
 type Registration = {
-    ns_registration_enabled: string | null
-    ns_registration_role: string | null
-    ns_registration_validated: string | null
-    ns_recovery_enabled: string | null
+    sb_registration_enabled: string | null
+    sb_registration_role: string | null
+    sb_registration_validated: string | null
+    sb_recovery_enabled: string | null
 }
 
 type AppSettings = {

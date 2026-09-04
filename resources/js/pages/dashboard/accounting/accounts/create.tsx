@@ -8,7 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { extractValidationErrors } from '@/utils/api-errors';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { transactionsApi } from '@/api';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -33,32 +34,35 @@ export default function CreateProductPage() {
             sub_category_id: '',
         },
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         e.stopPropagation();
 
-        if (!validateForm()) {
+        if (!validateForm() || isSubmitting) {
             return;
         }
+        setIsSubmitting(true);
 
-        form.post('/api/crud/ns.transactions-accounts', {
-            preserveScroll: true,
-            onError: (errors) => {
-                form.clearErrors();
-                for (const key in errors) {
-                    const flatKey = key.replace(/\./g, '_') as keyof typeof form.data;
-                    if (flatKey in form.data) {
-                        form.setError(flatKey, errors[key]);
-                    }
+        try {
+            const res = await transactionsApi.createAccount({ ...form.data });
+            toast.success(t('Successfully saved'));
+            if (res?.redirect) router.visit(res.redirect);
+        } catch (err) {
+            const errors = extractValidationErrors(err);
+            form.clearErrors();
+            for (const key in errors) {
+                const flatKey = key.replace(/\./g, '_') as keyof typeof form.data;
+                if (flatKey in form.data) {
+                    form.setError(flatKey, errors[key]);
                 }
-                toast.error(t('Please fix the validation errors'));
-                console.error('Validation errors:', errors);
-            },
-            onSuccess: () => {
-                toast.success(t('Successfully saved'));
-            },
-        });
+            }
+            toast.error(t('Please fix the validation errors'));
+            console.error('Validation errors:', errors);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const validateForm = () => {
@@ -86,7 +90,7 @@ export default function CreateProductPage() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={'Create a new Account - JGREM'} />
+            <Head title={'Create a new Account - Subul'} />
 
             <form onSubmit={handleSubmit}>
                 <div className="bg-background flex h-full min-h-screen flex-1 flex-col gap-4 p-4">
@@ -95,7 +99,7 @@ export default function CreateProductPage() {
                         description={t('Register a new Account and save it.')}
                         onCancel={() => window.history.back()}
                         onSave={() => {}}
-                        form={form}
+                        form={{ ...form, processing: isSubmitting || form.processing }}
                     />
 
                     {/* Product Name */}
