@@ -4,7 +4,7 @@ import { isPosOptionEnabled, POS_OPTION_KEYS } from '@/constants/pos-options';
 import { OrderProduct } from '@/types/models/order-product';
 import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
-import { categoriesApi } from '@/api';
+import { categoriesApi, productsApi } from '@/api';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -86,45 +86,42 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
         return products.length > 0;
     };
 
-    const handleQuantity = (quantity: string, unitOverride?: UnitQuantity) => {
+    const addProductUnit = (product: Product, unit: UnitQuantity, qty: number): boolean => {
+        const quantityInCart = selectedProducts.reduce((acc, item) => {
+            if (item.product_id === product.id && item.unit_quantity_id === unit.id) {
+                return acc + item.quantity;
+            }
+            return acc;
+        }, 0);
+
+        const stockCheck = validateStockAvailability(unit.quantity, qty, quantityInCart);
+        if (!stockCheck.allowed) {
+            toast.warning(t(stockCheck.reason || 'Not enough stock.'));
+            return false;
+        }
+
+        addProductToCart({
+            ...product,
+            unit_quantity_id: unit.id,
+            unit_name: unit.type,
+            quantities: unit,
+            quantity: qty,
+        });
+        return true;
+    };
+
+    const handleQuantity = (quantity: string) => {
         const qty = parseInt(quantity, 10);
         if (isNaN(qty) || qty < 1) {
             return toast.warning(t('Please provide a quantity'));
         }
 
-        const activeUnit = unitOverride ?? selectedUnitQuantity;
-        if (activeUnit && selectProduct) {
-            const quantityInCart = selectedProducts.reduce((acc, product) => {
-                if (
-                    product.product_id === selectProduct?.id &&
-                    product.unit_quantity_id === activeUnit.id
-                ) {
-                    return acc + product.quantity;
-                }
-                return acc;
-            }, 0);
-
-            const stockCheck = validateStockAvailability(
-                activeUnit.quantity,
-                qty,
-                quantityInCart,
-            );
-
-            if (!stockCheck.allowed) {
-                return toast.warning(t(stockCheck.reason || 'Not enough stock.'));
+        if (selectedUnitQuantity && selectProduct) {
+            if (addProductUnit(selectProduct, selectedUnitQuantity, qty)) {
+                setSelectProduct(undefined);
+                setSelectedUnitQuantity(undefined);
+                setIsSelectingUnit(false);
             }
-
-            const ProductData = {
-                ...selectProduct,
-                unit_quantity_id: activeUnit.id,
-                unit_name: activeUnit.type,
-                quantities: activeUnit,
-                quantity: qty,
-            };
-            addProductToCart(ProductData);
-            setSelectProduct(undefined);
-            setSelectedUnitQuantity(undefined);
-            setIsSelectingUnit(false);
         }
     };
 
@@ -139,26 +136,55 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
     const handleClickOnProduct = async (product: Product) => {
         if (isSelectingUnit) return;
         setIsSelectingUnit(true);
-        setSelectProduct(product);
-        setSelectedUnitQuantity(undefined);
         try {
-            if (product.id) {
-                const unitQuantity: UnitQuantity | null = await openDialog('selectQuantity');
-                if (unitQuantity) {
-                    setSelectedUnitQuantity(unitQuantity);
+            if (!product.id) return;
 
-                    // "Show Quantity" off → default quantity (1) straight to
-                    // the cart, skipping the quantity pad.
-                    if (!isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) {
-                        handleQuantity('1', unitQuantity);
-                        return;
-                    }
+            // "Show Quantity" off → resolve the unit inline: a single unit or
+            // the configured default goes straight to the cart (no dialogs).
+            if (!isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) {
+                const units = await productsApi.getUnitQuantities(product.id);
+                if (units.length === 0) {
+                    toast.error(t('Unable to proceed, no product were provided.'));
+                    return;
+                }
 
-                    quantityKeypad.openKeypad();
-                } else {
+                const defaultUnitId = options.sb_subul_quick_product_default_unit;
+                let resolved: UnitQuantity | null = null;
+                if (units.length === 1) {
+                    resolved = units[0];
+                } else if (defaultUnitId) {
+                    resolved =
+                        units.find(
+                            (q) => q.unit?.id === defaultUnitId || q.unit_id === defaultUnitId,
+                        ) ?? null;
+                }
+
+                if (resolved) {
+                    addProductUnit(product, resolved, 1);
+                    return;
+                }
+                // Several units and no default → fall through to the picker.
+            }
+
+            setSelectProduct(product);
+            setSelectedUnitQuantity(undefined);
+
+            const unitQuantity: UnitQuantity | null = await openDialog('selectQuantity');
+            if (unitQuantity) {
+                setSelectedUnitQuantity(unitQuantity);
+
+                // "Show Quantity" off → default quantity (1), no quantity pad.
+                if (!isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) {
+                    addProductUnit(product, unitQuantity, 1);
                     setSelectProduct(undefined);
                     setSelectedUnitQuantity(undefined);
+                    return;
                 }
+
+                quantityKeypad.openKeypad();
+            } else {
+                setSelectProduct(undefined);
+                setSelectedUnitQuantity(undefined);
             }
         } catch {
             setSelectProduct(undefined);
