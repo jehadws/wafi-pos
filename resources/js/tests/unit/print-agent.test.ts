@@ -1,8 +1,24 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import axios from 'axios';
-import { PrintAgentService } from '@/services/print-agent-service';
 
 vi.mock('axios');
+
+vi.mock('@/api/http', () => {
+    const mockInstance = {
+        get: vi.fn(),
+        post: vi.fn(),
+        interceptors: {
+            request: { use: vi.fn() },
+            response: { use: vi.fn() },
+        },
+    };
+    return {
+        http: mockInstance,
+        refreshCsrfToken: vi.fn(),
+    };
+});
+
+import { PrintAgentService } from '@/services/print-agent-service';
 const mockedAxios = vi.mocked(axios, true);
 
 describe('PrintAgentService', () => {
