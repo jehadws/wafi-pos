@@ -141,7 +141,7 @@ interface SbPosOptions {
   sb_subul_registers_enabled: 'yes' | 'no';
   sb_subul_idle_counter: 'disabled' | '5min' | '10min' | '15min' | '20min' | '30min' | number;
   sb_subul_disbursement: 'yes' | 'no';
-  sb_customers_default: boolean;
+  sb_customers_default: number | string | false | null; // Walk-in default customer id ("Default Customer Account" in Customers settings)
   sb_subul_vat: 'disabled' | 'flat_vat' | 'variable_vat' | 'products_vat';
   sb_subul_tax_group: number | string | null; // TaxGroup id
   sb_subul_tax_type: 'inclusive' | 'exclusive' | false;

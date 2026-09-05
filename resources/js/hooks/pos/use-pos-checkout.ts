@@ -1,8 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Customer } from '@/types/module';
 import { Order } from '@/types/models/order';
 import { OrderType } from '@/types/models/order-type';
 
+/**
+ * Owns the visibility of the checkout dialogs (customer select, order type,
+ * shipping, payment gateway). Dialogs are opened explicitly by the UI.
+ *
+ * Defaults for customer / order type are assigned when the POS boots
+ * (pages/dashboard/pos.tsx), so the Pay-time customer/type checks in
+ * payment-actions.tsx act as fallbacks only — not as a forced flow.
+ */
 export interface UsePosCheckoutOptions {
     order: Order;
     selectCustomer: (customer: Customer) => void;
@@ -23,20 +31,6 @@ export function usePosCheckout({
     const [showPaymentGatewayDialog, setShowPaymentGatewayDialog] = useState(false);
     const [useBillingAddress, setUseBillingAddress] = useState(false);
     const [useShippingAddress, setUseShippingAddress] = useState(false);
-    const [shouldValidate, setShouldValidate] = useState(false);
-
-    // Validation sequence when payment is triggered
-    useEffect(() => {
-        if (shouldValidate) {
-            if (!order.customer || !order.customer_id) {
-                setShowSelectCustomerDialog(true);
-            } else if (!order.type) {
-                setShowOrderTypeDialog(true);
-            } else {
-                setShouldValidate(false);
-            }
-        }
-    }, [shouldValidate, order.customer, order.customer_id, order.type]);
 
     const handleSelectCustomer = (customer: Customer) => {
         selectCustomer(customer);
@@ -72,8 +66,6 @@ export function usePosCheckout({
         setUseBillingAddress,
         useShippingAddress,
         setUseShippingAddress,
-        shouldValidate,
-        setShouldValidate,
         handleSelectCustomer,
         handleSelectOrderType,
         openCustomerDetails,

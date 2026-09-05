@@ -31,6 +31,7 @@ import { computeOrderTaxes, computeOrderTaxGroup } from '@/services/cart-engine'
 import { sumProductsTotals } from '@/services/cart-engine';
 import { defineQuantities } from '@/services/order-quantities';
 import { executeOrderSubmission } from '@/services/order-submission';
+import { LAST_ORDER_TYPE_STORAGE_KEY } from '@/services/pos-defaults';
 
 // Slices
 import {
@@ -529,6 +530,14 @@ export const usePOS = create<POSStore>((set, get) => ({
         };
         set({ order });
         get().refreshCart();
+
+        // Remember the cashier's last used type so new carts on this
+        // terminal start where they left off (see services/pos-defaults.ts).
+        try {
+            localStorage.setItem(LAST_ORDER_TYPE_STORAGE_KEY, type.identifier);
+        } catch {
+            // Storage unavailable (private mode etc.) — non-fatal.
+        }
     },
 
     updateAddress: (type: 'billing' | 'shipping', address: any) => {

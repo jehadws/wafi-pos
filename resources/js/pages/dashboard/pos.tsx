@@ -2,7 +2,13 @@ import PosSystem from '@/components/pos/pos-system';
 import ErrorBoundary from '@/components/feedback/error-boundary';
 import { OpenRegisterDialog } from '@/components/pos/open-register-dialog';
 import { RegisterSessionDialog } from '@/components/pos/register-session-dialog';
+import { customersApi } from '@/api';
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
+import {
+  LAST_ORDER_TYPE_STORAGE_KEY,
+  pickDefaultOrderType,
+  resolveDefaultCustomerId,
+} from '@/services/pos-defaults';
 import { usePOS } from '@/hooks/usePOS';
 import { usePosBeforeUnload } from '@/hooks/use-pos-before-unload';
 import { useRegisterSession } from '@/hooks/pos/use-register-session';
@@ -10,6 +16,7 @@ import { useTranslation } from '@/lib/i18n';
 import { Head, usePage } from '@inertiajs/react';
 import { useEffect } from 'react';
 import { Toaster } from 'sonner';
+import { PaymentType } from '@/types/models/payment-type';
 
 /** Static map of identifier → OrderTypeObj shape (mirrors order-type-dialog.tsx) */
 const ORDER_TYPE_MAP: Record<string, Omit<OrderTypeObj, 'selected'>> = {
@@ -19,12 +26,13 @@ const ORDER_TYPE_MAP: Record<string, Omit<OrderTypeObj, 'selected'>> = {
 
 export default function PosPage() {
   const { t } = useTranslation();
-  const { settings, options, license } = usePage().props as unknown as { 
+  const { settings, options, license, paymentTypes } = usePage().props as unknown as { 
     settings: any; 
     options: SbPosOptions;
     license?: { isValid: boolean; isRestricted: boolean; hwid: string };
+    paymentTypes: PaymentType[];
   };
-  const { defineOptions, defineSettings, initialize, processInitialQueue, setAutoMerge, setOrderType, order } = usePOS();
+  const { defineOptions, defineSettings, initialize, processInitialQueue, setAutoMerge, setOrderType, order, definedPaymentsType } = usePOS();
 
   usePosBeforeUnload();
 
@@ -40,6 +48,13 @@ export default function PosPage() {
     }
   }, [options, settings]);
 
+  // Load payment types from backend into the store.
+  useEffect(() => {
+    if (paymentTypes?.length) {
+      definedPaymentsType(paymentTypes);
+    }
+  }, [paymentTypes]);
+
   // Run the initialization queue exactly once on mount.
   useEffect(() => {
     initialize();
@@ -48,17 +63,47 @@ export default function PosPage() {
     });
   }, []);
 
-  // Auto-select order type when exactly one type is enabled
+  // Auto-select order type for new carts:
+  // last used on this terminal → single enabled type → takeaway → first enabled
   useEffect(() => {
-    const enabledTypes = options[POS_OPTION_KEYS.orderTypes];
-    if (Array.isArray(enabledTypes) && enabledTypes.length === 1 && !order.type) {
-      const identifier = enabledTypes[0];
-      const meta = ORDER_TYPE_MAP[identifier];
-      if (meta) {
-        setOrderType({ ...meta, selected: true } as OrderTypeObj);
-      }
+    if (order.type) return;
+
+    let lastUsed: string | null = null;
+    try {
+      lastUsed = localStorage.getItem(LAST_ORDER_TYPE_STORAGE_KEY);
+    } catch {
+      lastUsed = null;
+    }
+
+    const identifier = pickDefaultOrderType(options[POS_OPTION_KEYS.orderTypes], lastUsed);
+    const meta = identifier ? ORDER_TYPE_MAP[identifier] : undefined;
+    if (meta) {
+      setOrderType({ ...meta, selected: true } as OrderTypeObj);
     }
   }, [options[POS_OPTION_KEYS.orderTypes]]);
+
+  // Auto-assign the shop's default (walk-in) customer to new carts when configured.
+  // Shops without a default customer keep the explicit select-customer requirement.
+  useEffect(() => {
+    const defaultCustomerId = resolveDefaultCustomerId(options);
+    if (!defaultCustomerId || order.customer) return;
+
+    let cancelled = false;
+    customersApi
+      .get(defaultCustomerId)
+      .then((customer) => {
+        if (!cancelled && customer) {
+          return usePOS.getState().selectCustomer(customer);
+        }
+      })
+      .catch((error) => {
+        console.warn('[POS] Failed to load or assign the default customer:', error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [options[POS_OPTION_KEYS.defaultCustomer]]);
 
   if (license && (license.isRestricted || !license.isValid)) {
     return (

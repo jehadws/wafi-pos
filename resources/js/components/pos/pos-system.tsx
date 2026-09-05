@@ -313,7 +313,8 @@ export default function PosSystem() {
 
           <PaymentActions
             setShowPaymentGatewayDialog={checkout.setShowPaymentGatewayDialog}
-            setShouldValidate={checkout.setShouldValidate}
+            onOpenSelectCustomerDialog={() => checkout.setShowSelectCustomerDialog(true)}
+            onOpenOrderTypeDialog={() => checkout.setShowOrderTypeDialog(true)}
             useBillingAddress={checkout.useBillingAddress}
             useShippingAddress={checkout.useShippingAddress}
             resetCart={resetCart}

@@ -72,6 +72,7 @@ Runtime consumers get values from the flat `options` object built in `OrdersCont
 | `sb_subul_force_autofocus` | yes/no→bool | features.php | Sent as bool | **ALIVE** |
 | `sb_subul_hide_exhausted_products` | yes/no | features.php | Sent; typed string | **ALIVE** |
 | `sb_subul_hide_empty_categories` | yes/no, 'yes' | features.php | Sent; product category filtering | **ALIVE** |
+| `sb_customers_default` | customer id (searchSelect) | CustomersSettings.php:44 (outside POS tabs) | POS walk-in default customer — `services/pos-defaults.ts` resolve + `pages/dashboard/pos.tsx` auto-assign effect | **ALIVE** (POS runtime) |
 
 **Orphan options** — sent by backend, editable nowhere: `sb_subul_order_sms` (`OrdersController.php:205`), `sb_subul_sound_enabled` (:206), `sb_customers_credit_enabled` (:230), customer constraints (:232-235), `sb_invoice_receipt_template/logo/footer/merge/display` (:237-241).
 

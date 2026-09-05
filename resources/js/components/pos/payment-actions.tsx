@@ -12,16 +12,18 @@ import { Input } from '@/components/ui/input';
 
 type Props = {
   setShowPaymentGatewayDialog: (value: boolean) => void;
+  onOpenSelectCustomerDialog: () => void;
+  onOpenOrderTypeDialog: () => void;
   useBillingAddress: boolean;
   useShippingAddress: boolean;
   resetCart: () => void;
-  setShouldValidate: (value: boolean) => void;
   onOpenDiscountDialog: () => void;
 };
 
 export default function PaymentActions({
   onOpenDiscountDialog,
-  setShouldValidate,
+  onOpenSelectCustomerDialog,
+  onOpenOrderTypeDialog,
   setShowPaymentGatewayDialog,
   useBillingAddress,
   useShippingAddress,
@@ -38,14 +40,16 @@ export default function PaymentActions({
       toast.error(t('You need to provide some products before proceeding'));
       return;
     }
+    // Fallback gates only — with a walk-in default customer configured and
+    // order-type auto-selection these are already satisfied before Pay.
     if (!order.customer || !order.customer_id) {
       toast.warning(t('Please select a customer before proceeding to payment'));
-      setShouldValidate(true);
+      onOpenSelectCustomerDialog();
       return;
     }
     if (!order.type) {
       toast.warning(t('Please select an order type before proceeding to payment'));
-      setShouldValidate(true);
+      onOpenOrderTypeDialog();
       return;
     }
     setShowPaymentGatewayDialog(true);
@@ -124,12 +128,12 @@ export default function PaymentActions({
             }
             if (!order.customer || !order.customer_id) {
               toast.warning(t('Please select a customer before holding the order'));
-              setShouldValidate(true);
+              onOpenSelectCustomerDialog();
               return;
             }
             if (!order.type) {
               toast.warning(t('Please select an order type before holding the order'));
-              setShouldValidate(true);
+              onOpenOrderTypeDialog();
               return;
             }
 
