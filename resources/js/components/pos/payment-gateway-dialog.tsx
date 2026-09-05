@@ -8,7 +8,6 @@ import { Order } from '@/types/models/order';
 import { formatCurrency } from '@/utils/format';
 import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
 import { submitAndFinalizeOrder } from '@/services/order-finalize';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { NumberPad } from './number-pad';
@@ -41,8 +40,6 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
   );
   const [screenValue, setScreenValue] = useState('0.00');
   const [rawValue, setRawValue] = useState(0);
-  const [isSaveAsUnpaidOpen, setIsSaveAsUnpaidOpen] = useState(false);
-  const [isConfirmFullPaymentOpen, setIsConfirmFullPaymentOpen] = useState(false);
 
   // Parse amount shortcuts from options
   const amountShortcuts: number[] = (() => {
@@ -203,7 +200,11 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
                   onNumberClick={handleNumberInput}
                   onBackspace={handleBackspace}
                   onConfirm={() => handleConfirmPayment(selectedMethod)}
-                  handleFullPayment={() => setIsConfirmFullPaymentOpen(true)}
+                  handleFullPayment={() => {
+                    if ('identifier' in selectedMethod) {
+                      handleFullPayment(selectedMethod);
+                    }
+                  }}
                 />
               </div>
             )}
@@ -242,10 +243,10 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
               {t('Edit')}
             </Button>
           )}
-          {order.tendered === 0 && (
+          {order.tendered === 0 && options[POS_OPTION_KEYS.allowUnpaid] !== 'no' && (
             <>
               <Button
-                onClick={() => setIsSaveAsUnpaidOpen(true)}
+                onClick={() => handleSaveAsUnpaid()}
                 className="bg-blue-600 px-6 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800"
               >
                 {t('Unpaid')}
@@ -263,32 +264,6 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
           )}
         </div>
 
-        <ConfirmationDialog
-          isOpen={isSaveAsUnpaidOpen}
-          onClose={() => setIsSaveAsUnpaidOpen(false)}
-          onConfirm={() => {
-            handleSaveAsUnpaid();
-            setIsSaveAsUnpaidOpen(false);
-          }}
-          title={t('Unpaid')}
-          description={t('Would you like to save this order as unpaid?')}
-        />
-
-        <ConfirmationDialog
-          isOpen={isConfirmFullPaymentOpen}
-          onClose={() => setIsConfirmFullPaymentOpen(false)}
-          onConfirm={() => {
-            if (selectedMethod !== 'payment-list') {
-              handleFullPayment(selectedMethod);
-            }
-            setIsConfirmFullPaymentOpen(false);
-          }}
-          title={t('Confirm Full Payment')}
-          description={t('A full payment will be made using {paymentType} for {total}', {
-            paymentType: selectedMethod !== 'payment-list' ? selectedMethod.label : '',
-            total: formatCurrency(total),
-          })}
-        />
       </DialogContent>
     </Dialog>
   );

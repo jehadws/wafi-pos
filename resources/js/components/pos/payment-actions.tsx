@@ -21,6 +21,8 @@ type Props = {
   useShippingAddress: boolean;
   resetCart: () => void;
   onOpenDiscountDialog: () => void;
+  holdDialogOpen: boolean;
+  onHoldDialogOpenChange: (open: boolean) => void;
 };
 
 export default function PaymentActions({
@@ -31,10 +33,11 @@ export default function PaymentActions({
   useBillingAddress,
   useShippingAddress,
   resetCart,
+  holdDialogOpen,
+  onHoldDialogOpenChange,
 }: Props) {
   const { order, products, submitOrder } = usePOS();
   const { t } = useTranslation();
-  const [isOpen, setIsOpen] = useState(false);
   const [isVoidOpen, setIsVoidOpen] = useState(false);
   const [holdTitle, setHoldTitle] = useState('');
 
@@ -117,9 +120,10 @@ export default function PaymentActions({
       toast.success(t('Order Placed as On Hold'));
       resetCart();
       setHoldTitle('');
-      setIsOpen(false);
-    } catch (error: any) {
-      toast.error(error?.message || t('Something went wrong. Please try again'));
+      onHoldDialogOpenChange(false);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : undefined;
+      toast.error(message || t('Something went wrong. Please try again'));
     }
   };
 
@@ -200,7 +204,7 @@ export default function PaymentActions({
               return;
             }
 
-            setIsOpen(true);
+            onHoldDialogOpenChange(true);
           }}
           className={cn(
             'group flex h-14 flex-col items-center justify-center gap-0.5 rounded-none border-e transition-all duration-150',
@@ -257,7 +261,7 @@ export default function PaymentActions({
           <span className="text-[11px] opacity-80">{t('Cancel Order')}</span>
         </Button>
       </div>
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog open={holdDialogOpen} onOpenChange={onHoldDialogOpenChange}>
         <DialogContent className={''}>
           <DialogHeader>
             <DialogTitle>{t('Hold Order')}</DialogTitle>
@@ -282,7 +286,7 @@ export default function PaymentActions({
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={() => setIsOpen(false)} variant="outline" className="flex-1">
+            <Button onClick={() => onHoldDialogOpenChange(false)} variant="outline" className="flex-1">
               {t('Cancel')}
             </Button>
             <Button onClick={handleOnHold} variant="default" className="flex-1">
