@@ -11,7 +11,6 @@
 
 import { Payment } from '@/types/models/payment';
 import { PaymentType } from '@/types/models/payment-type';
-import { buildDefaultPaymentTypes } from '@/constants/payment-methods';
 import type { POSStore } from './pos-store-types';
 import { StateCreator } from 'zustand';
 import { toast } from 'sonner';
@@ -44,9 +43,9 @@ export type PaymentsSlice = PaymentsSliceState & PaymentsSliceActions;
 // ---------------------------------------------------------------------------
 
 export const createPaymentsSlice: StateCreator<POSStore, [], [], PaymentsSlice> = (set, get) => ({
-    // Initial state
-    paymentsType: buildDefaultPaymentTypes(),
-    selectedPaymentType: buildDefaultPaymentTypes()[0] ?? null,
+    // Initial state — empty until backend provides payment types
+    paymentsType: [],
+    selectedPaymentType: null,
 
     addPayment: (payment) => {
         if (payment.value > 0) {
@@ -82,11 +81,7 @@ export const createPaymentsSlice: StateCreator<POSStore, [], [], PaymentsSlice> 
     },
 
     updateCustomerAccount: (payment) => {
-        if (payment.identifier === 'account-payment') {
-            // ✅ Spread customer before mutating so Zustand sees a new reference
-            const customer = { ...get().order.customer, account_amount: (get().order.customer?.account_amount ?? 0) + payment.value };
-            get().selectCustomer(customer);
-        }
+        // Account payment handling is managed by the backend
     },
 
     computePaid: () => {
@@ -123,7 +118,9 @@ export const createPaymentsSlice: StateCreator<POSStore, [], [], PaymentsSlice> 
     },
 
     definedPaymentsType: (payments) => {
-        set({ paymentsType: payments });
+        const sorted = [...payments].sort((a, b) => a.priority - b.priority);
+        const withSelection = sorted.map((p, i) => ({ ...p, selected: i === 0 }));
+        set({ paymentsType: withSelection, selectedPaymentType: withSelection[0] ?? null });
     },
 
     runPaymentQueue: async () => {
