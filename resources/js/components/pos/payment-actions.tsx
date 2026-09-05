@@ -4,9 +4,12 @@ import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/utils/format';
 import { ordersApi } from '@/api';
-import { CreditCard, PauseCircle, Percent, XCircle } from 'lucide-react';
+import { Banknote, CreditCard, PauseCircle, Percent, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { Order } from '@/types/models/order';
+import { submitAndFinalizeOrder } from '@/services/order-finalize';
+import { buildExactCashPayment, canSubmitExactCash } from '@/services/express-checkout';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
@@ -29,31 +32,70 @@ export default function PaymentActions({
   useShippingAddress,
   resetCart,
 }: Props) {
-  const { order, products, submitOrder, reset } = usePOS();
+  const { order, products, submitOrder } = usePOS();
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isVoidOpen, setIsVoidOpen] = useState(false);
   const [holdTitle, setHoldTitle] = useState('');
 
-  const handleSubmit = () => {
+  const ensureCheckoutPrerequisites = () => {
     if (!products.length) {
       toast.error(t('You need to provide some products before proceeding'));
-      return;
+      return false;
     }
     // Fallback gates only — with a walk-in default customer configured and
     // order-type auto-selection these are already satisfied before Pay.
     if (!order.customer || !order.customer_id) {
       toast.warning(t('Please select a customer before proceeding to payment'));
       onOpenSelectCustomerDialog();
-      return;
+      return false;
     }
     if (!order.type) {
       toast.warning(t('Please select an order type before proceeding to payment'));
       onOpenOrderTypeDialog();
-      return;
+      return false;
     }
+    return true;
+  };
+
+  const handleSubmit = () => {
+    if (!ensureCheckoutPrerequisites()) return;
     setShowPaymentGatewayDialog(true);
   };
+
+  // Express path — one exact cash payment, no payment screen. Shares the
+  // same submit + finalization pipeline as the payment screen.
+  const handleSubmitExactCash = () => {
+    if (!canSubmitExactCash(order, products.length)) return;
+    if (!ensureCheckoutPrerequisites()) return;
+
+    const total = order.total || 0;
+    const orderData = {
+      ...order,
+      payment_status: 'paid',
+      payments: [buildExactCashPayment(total, t('Cash Payment'))],
+      tendered: total,
+      customer: {
+        ...order.customer,
+        selected: true,
+      },
+      addresses: {
+        billing: useBillingAddress ? order.customer?.billing : order.addresses?.billing,
+        shipping: useShippingAddress ? order.customer?.shipping : order.addresses?.shipping,
+      },
+    } as Order;
+
+    submitAndFinalizeOrder({
+      order,
+      orderData,
+      products,
+      submitOrder,
+      printOrderReceipt: (receiptOrder) => usePOS.getState().printOrderReceipt(receiptOrder),
+      resetCart,
+    });
+  };
+
+  const exactCashEligible = canSubmitExactCash(order, products.length);
 
   const handleOnHold = async () => {
     try {
@@ -91,19 +133,20 @@ export default function PaymentActions({
         resetCart();
         setIsVoidOpen(false);
       }
-    } catch (error) {
+    } catch {
       toast.error(t('Something went wrong. Please try again'));
     }
   };
 
   return (
     <>
-      <div className="grid grid-cols-4 border-t">
+      <div className={cn('grid border-t', exactCashEligible ? 'grid-cols-6' : 'grid-cols-4')}>
         <Button
           className={cn(
             'group relative flex h-14 flex-col items-center justify-center gap-0.5 rounded-none border-e font-semibold transition-all duration-150',
             'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.98] dark:bg-emerald-600 dark:hover:bg-emerald-500',
-            'col-span-1 shadow-sm',
+            'shadow-sm',
+            exactCashEligible ? 'col-span-2' : 'col-span-1',
           )}
           onClick={handleSubmit}
           type="button"
@@ -116,6 +159,26 @@ export default function PaymentActions({
             {formatCurrency(order.total || 0)}
           </span>
         </Button>
+        {exactCashEligible && (
+          <Button
+            className={cn(
+              'group relative flex h-14 flex-col items-center justify-center gap-0.5 rounded-none border-e font-semibold transition-all duration-150',
+              'bg-emerald-600/90 text-white hover:bg-emerald-700 active:scale-[0.98] dark:bg-emerald-600 dark:hover:bg-emerald-500',
+              'col-span-1 shadow-sm',
+            )}
+            onClick={handleSubmitExactCash}
+            type="button"
+            title={t('Pay the exact total in cash — skips the payment screen')}
+          >
+            <div className="flex items-center gap-1.5 text-sm leading-none">
+              <Banknote className="h-4 w-4 transition-transform group-hover:scale-110" />
+              <span>{t('Cash')}</span>
+            </div>
+            <span className="text-[11px] font-semibold tracking-wide opacity-95">
+              {t('Exact Amount')}
+            </span>
+          </Button>
+        )}
         <Button
           onClick={() => {
             if (order.tendered > 0) {
