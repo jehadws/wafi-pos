@@ -8,7 +8,7 @@
  * entry point that boots the POS.
  */
 
-import { POS_OPTION_KEYS } from '@/constants/pos-options';
+import { isPosOptionEnabled, POS_OPTION_KEYS } from '@/constants/pos-options';
 
 /** localStorage key holding the last order type used on this terminal. */
 export const LAST_ORDER_TYPE_STORAGE_KEY = 'sb_pos_last_order_type';
@@ -50,4 +50,15 @@ export function resolveDefaultCustomerId(options: Record<string, any>): number |
     const raw = options?.[POS_OPTION_KEYS.defaultCustomer];
     const id = Number(raw);
     return Number.isFinite(id) && id > 0 ? id : null;
+}
+
+/**
+ * True when a scanned product can be added straight to the cart with the
+ * default quantity (1): the "Show Quantity" setting (sb_subul_show_quantity)
+ * is off — meaning "use the default quantity" per its description — and the
+ * barcode lookup resolved which unit quantity to use.
+ */
+export function canAddBarcodeSilently(options: Record<string, any>, product: any): boolean {
+    if (isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) return false;
+    return Boolean(product?.product?.selectedUnitQuantity);
 }

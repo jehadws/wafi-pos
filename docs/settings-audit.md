@@ -60,7 +60,7 @@ Runtime consumers get values from the flat `options` object built in `OrdersCont
 | `sb_subul_tax_group` / `sb_subul_tax_type` | id / inclusive-exclusive | vat.php | `use-pos-session.ts:90-93` assigns to new order | **ALIVE** |
 | `sb_subul_keyboard_*` (10 actions) | key arrays | shortcuts.php | `hooks/use-pos-shortcuts.ts:58-83` | **ALIVE** |
 | `sb_subul_amount_shortcut` | number | shortcuts.php | Registered in constants; no verified consumer | **PARTIAL** |
-| `sb_subul_show_quantity` | yes/no→bool | features.php | Sent as bool (`OrdersController.php:220`); typed boolean (`pos.d.ts:151`) | **ALIVE** |
+| `sb_subul_show_quantity` | yes/no→bool | features.php | `services/pos-defaults.ts` `canAddBarcodeSilently` — gates silent barcode add (`pos-system.tsx`) and quantity-pad skip on product clicks (`products-categories-panel.tsx`) | **ALIVE** |
 | `sb_subul_items_merge` | yes/no→bool | features.php | `pos.tsx:28-30` → `setAutoMerge` | **ALIVE** |
 | `sb_subul_allow_wholesale_price` | yes/no→bool | features.php | Sent as bool; typed boolean | **ALIVE** (POS gating) |
 | `sb_subul_allow_decimal_quantities` | yes/no→bool | features.php | Sent as bool | **ALIVE** |

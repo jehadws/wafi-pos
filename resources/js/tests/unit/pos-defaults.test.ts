@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
     LAST_ORDER_TYPE_STORAGE_KEY,
+    canAddBarcodeSilently,
     pickDefaultOrderType,
     resolveDefaultCustomerId,
 } from '@/services/pos-defaults';
@@ -59,6 +60,34 @@ describe('services/pos-defaults.ts', () => {
             expect(
                 resolveDefaultCustomerId({ [POS_OPTION_KEYS.defaultCustomer]: 'abc' }),
             ).toBeNull();
+        });
+    });
+
+    describe('canAddBarcodeSilently', () => {
+        const scanned = {
+            product: { id: 1, selectedUnitQuantity: { id: 5, unit: { id: 2 } } },
+        };
+
+        it('adds silently when Show Quantity is off and a unit was resolved', () => {
+            expect(
+                canAddBarcodeSilently({ [POS_OPTION_KEYS.showQuantity]: false }, scanned),
+            ).toBe(true);
+            expect(canAddBarcodeSilently({}, scanned)).toBe(true);
+        });
+
+        it('prompts when Show Quantity is enabled', () => {
+            expect(
+                canAddBarcodeSilently({ [POS_OPTION_KEYS.showQuantity]: true }, scanned),
+            ).toBe(false);
+            expect(
+                canAddBarcodeSilently({ [POS_OPTION_KEYS.showQuantity]: 'yes' }, scanned),
+            ).toBe(false);
+        });
+
+        it('prompts when the scan did not resolve a unit quantity', () => {
+            expect(canAddBarcodeSilently({}, { product: { id: 1 } })).toBe(false);
+            expect(canAddBarcodeSilently({}, null)).toBe(false);
+            expect(canAddBarcodeSilently({}, undefined)).toBe(false);
         });
     });
 });

@@ -31,6 +31,7 @@ import {
   usePosCheckout,
   usePosDialogCoordinator,
 } from '@/hooks/pos';
+import { canAddBarcodeSilently } from '@/services/pos-defaults';
 import { validateStockAvailability } from '@/services/stock';
 
 // Lazy-loaded dialogs for performance & smaller initial bundle
@@ -127,6 +128,14 @@ export default function PosSystem() {
   const barcodeSearch = useBarcodeSearch({
     onProductFound: (product) => {
       dialogs.setSelectedProduct(product);
+
+      // Express scan: with "Show Quantity" off, a scan that already resolved
+      // its unit goes straight to the cart with the default quantity (1).
+      if (canAddBarcodeSilently(options, product)) {
+        addProductWithUnit(product, 1);
+        return;
+      }
+
       dialogs.quantityKeypad.openKeypad();
     },
   });
@@ -201,63 +210,67 @@ export default function PosSystem() {
     cartSelection.deselectAllItems();
   };
 
+  const addProductWithUnit = (product: any, qty: number) => {
+    const selectedUnit = product?.product?.selectedUnitQuantity;
+    if (!selectedUnit) return;
+
+    const currentInCart = products.reduce(
+      (acc, p) => (p.product_id === product.product.id ? acc + p.quantity : acc),
+      0,
+    );
+
+    const stockCheck = validateStockAvailability(selectedUnit.quantity, qty, currentInCart);
+    if (!stockCheck.allowed) {
+      toast.warning(t(stockCheck.reason || 'Not enough stock.'));
+      return;
+    }
+
+    addToCart({
+      order_id: null,
+      product_id: product.product.id,
+      name: product.product.name,
+      discount_type: 'percentage',
+      discount: 0,
+      discount_percentage: 0,
+      product_type: product.type,
+      rate: product.product.tax_group?.taxes?.reduce(
+        (acc: number, tax: any) => acc + +tax.rate,
+        0,
+      ) || 0,
+      quantity: qty,
+      tax_group_id: +(product.product.tax_group_id || 0),
+      tax_type: product.product.tax_type,
+      tax_value: selectedUnit.sale_price_tax,
+      unit_id: selectedUnit.unit.id,
+      unit_price: selectedUnit.sale_price,
+      price_with_tax: selectedUnit.sale_price_with_tax,
+      price_without_tax: selectedUnit.sale_price_without_tax,
+      unit_name: selectedUnit.unit.name,
+      total_price: isPriceWithTax(options)
+        ? selectedUnit.sale_price_with_tax * qty
+        : selectedUnit.sale_price_without_tax * qty,
+      total_price_without_tax: selectedUnit.sale_price_without_tax * qty,
+      total_price_with_tax: selectedUnit.sale_price_with_tax * qty,
+      mode: 'normal',
+      unit_quantity_id: selectedUnit.id,
+      total_tax_value: selectedUnit.sale_price_tax * qty,
+      _uuid: `${product.product.id}-${selectedUnit.unit.id}-${Date.now()}`,
+    });
+
+    if (barcodeSearch.isAutoFocusOpen && barcodeSearch.inputRef.current) {
+      setTimeout(() => {
+        barcodeSearch.inputRef.current?.focus();
+      }, 0);
+    }
+  };
+
   const handleSelectUnit = (quantity: string) => {
     const qty = parseInt(quantity, 10);
     if (isNaN(qty) || qty < 1) {
       return toast.warning(t('Not enough quantity to proceed.'));
     }
 
-    const selectedProduct = dialogs.selectedProduct;
-    if (selectedProduct && selectedProduct.product?.selectedUnitQuantity) {
-      const selectedUnit = selectedProduct.product.selectedUnitQuantity;
-      const currentInCart = products.reduce(
-        (acc, p) => (p.product_id === selectedProduct.product.id ? acc + p.quantity : acc),
-        0,
-      );
-
-      const stockCheck = validateStockAvailability(selectedUnit.quantity, qty, currentInCart);
-      if (!stockCheck.allowed) {
-        return toast.warning(t(stockCheck.reason || 'Not enough stock.'));
-      }
-
-      addToCart({
-        order_id: null,
-        product_id: selectedProduct.product.id,
-        name: selectedProduct.product.name,
-        discount_type: 'percentage',
-        discount: 0,
-        discount_percentage: 0,
-        product_type: selectedProduct.type,
-        rate: selectedProduct.product.tax_group?.taxes?.reduce(
-          (acc: number, tax: any) => acc + +tax.rate,
-          0,
-        ) || 0,
-        quantity: qty,
-        tax_group_id: +(selectedProduct.product.tax_group_id || 0),
-        tax_type: selectedProduct.product.tax_type,
-        tax_value: selectedUnit.sale_price_tax,
-        unit_id: selectedUnit.unit.id,
-        unit_price: selectedUnit.sale_price,
-        price_with_tax: selectedUnit.sale_price_with_tax,
-        price_without_tax: selectedUnit.sale_price_without_tax,
-        unit_name: selectedUnit.unit.name,
-        total_price: isPriceWithTax(options)
-          ? selectedUnit.sale_price_with_tax * qty
-          : selectedUnit.sale_price_without_tax * qty,
-        total_price_without_tax: selectedUnit.sale_price_without_tax * qty,
-        total_price_with_tax: selectedUnit.sale_price_with_tax * qty,
-        mode: 'normal',
-        unit_quantity_id: selectedUnit.id,
-        total_tax_value: selectedUnit.sale_price_tax * qty,
-        _uuid: `${selectedProduct.product.id}-${selectedUnit.unit.id}-${Date.now()}`,
-      });
-
-      if (barcodeSearch.isAutoFocusOpen && barcodeSearch.inputRef.current) {
-        setTimeout(() => {
-          barcodeSearch.inputRef.current?.focus();
-        }, 0);
-      }
-    }
+    addProductWithUnit(dialogs.selectedProduct, qty);
   };
 
   return (

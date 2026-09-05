@@ -1,6 +1,6 @@
 import { useNumericKeypad } from '@/hooks/use-numeric-keypad';
 import { usePOS } from '@/hooks/usePOS';
-import { POS_OPTION_KEYS } from '@/constants/pos-options';
+import { isPosOptionEnabled, POS_OPTION_KEYS } from '@/constants/pos-options';
 import { OrderProduct } from '@/types/models/order-product';
 import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
@@ -22,7 +22,7 @@ type Props = {
 
 export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
     const { t } = useTranslation();
-    const { addToCart: addProductToCart, openDialog, options, processingAddQueue } = usePOS();
+    const { addToCart: addProductToCart, openDialog, options } = usePOS();
     // `clothing_shop` layout: products show a badge-style name + price below the image.
     const isClothingLayout = options[POS_OPTION_KEYS.layout] === 'clothing_shop';
     const [categories, setCategories] = useState<CategoryProduct[]>([]);
@@ -86,17 +86,18 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
         return products.length > 0;
     };
 
-    const handleQuantity = (quantity: string) => {
+    const handleQuantity = (quantity: string, unitOverride?: UnitQuantity) => {
         const qty = parseInt(quantity, 10);
         if (isNaN(qty) || qty < 1) {
             return toast.warning(t('Please provide a quantity'));
         }
 
-        if (selectedUnitQuantity && selectProduct) {
+        const activeUnit = unitOverride ?? selectedUnitQuantity;
+        if (activeUnit && selectProduct) {
             const quantityInCart = selectedProducts.reduce((acc, product) => {
                 if (
                     product.product_id === selectProduct?.id &&
-                    product.unit_quantity_id === selectedUnitQuantity.id
+                    product.unit_quantity_id === activeUnit.id
                 ) {
                     return acc + product.quantity;
                 }
@@ -104,7 +105,7 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
             }, 0);
 
             const stockCheck = validateStockAvailability(
-                selectedUnitQuantity.quantity,
+                activeUnit.quantity,
                 qty,
                 quantityInCart,
             );
@@ -115,9 +116,9 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
 
             const ProductData = {
                 ...selectProduct,
-                unit_quantity_id: selectedUnitQuantity.id,
-                unit_name: selectedUnitQuantity.type,
-                quantities: selectedUnitQuantity,
+                unit_quantity_id: activeUnit.id,
+                unit_name: activeUnit.type,
+                quantities: activeUnit,
                 quantity: qty,
             };
             addProductToCart(ProductData);
@@ -145,13 +146,21 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
                 const unitQuantity: UnitQuantity | null = await openDialog('selectQuantity');
                 if (unitQuantity) {
                     setSelectedUnitQuantity(unitQuantity);
+
+                    // "Show Quantity" off → default quantity (1) straight to
+                    // the cart, skipping the quantity pad.
+                    if (!isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) {
+                        handleQuantity('1', unitQuantity);
+                        return;
+                    }
+
                     quantityKeypad.openKeypad();
                 } else {
                     setSelectProduct(undefined);
                     setSelectedUnitQuantity(undefined);
                 }
             }
-        } catch (error) {
+        } catch {
             setSelectProduct(undefined);
             setSelectedUnitQuantity(undefined);
         } finally {
