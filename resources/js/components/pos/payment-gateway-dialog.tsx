@@ -202,7 +202,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
                 <NumberPad
                   onNumberClick={handleNumberInput}
                   onBackspace={handleBackspace}
-                  onConfirm={() => selectedMethod !== 'payment-list' && handleConfirmPayment(selectedMethod)}
+                  onConfirm={() => handleConfirmPayment(selectedMethod)}
                   handleFullPayment={() => setIsConfirmFullPaymentOpen(true)}
                 />
               </div>
