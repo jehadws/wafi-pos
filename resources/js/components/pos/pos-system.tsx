@@ -10,11 +10,12 @@ import { useRTL } from '@/hooks/use-rtl';
 import { useShallow } from 'zustand/react/shallow';
 import { usePOS } from '@/hooks/usePOS';
 import { OrderProduct } from '@/types/models/order-product';
+import { TaxItem } from '@/types/models/tax';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Barcode, Search, Shrink } from 'lucide-react';
 import { toast } from 'sonner';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -98,6 +99,11 @@ export default function PosSystem() {
   const { isRTL } = useRTL();
   const registersEnabled = options[POS_OPTION_KEYS.registersEnabled] === 'yes';
 
+  // Dialog open-states lifted here so keyboard shortcuts can drive them.
+  const [isHoldDialogOpen, setIsHoldDialogOpen] = useState(false);
+  const [isCommentsDialogOpen, setIsCommentsDialogOpen] = useState(false);
+  const [customerDialogCreateMode, setCustomerDialogCreateMode] = useState(false);
+
   // ─── Application Orchestration Hooks ─────────────────────────────────
   const checkout = usePosCheckout({
     order,
@@ -150,6 +156,12 @@ export default function PosSystem() {
     onOrderType: () => checkout.setShowOrderTypeDialog(true),
     onQuickSearch: () => dialogs.setShowSearchProductsDialog(true),
     onToggleMerge: () => setAutoMerge(!autoMerge),
+    onHold: () => setIsHoldDialogOpen(true),
+    onNote: () => setIsCommentsDialogOpen(true),
+    onCreateCustomer: () => {
+      setCustomerDialogCreateMode(true);
+      checkout.setShowSelectCustomerDialog(true);
+    },
   });
 
   // ─── Cart Operations with Stock Validation ────────────────────────────
@@ -210,7 +222,7 @@ export default function PosSystem() {
     cartSelection.deselectAllItems();
   };
 
-  const addProductWithUnit = (product: any, qty: number) => {
+  const addProductWithUnit = (product: ProductSearchBarcode, qty: number) => {
     const selectedUnit = product?.product?.selectedUnitQuantity;
     if (!selectedUnit) return;
 
@@ -225,6 +237,9 @@ export default function PosSystem() {
       return;
     }
 
+    const taxes = product.product.tax_group?.taxes ?? [];
+    const rate = taxes.reduce((acc: number, tax: TaxItem) => acc + +tax.rate, 0);
+
     addToCart({
       order_id: null,
       product_id: product.product.id,
@@ -233,10 +248,7 @@ export default function PosSystem() {
       discount: 0,
       discount_percentage: 0,
       product_type: product.type,
-      rate: product.product.tax_group?.taxes?.reduce(
-        (acc: number, tax: any) => acc + +tax.rate,
-        0,
-      ) || 0,
+      rate,
       quantity: qty,
       tax_group_id: +(product.product.tax_group_id || 0),
       tax_type: product.product.tax_type,
@@ -292,6 +304,8 @@ export default function PosSystem() {
           <SecondaryNavigation
             setShowSelectCustomerDialog={checkout.setShowSelectCustomerDialog}
             onOpenSearchProductsDialog={() => dialogs.setShowSearchProductsDialog(true)}
+            isCommentsDialogOpen={isCommentsDialogOpen}
+            onCommentsDialogOpenChange={setIsCommentsDialogOpen}
           />
 
           {/* Cart Table */}
@@ -332,6 +346,8 @@ export default function PosSystem() {
             useShippingAddress={checkout.useShippingAddress}
             resetCart={resetCart}
             onOpenDiscountDialog={() => dialogs.discountKeypad.openKeypad()}
+            holdDialogOpen={isHoldDialogOpen}
+            onHoldDialogOpenChange={setIsHoldDialogOpen}
           />
         </div>
 
@@ -419,10 +435,14 @@ export default function PosSystem() {
         {checkout.showSelectCustomerDialog && (
           <SelectCustomerDialog
             open={checkout.showSelectCustomerDialog}
-            onOpenChange={() => checkout.setShowSelectCustomerDialog(false)}
+            onOpenChange={() => {
+              setCustomerDialogCreateMode(false);
+              checkout.setShowSelectCustomerDialog(false);
+            }}
             selectedCustomer={order.customer}
-            handleSelectCustomer={checkout.handleSelectCustomer as any}
+            handleSelectCustomer={checkout.handleSelectCustomer}
             onViewCustomer={checkout.openCustomerDetails}
+            defaultCreateMode={customerDialogCreateMode}
           />
         )}
 

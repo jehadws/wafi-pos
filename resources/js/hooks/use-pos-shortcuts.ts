@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 interface UsePOSShortcutsProps {
-  options: any;
+  options: Partial<SbPosOptions>;
   autoMerge: boolean;
   onPayment: () => void;
   onCancel: () => void;
@@ -9,6 +9,9 @@ interface UsePOSShortcutsProps {
   onOrderType: () => void;
   onQuickSearch: () => void;
   onToggleMerge: () => void;
+  onHold: () => void;
+  onNote: () => void;
+  onCreateCustomer: () => void;
 }
 
 export function matchesShortcut(e: KeyboardEvent, shortcut: string[] | string | null | undefined): boolean {
@@ -39,6 +42,44 @@ export function matchesShortcut(e: KeyboardEvent, shortcut: string[] | string | 
   });
 }
 
+/**
+ * True when the event target is an editable element — typed characters must
+ * never trigger shortcuts (e.g. a bare "p" payment shortcut firing while the
+ * cashier types in the barcode field).
+ */
+export function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  // Check the contentEditable property directly — JSDOM doesn't implement isContentEditable
+  const ce = target.contentEditable;
+  if (ce && ce !== 'false' && ce !== 'inherit') return true;
+  const tag = target.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+}
+
+/**
+ * True when this matched shortcut must be ignored because the user is typing
+ * in an editable field. Modifier combos (Ctrl/Alt) and function keys are
+ * always intentional and stay active while typing.
+ */
+export function isTypingGuardedEvent(e: KeyboardEvent, combo: string): boolean {
+  if (!isEditableTarget(e.target)) return false;
+  if (/^f\d{1,2}$/i.test(e.key)) return false;
+  const parts = combo.toLowerCase().split('+').map((p) => p.trim());
+  return !(parts.includes('ctrl') || parts.includes('alt'));
+}
+
+/** matchesShortcut with the typing guard applied per configured combo. */
+function matchesUnguarded(
+  e: KeyboardEvent,
+  shortcut: string[] | string | null | undefined,
+  typingGuard: boolean,
+): boolean {
+  if (!matchesShortcut(e, shortcut)) return false;
+  if (!typingGuard) return true;
+  if (typeof shortcut === 'string') return !isTypingGuardedEvent(e, shortcut);
+  return (shortcut ?? []).some((combo) => !isTypingGuardedEvent(e, combo));
+}
+
 export function usePOSShortcuts({
   options = {},
   autoMerge,
@@ -48,39 +89,50 @@ export function usePOSShortcuts({
   onOrderType,
   onQuickSearch,
   onToggleMerge,
+  onHold,
+  onNote,
+  onCreateCustomer,
 }: UsePOSShortcutsProps) {
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
       const o = options || {};
-      
+      const typingGuard = isEditableTarget(e.target);
+
       // Payment (configured or F4 / Ctrl+Enter)
       if (
-        matchesShortcut(e, o.sb_subul_keyboard_payment) ||
+        matchesUnguarded(e, o.sb_subul_keyboard_payment, typingGuard) ||
         (e.key === 'F4' && !e.ctrlKey && !e.altKey)
       ) {
         e.preventDefault();
         onPayment();
-      } else if (
-        matchesShortcut(e, o.sb_subul_keyboard_cancel_order)
-      ) {
+      } else if (matchesUnguarded(e, o.sb_subul_keyboard_cancel_order, typingGuard)) {
         e.preventDefault();
         onCancel();
-      } else if (matchesShortcut(e, o.sb_subul_keyboard_shipping)) {
+      } else if (matchesUnguarded(e, o.sb_subul_keyboard_shipping, typingGuard)) {
         e.preventDefault();
         onShipping();
-      } else if (matchesShortcut(e, o.sb_subul_keyboard_order_type)) {
+      } else if (matchesUnguarded(e, o.sb_subul_keyboard_order_type, typingGuard)) {
         e.preventDefault();
         onOrderType();
-      } else if (
-        matchesShortcut(e, o.sb_subul_keyboard_quick_search) ||
-        (e.key === 'F2' && !e.ctrlKey && !e.altKey)
-      ) {
+      } else if (matchesUnguarded(e, o.sb_subul_keyboard_quick_search, typingGuard)) {
         e.preventDefault();
         onQuickSearch();
-      } else if (matchesShortcut(e, o.sb_subul_keyboard_toggle_merge)) {
+      } else if (matchesUnguarded(e, o.sb_subul_keyboard_toggle_merge, typingGuard)) {
         e.preventDefault();
         onToggleMerge();
-      } else if (matchesShortcut(e, o.sb_subul_keyboard_fullscreen) || e.key === 'F11') {
+      } else if (matchesUnguarded(e, o.sb_subul_keyboard_hold_order, typingGuard)) {
+        e.preventDefault();
+        onHold();
+      } else if (matchesUnguarded(e, o.sb_subul_keyboard_note, typingGuard)) {
+        e.preventDefault();
+        onNote();
+      } else if (matchesUnguarded(e, o.sb_subul_keyboard_create_customer, typingGuard)) {
+        e.preventDefault();
+        onCreateCustomer();
+      } else if (
+        matchesUnguarded(e, o.sb_subul_keyboard_fullscreen, typingGuard) ||
+        e.key === 'F11'
+      ) {
         e.preventDefault();
         if (document.fullscreenElement) {
           document.exitFullscreen();
@@ -92,5 +144,5 @@ export function usePOSShortcuts({
 
     window.addEventListener('keydown', handleKeydown);
     return () => window.removeEventListener('keydown', handleKeydown);
-  }, [options, autoMerge, onPayment, onCancel, onShipping, onOrderType, onQuickSearch, onToggleMerge]);
+  }, [options, autoMerge, onPayment, onCancel, onShipping, onOrderType, onQuickSearch, onToggleMerge, onHold, onNote, onCreateCustomer]);
 }

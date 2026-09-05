@@ -11,12 +11,18 @@ import { useState } from 'react';
 type Props = {
   setShowSelectCustomerDialog: (value: boolean) => void;
   onOpenSearchProductsDialog?: () => void;
+  isCommentsDialogOpen: boolean;
+  onCommentsDialogOpenChange: (open: boolean) => void;
 };
 
-export default function SecondaryNavigation({ setShowSelectCustomerDialog, onOpenSearchProductsDialog }: Props) {
+export default function SecondaryNavigation({
+  setShowSelectCustomerDialog,
+  onOpenSearchProductsDialog,
+  isCommentsDialogOpen,
+  onCommentsDialogOpenChange,
+}: Props) {
   const { t } = useTranslation();
-  const { order, products, options, setNote, pushCoupon, removeCoupon, updateCart, updateProduct, computeTaxes } = usePOS();
-  const [isCommentsDialogOpen, setIsCommentsDialogOpen] = useState(false);
+  const { order, products, options, setNote, pushCoupon, removeCoupon, updateCart, updateProduct } = usePOS();
   const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
   const [isTaxesDialogOpen, setIsTaxesDialogOpen] = useState(false);
   const [isCouponsDialogOpen, setIsCouponsDialogOpen] = useState(false);
@@ -57,7 +63,7 @@ export default function SecondaryNavigation({ setShowSelectCustomerDialog, onOpe
     <>
       <div className="bg-background border-b p-2.5">
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" className="active:scale-95 flex h-10 items-center text-xs font-medium" onClick={() => setIsCommentsDialogOpen(true)}>
+          <Button variant="outline" size="sm" className="active:scale-95 flex h-10 items-center text-xs font-medium" onClick={() => onCommentsDialogOpenChange(true)}>
             <MessageSquare className="me-1.5 h-4 w-4 text-muted-foreground" />
             {t('Comments')}
             {order.note && <span className="bg-primary ms-1.5 h-2 w-2 rounded-full"></span>}
@@ -93,7 +99,7 @@ export default function SecondaryNavigation({ setShowSelectCustomerDialog, onOpe
 
       <CommentsDialog
         isOpen={isCommentsDialogOpen}
-        onClose={() => setIsCommentsDialogOpen(false)}
+        onClose={() => onCommentsDialogOpenChange(false)}
         onSave={handleSaveNote}
         initialNote={order.note}
         initialDisplayOnReceipt={order.note_visibility === 'visible'}

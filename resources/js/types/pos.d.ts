@@ -156,6 +156,17 @@ interface SbPosOptions {
   sb_subul_force_autofocus: boolean;
   sb_subul_items_merge: 'yes' | 'no' | boolean;
   sb_subul_layout: 'grocery_shop' | 'clothing_shop' | string;
+  // Keyboard shortcuts (defined in app/Settings/pos/shortcuts.php)
+  sb_subul_keyboard_payment?: string[];
+  sb_subul_keyboard_cancel_order?: string[];
+  sb_subul_keyboard_shipping?: string[];
+  sb_subul_keyboard_order_type?: string[];
+  sb_subul_keyboard_quick_search?: string[];
+  sb_subul_keyboard_toggle_merge?: string[];
+  sb_subul_keyboard_hold_order?: string[];
+  sb_subul_keyboard_note?: string[];
+  sb_subul_keyboard_create_customer?: string[];
+  sb_subul_keyboard_fullscreen?: string[];
 }
 
 
