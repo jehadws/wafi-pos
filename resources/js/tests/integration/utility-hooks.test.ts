@@ -10,7 +10,7 @@ describe('utility hooks', () => {
             vi.useFakeTimers();
             const callback = vi.fn();
 
-            let count = 0;
+            const count = 0;
             const { rerender } = renderHook(
                 ({ c }) => useDebouncedEffect(callback, [c], 300),
                 { initialProps: { c: count } },

@@ -14,7 +14,7 @@ describe('use-pos-dialogs (Zustand Dialog Slice)', () => {
             resolvedValue = val;
         });
 
-        expect(usePOS.getState().openDialogs['selectQuantity' as any]).toBe(true);
+        expect((usePOS.getState().openDialogs as Record<string, boolean>)['selectQuantity']).toBe(true);
 
         const mockPayload = { id: 10, name: 'Box of 12' };
         usePOS.getState().closeDialog('selectQuantity' as any, mockPayload as any);
@@ -22,6 +22,6 @@ describe('use-pos-dialogs (Zustand Dialog Slice)', () => {
         await promise;
 
         expect(resolvedValue).toEqual(mockPayload);
-        expect(usePOS.getState().openDialogs['selectQuantity' as any]).toBe(false);
+        expect((usePOS.getState().openDialogs as Record<string, boolean>)['selectQuantity']).toBe(false);
     });
 });

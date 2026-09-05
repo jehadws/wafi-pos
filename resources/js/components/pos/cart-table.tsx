@@ -205,8 +205,8 @@ export default function CartTable({
             {/* Centralized Numeric Keypad for Cart Table */}
             {activeKeypad && (
                 <NumericKeypadDialog
-                    isOpen={true}
-                    onClose={() => setActiveKeypad(null)}
+                    open={true}
+                    onOpenChange={(open) => { if (!open) setActiveKeypad(null); }}
                     onConfirm={handleKeypadConfirm}
                     initialValue={keypadInitialValue}
                     title={keypadTitle}

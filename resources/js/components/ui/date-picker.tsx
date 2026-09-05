@@ -49,7 +49,7 @@ export function DatePicker({
             captionLayout="dropdown"
             buttonVariant={"default"}
             showOutsideDays
-            disabled={{ before: fromDate }}
+            disabled={fromDate ? { before: fromDate } : undefined}
             toYear={2030}
           />
         </PopoverContent>

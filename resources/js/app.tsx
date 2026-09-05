@@ -11,6 +11,7 @@ import { isRTLLocale } from './lib/i18n/direction';
 import { TranslationProvider } from './lib/i18n';
 import { DirectionProvider } from "@/components/ui/direction"
 import Settings from './lib/settings';
+import type { AppSettings } from './lib/settings';
 
 // API calls go through the shared client in `@/api/http`, which owns the
 // base URL, the X-Requested-With header, and the global error interceptor
@@ -23,7 +24,7 @@ createInertiaApp({
   resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
   setup({ el, App, props }) {
     const root = createRoot(el);
-    Settings.set(props.initialPage.props.settings);
+    Settings.set(props.initialPage.props.settings as AppSettings);
     const Root = () => {
       const [locale, setLocale] = useState((props.initialPage.props.locale as any) || 'en');
 
@@ -33,12 +34,18 @@ createInertiaApp({
           if (newLocale && newLocale !== locale) {
             setLocale(newLocale);
           }
+          // Re-sync the Settings singleton so formatting (currency, dates)
+          // reflects any changes made on the previous page.
+          const freshSettings = event.detail.page.props.settings as AppSettings | undefined;
+          if (freshSettings) {
+            Settings.set(freshSettings);
+          }
         });
         return () => unsubscribe();
       }, [locale]);
 
       return (
-        <DirectionProvider direction={isRTLLocale(locale) ? 'rtl' : 'ltr'}>
+        <DirectionProvider dir={isRTLLocale(locale) ? 'rtl' : 'ltr'}>
           <RTLProvider locale={locale}>
             <TranslationProvider locale={locale}>
               <ConfirmDialogProvider>

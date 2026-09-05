@@ -62,12 +62,12 @@ export default function EditRewardSystemPage() {
 
     const addRule = () => {
         const id = Date.now().toString();
-        const newRule: RewardSystemRule = {
+        const newRule = {
             id: id,
-            from: '',
-            to: '',
-            reward: '',
-        };
+            from: '' as any,
+            to: '' as any,
+            reward: '' as any,
+        } as RewardSystemRule;
         form.setData({ ...form.data, rules: [...form.data.rules, newRule] });
         // @ts-ignore
         if (form.errors[`rules.${id}.from`]) form.clearErrors(`rules.${id}.from`);
@@ -157,17 +157,17 @@ export default function EditRewardSystemPage() {
             } else {
                 form.data.rules.forEach((rule) => {
                     if (!rule.from) {
-                        form.setError(`rules.${rule.id}.from`, t('From value is required.'));
+                        (form as any).setError(`rules.${rule.id}.from`, t('From value is required.'));
                         isValid = false;
                     }
 
                     if (!rule.to) {
-                        form.setError(`rules.${rule.id}.to`, t('To value is required.'));
+                        (form as any).setError(`rules.${rule.id}.to`, t('To value is required.'));
                         isValid = false;
                     }
 
                     if (!rule.reward) {
-                        form.setError(`rules.${rule.id}.reward`, t('Points value is required.'));
+                        (form as any).setError(`rules.${rule.id}.reward`, t('Points value is required.'));
                         isValid = false;
                     }
                 });
@@ -285,12 +285,12 @@ export default function EditRewardSystemPage() {
                                                 <FormField
                                                     label={t('From')}
                                                     description={t('The interval start here.')}
-                                                    error={form.errors[`rules.${rule.id}.from`]}
+                                                    error={(form.errors as any)[`rules.${rule.id}.from`]}
                                                 >
                                                     <Input
                                                         id="from"
                                                         name="from"
-                                                        className={cn(form.errors[`rules.${rule.id}.from`] && 'border-destructive')}
+                                                        className={cn((form.errors as any)[`rules.${rule.id}.from`] && 'border-destructive')}
                                                         type="number"
                                                         placeholder={t('e.g., 200')}
                                                         value={rule.from}
@@ -301,12 +301,12 @@ export default function EditRewardSystemPage() {
                                                 <FormField
                                                     label={t('To')}
                                                     description={t('The interval ends here.')}
-                                                    error={form.errors[`rules.${rule.id}.to`]}
+                                                    error={(form.errors as any)[`rules.${rule.id}.to`]}
                                                 >
                                                     <Input
                                                         id="to"
                                                         name="to"
-                                                        className={cn(form.errors[`rules.${rule.id}.to`] && 'border-destructive')}
+                                                        className={cn((form.errors as any)[`rules.${rule.id}.to`] && 'border-destructive')}
                                                         type="number"
                                                         placeholder={t('e.g., 400')}
                                                         value={rule.to}
@@ -316,12 +316,12 @@ export default function EditRewardSystemPage() {
                                                 <FormField
                                                     label={t('Points')}
                                                     description={t('Points earned.')}
-                                                    error={form.errors[`rules.${rule.id}.reward`]}
+                                                    error={(form.errors as any)[`rules.${rule.id}.reward`]}
                                                 >
                                                     <Input
                                                         id="reward"
                                                         name="reward"
-                                                        className={cn(form.errors[`rules.${rule.id}.reward`] && 'border-destructive')}
+                                                        className={cn((form.errors as any)[`rules.${rule.id}.reward`] && 'border-destructive')}
                                                         placeholder={t('e.g., 200')}
                                                         value={rule.reward}
                                                         type="number"

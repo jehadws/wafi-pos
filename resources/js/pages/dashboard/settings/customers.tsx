@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { useForm, usePage } from '@inertiajs/react';
 import { settingsApi } from '@/api';
 import { Check, ChevronsUpDown, Loader2, Save } from 'lucide-react';
-import { useTransition } from 'react';
+import { useTransition, useState } from 'react';
 import { toast } from 'sonner';
 
 type General = {
@@ -43,6 +43,7 @@ export default function SettingsGeneral() {
     const { options, payload } = usePage<{ options: Options; payload: General }>().props;
     const { t } = useTranslation();
     const [isPending, startTransition] = useTransition();
+    const [open, setOpen] = useState(false);
 
     const form = useForm<Payload>({
         general: {

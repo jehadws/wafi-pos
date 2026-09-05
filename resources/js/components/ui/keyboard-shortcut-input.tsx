@@ -99,11 +99,18 @@ export default function KeyboardShortcutInput({
   blockedKeys = BLOCKED_KEYS_DEFAULT,
 }: KeyboardShortcutInputProps) {
   const [isCapturing, setIsCapturing] = useState(false)
-  const [currentShortcut, setCurrentShortcut] = useState<string[]>(value || [])
+  const [currentShortcut, setCurrentShortcut] = useState<KeyboardShortcut | null>(() => {
+    if (!value || value.length === 0) return null
+    return { key: value[value.length - 1], ctrl: value.includes('Ctrl'), alt: value.includes('Alt'), shift: value.includes('Shift'), meta: value.includes('Meta') || value.includes('Cmd') || value.includes('Win') }
+  })
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    setCurrentShortcut(value)
+    if (!value || value.length === 0) {
+      setCurrentShortcut(null)
+    } else {
+      setCurrentShortcut({ key: value[value.length - 1], ctrl: value.includes('Ctrl'), alt: value.includes('Alt'), shift: value.includes('Shift'), meta: value.includes('Meta') || value.includes('Cmd') || value.includes('Win') })
+    }
   }, [value])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -135,7 +142,13 @@ export default function KeyboardShortcutInput({
 
     setCurrentShortcut(shortcut)
     setIsCapturing(false)
-    onChange?.(shortcut)
+    const parts: string[] = []
+    if (shortcut.ctrl) parts.push('Ctrl')
+    if (shortcut.alt) parts.push('Alt')
+    if (shortcut.shift) parts.push('Shift')
+    if (shortcut.meta) parts.push(navigator.platform.includes('Mac') ? 'Cmd' : 'Win')
+    parts.push(shortcut.key)
+    onChange?.(parts)
     inputRef.current?.blur()
   }
 
@@ -151,7 +164,7 @@ export default function KeyboardShortcutInput({
 
   const handleClear = () => {
     setCurrentShortcut(null)
-    onChange?.(null)
+    onChange?.([])
   }
 
   const displayValue = currentShortcut ? formatShortcut(currentShortcut) : ""

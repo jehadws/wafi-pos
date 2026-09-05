@@ -30,8 +30,8 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
     ];
 
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<Required<ProfileForm>>({
-        name: auth.user.name,
-        email: auth.user.email,
+        name: auth.user.name as string,
+        email: auth.user.email as string,
     });
 
     const submit: FormEventHandler = (e) => {

@@ -65,7 +65,7 @@ const MenuIcon = ({ iconName }: { iconName?: string }) => {
 };
 
 export function NavMain() {
-  const { menus }: { menus: Menus } = usePage().props;
+  const { menus } = usePage().props as unknown as { menus: Menus };
   const { t } = useTranslation();
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>(
     Object.fromEntries(Object.entries(menus || {}).map(([key, item]) => [key, item.toggled || false])),

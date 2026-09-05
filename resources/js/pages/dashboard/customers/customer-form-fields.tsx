@@ -106,7 +106,7 @@ export function CustomerFormFields({ form, groups, handleInputChange, handleSele
                     </FormField>
 
                     <FormField label={t('Birth Date')} htmlFor="general_birth_date" description={t('Displays the customer birth date.')} error={form.errors?.general_birth_date}>
-                        <DatePicker onDateChange={(value) => handleSelectChange('general_birth_date', value)} date={form.data.general_birth_date} />
+                        <DatePicker onDateChange={(value) => handleSelectChange('general_birth_date', value as any)} date={form.data.general_birth_date as any} />
                     </FormField>
 
                     <FormField label={t('Email')} htmlFor="general_email" description={t('Provide the customer email.')} error={form.errors?.general_email}>

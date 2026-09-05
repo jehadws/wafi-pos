@@ -236,7 +236,7 @@ export default function Dashboard() {
                 <div className="grid w-full">
                     <DataTable
                         columns={columns}
-                        data={paymentTypes}
+                        data={(paymentTypes as unknown as PaymentType[])}
                         bulkActions={bulkActions}
                         title={t('Payment Types List')}
                         onAddNew={handleAddNew}
@@ -256,7 +256,7 @@ export default function Dashboard() {
                     isOpen={deleteDialog.isOpen}
                     onClose={() => setDeleteDialog({ isOpen: false, loading: false, item: null })}
                     onConfirm={handleDeleteConfirm}
-                    title={t('Delete {identifier}', { identifier: deleteDialog.item?.identifier })}
+                    title={t('Delete {identifier}', { identifier: deleteDialog.item?.identifier ?? '' })}
                     description={t('Are you sure you want to delete this item? This action cannot be undone.')}
                     confirmText={t('Delete')}
                     cancelText={t('Cancel')}

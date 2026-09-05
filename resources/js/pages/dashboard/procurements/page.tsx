@@ -231,7 +231,7 @@ export default function Dashboard() {
                     isOpen={deleteDialog.isOpen}
                     onClose={() => setDeleteDialog({ isOpen: false, loading: false, item: null })}
                     onConfirm={handleDeleteConfirm}
-                    title={t('Delete {{name}}', { name: deleteDialog.item?.name })}
+                    title={t('Delete {{name}}', { name: deleteDialog.item?.name ?? '' })}
                     description={t('Are you sure you want to delete this item? This action cannot be undone.')}
                     confirmText={t('Delete')}
                     cancelText={t('Cancel')}

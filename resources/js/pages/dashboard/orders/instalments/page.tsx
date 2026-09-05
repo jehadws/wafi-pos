@@ -104,7 +104,7 @@ export default function InstalmentsList() {
       accessorKey: 'paid',
       header: t('Status'),
       cell: ({ row }) => {
-        const isPaid = row.original.paid === "Yes";
+        const isPaid = row.original.paid === true;
         const dueDate = new Date(row.original.date);
         const isOverdue = !isPaid && dueDate < new Date();
         if (isPaid) return <Badge variant="success">{t('Paid')}</Badge>;
@@ -121,7 +121,7 @@ export default function InstalmentsList() {
         <div className="grid w-full">
           <DataTable
             columns={columns}
-            data={rows}
+            data={(rows as unknown as InstalmentRow[])}
             title={t('Order Instalments')}
             description={t('List of all scheduled instalments across orders.')}
             searchKey="order_code"

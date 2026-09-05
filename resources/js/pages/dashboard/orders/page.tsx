@@ -301,7 +301,7 @@ export default function Dashboard() {
                 <div className="grid w-full">
                     <DataTable
                         columns={columns}
-                        data={orders}
+                        data={(orders as unknown as Order[])}
                         bulkActions={bulkActions}
                         title={t('Orders List')}
                         onAddNew={handleAddNew}

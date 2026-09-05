@@ -219,7 +219,7 @@ export default function Dashboard() {
                 <div className="grid w-full">
                     <DataTable
                         columns={columns}
-                        data={transaction}
+                        data={(transaction as unknown as TransactionHistory[])}
                         title={t('Transactions History List')}
                         description={t('Display all transaction history.')}
                         searchKey="name"

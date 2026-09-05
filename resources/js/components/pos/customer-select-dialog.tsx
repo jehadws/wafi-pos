@@ -255,7 +255,7 @@ export function SelectCustomerDialog({
                             <div className="text-sm text-gray-500">{customer.phone}</div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="font-medium">{formatCurrency(+customer.purchases_amount)}</span>
+                            <span className="font-medium">{formatCurrency(+(customer.purchases_amount ?? 0))}</span>
                             <Button
                               variant="ghost"
                               size="sm"

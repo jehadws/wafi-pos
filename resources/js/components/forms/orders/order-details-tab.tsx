@@ -98,9 +98,9 @@ export default function OrderDetailsTab({ order }: Props) {
                     <div className="font-medium">
                       {product.name} (x{product.quantity})
                     </div>
-                    <div className="text-sm">{product.unit_name}</div>
+                    <div className="text-sm">{product.unit?.name}</div>
                   </div>
-                  <span className="font-semibold">{formatCurrency(product.unit_price * product.quantity)}</span>
+                  <span className="font-semibold">{formatCurrency(+(product.unit_price ?? 0) * +(product.quantity ?? 0))}</span>
                 </div>
               ))}
             </div>
@@ -116,7 +116,7 @@ export default function OrderDetailsTab({ order }: Props) {
                 </span>
               </div>
               <div className="space-y-3">
-                {order?.refunded_products?.slice(0, 3).map((product, index) => (
+                {(order as any)?.refunded_products?.slice(0, 3).map((product: any, index: number) => (
                   <div key={index} className="bg-muted flex items-center justify-between rounded p-3">
                     <div className="space-y-1">
                       <div className="font-medium">
@@ -141,10 +141,10 @@ export default function OrderDetailsTab({ order }: Props) {
             <DialogTitle>{t('All Refunds')}</DialogTitle>
           </DialogHeader>
           <div className="flex max-h-96 flex-col gap-3 overflow-y-auto">
-            {!order?.refunded_products?.length ? (
+              {!(order as any)?.refunded_products?.length ? (
               <div className="py-8 text-center text-sm">{t('Nothing to display')}</div>
             ) : (
-              order.refunded_products.map((product, index) => (
+              (order as any).refunded_products.map((product: any, index: number) => (
                 <div key={index} className="bg-muted flex items-center justify-between rounded border p-3">
                   <div className="space-y-1">
                     <div className="font-medium">

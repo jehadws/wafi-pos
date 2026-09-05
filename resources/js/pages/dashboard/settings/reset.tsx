@@ -16,7 +16,7 @@ export default function ResetSettingsPage() {
         description = 'Wipe transactions and optionally populate fresh demo data.',
         options = { modes: [] },
         payload,
-    } = usePage<ResetPageProps>().props;
+    } = usePage<ResetPageProps & Record<string, unknown>>().props;
 
     const { t } = useTranslation();
     const {

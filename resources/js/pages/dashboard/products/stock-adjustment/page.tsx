@@ -260,7 +260,7 @@ export default function page() {
         const data = await productsApi.createAdjustment(products)
         toast(data.message);
         setProducts([]);
-      } catch (error) {
+      } catch (error: any) {
         toast(error.message);
       }
     }

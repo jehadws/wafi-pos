@@ -104,9 +104,9 @@ export function FeaturesTab({ form, options }: FeaturesTabProps) {
 
             <FormField label={t('Order Types')} description={t('Control the order type enabled.')}>
                 <MultiSelector
-                    value={form.data.features.sb_subul_order_types || []}
-                    options={options.sb_subul_order_types.map((l) => ({ id: l.value, name: l.label }))}
-                    onChange={(v) => form.setData('features.sb_subul_order_types', v)}
+                    value={(form.data.features.sb_subul_order_types || []).map(Number)}
+                    options={options.sb_subul_order_types.map((l) => ({ id: Number(l.value), name: l.label }))}
+                    onChange={(v) => form.setData('features.sb_subul_order_types', v.map(String))}
                 />
             </FormField>
 

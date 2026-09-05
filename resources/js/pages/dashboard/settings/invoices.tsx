@@ -137,7 +137,7 @@ export default function ReceiptSettings() {
                                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                             <FormField label={t('Receipt Template')} description={t('Choose the template that applies to receipts')}>
                                                 <Select
-                                                    value={form.data.receipts.sb_invoice_receipt_template}
+                                                    value={form.data.receipts.sb_invoice_receipt_template ?? 'null'}
                                                     onValueChange={(value) => form.setData('receipts.sb_invoice_receipt_template', value)}
                                                 >
                                                     <SelectTrigger className="w-full">
@@ -148,7 +148,7 @@ export default function ReceiptSettings() {
                                                             {t('Select an option')}
                                                         </SelectItem>
                                                         {options.sb_invoice_receipt_template.map((option) => (
-                                                            <SelectItem key={option.value} value={option.value}>
+                                                            <SelectItem key={option.value} value={option.value.toString()}>
                                                                 {option.label}
                                                             </SelectItem>
                                                         ))}

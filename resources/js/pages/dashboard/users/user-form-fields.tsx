@@ -169,7 +169,7 @@ export function UserFormFields({
                                     value ? format(value, 'yyyy-MM-dd HH:mm') : '',
                                 )
                             }
-                            date={form.data.general_birth_date}
+                            date={form.data.general_birth_date ? new Date(form.data.general_birth_date) : undefined}
                         />
                     </FormField>
 

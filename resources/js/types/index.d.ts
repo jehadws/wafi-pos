@@ -32,6 +32,7 @@ export interface SubMenuItem {
   href?: string;
   permissions?: string[];
   icon?: string;
+  active?: boolean;
 }
 
 /**
@@ -44,6 +45,7 @@ export interface MenuItem {
   href?: string;
   toggled?: boolean;
   notification?: number;
+  active?: boolean;
   childrens?: {
     [key: string]: SubMenuItem;
   };
@@ -90,7 +92,7 @@ export interface User {
 }
 
 
-type Media = {
+export type Media = {
   id: number
   name: string
   extension: string

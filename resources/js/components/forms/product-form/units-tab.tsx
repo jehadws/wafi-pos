@@ -67,7 +67,7 @@ export default function UnitsTab({ form, handleInputChange }: UnitsTabProps) {
                             value={form.data.units_unit_group?.toString()}
                             onValueChange={(value) => handleInputChange('units_unit_group', value)}
                             defaultValue="Select Unit Group"
-                            disabled={form.data.units_unit_group && form.data.units_selling_group.length > 0}
+                            disabled={!!form.data.units_unit_group && form.data.units_selling_group.length > 0}
                         >
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder={t('Select Unit Group')} />

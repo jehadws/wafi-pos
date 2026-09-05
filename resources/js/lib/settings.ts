@@ -1,3 +1,5 @@
+import { settingsApi } from '@/api/settings';
+
 type Identification = {
     sb_store_name: string | null
     sb_store_address: string | null
@@ -36,7 +38,7 @@ type Registration = {
     sb_recovery_enabled: string | null
 }
 
-type AppSettings = {
+export type AppSettings = {
     identification: Identification
     currency: Currency
     date: DateCfg
@@ -65,6 +67,21 @@ class Settings {
             throw new Error("Settings have not been initialized");
         }
         return this.settings;
+    }
+
+    /**
+     * Re-fetch the latest settings from the backend and update the singleton.
+     * Call this after saving general settings or on Inertia navigations.
+     */
+    public async sync(): Promise<void> {
+        try {
+            const fresh = await settingsApi.getCurrent();
+            if (fresh && typeof fresh === 'object') {
+                this.settings = fresh as AppSettings;
+            }
+        } catch {
+            // Silently ignore — stale settings are better than a crash
+        }
     }
 }
 

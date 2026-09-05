@@ -255,12 +255,12 @@ export default function Dashboard() {
   const { t } = useTranslation();
   const { auth } = usePage<SharedData>().props;
   const roles = auth?.roles ?? [];
-  const isElevated =
-    roles.includes(ROLE_ADMIN) || roles.includes(ROLE_STORE_ADMIN) || Boolean(data?.isElevated);
-
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  const isElevated =
+    roles.includes(ROLE_ADMIN) || roles.includes(ROLE_STORE_ADMIN) || Boolean(data?.isElevated);
 
   useEffect(() => {
     const fetchDashboardData = async () => {

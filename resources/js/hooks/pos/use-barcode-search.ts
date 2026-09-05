@@ -5,10 +5,11 @@ import { useTranslation } from '@/lib/i18n';
 
 export interface UseBarcodeSearchOptions {
     onProductFound: (product: any) => void;
+    onProductNotFound?: (barcode: string) => void;
     debounceMs?: number;
 }
 
-export function useBarcodeSearch({ onProductFound, debounceMs = 300 }: UseBarcodeSearchOptions) {
+export function useBarcodeSearch({ onProductFound, onProductNotFound, debounceMs = 300 }: UseBarcodeSearchOptions) {
     const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
     const [isAutoFocusOpen, setIsAutoFocusOpen] = useState(false);
@@ -35,7 +36,11 @@ export function useBarcodeSearch({ onProductFound, debounceMs = 300 }: UseBarcod
                     onProductFound(product);
                     setSearchQuery('');
                 } else {
-                    toast.warning(t('Product not found for barcode: {barcode}', { barcode: trimmed }));
+                    if (onProductNotFound) {
+                        onProductNotFound(trimmed);
+                    } else {
+                        toast.warning(t('Product not found for barcode: {barcode}', { barcode: trimmed }));
+                    }
                 }
             } catch (error: any) {
                 if (error.name !== 'CanceledError' && error.name !== 'AbortError') {
@@ -45,7 +50,7 @@ export function useBarcodeSearch({ onProductFound, debounceMs = 300 }: UseBarcod
                 setIsSearching(false);
             }
         },
-        [onProductFound, t],
+        [onProductFound, onProductNotFound, t],
     );
 
     // Auto-focus handling

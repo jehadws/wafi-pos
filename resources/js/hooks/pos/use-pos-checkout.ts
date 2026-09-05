@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Customer } from '@/types/module';
+import { Customer } from '@/types/models/customer';
 import { Order } from '@/types/models/order';
 import { OrderType } from '@/types/models/order-type';
 

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { usePosCheckout } from '@/hooks/pos/use-pos-checkout';
 import { Order } from '@/types/models/order';
-import { Customer } from '@/types/module';
+import { Customer } from '@/types/models/customer';
 import { OrderType } from '@/types/models/order-type';
 
 describe('hooks/pos/use-pos-checkout', () => {

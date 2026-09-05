@@ -204,5 +204,7 @@ interface Product {
   total_price?: number;
   mode: 'normal' | 'wholesale' | 'custom';
   unit_quantity_id?: number;
-  unit_quantities?: any
+  unit_quantities?: any;
+  unit_name?: string;
+  unit_price?: number;
 }

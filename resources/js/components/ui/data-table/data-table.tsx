@@ -91,7 +91,7 @@ export function DataTable<TData, TValue>({
   // Extract actual data array
   const tableData = React.useMemo(() => {
     if (isCustomPagination && data && typeof data === "object" && "data" in data) {
-      return (data as CustomPaginationData<TData>).data as TData[]
+      return (data as unknown as CustomPaginationData<TData>).data as TData[]
     }
     return data as TData[]
   }, [data, isCustomPagination])
@@ -99,7 +99,7 @@ export function DataTable<TData, TValue>({
   // Get pagination data for custom pagination
   const customPaginationData = React.useMemo(() => {
     if (isCustomPagination && data && typeof data === "object" && "current_page" in data) {
-      return data as CustomPaginationData<TData>
+      return data as unknown as CustomPaginationData<TData>
     }
     return undefined
   }, [data, isCustomPagination])

@@ -230,6 +230,7 @@ type Customer = {
   author: number
   email: string | null
   first_name: string
+  name?: string
   gender: "Not Defined" | "male" | "female"
   group_id: number
   group_name: string

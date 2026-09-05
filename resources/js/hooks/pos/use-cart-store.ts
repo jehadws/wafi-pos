@@ -65,7 +65,7 @@ export const createCartSlice: StateCreator<POSStore, [], [], CartSlice> = (set, 
     processingAddQueue: false,
 
     addToCart: async (product) => {
-        let cartProduct: OrderProduct = {
+        const cartProduct: OrderProduct = {
             product_id: product.id || product.product_id || 0,
             name: product.name,
             discount_type: product.discount_type || 'percentage',

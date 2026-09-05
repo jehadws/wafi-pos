@@ -41,7 +41,7 @@ export function AccountSelectorModal({ accounts, isOpen, onClose, onSelect, sele
                         <SelectableItem
                             onChange={() => handleSelect(account)}
                             label={account.name}
-                            value={account.id}
+                            value={String(account.id)}
                             key={account.id}
                             selected={selectedAccount?.id === account.id}
                         />

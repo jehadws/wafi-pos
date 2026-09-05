@@ -6,8 +6,15 @@ type PaymentItem = {
   _id: string
 }
 
+type PaymentSummary = {
+  total: number
+  discount: number
+  paid: number
+  change: number
+}
+
 export function usePayment(initialTotal = 0.0) {
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentType>("cash")
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("cash")
   const [screenValue, setScreenValue] = useState("0.00")
   const [discountAmount, setDiscountAmount] = useState(0.0)
   const [rawValue, setRawValue] = useState(0);

@@ -45,6 +45,10 @@ export const POS_OPTION_KEYS = {
     printingEnabledFor: 'sb_subul_printing_enabled_for',
     printingDocument: 'sb_subul_printing_document',
     printingAuto: 'sb_subul_printing_auto',
+
+    // Quick product creation
+    quickProduct: 'sb_subul_quick_product',
+    quickProductDefaultUnit: 'sb_subul_quick_product_default_unit',
 } as const;
 
 export type PosOptionKey = (typeof POS_OPTION_KEYS)[keyof typeof POS_OPTION_KEYS];

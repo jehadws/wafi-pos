@@ -35,7 +35,7 @@ export default function SellingGroupCard({ form, units, index, onRemove }: Selli
         });
 
         // Clear errors
-        if (form.errors[`units_selling_group.${index}.${name}`]) form.clearErrors(`units_selling_group.${index}.${name}`);
+        if ((form.errors as any)[`units_selling_group.${index}.${name}`]) form.clearErrors(`units_selling_group.${index}.${name}` as any);
     };
 
     // Create a handler for select changes in this group
@@ -52,7 +52,7 @@ export default function SellingGroupCard({ form, units, index, onRemove }: Selli
         });
 
         // Clear errors
-        if (form.errors[`units_selling_group.${index}.${name}`]) form.clearErrors(`units_selling_group.${index}.${name}`);
+        if ((form.errors as any)[`units_selling_group.${index}.${name}`]) form.clearErrors(`units_selling_group.${index}.${name}` as any);
     };
 
     const handleClearField = (name: string) => {
@@ -85,7 +85,7 @@ export default function SellingGroupCard({ form, units, index, onRemove }: Selli
                     <FormField
                         label={t('Assigned Unit')}
                         required
-                        error={form.errors?.['units_selling_group.' + index + '.unit_id']}
+                        error={(form.errors as any)?.['units_selling_group.' + index + '.unit_id']}
                         description={t('The assigned unit for sale')}
                     >
                         <Select
@@ -108,7 +108,7 @@ export default function SellingGroupCard({ form, units, index, onRemove }: Selli
                     <FormField
                         label={t('Convert Unit')}
                         description={t('The unit that is selected for convertion by default.')}
-                        error={form.errors?.['units_selling_group.' + index + '.convert_unit_id']}
+                        error={(form.errors as any)?.['units_selling_group.' + index + '.convert_unit_id']}
                     >
                         <Select
                             value={form.data.units_selling_group[index].convert_unit_id?.toString()}

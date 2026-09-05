@@ -27,7 +27,7 @@ export default function ExpiryTab({ form, handleInputChange }: ExpiryTabProps) {
                 <div className="flex items-center gap-2">
                     <Switch
                         checked={form.data.expiracy_expires}
-                        onCheckedChange={(checked) => handleChange('expiracy_expires', checked)}
+                        onCheckedChange={(checked) => handleChange('expiracy_expires', checked as any)}
                         id="expiracy_expires"
                     />
                     <Label htmlFor="expiracy_expires">{t('Product Expires')}</Label>

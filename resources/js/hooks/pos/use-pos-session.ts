@@ -85,7 +85,7 @@ export const createSessionSlice: StateCreator<POSStore, [], [], SessionSlice> = 
                 return userPermissions;
             },
             // 2. Assign tax group from options to the order
-            () => {
+            async () => {
                 const { options, order } = get();
                 const newOrder = { ...order, tax_type: options[POS_OPTION_KEYS.taxType] };
 
@@ -167,7 +167,7 @@ export const createSessionSlice: StateCreator<POSStore, [], [], SessionSlice> = 
 
     userCan: (permission) => {
         const { userPermissions } = get();
-        return userPermissions.some((p: { namespace: string }) => p.namespace === permission);
+        return userPermissions.some((p) => p.namespace === permission);
     },
 
     setHoldPopupEnabled: (status = true) => {

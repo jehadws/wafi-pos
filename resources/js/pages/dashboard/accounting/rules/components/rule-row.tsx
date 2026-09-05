@@ -95,7 +95,7 @@ export function RuleRow({ accounts, actions, rule, isNew = false, onSave, onDele
                     {t('Save')}
                 </Button>
 
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => onDelete?.(rule?.id)}>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => rule?.id != null && onDelete?.(rule.id)}>
                     <Trash2 className="text-destructive h-4 w-4" />
                 </Button>
             </div>

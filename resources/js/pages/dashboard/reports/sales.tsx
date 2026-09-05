@@ -62,7 +62,7 @@ const reportTypes = [
     { value: 'categories_report', label: 'Categories Detailed' },
     { value: 'categories_summary', label: 'Categories Summary' },
     { value: 'products_report', label: 'Products Report' },
-];
+] as const;
 
 const defaultData = {
     result: [],
@@ -237,7 +237,7 @@ export default function SalesPage() {
                 );
 
             case 'products_report':
-                const allProducts = data.result as Product[];
+                const allProducts = data.result as unknown as Product[];
 
                 return (
                     <Table>

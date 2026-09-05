@@ -10,7 +10,6 @@ import { useRTL } from '@/hooks/use-rtl';
 import { useShallow } from 'zustand/react/shallow';
 import { usePOS } from '@/hooks/usePOS';
 import { OrderProduct } from '@/types/models/order-product';
-import { TaxItem } from '@/types/models/tax';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Barcode, Search, Shrink } from 'lucide-react';
@@ -56,6 +55,9 @@ const SearchProductsDialog = lazy(() =>
 );
 const ShippingDialog = lazy(() =>
   import('./shipping-dialog').then((m) => ({ default: m.ShippingDialog })),
+);
+const QuickAddProductDialog = lazy(() =>
+  import('./quick-add-product-dialog').then((m) => ({ default: m.QuickAddProductDialog })),
 );
 
 export default function PosSystem() {
@@ -143,6 +145,15 @@ export default function PosSystem() {
       }
 
       dialogs.quantityKeypad.openKeypad();
+    },
+    onProductNotFound: (barcode) => {
+      // When quick-product is enabled, open the add dialog directly
+      if (options[POS_OPTION_KEYS.quickProduct] === 'yes') {
+        dialogs.setPendingBarcode(barcode);
+        dialogs.setShowQuickAddProduct(true);
+      } else {
+        toast.warning(t('Product not found for barcode: {barcode}', { barcode }));
+      }
     },
   });
 
@@ -238,7 +249,7 @@ export default function PosSystem() {
     }
 
     const taxes = product.product.tax_group?.taxes ?? [];
-    const rate = taxes.reduce((acc: number, tax: TaxItem) => acc + +tax.rate, 0);
+    const rate = taxes.reduce((acc: number, tax) => acc + +(tax as any).rate, 0);
 
     addToCart({
       order_id: null,
@@ -489,6 +500,25 @@ export default function PosSystem() {
             setUseBillingAddress={checkout.setUseBillingAddress}
             setUseShippingAddress={checkout.setUseShippingAddress}
             onOpenSelectCustomerDialog={() => checkout.setShowSelectCustomerDialog(true)}
+          />
+        )}
+
+        {dialogs.showQuickAddProduct && (
+          <QuickAddProductDialog
+            open={dialogs.showQuickAddProduct}
+            onOpenChange={dialogs.setShowQuickAddProduct}
+            barcode={dialogs.pendingBarcode}
+            onProductCreated={(product) => {
+              // After creation, try to add it to cart
+              if (product) {
+                dialogs.setSelectedProduct(product);
+                if (canAddBarcodeSilently(options, product)) {
+                  addProductWithUnit(product, 1);
+                } else {
+                  dialogs.quantityKeypad.openKeypad();
+                }
+              }
+            }}
           />
         )}
       </Suspense>

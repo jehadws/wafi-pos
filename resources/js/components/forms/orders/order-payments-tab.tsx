@@ -39,9 +39,9 @@ export default function OrderPaymentsTab({ order }: Props) {
                 <div>{t('Payment History')}</div>
                 <Separator />
                 <div className="max-h-[300px] overflow-y-auto">
-                    {order?.payments?.map((pay) => (
-                        <div key={pay.id} className="bg-muted/40 border-muted flex items-center justify-between rounded border p-3">
-                            <span className="font-medium">{t(pay.identifier)}</span>
+                    {order?.payments?.map((pay, index) => (
+                        <div key={index} className="bg-muted/40 border-muted flex items-center justify-between rounded border p-3">
+                            <span className="font-medium">{t(pay.identifier || '')}</span>
                             <span className="font-semibold">{formatCurrency(pay.value || 0)}</span>
                         </div>
                     ))}

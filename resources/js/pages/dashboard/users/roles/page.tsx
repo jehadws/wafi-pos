@@ -172,7 +172,7 @@ export default function Dashboard() {
                     isOpen={deleteDialog.isOpen}
                     onClose={() => setDeleteDialog({ isOpen: false, loading: false, role: null })}
                     onConfirm={handleDeleteConfirm}
-                    title={t('Delete {{name}}', { name: deleteDialog.role?.name })}
+                    title={t('Delete {{name}}', { name: deleteDialog.role?.name ?? '' })}
                     description={t('Are you sure you want to delete this role? This action cannot be undone.')}
                     confirmText={t('Delete')}
                     cancelText={t('Cancel')}

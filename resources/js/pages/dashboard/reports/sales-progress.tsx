@@ -160,7 +160,7 @@ export default function SalesPage() {
                                 {t('Print')}
                             </Button>
 
-                            <Select value={filters.sort} onValueChange={(val) => setFilters({ ...filters, sort: val })}>
+                            <Select value={filters.sort} onValueChange={(val) => setFilters({ ...filters, sort: val as TFilter['sort'] })}>
                                 <SelectTrigger className="">
                                     <SelectValue placeholder={t('Choose an option')} />
                                 </SelectTrigger>

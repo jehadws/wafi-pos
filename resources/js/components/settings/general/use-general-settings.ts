@@ -4,6 +4,7 @@ import { useTranslation } from '@/lib/i18n';
 import { settingsApi } from '@/api';
 import { toast } from 'sonner';
 import { applyTheme } from '@/hooks/use-appearance';
+import Settings from '@/lib/settings';
 import type { GeneralSettingsPayload } from './types';
 
 export function useGeneralSettings(initialSettings: GeneralSettingsPayload) {
@@ -66,6 +67,9 @@ export function useGeneralSettings(initialSettings: GeneralSettingsPayload) {
                     },
                 };
                 await settingsApi.update('general', data);
+                // Re-sync the Settings singleton so formatting (currency,
+                // dates, etc.) reflects the saved values immediately.
+                Settings.sync();
                 // Apply the default theme immediately so the admin sees
                 // the change without a reload.
                 const theme = data.identification.sb_default_theme;

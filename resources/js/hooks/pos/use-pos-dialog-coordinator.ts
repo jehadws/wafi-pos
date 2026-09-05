@@ -16,6 +16,8 @@ export function usePosDialogCoordinator({
     const [showOrderDialog, setShowOrderDialog] = useState(false);
     const [isResetCartOpen, setIsResetCartOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<any>(null);
+    const [showQuickAddProduct, setShowQuickAddProduct] = useState(false);
+    const [pendingBarcode, setPendingBarcode] = useState('');
 
     const discountKeypad = useNumericKeypad({
         onConfirm: onConfirmDiscount,
@@ -42,6 +44,10 @@ export function usePosDialogCoordinator({
         setIsResetCartOpen,
         selectedProduct,
         setSelectedProduct,
+        showQuickAddProduct,
+        setShowQuickAddProduct,
+        pendingBarcode,
+        setPendingBarcode,
         discountKeypad,
         quantityKeypad,
     };

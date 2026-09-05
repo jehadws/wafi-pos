@@ -103,8 +103,8 @@ export default function Dashboard() {
             accessorKey: 'roles',
             header: t('Roles'),
             cell: ({ row }) => {
-                return row
-                    ?.getValue('roles')
+                return (row
+                    ?.getValue('roles') as Role[])
                     .map((role: Role) => role.name)
                     .join(', ');
             },
@@ -190,7 +190,7 @@ export default function Dashboard() {
                     isOpen={deleteDialog.isOpen}
                     onClose={() => setDeleteDialog({ isOpen: false, loading: false, customer: null })}
                     onConfirm={handleDeleteConfirm}
-                    title={t('Delete {{name}}', { name: deleteDialog.customer?.first_name })}
+                    title={t('Delete {{name}}', { name: deleteDialog.customer?.first_name ?? '' })}
                     description={t('Are you sure you want to delete this customer? This action cannot be undone.')}
                     confirmText={t('Delete')}
                     cancelText={t('Cancel')}

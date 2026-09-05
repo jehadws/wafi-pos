@@ -124,7 +124,7 @@ export default function Dashboard() {
                 <div className="grid w-full">
                     <DataTable
                         columns={columns}
-                        data={transaction}
+                        data={transaction as unknown as GlobalProductHistory[]}
                         title={t('Product Histories')}
                         description={t('Display All Product Stock Flow')}
                         searchKey="name"

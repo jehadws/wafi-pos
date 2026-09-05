@@ -36,6 +36,7 @@ export default function SettingsGeneral() {
     const { options, payload } = usePage<{ options: Options; payload: General }>().props;
     const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
+    const [open, setOpen] = useState(false);
     const [isPending, startTransition] = useTransition();
 
     const form = useForm<Payload>({
@@ -106,7 +107,7 @@ export default function SettingsGeneral() {
                                                 {form.data.general.sb_accounting_default_paid_expense_offset_account
                                                     ? t(
                                                           options.sb_accounting_default_paid_expense_offset_account.find(
-                                                              (tz) => tz.value === +form.data.general.sb_accounting_default_paid_expense_offset_account,
+                                                              (tz) => tz.value === +(form.data.general.sb_accounting_default_paid_expense_offset_account ?? 0),
                                                           )?.label ?? '',
                                                       )
                                                     : t('Select default...')}
@@ -126,7 +127,7 @@ export default function SettingsGeneral() {
                                                                 onSelect={(currentValue) => {
                                                                     form.setData(
                                                                         'general.sb_accounting_default_paid_expense_offset_account',
-                                                                        +currentValue,
+                                                                        currentValue,
                                                                     );
                                                                 }}
                                                             >

@@ -41,7 +41,8 @@ export default function CreateProductPage({ infoMessage }: { infoMessage?: strin
     const [loading, setLoading] = useState(false);
     const [accounts, setAccounts] = useState<{ label: string; value: number }[]>([]);
     const [showModal, setShowModal] = useState(false);
-    const [configurations, setConfigurations] = useState({});
+    const [configurations, setConfigurations] = useState<any>({});
+
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -88,9 +89,9 @@ export default function CreateProductPage({ infoMessage }: { infoMessage?: strin
     const getSubAccounts = async () => {
         setLoading(true);
         try {
-            const data = await transactionsApi.getConfigurations();
+            const data: any = await transactionsApi.getConfigurations();
             setConfigurations(data);
-            setAccounts(data.configurations[0].fields.find((field) => field.name === 'account_id').options);
+            setAccounts(data.configurations[0].fields.find((field: any) => field.name === 'account_id').options);
         } catch (error) {
             console.error('Error fetching sub accounts:', error);
         } finally {
@@ -235,7 +236,7 @@ export default function CreateProductPage({ infoMessage }: { infoMessage?: strin
                         )}
                     </div>
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        {configurations?.configurations?.map((configuration) => (
+                        {configurations?.configurations?.map((configuration: any) => (
                             <div
                                 onClick={() => handleSelectType(configuration.identifier)}
                                 className="hover:bg-muted flex flex-col items-center justify-center gap-3 rounded py-2"

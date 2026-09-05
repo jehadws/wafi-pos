@@ -77,4 +77,5 @@ export interface Order {
     shipping_type: 'flat' | 'percentage' | undefined;
     subtotal: number;
     title: string;
+    refunded_products?: any[];
 }

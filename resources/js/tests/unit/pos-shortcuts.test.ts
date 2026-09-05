@@ -41,7 +41,7 @@ const fireKeydown = (target: EventTarget, init: KeyboardEventInit): KeyboardEven
         captured = e as KeyboardEvent;
     });
     target.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, ...init }));
-    return captured!;
+    return captured as unknown as KeyboardEvent;
 };
 
 describe('isEditableTarget', () => {

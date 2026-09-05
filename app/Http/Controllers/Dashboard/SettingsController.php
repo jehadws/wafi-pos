@@ -68,4 +68,13 @@ class SettingsController extends DashboardController
 
     return $resource->saveForm($request);
   }
+
+  /**
+   * Return the current GeneralSettings payload so the frontend can
+   * re-sync its Settings singleton after a save.
+   */
+  public function current()
+  {
+    return (new \App\Settings\GeneralSettings)->getPayload();
+  }
 }
