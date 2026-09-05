@@ -11,7 +11,7 @@ export default function OrderInvoicePage() {
     const generalSettings = Settings.get();
     const storeName = generalSettings?.identification?.sb_store_name || 'Subul POS';
 
-    const { order, options, billing, shipping, title } = usePage<{
+    const { order, title } = usePage<{
         order: any;
         options: any;
         billing: any;

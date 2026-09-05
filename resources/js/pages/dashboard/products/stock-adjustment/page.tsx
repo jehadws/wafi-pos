@@ -28,7 +28,7 @@ interface StockAdjustmentProduct extends Product {
   }[]
 }
 
-export default function page() {
+export default function Page() {
   const { actions } = usePage<{ actions: { value: string, label: string }[] }>().props;
   const [searchQuery, setSearchQuery] = useState("")
   const [suggestions, setSuggestions] = useState<Product[]>([])
@@ -111,13 +111,13 @@ export default function page() {
     const finalProduct: StockAdjustmentProduct = {
       ...product,
       selected: false,
-      // @ts-ignore
+      // @ts-expect-error Inertia form type
       id: product.product_id,
-      // @ts-ignore
+      // @ts-expect-error Inertia form type
       unit_quantities: [product.unit],
-      // @ts-ignore
+      // @ts-expect-error Inertia form type
       adjust_unit: product.unit_quantity,
-      // @ts-ignore
+      // @ts-expect-error Inertia form type
       quantities: [product.unit_quantity],
       adjust_quantity: 1,
       adjust_action: defaultAction.value,
@@ -126,7 +126,7 @@ export default function page() {
       accurate_tracking: true,
       procurement_product_id: product.id,
       procurement_history: [{
-        // @ts-ignore
+        // @ts-expect-error Inertia form type
         label: `${product.procurement.name} (${product.available_quantity})`,
         value: product.id
       }]

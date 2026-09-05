@@ -23,7 +23,6 @@ export function NumericKeypadDialog({
   title,
   initialValue = "",
   onConfirm,
-  onCancel,
   maxLength = 10,
   allowDecimal = false,
 }: NumericKeypadDialogProps) {
@@ -61,13 +60,6 @@ export function NumericKeypadDialog({
 
   const handleEnter = () => {
     onConfirm(value || "0")
-    onOpenChange(false)
-  }
-
-  const handleCancel = () => {
-    if (onCancel) {
-      onCancel()
-    }
     onOpenChange(false)
   }
 

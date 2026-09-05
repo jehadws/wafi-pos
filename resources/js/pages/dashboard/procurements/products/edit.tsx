@@ -31,13 +31,13 @@ export default function CreateProductPage() {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         form.setData({ ...form.data, [name]: value });
-        // @ts-ignore
+        // @ts-expect-error Inertia form type
         if (form.errors[name]) form.clearErrors(name);
     };
 
     const handleSelectChange = (name: string, value: string | number | number[]) => {
         form.setData({ ...form.data, [name]: value });
-        // @ts-ignore
+        // @ts-expect-error Inertia form type
         if (form.errors[name]) form.clearErrors(name);
     };
 
@@ -116,7 +116,7 @@ export default function CreateProductPage() {
                                     onDateChange={(value: Date | undefined) =>
                                         handleSelectChange('expiration_date', value ? value.toISOString() : '')
                                     }
-                                    // @ts-ignore
+                                    // @ts-expect-error Inertia form type
                                     date={form.data.expiration_date}
                                 />
                             </FormField>

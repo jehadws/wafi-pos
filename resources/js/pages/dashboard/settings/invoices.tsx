@@ -13,7 +13,7 @@ import { useTranslation } from '@/lib/i18n';
 import { useForm, usePage } from '@inertiajs/react';
 import { settingsApi } from '@/api';
 import { Copy, Info, Save, Upload } from 'lucide-react';
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
 import { toast } from 'sonner';
 
 type General = {
@@ -43,7 +43,7 @@ type Options = {
 
 export default function ReceiptSettings() {
     const { options, payload } = usePage<{ options: Options; payload: General }>().props;
-    const [isPending, startTransition] = useTransition();
+    const [, startTransition] = useTransition();
     const { t } = useTranslation();
 
     const availableTags = [
@@ -83,25 +83,6 @@ export default function ReceiptSettings() {
                 });
             }
         });
-    };
-
-    const [activeTextarea, setActiveTextarea] = useState<string | null>(null);
-
-    const insertTag = (tag: string, targetField: string) => {
-        const textarea = document.getElementById(targetField) as HTMLTextAreaElement;
-        if (textarea) {
-            // const start = textarea.selectionStart
-            // const end = textarea.selectionEnd
-            // const currentValue = settings[targetField as keyof ReceiptSettings] as string
-            // const newValue = currentValue.substring(0, start) + tag + currentValue.substring(end)
-            //
-            // handleSettingChange(targetField as keyof ReceiptSettings, newValue)
-            // Restore cursor position
-            // setTimeout(() => {
-            //   textarea.focus()
-            //   textarea.setSelectionRange(start + tag.length, start + tag.length)
-            // }, 0)
-        }
     };
 
     const copyTag = (tag: string) => {
@@ -265,7 +246,6 @@ export default function ReceiptSettings() {
                                                         placeholder={t('Add custom header content here...')}
                                                         value={form.data.receipts.sb_invoice_receipt_column_a || ''}
                                                         onChange={(e) => form.setData('receipts.sb_invoice_receipt_column_a', e.target.value)}
-                                                        onFocus={() => setActiveTextarea('headerContent')}
                                                         className="min-h-[120px] font-mono text-sm"
                                                     />
                                                     <p className="text-muted-foreground text-sm">
@@ -282,7 +262,6 @@ export default function ReceiptSettings() {
                                                         placeholder={t('Add custom footer content here...')}
                                                         value={form.data.receipts.sb_invoice_receipt_footer || ''}
                                                         onChange={(e) => form.setData('receipts.sb_invoice_receipt_footer', e.target.value)}
-                                                        onFocus={() => setActiveTextarea('footerContent')}
                                                         className="min-h-[120px] font-mono text-sm"
                                                     />
                                                     <p className="text-muted-foreground text-sm">

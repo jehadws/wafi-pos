@@ -23,7 +23,7 @@ import { toast } from 'sonner';
 
 export default function Dashboard() {
     const { t } = useTranslation();
-    const { title, categories } = usePage<{ categories: CategoryProduct[]; title: string }>().props;
+    const { categories } = usePage<{ categories: CategoryProduct[]; title: string }>().props;
     const breadcrumbs = [
         { title: t('Dashboard'), href: '/dashboard' },
         { title: t('Category Products'), href: '/dashboard/products/categories' },

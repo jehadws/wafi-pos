@@ -19,7 +19,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { crudApi, paymentTypesApi } from '@/api';
 import { getApiErrorMessage } from '@/utils/api-errors';
 import { Edit, List, MoreHorizontal, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 
 export default function Dashboard() {
@@ -201,7 +201,7 @@ export default function Dashboard() {
         getOrders(currentPage, pageSize);
     };
 
-    const getOrders = async (page: number, pageSize: number) => {
+    const getOrders = useCallback(async (page: number, pageSize: number) => {
         try {
             const paymentTypes = await crudApi.list('sb.payments-types', { page, per_page: pageSize, search: searchTerm });
 
@@ -209,7 +209,7 @@ export default function Dashboard() {
         } catch (error) {
             console.error('Error fetching Orders:', error);
         }
-    };
+    }, [searchTerm]);
 
     const handleSearch = (search: string) => {
         setSearchTerm(search);
@@ -227,7 +227,7 @@ export default function Dashboard() {
 
     useEffect(() => {
         getOrders(currentPage, pageSize);
-    }, [currentPage, pageSize, searchTerm]);
+    }, [currentPage, pageSize, searchTerm, getOrders]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

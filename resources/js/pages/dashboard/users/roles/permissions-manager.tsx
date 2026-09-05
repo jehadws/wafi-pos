@@ -10,7 +10,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function PermissionManager() {
-    const { title, permissions, roles } = usePage<{
+    const { permissions, roles } = usePage<{
         title?: string;
         permissions: Permission[];
         roles: RoleWithPermissions[];

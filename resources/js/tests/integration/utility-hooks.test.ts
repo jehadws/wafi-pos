@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useDebouncedEffect } from '@/hooks/use-debounced-effect';
 import { usePosBeforeUnload } from '@/hooks/use-pos-before-unload';
-import { usePOS } from '@/hooks/usePOS';
 
 describe('utility hooks', () => {
     describe('useDebouncedEffect', () => {
@@ -11,7 +10,7 @@ describe('utility hooks', () => {
             const callback = vi.fn();
 
             const count = 0;
-            const { rerender } = renderHook(
+            renderHook(
                 ({ c }) => useDebouncedEffect(callback, [c], 300),
                 { initialProps: { c: count } },
             );

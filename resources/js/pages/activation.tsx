@@ -16,7 +16,7 @@ interface ActivationProps {
     deviceName?: string;
 }
 
-export default function Activation({ hwid, isActivated, deviceName }: ActivationProps) {
+export default function Activation({ hwid, deviceName }: ActivationProps) {
     const { t } = useTranslation();
     const [copied, setCopied] = useState(false);
 

@@ -15,7 +15,7 @@ interface TokenModalProps {
     tokenValue: string;
 }
 
-export function TokenQrDialog({ isOpen, onClose, tokenName, tokenValue }: TokenModalProps) {
+export function TokenQrDialog({ isOpen, onClose, tokenValue }: TokenModalProps) {
     const { t } = useTranslation();
     const [copied, setCopied] = useState(false);
 

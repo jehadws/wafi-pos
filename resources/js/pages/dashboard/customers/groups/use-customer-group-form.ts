@@ -37,14 +37,12 @@ export function useCustomerGroupForm(mode: CustomerGroupFormMode, group?: any) {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         form.setData({ ...form.data, [name]: value });
-        // @ts-ignore
-        if (form.errors[name]) form.clearErrors(name);
+                if ((form.errors as any)[name]) form.clearErrors(name as any);
     };
 
     const handleSelectChange = (name: keyof CustomerGroupFormData, value: string | number) => {
         form.setData({ ...form.data, [name]: value });
-        // @ts-ignore
-        if (form.errors[name]) form.clearErrors(name);
+                if ((form.errors as any)[name]) form.clearErrors(name as any);
     };
 
     const validateForm = (): boolean => {

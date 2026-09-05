@@ -1,8 +1,6 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,7 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from '@/lib/i18n';
 import PrintAgentService, { PrinterSettings, WindowsPrinter } from '@/services/print-agent-service';
-import { AlertCircle, CheckCircle2, Loader2, Play, Printer, RefreshCw, Settings2, Tag } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, Play, Printer, RefreshCw, Tag } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -66,6 +64,7 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
         if (isOpen) {
             checkAndFetchPrinters();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen]);
 
     const handleSettingChange = <K extends keyof PrinterSettings>(key: K, value: PrinterSettings[K]) => {

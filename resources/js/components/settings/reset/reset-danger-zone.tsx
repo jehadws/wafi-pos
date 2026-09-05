@@ -1,4 +1,4 @@
-import { AlertTriangle, Database, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
 export function ResetDangerZone() {

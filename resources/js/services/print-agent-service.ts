@@ -363,6 +363,7 @@ export class PrintAgentService {
         mode: string = 'sale',
         options: Partial<PrinterSettings> = {},
     ): Promise<PrintResult> {
+        void mode;
         const orderRecord = order as unknown as Record<string, unknown>;
         const receiptData: FormattedReceiptData = {
             orderCode: order.code ?? String(order.id ?? Date.now()),

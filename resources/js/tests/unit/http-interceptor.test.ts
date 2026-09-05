@@ -39,7 +39,7 @@ describe('HTTP Interceptor & Session Resilience', () => {
         const interceptor = (http.interceptors.response as any).handlers[0];
         try {
             await interceptor.rejected(error);
-        } catch (e) {
+        } catch {
             // expected rejection in mock environment
         }
 
@@ -58,7 +58,7 @@ describe('HTTP Interceptor & Session Resilience', () => {
         const interceptor = (http.interceptors.response as any).handlers[0];
         try {
             await interceptor.rejected(error);
-        } catch (e) {
+        } catch {
             // expected rejection
         }
 

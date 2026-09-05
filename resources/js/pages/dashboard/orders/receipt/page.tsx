@@ -11,7 +11,6 @@ export default function OrderReceiptPage({ order, optionsService, title }: any) 
     const storeName = generalSettings?.identification?.sb_store_name || 'Subul POS';
     const receiptLogo = optionsService?.sb_invoice_receipt_logo || generalSettings?.identification?.sb_store_square_logo || '';
     const receiptFooter = optionsService?.sb_invoice_receipt_footer || '';
-    const showTaxBreakdown = optionsService?.sb_invoice_display_tax_breakdown === 'yes';
 
     useEffect(() => {
         // Optional: automatically open print dialog when page loads

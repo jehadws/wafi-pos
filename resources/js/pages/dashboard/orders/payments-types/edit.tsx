@@ -36,8 +36,7 @@ export default function EditPaymentType() {
   const handleInputChange = (name: keyof typeof form.data, value: string | number | number[]) => {
     form.setData({ ...form.data, [name]: value });
 
-    // @ts-ignore
-    if (form.errors[name]) form.clearErrors(name);
+        if (form.errors[name]) form.clearErrors(name);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -81,6 +81,7 @@ export const createPaymentsSlice: StateCreator<POSStore, [], [], PaymentsSlice> 
     },
 
     updateCustomerAccount: (payment) => {
+        void payment;
         // Account payment handling is managed by the backend
     },
 

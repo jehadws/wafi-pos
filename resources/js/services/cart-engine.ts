@@ -322,7 +322,7 @@ function computeWholesaleProductTax(product: OrderProduct): void {
  * Dispatches to the correct per-mode tax computation function.
  * INTERNAL: Mutates the passed product object (call-sites pass a fresh clone).
  */
-function computeProductTax(product: OrderProduct): void {
+function _computeProductTax(product: OrderProduct): void {
     switch (product.mode) {
         case 'custom':
             computeCustomProductTax(product);
@@ -588,7 +588,7 @@ export function computeOrderTaxGroup(
 export function validateCoupons(
     products: OrderProduct[],
     coupons: Coupon[],
-    options: POSOptions,
+    _options: POSOptions,
 ): { validCoupons: Coupon[]; invalidCoupons: Coupon[] } {
     const validCoupons: Coupon[] = [];
     const invalidCoupons: Coupon[] = [];

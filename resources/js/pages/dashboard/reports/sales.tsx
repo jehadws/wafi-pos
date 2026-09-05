@@ -164,7 +164,7 @@ export default function SalesPage() {
 
     useEffect(() => {
         getData(filters);
-    }, []);
+    }, [filters]);
 
     const renderTable = () => {
         switch (filters.type) {
@@ -236,7 +236,7 @@ export default function SalesPage() {
                     </Table>
                 );
 
-            case 'products_report':
+            case 'products_report': {
                 const allProducts = data.result as unknown as Product[];
 
                 return (
@@ -280,6 +280,8 @@ export default function SalesPage() {
                         </TableBody>
                     </Table>
                 );
+
+            }
 
             case 'categories_summary':
                 return (
@@ -344,8 +346,8 @@ export default function SalesPage() {
                                         setDateRange(dateRange);
                                         setFilters({
                                             ...filters,
-                                            startDate: format(dateRange?.from!, 'yyyy-MM-dd HH:mm:ss'),
-                                            endDate: format(dateRange?.to!.setHours(23, 59, 59), 'yyyy-MM-dd HH:mm:ss'),
+                                            startDate: format(dateRange.from ?? new Date(), 'yyyy-MM-dd HH:mm:ss'),
+                                            endDate: format((dateRange.to ?? new Date()).setHours(23, 59, 59), 'yyyy-MM-dd HH:mm:ss'),
                                         });
                                     }}
                                     dateRange={dateRange}

@@ -27,7 +27,7 @@ export default function Dashboard() {
         { title: t('Dashboard'), href: '/dashboard' },
         { title: t('Unit Groups'), href: '/dashboard/units/groups' },
     ];
-    const { title, unitGroups } = usePage<{ unitGroups: UnitGroup[]; title: string }>().props;
+    const { unitGroups } = usePage<{ unitGroups: UnitGroup[]; title: string }>().props;
 
     const [deleteDialog, setDeleteDialog] = useState<{
         isOpen: boolean;

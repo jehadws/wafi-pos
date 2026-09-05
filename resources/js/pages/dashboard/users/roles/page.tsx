@@ -30,7 +30,7 @@ export default function Dashboard() {
         { title: t('Dashboard'), href: '/dashboard' },
         { title: t('Roles'), href: '/dashboard/roles' },
     ];
-    const { title, roles } = usePage<{ roles: Role[]; title: string }>().props;
+    const { roles } = usePage<{ roles: Role[]; title: string }>().props;
     const [deleteDialog, setDeleteDialog] = useState<{
         isOpen: boolean;
         loading: boolean;

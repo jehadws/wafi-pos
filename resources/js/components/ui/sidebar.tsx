@@ -267,12 +267,12 @@ function SidebarTrigger({
   onClick,
   ...props
 }: React.ComponentProps<typeof Button>) {
+  const { t } = useTranslation()
   const context = React.useContext(SidebarContext)
   if (!context) {
     return null
   }
   const { toggleSidebar } = context
-  const { t } = useTranslation()
 
   return (
     <Button

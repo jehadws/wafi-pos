@@ -39,8 +39,7 @@ export function useCategoryForm(mode: CategoryFormMode, category?: any) {
 
     const handleInputChange = (name: keyof CategoryFormData, value: string | number | number[]) => {
         form.setData({ ...form.data, [name]: value });
-        // @ts-ignore
-        if (form.errors[name]) form.clearErrors(name);
+                if (form.errors[name]) form.clearErrors(name);
     };
 
     const validateForm = (): boolean => {

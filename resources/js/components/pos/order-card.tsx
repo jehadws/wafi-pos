@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 import PrintAgentService from '@/services/print-agent-service';
 import { Order } from '@/types/models/order';
 import { formatCurrency } from '@/utils/format';
-import { InvoiceTemplate } from '@/utils/print';
 import { ordersApi } from '@/api';
 import { Eye, Loader2, Printer, Unlock } from 'lucide-react';
 import { useRef, useState } from 'react';
@@ -18,99 +17,7 @@ type Props = {
   onOpenChange: (open: boolean) => void;
 };
 
-type POSResponse = {
-  id: number;
-  description: null | string;
-  code: string;
-  title: string;
-  type: 'takeaway' | 'delivery';
-  payment_status: 'hold' | 'paid' | 'not-available' | 'unpaid';
-  process_status: 'not-available';
-  delivery_status: 'not-available';
-  discount: number;
-  discount_type: 'flat' | 'percentage';
-  support_instalments: boolean;
-  discount_percentage: number;
-  shipping: number;
-  shipping_rate: number;
-  shipping_type: null | 'flat' | 'percentage';
-  total_without_tax: number;
-  subtotal: number;
-  total_with_tax: number;
-  total_coupons: number;
-  total_cogs: number;
-  total: number;
-  tax_value: number;
-  products_tax_value: number;
-  tax_group_id: null | number;
-  tax_type: '0';
-  tendered: number;
-  change: number;
-  final_payment_date: null | string;
-  total_instalments: number;
-  customer_id: number;
-  note: null | string;
-  note_visibility: 'hidden' | 'visible';
-  author: number;
-  uuid: null | string;
-  register_id: null | number;
-  voidance_reason: null | string;
-  created_at: string;
-  updated_at: string;
-  payments: TPaymentMethod[];
-  shipping_address: Address;
-  billing_address: Address;
-  taxes: Tax[];
-  instalments: [];
-  coupons: Coupon[];
-  products: {
-    id: number;
-    name: string;
-    unit_name: string;
-    mode: 'normal';
-    product_type: 'materialized' | 'dematerialized' | 'grouped';
-    product_id: number;
-    order_id: number;
-    unit_id: number;
-    unit_quantity_id: number;
-    product_category_id: number;
-    procurement_product_id: null | number;
-    tax_group_id: number;
-    tax_type: 'exclusive' | 'inclusive';
-    uuid: null | string;
-    status: 'sold';
-    return_observations: null;
-    return_condition: null;
-    discount_type: 'percentage' | 'flat';
-    discount: number;
-    quantity: number;
-    discount_percentage: number;
-    unit_price: number;
-    price_with_tax: number;
-    price_without_tax: number;
-    wholesale_tax_value: number;
-    sale_tax_value: number;
-    tax_value: number;
-    rate: number;
-    total_price: number;
-    total_price_with_tax: number;
-    total_price_without_tax: number;
-    total_purchase_price: number;
-    created_at: string;
-    updated_at: string;
-    product: Product & {
-      tax_group: TaxGroup & {
-        taxes: Tax[];
-      };
-      unit_quantities: UnitQuantity[];
-    };
-    unit: Unit;
-  }[];
-  customer: Customer & {
-    billing: Address;
-    shipping: Address;
-  };
-};
+
 
 export default function OrderCard({ order, onOpenChange }: Props) {
   const { t } = useTranslation();

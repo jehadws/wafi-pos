@@ -27,6 +27,7 @@ export function ThermalReceiptPreview({ data, onClose, autoPrint = false }: Ther
                 handleDirectPrint();
             }
         });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleDirectPrint = async () => {

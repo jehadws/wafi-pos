@@ -41,8 +41,7 @@ export function useUnitForm(mode: UnitFormMode, unit?: any) {
 
     const handleInputChange = (name: keyof UnitFormData, value: string | number | number[]) => {
         form.setData({ ...form.data, [name]: value });
-        // @ts-ignore
-        if (form.errors[name]) form.clearErrors(name);
+                if (form.errors[name]) form.clearErrors(name);
     };
 
     const validateForm = (): boolean => {

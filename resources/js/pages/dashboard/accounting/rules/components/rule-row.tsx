@@ -15,7 +15,8 @@ interface RuleRowProps {
     onDelete?: (id: number) => void;
 }
 
-export function RuleRow({ accounts, actions, rule, isNew = false, onSave, onDelete }: RuleRowProps) {
+export function RuleRow({ accounts, actions, isNew: _isNew, rule,
+    onSave, onDelete }: RuleRowProps) {
     const { t } = useTranslation();
     const [isActionModalOpen, setIsActionModalOpen] = useState(false);
     const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);

@@ -50,13 +50,13 @@ export default function EditRewardSystemPage() {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         form.setData({ ...form.data, [name]: value });
-        // @ts-ignore
+        // @ts-expect-error Inertia form type
         if (form.errors[name]) form.clearErrors(name);
     };
 
     const handleSelectChange = (name: string, value: string | number | number[]) => {
         form.setData({ ...form.data, [name]: value });
-        // @ts-ignore
+        // @ts-expect-error Inertia form type
         if (form.errors[name]) form.clearErrors(name);
     };
 
@@ -69,11 +69,11 @@ export default function EditRewardSystemPage() {
             reward: '' as any,
         } as RewardSystemRule;
         form.setData({ ...form.data, rules: [...form.data.rules, newRule] });
-        // @ts-ignore
+        // @ts-expect-error Inertia form type
         if (form.errors[`rules.${id}.from`]) form.clearErrors(`rules.${id}.from`);
-        // @ts-ignore
+        // @ts-expect-error Inertia form type
         if (form.errors[`rules.${id}.to`]) form.clearErrors(`rules.${id}.to`);
-        // @ts-ignore
+        // @ts-expect-error Inertia form type
         if (form.errors[`rules.${id}.reward`]) form.clearErrors(`rules.${id}.reward`);
     };
 
@@ -81,18 +81,18 @@ export default function EditRewardSystemPage() {
         form.setData({ ...form.data, rules: form.data.rules.filter((rule) => rule.id !== id) });
 
         // clear errors
-        // @ts-ignore
+        // @ts-expect-error Inertia form type
         if (form.errors[`rules.${id}.from`]) form.clearErrors(`rules.${id}.from`);
-        // @ts-ignore
+        // @ts-expect-error Inertia form type
         if (form.errors[`rules.${id}.to`]) form.clearErrors(`rules.${id}.to`);
-        // @ts-ignore
+        // @ts-expect-error Inertia form type
         if (form.errors[`rules.${id}.reward`]) form.clearErrors(`rules.${id}.reward`);
     };
 
     const updateRule = (id: string, field: keyof RewardSystemRule, value: string) => {
         form.setData({ ...form.data, rules: form.data.rules.map((rule) => (rule.id === id ? { ...rule, [field]: value } : rule)) });
 
-        // @ts-ignore
+        // @ts-expect-error Inertia form type
         if (form.errors[`rules.${id}.${field}`]) form.clearErrors(`rules.${id}.${field}`);
     };
 
@@ -172,7 +172,7 @@ export default function EditRewardSystemPage() {
                     }
                 });
             }
-        } catch (e) {
+        } catch {
             form.setError('rules', t('Invalid rules format'));
             isValid = false;
         }

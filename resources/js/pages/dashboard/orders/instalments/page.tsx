@@ -1,4 +1,3 @@
-import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table/data-table';
@@ -10,8 +9,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { crudApi } from '@/api';
 import { ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { formatCurrency } from '@/utils/format';
+
 
 type InstalmentRow = {
   id: number;

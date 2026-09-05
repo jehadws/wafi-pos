@@ -160,9 +160,10 @@ export function ProductSearch({ selectedProducts, onProductsChange, onPrint }: P
                         <FormField label={t('Unit')} htmlFor="unit" description={t('Choose the unit to apply for the item')}>
                             <Select
                                 value={selectedUnitQuantity?.id.toString()}
-                                onValueChange={(value) =>
-                                    setSelectedUnitQuantity(selectedProduct?.unit_quantities.find((unitQuantity) => unitQuantity.id === +value)!)
-                                }
+                                onValueChange={(value) => {
+                                    const found = selectedProduct?.unit_quantities.find((unitQuantity) => unitQuantity.id === +value);
+                                    if (found) setSelectedUnitQuantity(found);
+                                }}
                             >
                                 <SelectTrigger className="w-full">
                                     <SelectValue placeholder={t('Not set')} />

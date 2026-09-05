@@ -30,8 +30,7 @@ export function useUnitGroupForm(mode: UnitGroupFormMode, group?: any) {
 
     const handleInputChange = (name: keyof UnitGroupFormData, value: string) => {
         form.setData({ ...form.data, [name]: value });
-        // @ts-ignore
-        if (form.errors[name]) form.clearErrors(name);
+                if (form.errors[name]) form.clearErrors(name);
     };
 
     const validateForm = (): boolean => {

@@ -3,7 +3,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useTranslation } from '@/lib/i18n';
 import { Bike, ShoppingBasket } from 'lucide-react';
-import { useState } from 'react';
 
 interface OrderTypeDialogProps {
   open: boolean;
@@ -13,10 +12,8 @@ interface OrderTypeDialogProps {
 
 export function OrderTypeDialog({ open, onOpenChange, onSelectOrderType }: OrderTypeDialogProps) {
   const { t } = useTranslation();
-  const [selectedType, setSelectedType] = useState<'takeaway' | 'delivery' | null>(null);
 
   const handleSelectType = (type: 'takeaway' | 'delivery') => {
-    setSelectedType(type);
     onSelectOrderType(type);
     onOpenChange(false);
   };

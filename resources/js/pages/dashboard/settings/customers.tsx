@@ -43,7 +43,7 @@ export default function SettingsGeneral() {
     const { options, payload } = usePage<{ options: Options; payload: General }>().props;
     const { t } = useTranslation();
     const [isPending, startTransition] = useTransition();
-    const [open, setOpen] = useState(false);
+    const [open] = useState(false);
 
     const form = useForm<Payload>({
         general: {

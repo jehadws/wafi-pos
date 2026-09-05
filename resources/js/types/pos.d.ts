@@ -57,7 +57,7 @@ type OrderFormValuesType = {
   shipping_rate: number
   shipping_type: "flat"
   subtotal: number
-  tax_group: {}
+  tax_group: Record<string, unknown>
   tax_group_id: null | number
   tax_type: boolean | string
   tax_value: number

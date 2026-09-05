@@ -65,7 +65,7 @@ export function NumberPad({ onNumberClick, onBackspace, onConfirm, handleFullPay
   return (
     <div className="mx-auto grid max-w-md grid-cols-3 gap-3">
       {/* Number rows */}
-      {numbers.map((row, rowIndex) =>
+      {numbers.map((row) =>
         row.map((num) => (
           <NumberButton key={num} onClick={() => onNumberClick(num)}>
             {num}

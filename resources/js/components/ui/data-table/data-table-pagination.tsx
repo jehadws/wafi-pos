@@ -5,7 +5,6 @@ import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-r
 import { useTranslation } from "@/lib/i18n"
 
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface DataTablePaginationProps<TData> {
   table: Table<TData>
@@ -20,7 +19,6 @@ export function DataTablePagination<TData>({
   useCustomPagination = false,
   customPaginationData,
   onPageChange,
-  onPageSizeChange,
 }: DataTablePaginationProps<TData>) {
   const { t } = useTranslation()
   // Use custom pagination data when available, otherwise fall back to table data
@@ -44,9 +42,6 @@ export function DataTablePagination<TData>({
     ? 0 // Custom pagination doesn't support row selection typically
     : table.getFilteredSelectedRowModel().rows.length
 
-  const totalRowsCount =
-    useCustomPagination && customPaginationData ? customPaginationData.total : table.getFilteredRowModel().rows.length
-
   const canPreviousPage =
     useCustomPagination && customPaginationData
       ? customPaginationData.prev_page_url !== null
@@ -54,15 +49,6 @@ export function DataTablePagination<TData>({
 
   const canNextPage =
     useCustomPagination && customPaginationData ? customPaginationData.next_page_url !== null : table.getCanNextPage()
-
-  const handlePageSizeChange = (value: string) => {
-    const newPageSize = Number(value)
-    if (useCustomPagination && onPageSizeChange) {
-      onPageSizeChange(newPageSize)
-    } else {
-      table.setPageSize(newPageSize)
-    }
-  }
 
   const handleFirstPage = () => {
     if (useCustomPagination && onPageChange) {

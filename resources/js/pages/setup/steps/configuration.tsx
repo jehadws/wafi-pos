@@ -20,7 +20,7 @@ interface ConfigurationPageProps {
     default_lang?: string;
 }
 
-export function ConfigurationPage({ onBack, onNext, languages = {}, default_lang = 'en' }: ConfigurationPageProps) {
+export function ConfigurationPage({ onBack, onNext, default_lang = 'en' }: ConfigurationPageProps) {
     const { t } = useTranslation();
 
     const [data, setData] = useState<ConfigForm>({

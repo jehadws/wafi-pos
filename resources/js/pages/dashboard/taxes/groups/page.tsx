@@ -27,7 +27,7 @@ export default function RewardSystemPage() {
         { title: t('Dashboard'), href: '/dashboard' },
         { title: t('Taxes Groups'), href: '/dashboard/taxes/groups' },
     ];
-    const { title, groups } = usePage<{ groups: RewardSystem[]; title: string }>().props;
+    const { groups } = usePage<{ groups: RewardSystem[]; title: string }>().props;
     const [deleteDialog, setDeleteDialog] = useState<{
         isOpen: boolean;
         loading: boolean;

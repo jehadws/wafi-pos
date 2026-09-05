@@ -35,8 +35,8 @@ export default function OrderFilterDialog({ isFilterOpen, setIsFilterOpen, handl
     const handleApplyFilter = () => {
         const queryFilters = {
             'subul_orders.created_at': {
-                startDate: dateRange?.from ? format(dateRange?.from!, 'yyyy-MM-dd HH:mm:ss') : null,
-                endDate: dateRange?.to ? format(dateRange?.to!, 'yyyy-MM-dd HH:mm:ss') : null,
+                startDate: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd HH:mm:ss') : null,
+                endDate: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd HH:mm:ss') : null,
             },
             payment_status: PaymentStatus ? PaymentStatus : null,
             'subul_orders.author': Author ? Author : null,

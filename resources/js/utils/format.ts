@@ -2,7 +2,6 @@ import Settings from "@/lib/settings";
 import { enUS } from 'date-fns/locale';
 import NumeralJS from "numeral";
 import { format, toZonedTime } from 'date-fns-tz';
-import { parse } from "date-fns";
 
 export const formatCurrency = (amount: number) => {
   let currency: any = {
@@ -59,30 +58,6 @@ const phpToDateFnsFormat = (phpFormat: string): string => {
   };
   return formatMap[phpFormat] || phpFormat;
 };
-
-// Create a reverse mapping for parsing
-const phpToDateFnsParseFormat = (phpFormat: string): string => {
-  const formatMap: { [key: string]: string } = {
-    'd.m.Y, H:i': 'dd.MM.yyyy, HH:mm',
-    'd.m.Y': 'dd.MM.yyyy',
-    'd-m-y H:i': 'dd-MM-yyyy HH:mm',
-    'd/m/y H:i': 'dd/MM/yyyy HH:mm',
-    'Y-m-d H:i': 'yyyy-MM-dd HH:mm',
-    'Y/m/d H:i': 'yyyy/MM/dd HH:mm',
-    // Add other formats as needed
-  };
-  return formatMap[phpFormat] || phpFormat;
-};
-
-// export const formatDate = (dateString: string) => {
-//   const { date } = Settings.get();
-//   const { sb_date_format } = date;
-//   if (!dateString) {
-//     return '';
-//   }
-//   const dateFnsFormat = phpToDateFnsFormat(sb_date_format || 'Y-m-d');
-//   return format(new Date(dateString), dateFnsFormat);
-// }
 
 export const formatDate = (dateString: string) => {
   let dateConfig: any = { sb_date_format: 'Y-m-d', sb_datetime_timezone: 'UTC' };

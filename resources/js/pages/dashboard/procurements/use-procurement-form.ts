@@ -65,8 +65,7 @@ export function useProcurementForm(initialData?: ProcurementInitialData) {
 
     const handleInputChange = (name: keyof ProcurementFormData, value: any) => {
         form.setData({ ...form.data, [name]: value });
-        // @ts-ignore
-        if (form.errors[name]) form.clearErrors(name);
+                if (form.errors[name]) form.clearErrors(name);
     };
 
     const addProduct = (product: any) => {

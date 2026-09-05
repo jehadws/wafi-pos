@@ -49,8 +49,6 @@ export default function LabelPrinter() {
         showProductName: true,
     });
 
-    const [isPrinting, setIsPrinting] = useState(false);
-
     const handlePrint = async () => {
         if (selectedProducts.length === 0) {
             toast.error(t('No products selected for printing'));
@@ -67,7 +65,6 @@ export default function LabelPrinter() {
             storeName: settings.showStoreName ? 'ALWAFI' : undefined,
         }));
 
-        setIsPrinting(true);
         try {
             const res = await PrintAgentService.printLabels(labelItems, {
                 showStoreNameOnLabel: settings.showStoreName,
@@ -78,8 +75,6 @@ export default function LabelPrinter() {
             toast.success(res.message || t('Labels sent to thermal printer successfully!'));
         } catch (err: any) {
             toast.error(err.message || t('Failed to print labels.'));
-        } finally {
-            setIsPrinting(false);
         }
     };
 

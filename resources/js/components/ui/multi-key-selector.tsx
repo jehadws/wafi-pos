@@ -29,7 +29,6 @@ export default function MultiKeySelector({
   value = null,
   onChange,
   placeholder = "Select keys for shortcut...",
-  disabled = false,
   className,
   maxKeys = 4,
   options,
@@ -54,11 +53,6 @@ export default function MultiKeySelector({
       const newKeys = [...selectedKeys, keyValue]
       onChange?.(newKeys)
     }
-  }
-
-  const handleKeyRemove = (keyValue: string) => {
-    const newKeys = selectedKeys.filter((k) => k !== keyValue)
-    onChange?.(newKeys.length > 0 ? newKeys : null)
   }
 
   const handleClear = () => {

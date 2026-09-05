@@ -123,7 +123,7 @@ export function DatabasePage({ onBack, onNext }: DatabasePageProps) {
                 });
                 if (res.ok) {
                     const json = await res.json().catch(() => null);
-                    // eslint-disable-next-line no-console
+                     
                     console.debug('[setup] check-database response', json);
                     if (isSuccessPayload(json)) {
                         return true;
@@ -212,7 +212,7 @@ export function DatabasePage({ onBack, onNext }: DatabasePageProps) {
 
         if (response) {
             const result = await response.json().catch(() => null);
-            // eslint-disable-next-line no-console
+             
             console.debug('[setup] database POST response', response.status, result);
 
             if (!response.ok) {

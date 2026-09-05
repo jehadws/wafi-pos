@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 
 export default function Dashboard() {
     const { t } = useTranslation();
-    const { title, units } = usePage<{ units: Unit[]; title: string }>().props;
+    const { units } = usePage<{ units: Unit[]; title: string }>().props;
     const breadcrumbs = [
         { title: t('Dashboard'), href: '/dashboard' },
         { title: t('Units'), href: '/dashboard/units' },

@@ -19,10 +19,8 @@ export interface UsePosCheckoutOptions {
 }
 
 export function usePosCheckout({
-    order,
     selectCustomer,
     setOrderType,
-    setShipping,
 }: UsePosCheckoutOptions) {
     const [showSelectCustomerDialog, setShowSelectCustomerDialog] = useState(false);
     const [showSelectedCustomerDetailsDialog, setShowSelectedCustomerDetailsDialog] = useState(false);
