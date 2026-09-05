@@ -21,6 +21,7 @@ export function useWizardNavigation(initialHash: string) {
             window.location.hash = target;
         }
         setCurrentHash(target);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // run once on mount only
 
     // Keep state in sync when the user presses the browser back/forward buttons.

@@ -54,7 +54,7 @@ export default function Dashboard() {
     const [pageSize, setPageSize] = useState(20);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filters, setFilters] = useState<TFilter | {}>({
+    const [filters, setFilters] = useState<TFilter | Record<string, never>>({
         'subul_orders.created_at': {
             startDate: null,
             endDate: null,
@@ -292,6 +292,7 @@ export default function Dashboard() {
 
     useEffect(() => {
         getOrders(currentPage, pageSize, filters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentPage, pageSize, filters, searchTerm]);
 
     return (

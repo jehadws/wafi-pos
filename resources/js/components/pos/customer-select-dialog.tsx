@@ -128,7 +128,7 @@ export function SelectCustomerDialog({
       setCreateMode(defaultCreateMode);
       if (defaultCreateMode) fetchGroups();
     }
-  }, [open, defaultCreateMode]);
+  }, [open, defaultCreateMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

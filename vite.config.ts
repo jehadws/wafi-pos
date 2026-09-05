@@ -1,12 +1,9 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import reactCompiler from 'babel-plugin-react-compiler';
 import laravel from 'laravel-vite-plugin';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
-
-const ReactCompilerConfig = {
-    target: '19', // '17' | '18' | '19'
-};
 
 export default defineConfig({
     plugins: [
@@ -16,7 +13,11 @@ export default defineConfig({
             refresh: true,
         }),
 
-        react(),
+        react({
+            babel: {
+                plugins: [[reactCompiler, { target: '19' }]],
+            },
+        }),
         tailwindcss(),
     ],
     esbuild: {

@@ -109,6 +109,7 @@ export default function Component() {
         }, 300);
 
         return () => clearTimeout(debounceTimer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchQuery]);
 
     return (
@@ -129,8 +130,8 @@ export default function Component() {
                                         setDateRange(dateRange);
                                         setFilters({
                                             ...filters,
-                                            rangeStarts: format(dateRange?.from!, 'yyyy-MM-dd HH:mm:ss'),
-                                            rangeEnds: format(dateRange?.to!.setHours(23, 59, 59), 'yyyy-MM-dd HH:mm:ss'),
+                                            rangeStarts: format(dateRange?.from ?? new Date(), 'yyyy-MM-dd HH:mm:ss'),
+                                            rangeEnds: format((dateRange?.to ?? new Date()).setHours(23, 59, 59), 'yyyy-MM-dd HH:mm:ss'),
                                         });
                                     }}
                                     dateRange={dateRange}

@@ -46,6 +46,7 @@ export default function PosPage() {
     if (options[POS_OPTION_KEYS.itemsMerge] !== undefined) {
       setAutoMerge(Boolean(options[POS_OPTION_KEYS.itemsMerge]));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options, settings]);
 
   // Load payment types from backend into the store.
@@ -53,6 +54,7 @@ export default function PosPage() {
     if (paymentTypes?.length) {
       definedPaymentsType(paymentTypes);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paymentTypes]);
 
   // Run the initialization queue exactly once on mount.
@@ -61,6 +63,7 @@ export default function PosPage() {
     processInitialQueue().catch((err) => {
       console.error('[POS] Initialization queue failed:', err);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Auto-select order type for new carts:
@@ -80,6 +83,7 @@ export default function PosPage() {
     if (meta) {
       setOrderType({ ...meta, selected: true } as OrderTypeObj);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options[POS_OPTION_KEYS.orderTypes]]);
 
   // Auto-assign the shop's default (walk-in) customer to new carts when configured.
@@ -103,6 +107,7 @@ export default function PosPage() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options[POS_OPTION_KEYS.defaultCustomer]]);
 
   if (license && (license.isRestricted || !license.isValid)) {

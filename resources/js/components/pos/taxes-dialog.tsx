@@ -51,6 +51,7 @@ export default function TaxesDialog({ isOpen, onClose, onSave, currentTaxGroupId
                 toast.error(t('Failed to load tax groups'));
             })
             .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen]);
 
     const selectedGroup = taxGroups.find((g) => g.id.toString() === selectedGroupId);

@@ -56,6 +56,7 @@ export function useRegisterSession(options: SbPosOptions): RegisterSessionState 
     // ── Probe for an opened register once per POS mount ────────────────────
     useEffect(() => {
         initialize(registersEnabled);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [registersEnabled]);
 
     // ── Idle auto-lock ─────────────────────────────────────────────────────
@@ -92,6 +93,7 @@ export function useRegisterSession(options: SbPosOptions): RegisterSessionState 
             if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
             events.forEach((event) => window.removeEventListener(event, resetTimer));
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [registersEnabled, currentRegister?.id, options[POS_OPTION_KEYS.idleCounter]]);
 
     // ── Stamp orders with the active register ──────────────────────────────

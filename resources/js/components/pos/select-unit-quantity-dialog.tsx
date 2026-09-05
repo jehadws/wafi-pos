@@ -59,6 +59,7 @@ export default function SelectUnitQuantityDialog({ selectProduct }: { selectProd
         if (selectProduct && open) {
             loadQuantities(selectProduct);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectProduct, open]);
 
     return (

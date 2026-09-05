@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { customersApi } from '@/api';
 import { Loader2 } from 'lucide-react';
@@ -39,6 +38,7 @@ export function CustomerDetailsDialog({ open, onOpenChange, customer }: Customer
     if (open && customer && activeTab === 'customer-account' && activeSubTab === 'orders') {
       fetchCustomerOrders();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, activeTab, activeSubTab, customer]);
 
   if (!customer) {

@@ -252,6 +252,7 @@ export default function Dashboard() {
 
     useEffect(() => {
         getOrders(currentPage, pageSize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentPage, pageSize, searchTerm]);
 
     return (

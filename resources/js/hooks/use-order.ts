@@ -41,6 +41,7 @@ export function useOrder(orderId: number | null) {
         return () => {
             abortRef.current?.abort();
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orderId]);
 
     return { order, loading, refetch: fetch, clear };

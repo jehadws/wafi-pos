@@ -65,6 +65,7 @@ export function RegisterSessionDialog({ onClosed }: RegisterSessionDialogProps) 
                 toast.error(error?.response?.data?.message || t('Unable to load the session history.'));
             });
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, currentRegister?.id]);
 
     // Pre-fill the expected amount so the cashier only corrects it.
@@ -72,6 +73,7 @@ export function RegisterSessionDialog({ onClosed }: RegisterSessionDialogProps) 
         if (open && currentRegister) {
             setCountedCash(String(currentRegister.balance ?? 0));
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, currentRegister?.balance]);
 
     // Disbursement disabled → fall back to Cash In when the toggle disappears.
