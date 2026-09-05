@@ -4,23 +4,21 @@ import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import PrintAgentService from '@/services/print-agent-service';
-import type { PrintResult } from '@/services/print-agent-service';
 import { Order } from '@/types/models/order';
 import { formatCurrency } from '@/utils/format';
 import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'sonner';
 import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
+import { submitAndFinalizeOrder } from '@/services/order-finalize';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { NumberPad } from './number-pad';
 import { PaymentMethodSidebar } from './payment-method-sidebar';
 import SummaryCard from './payment-summary-card';
 
-import { getPaymentMethodLabel, type PaymentTypes } from '@/constants/payment-methods';
+import { PaymentType } from '@/types/models/payment-type';
 
 interface TPaymentMethod {
-  identifier: PaymentTypes;
+  identifier: string;
   value: number;
   label: string;
   selected: boolean;
@@ -36,9 +34,11 @@ interface PaymentGatewayProps {
 }
 
 export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, useBillingAddress, resetCart }: PaymentGatewayProps) {
-  const { order, products, submitOrder, addPayment, removePayment, options } = usePOS();
+  const { order, products, submitOrder, addPayment, removePayment, options, paymentsType } = usePOS();
   const { t } = useTranslation();
-  const [tab, setTab] = useState<PaymentTypes | 'payment-list'>('cash-payment');
+  const [selectedMethod, setSelectedMethod] = useState<PaymentType | 'payment-list'>(
+    paymentsType[0] ?? 'payment-list',
+  );
   const [screenValue, setScreenValue] = useState('0.00');
   const [rawValue, setRawValue] = useState(0);
   const [isSaveAsUnpaidOpen, setIsSaveAsUnpaidOpen] = useState(false);
@@ -77,12 +77,12 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
     setScreenValue(amount.toFixed(2));
   };
 
-  const handleFullPayment = (paymentType: PaymentTypes) => {
+  const handleFullPayment = (method: PaymentType) => {
     if (total <= paid) return;
     const payment: TPaymentMethod = {
-      identifier: paymentType,
+      identifier: method.identifier,
       value: total - paid,
-      label: getPaymentMethodLabel(paymentType),
+      label: method.label,
       selected: false,
       readonly: false,
     };
@@ -91,13 +91,13 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
     setRawValue(0);
   };
 
-  const handleConfirmPayment = (paymentType: PaymentTypes) => {
+  const handleConfirmPayment = (method: PaymentType) => {
     const amount = Number.parseFloat(screenValue);
     if (amount <= 0) return;
     const payment: TPaymentMethod = {
-      identifier: paymentType,
+      identifier: method.identifier,
       value: amount,
-      label: getPaymentMethodLabel(paymentType),
+      label: method.label,
       selected: false,
       readonly: false,
     };
@@ -113,8 +113,8 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
     }
   };
 
-  const onTabSelect = (method: PaymentTypes | 'payment-list') => {
-    setTab(method);
+  const onTabSelect = (method: PaymentType | 'payment-list') => {
+    setSelectedMethod(method);
     setScreenValue('0.00');
   };
 
@@ -132,82 +132,15 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
       },
     };
 
-    try {
-      const createdOrder = await submitOrder(orderData);
-      toast.success(t('The operation was successful.'));
-
-      const savedOrder = (createdOrder?.data?.order ?? {}) as Record<string, unknown>;
-      const orderRecord = order as unknown as Record<string, unknown>;
-      const printerSettings = PrintAgentService.getSettings();
-
-      /**
-       * Receipt source of truth: the local cart state (items, payments,
-       * totals, customer) enriched with the server-assigned identity.
-       */
-      const receiptOrder = {
-        ...order,
-        ...orderData,
-        products: products,
-        change: order.tendered > paid ? order.tendered - total : 0,
-        id: savedOrder.id ?? orderRecord.id,
-        code: savedOrder.code ?? orderRecord.code,
-        payment_status: paymentStatus,
-      } as unknown as Order;
-
-      const hasCashPayment = (orderData.payments ?? []).some(
-        (p) => p.identifier === 'cash-payment',
-      );
-
-      /**
-       * Canonical auto-print path — honours the printingEnabledFor /
-       * printingDocument POS options and reuses the Order → receipt mapping
-       * from PrintAgentService. A successful receipt print carries its own
-       * cash-drawer kick (ESC p) when "Open Cash Drawer" is enabled.
-       */
-      let printResult: PrintResult | false = false;
-      if (paymentStatus === 'paid' || paymentStatus === 'partially_paid') {
-        printResult = await usePOS.getState().printOrderReceipt(receiptOrder);
-      }
-
-      if (printResult === false) {
-        // Printing disabled by policy — still pulse the drawer for cash sales.
-        if (printerSettings.openCashDrawer && hasCashPayment) {
-          await PrintAgentService.openCashDrawer();
-        }
-      } else if (!printResult.success) {
-        toast.error(
-          t('Order #{code} saved, but receipt failed to print: {error}', {
-            code: String(receiptOrder.code ?? ''),
-            error: printResult.error || t('Printer unavailable'),
-          }),
-          {
-            duration: 8000,
-            action: {
-              label: t('Retry Print'),
-              onClick: () => {
-                PrintAgentService.printOrderReceipt(receiptOrder).then((retryRes) => {
-                  if (retryRes.success) {
-                    toast.success(t('Receipt printed successfully.'));
-                  } else {
-                    toast.error(retryRes.error || t('Print retry failed.'));
-                  }
-                });
-              },
-            },
-          },
-        );
-
-        // The receipt (which carries the drawer kick) failed — pulse the drawer directly.
-        if (printerSettings.openCashDrawer && hasCashPayment) {
-          PrintAgentService.openCashDrawer();
-        }
-      }
-
-      resetCart();
-      onOpenChange(false);
-    } catch (error: any) {
-      toast.error(error?.message || t('An unexpected error occurred'));
-    }
+    await submitAndFinalizeOrder({
+      order,
+      orderData: orderData as Order,
+      products,
+      submitOrder,
+      printOrderReceipt: (receiptOrder) => usePOS.getState().printOrderReceipt(receiptOrder),
+      resetCart,
+      onSuccess: () => onOpenChange(false),
+    });
   };
 
   const handleSaveAsUnpaid = async () => {
@@ -225,14 +158,14 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
         <DialogDescription className="sr-only">{t('Payment Gateway')}</DialogDescription>
         <div className="border-border flex items-center justify-between border-b p-4">
           <h2 className="text-foreground text-lg font-semibold">
-            {t('Payment Gateway')} : {tab === 'payment-list' ? t('List Of Payments') : t('Payment Gateway')}
+            {t('Payment Gateway')} : {selectedMethod === 'payment-list' ? t('List Of Payments') : t('Payment Gateway')}
           </h2>
         </div>
 
         <div className="flex flex-1 overflow-hidden">
-          <PaymentMethodSidebar selectedTab={tab} onTabSelect={onTabSelect} totalPayment={payments.length} />
+          <PaymentMethodSidebar selectedTab={selectedMethod} onTabSelect={onTabSelect} totalPayment={payments.length} paymentsType={paymentsType} />
           <div className="flex-1">
-            {tab !== 'payment-list' && (
+            {selectedMethod !== 'payment-list' && (
               <div className="flex-1 space-y-6 p-6">
                 <div className="grid grid-cols-2 gap-4">
                   <SummaryCard label={t('Total')} amount={total} variant="total" />
@@ -269,13 +202,13 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
                 <NumberPad
                   onNumberClick={handleNumberInput}
                   onBackspace={handleBackspace}
-                  onConfirm={() => handleConfirmPayment(tab)}
+                  onConfirm={() => selectedMethod !== 'payment-list' && handleConfirmPayment(selectedMethod)}
                   handleFullPayment={() => setIsConfirmFullPaymentOpen(true)}
                 />
               </div>
             )}
 
-            {tab === 'payment-list' && (
+            {selectedMethod === 'payment-list' && (
               <ScrollArea className="h-full min-h-[150px]">
                 <div className="flex-1 space-y-2 p-3">
                   {payments.map((payment: any, index: number) => (
@@ -345,12 +278,14 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
           isOpen={isConfirmFullPaymentOpen}
           onClose={() => setIsConfirmFullPaymentOpen(false)}
           onConfirm={() => {
-            handleFullPayment(tab as PaymentTypes);
+            if (selectedMethod !== 'payment-list') {
+              handleFullPayment(selectedMethod);
+            }
             setIsConfirmFullPaymentOpen(false);
           }}
           title={t('Confirm Full Payment')}
           description={t('A full payment will be made using {paymentType} for {total}', {
-            paymentType: getPaymentMethodLabel(tab as PaymentTypes),
+            paymentType: selectedMethod !== 'payment-list' ? selectedMethod.label : '',
             total: formatCurrency(total),
           })}
         />
