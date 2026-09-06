@@ -225,7 +225,7 @@ export function SelectCustomerDialog({
             <>
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
-                  <Search className="absolute top-1/2 start-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+                  <Search className="absolute top-1/2 start-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
                   <Input placeholder={t('Search')} value={searchQuery} onChange={(e) => handleSearch(e.target.value)} className="ps-10" />
                 </div>
                 <Button variant="outline" size="icon" className="shrink-0" onClick={() => { setCreateMode(true); fetchGroups(); }} type="button" title={t('Create Customer')}>
@@ -252,7 +252,7 @@ export function SelectCustomerDialog({
                             <div className="font-medium">
                               {customer.first_name} {customer.last_name || ''}
                             </div>
-                            <div className="text-sm text-gray-500">{customer.phone}</div>
+                            <div className="text-muted-foreground text-sm">{customer.phone}</div>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{formatCurrency(+(customer.purchases_amount ?? 0))}</span>

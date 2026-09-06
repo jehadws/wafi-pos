@@ -20,7 +20,7 @@ interface NumberButtonProps {
 
 function NumberButton({ children, onClick }: NumberButtonProps) {
   return (
-    <Button variant="outline" size="lg" className="text-foreground h-16 bg-transparent text-xl font-semibold" onClick={onClick}>
+    <Button variant="outline" size="lg" className="bg-card text-foreground h-16 rounded-xl text-xl font-semibold shadow-2xs" onClick={onClick}>
       {children}
     </Button>
   );
@@ -78,13 +78,19 @@ export function NumberPad({ onNumberClick, onBackspace, onConfirm, handleFullPay
         <Delete className="h-6 w-6" />
       </NumberButton>
       <NumberButton onClick={() => onNumberClick('0')}>0</NumberButton>
-      <NumberButton onClick={onConfirm}>{t('Enter')}</NumberButton>
+      <Button
+        variant="default"
+        className="text-primary-foreground h-16 rounded-xl text-xl font-semibold"
+        onClick={onConfirm}
+      >
+        {t('Enter')}
+      </Button>
 
       {/* Full Payment Button */}
       <div className="col-span-3">
         <Button
           onClick={handleFullPayment}
-          className="h-16 w-full bg-green-500 text-lg font-semibold text-white hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 focus-visible:ring-2 focus-visible:ring-offset-2"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 h-16 w-full rounded-xl text-lg font-semibold"
         >
           {t('Full Payment')}
         </Button>

@@ -16,15 +16,16 @@ export function PaymentMethodSidebar({ selectedTab, onTabSelect, totalPayment, p
     selectedTab !== 'payment-list' && selectedTab.identifier === payment.identifier;
 
   return (
-    <div className="border-border h-full w-48 border-r">
-      <div className="space-y-1 p-2">
+    <div className="border-border w-full shrink-0 border-b lg:h-full lg:w-48 lg:border-b-0 lg:border-e">
+      {/* Horizontal scroll rail on narrow sheets, vertical rail on lg+ */}
+      <div className="flex gap-1 overflow-x-auto p-2 lg:flex-col lg:overflow-visible">
         {paymentsType.map((payment: PaymentType) => (
           <button
             key={payment.identifier}
             onClick={() => onTabSelect(payment)}
             className={cn(
-              'text-foreground relative w-full rounded px-3 py-2 text-start text-sm',
-              isSelected(payment) ? 'text-primary bg-primary/10 shadow-sm' : 'hover:bg-muted/60',
+              'text-foreground relative w-full min-w-[120px] shrink-0 rounded-lg px-3 py-2.5 text-start text-sm transition-colors lg:min-w-0',
+              isSelected(payment) ? 'text-primary bg-primary/10 font-medium shadow-sm' : 'hover:bg-muted/60',
             )}
           >
             {payment.label}
@@ -35,8 +36,8 @@ export function PaymentMethodSidebar({ selectedTab, onTabSelect, totalPayment, p
           key={'list'}
           onClick={() => onTabSelect('payment-list')}
           className={cn(
-            'text-foreground relative w-full rounded px-3 py-2 text-start text-sm',
-            selectedTab === 'payment-list' ? 'text-primary bg-primary/10 shadow-sm' : 'hover:bg-muted/60',
+            'text-foreground relative w-full min-w-[120px] shrink-0 rounded-lg px-3 py-2.5 text-start text-sm transition-colors lg:min-w-0',
+            selectedTab === 'payment-list' ? 'text-primary bg-primary/10 font-medium shadow-sm' : 'hover:bg-muted/60',
           )}
         >
           {t('List Of Payments')}

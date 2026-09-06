@@ -19,14 +19,14 @@ export default function SalesSummary({ summary }: { summary: Summary }) {
             <h3 className="mb-4 text-lg font-semibold">{t('Financial Summary')}</h3>
             <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {/* Sub Total Card */}
-                <div className="rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 p-4 dark:border-blue-700 dark:from-blue-600 dark:to-blue-800">
+                <div className="bg-primary/10 border-primary/20 rounded-lg border p-4">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">{t('Sub Total')}</p>
-                            <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{formatCurrency(summary.subtotal)}</p>
+                            <p className="text-primary text-sm font-medium">{t('Sub Total')}</p>
+                            <p className="text-foreground text-2xl font-bold tabular-nums">{formatCurrency(summary.subtotal)}</p>
                         </div>
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 dark:bg-blue-400">
-                            <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="bg-primary flex h-10 w-10 items-center justify-center rounded-full">
+                            <svg className="h-5 w-5 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
@@ -39,14 +39,14 @@ export default function SalesSummary({ summary }: { summary: Summary }) {
                 </div>
 
                 {/* Total Card */}
-                <div className="rounded-lg border border-green-200 bg-gradient-to-r from-green-50 to-green-100 p-4 dark:border-green-700 dark:from-green-600 dark:to-green-800">
+                <div className="bg-primary/10 border-primary/20 rounded-lg border p-4">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-green-700 dark:text-green-300">{t('Total')}</p>
-                            <p className="text-2xl font-bold text-green-900 dark:text-green-100">{formatCurrency(summary.total)}</p>
+                            <p className="text-primary text-sm font-medium">{t('Total')}</p>
+                            <p className="text-foreground text-2xl font-bold tabular-nums">{formatCurrency(summary.total)}</p>
                         </div>
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500">
-                            <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="bg-primary flex h-10 w-10 items-center justify-center rounded-full">
+                            <svg className="h-5 w-5 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
@@ -59,14 +59,14 @@ export default function SalesSummary({ summary }: { summary: Summary }) {
                 </div>
 
                 {/* Cost of Goods Card */}
-                <div className="rounded-lg border border-purple-200 bg-gradient-to-r from-purple-50 to-purple-100 p-4 dark:border-purple-700 dark:from-purple-600 dark:to-purple-800">
+                <div className="bg-muted/60 border-border rounded-lg border p-4">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-purple-700 dark:text-purple-300">{t('Cost of Goods')}</p>
-                            <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{formatCurrency(summary.total_purchase_price)}</p>
+                            <p className="text-muted-foreground text-sm font-medium">{t('Cost of Goods')}</p>
+                            <p className="text-foreground text-2xl font-bold tabular-nums">{formatCurrency(summary.total_purchase_price)}</p>
                         </div>
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-500">
-                            <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="bg-muted-foreground/15 text-muted-foreground flex h-10 w-10 items-center justify-center rounded-full">
+                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
@@ -79,14 +79,14 @@ export default function SalesSummary({ summary }: { summary: Summary }) {
                 </div>
 
                 {/* Profit Card */}
-                <div className="rounded-lg border border-emerald-200 bg-gradient-to-r from-emerald-50 to-emerald-100 p-4 dark:border-emerald-700 dark:from-emerald-600 dark:to-emerald-800">
+                <div className="bg-primary/10 border-primary/20 rounded-lg border p-4">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">{t('Profit')}</p>
-                            <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">{formatCurrency(summary.profit)}</p>
+                            <p className="text-primary text-sm font-medium">{t('Profit')}</p>
+                            <p className="text-foreground text-2xl font-bold tabular-nums">{formatCurrency(summary.profit)}</p>
                         </div>
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500">
-                            <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="bg-primary flex h-10 w-10 items-center justify-center rounded-full">
+                            <svg className="h-5 w-5 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                             </svg>
                         </div>
@@ -95,51 +95,51 @@ export default function SalesSummary({ summary }: { summary: Summary }) {
             </div>
 
             {/* Detailed Breakdown */}
-            <div className="dark:bg-muted rounded-lg border bg-white p-6 shadow-sm">
-                <h4 className="text-md mb-4 font-semibold text-gray-800 dark:text-gray-200">{t('Detailed Breakdown')}</h4>
+            <div className="bg-card border-border rounded-lg border p-6 shadow-sm">
+                <h4 className="text-md mb-4 font-semibold text-foreground">{t('Detailed Breakdown')}</h4>
                 <div className="space-y-3">
                     <div className="flex items-center justify-between border-b py-2">
                         <div className="flex items-center gap-3">
-                            <div className="h-2 w-2 rounded-full bg-red-500"></div>
-                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('Sales Discounts')}</span>
+                            <div className="bg-destructive/70 h-2 w-2 rounded-full"></div>
+                            <span className="text-foreground text-sm font-medium">{t('Sales Discounts')}</span>
                         </div>
-                        <span className="text-sm font-semibold text-red-600">-{formatCurrency(summary.sales_discounts)}</span>
+                        <span className="text-destructive text-sm font-semibold tabular-nums">-{formatCurrency(summary.sales_discounts)}</span>
                     </div>
 
                     <div className="flex items-center justify-between border-b py-2">
                         <div className="flex items-center gap-3">
-                            <div className="h-2 w-2 rounded-full bg-red-500"></div>
-                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('Sales Taxes')}</span>
+                            <div className="bg-muted-foreground/60 h-2 w-2 rounded-full"></div>
+                            <span className="text-foreground text-sm font-medium">{t('Sales Taxes')}</span>
                         </div>
-                        <span className="text-sm font-semibold text-gray-600">{formatCurrency(summary.sales_taxes)}</span>
+                        <span className="text-muted-foreground text-sm font-semibold tabular-nums">{formatCurrency(summary.sales_taxes)}</span>
                     </div>
 
                     <div className="flex items-center justify-between border-b py-2">
                         <div className="flex items-center gap-3">
-                            <div className="h-2 w-2 rounded-full bg-orange-500"></div>
-                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('Product Taxes')}</span>
+                            <div className="bg-muted-foreground/60 h-2 w-2 rounded-full"></div>
+                            <span className="text-foreground text-sm font-medium">{t('Product Taxes')}</span>
                         </div>
-                        <span className="text-sm font-semibold text-orange-600">{formatCurrency(summary.product_taxes)}</span>
+                        <span className="text-muted-foreground text-sm font-semibold tabular-nums">{formatCurrency(summary.product_taxes)}</span>
                     </div>
 
                     <div className="flex items-center justify-between py-2">
                         <div className="flex items-center gap-3">
-                            <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('Shipping')}</span>
+                            <div className="bg-primary/70 h-2 w-2 rounded-full"></div>
+                            <span className="text-foreground text-sm font-medium">{t('Shipping')}</span>
                         </div>
-                        <span className="text-sm font-semibold text-blue-600">{formatCurrency(summary.shipping)}</span>
+                        <span className="text-primary text-sm font-semibold tabular-nums">{formatCurrency(summary.shipping)}</span>
                     </div>
                 </div>
 
                 {/* Profit Margin */}
                 <div className="mt-6 border-t pt-4">
                     <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('Profit Margin')}</span>
-                        <span className="text-sm font-semibold text-emerald-600">{((summary.profit / summary.total) * 100).toFixed(1)}%</span>
+                        <span className="text-foreground text-sm font-medium">{t('Profit Margin')}</span>
+                        <span className="text-primary text-sm font-semibold tabular-nums">{((summary.profit / summary.total) * 100).toFixed(1)}%</span>
                     </div>
-                    <div className="mt-2 h-2 w-full rounded-full bg-gray-200">
+                    <div className="bg-muted mt-2 h-2 w-full rounded-full">
                         <div
-                            className="h-2 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 transition-all duration-300 dark:from-emerald-500 dark:to-emerald-700"
+                            className="bg-primary h-2 rounded-full transition-all duration-300"
                             style={{ width: `${Math.min((summary.profit / summary.total) * 100, 100)}%` }}
                         ></div>
                     </div>

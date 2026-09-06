@@ -112,7 +112,7 @@ export function SimplePrintInvoice({ invoice }: SimplePrintInvoiceProps) {
             <Button
                 onClick={handleDirectPrint}
                 disabled={isPrinting}
-                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2"
             >
                 {isPrinting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
                 {t('Print Thermal Receipt')}

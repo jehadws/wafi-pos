@@ -116,16 +116,16 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
                 {/* Print Agent Connection Status Banner */}
                 <div className={`flex items-center justify-between rounded-lg border p-3 ${
                     agentStatus === 'online'
-                        ? 'border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-300'
+                        ? 'border-primary/30 bg-primary/10 text-primary'
                         : agentStatus === 'offline'
-                        ? 'border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300'
-                        : 'border-neutral-300 bg-neutral-100 text-neutral-600'
+                        ? 'border-destructive/30 bg-destructive/10 text-destructive'
+                        : 'border-border bg-muted/40 text-muted-foreground'
                 }`}>
                     <div className="flex items-center gap-2.5">
                         {agentStatus === 'online' ? (
-                            <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                            <CheckCircle2 className="text-primary h-5 w-5" />
                         ) : agentStatus === 'offline' ? (
-                            <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                            <AlertCircle className="text-destructive h-5 w-5" />
                         ) : (
                             <Loader2 className="h-5 w-5 animate-spin" />
                         )}

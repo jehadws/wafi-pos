@@ -111,7 +111,7 @@ export default function CouponsDialog({
               )}
 
               {selectedCustomer && (
-                <div className="rounded-lg border bg-green-500/30 p-4">
+                <div className="bg-primary/15 rounded-lg border border-primary/20 p-4">
                   <p className="text-center text-sm">
                     {t('Load coupon for')} {selectedCustomer.first_name} {selectedCustomer.last_name}
                   </p>
@@ -133,7 +133,7 @@ export default function CouponsDialog({
                         </p>
                       </div>
                       <Button variant="outline" size="sm" onClick={() => onRemoveCoupon(coupon)}>
-                        <Trash2 className="h-4 w-4 text-red-500" />
+                        <Trash2 className="text-destructive h-4 w-4" />
                       </Button>
                     </div>
                   ))}

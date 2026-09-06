@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
@@ -149,21 +149,31 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn('bg-card flex h-[90vh] max-h-[90vh] w-[95vw] max-w-[95vw] flex-col gap-0 p-0 sm:max-w-[95vw]')}>
-        <DialogTitle className="sr-only">{t('Payment Gateway')}</DialogTitle>
-        <DialogDescription className="sr-only">{t('Payment Gateway')}</DialogDescription>
-        <div className="border-border flex items-center justify-between border-b p-4">
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      {/* Mockup-style slide-in payment panel: full-height side sheet (~42% on
+          desktop, near-full on small screens). Same content and handlers as
+          the previous centered dialog — only the container changed. */}
+      <SheetContent
+        side="right"
+        className={cn(
+          'bg-card flex h-full flex-col gap-0 overflow-hidden p-0',
+          'w-full sm:w-[85%] sm:max-w-none lg:w-[42%] lg:min-w-[420px]',
+        )}
+      >
+        <SheetTitle className="sr-only">{t('Payment Gateway')}</SheetTitle>
+        <SheetDescription className="sr-only">{t('Payment Gateway')}</SheetDescription>
+        <div className="border-border flex items-center justify-between border-b p-4 pe-14">
           <h2 className="text-foreground text-lg font-semibold">
             {t('Payment Gateway')} : {selectedMethod === 'payment-list' ? t('List Of Payments') : t('Payment Gateway')}
           </h2>
         </div>
 
-        <div className="flex flex-1 overflow-hidden">
+        {/* Method rail stacks above the keypad on narrow sheets */}
+        <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
           <PaymentMethodSidebar selectedTab={selectedMethod} onTabSelect={onTabSelect} totalPayment={payments.length} paymentsType={paymentsType} />
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             {selectedMethod !== 'payment-list' && (
-              <div className="flex-1 space-y-6 p-6">
+              <div className="flex-1 space-y-6 overflow-y-auto p-4 lg:p-6">
                 <div className="grid grid-cols-2 gap-4">
                   <SummaryCard label={t('Total')} amount={total} variant="total" />
                   <SummaryCard label={t('Discount')} amount={order.discount || 0} variant="discount" />
@@ -171,10 +181,10 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
                   <SummaryCard label={t('Change')} amount={change} variant="change" isNegative={true} />
                 </div>
 
-                <div className="border-border rounded-lg border p-4">
+                <div className="border-border bg-muted/40 rounded-xl border p-4">
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground font-medium">{t('Screen')} :</span>
-                    <span className="text-foreground text-2xl font-bold">
+                    <span className="text-foreground text-2xl font-bold tabular-nums">
                       {formatCurrency(Number.parseFloat(screenValue) || 0)}
                     </span>
                   </div>
@@ -187,7 +197,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
                         key={amount}
                         variant="outline"
                         size="sm"
-                        className="min-w-[60px] font-semibold"
+                        className="bg-card h-11 min-w-16 rounded-full font-semibold shadow-2xs"
                         onClick={() => handleAmountShortcut(amount)}
                       >
                         {formatCurrency(amount)}
@@ -213,10 +223,10 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
               <ScrollArea className="h-full min-h-[150px]">
                 <div className="flex-1 space-y-2 p-3">
                   {payments.map((payment: any, index: number) => (
-                    <div key={index} className="border-border bg-background/20 rounded-lg border px-4 py-2">
+                    <div key={index} className="border-border bg-muted/30 rounded-lg border px-4 py-2">
                       <div className="flex items-center gap-4">
                         <span className="text-foreground flex-1">{payment.label}</span>
-                        <span className="text-foreground font-bold">{formatCurrency(payment.value)}</span>
+                        <span className="text-foreground font-bold tabular-nums">{formatCurrency(payment.value)}</span>
                         <Button
                           variant={'outline'}
                           size={'icon'}
@@ -238,7 +248,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
           {order.tendered > 0 && order.tendered < total && (
             <Button
               onClick={() => handleSubmitOrder('partially_paid')}
-              className="bg-blue-600 px-6 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-6 text-sm font-semibold"
             >
               {t('Edit')}
             </Button>
@@ -247,7 +257,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
             <>
               <Button
                 onClick={() => handleSaveAsUnpaid()}
-                className="bg-blue-600 px-6 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-6 text-sm font-semibold"
               >
                 {t('Unpaid')}
               </Button>
@@ -257,14 +267,14 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
           {order.tendered >= total && (
             <Button
               onClick={() => handleSubmitPayment()}
-              className="bg-green-600 px-6 text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-6 text-sm font-semibold"
             >
               {t('Submit Payment')}
             </Button>
           )}
         </div>
 
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

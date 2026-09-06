@@ -2,14 +2,10 @@ import { Button } from '@/components/ui/button';
 import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { Price } from '@/components/pos/money';
 import { ordersApi } from '@/api';
-import { Banknote, CreditCard, PauseCircle, Percent, XCircle } from 'lucide-react';
+import { CreditCard, PauseCircle, Percent, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Order } from '@/types/models/order';
-import { submitAndFinalizeOrder } from '@/services/order-finalize';
-import { buildExactCashPayment, canSubmitExactCash } from '@/services/express-checkout';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { formatCurrency } from '@/utils/format';
@@ -114,8 +110,8 @@ export default function PaymentActions({
       <div className={cn('grid border-t grid-cols-4')}>
         <Button
           className={cn(
-            'group relative flex h-14 flex-col items-center justify-center gap-0.5 rounded-none border-e font-semibold transition-all duration-150',
-            'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.98] dark:bg-emerald-600 dark:hover:bg-emerald-500',
+            'group relative flex h-16 flex-col items-center justify-center gap-0.5 rounded-none border-e font-semibold transition-all duration-150',
+            'bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98]',
             'shadow-sm col-span-1',
           )}
           onClick={handleSubmit}
@@ -154,7 +150,7 @@ export default function PaymentActions({
           }}
           className={cn(
             'group flex h-14 flex-col items-center justify-center gap-0.5 rounded-none border-e transition-all duration-150',
-            'bg-sky-600 text-white hover:bg-sky-700 active:scale-[0.98] dark:bg-sky-700 dark:hover:bg-sky-600',
+            'bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-[0.98]',
             'col-span-1 shadow-sm',
           )}
           type="button"
@@ -176,7 +172,7 @@ export default function PaymentActions({
           onClick={onOpenDiscountDialog}
         >
           <div className="flex items-center gap-1.5 text-sm font-semibold leading-none">
-            <Percent className="h-4 w-4 text-amber-500 transition-transform group-hover:scale-110" />
+            <Percent className="h-4 w-4 text-muted-foreground transition-transform group-hover:scale-110" />
             <span>{t('Discount')}</span>
           </div>
           <span className="text-[11px] text-muted-foreground">

@@ -67,21 +67,21 @@ export function CustomerDetailsDialog({ open, onOpenChange, customer }: Customer
                 </h3>
 
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                  <div className="rounded-lg bg-green-500 p-3 text-center text-white">
+                  <div className="bg-primary rounded-lg p-3 text-center text-primary-foreground">
                     <div className="text-sm font-medium">{t('Total Purchases')}</div>
-                    <div className="text-lg font-bold">{formatCurrency(+customer.purchases_amount)}</div>
+                    <div className="text-lg font-bold tabular-nums">{formatCurrency(+customer.purchases_amount)}</div>
                   </div>
-                  <div className="rounded-lg bg-red-500 p-3 text-center text-white">
+                  <div className="bg-destructive rounded-lg p-3 text-center text-destructive-foreground">
                     <div className="text-sm font-medium">{t('Owed Amount')}</div>
-                    <div className="text-lg font-bold">{formatCurrency(+customer.owed_amount)}</div>
+                    <div className="text-lg font-bold tabular-nums">{formatCurrency(+customer.owed_amount)}</div>
                   </div>
-                  <div className="rounded-lg bg-blue-500 p-3 text-center text-white">
+                  <div className="bg-secondary text-secondary-foreground rounded-lg p-3 text-center">
                     <div className="text-sm font-medium">{t('Account Credit')}</div>
-                    <div className="text-lg font-bold">{formatCurrency(+customer.account_amount)}</div>
+                    <div className="text-lg font-bold tabular-nums">{formatCurrency(+customer.account_amount)}</div>
                   </div>
-                  <div className="rounded-lg bg-teal-500 p-3 text-center text-white">
+                  <div className="bg-primary/80 text-primary-foreground rounded-lg p-3 text-center">
                     <div className="text-sm font-medium">{t('Limit')}</div>
-                    <div className="text-lg font-bold">{formatCurrency(customer.credit_limit_amount)}</div>
+                    <div className="text-lg font-bold tabular-nums">{formatCurrency(customer.credit_limit_amount)}</div>
                   </div>
                 </div>
               </div>
@@ -130,33 +130,33 @@ export function CustomerDetailsDialog({ open, onOpenChange, customer }: Customer
                             </div>
                           ))
                         ) : (
-                          <div className="p-8 text-center text-gray-500">{t('No customer orders has been registered')}</div>
+                          <div className="text-muted-foreground p-8 text-center">{t('No customer orders has been registered')}</div>
                         )}
                       </ScrollArea>
                     </div>
                   )}
 
                   <div className="flex shrink-0 justify-end pb-2">
-                    <Button className="bg-blue-600 text-white hover:bg-blue-700">{t('Account Transaction')}</Button>
+                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90">{t('Account Transaction')}</Button>
                   </div>
                 </TabsContent>
 
                 <TabsContent value="wallet-history" className="space-y-4">
-                  <div className="p-8 text-center text-gray-500">{t('Well.. nothing to show for the meantime')}</div>
+                  <div className="text-muted-foreground p-8 text-center">{t('Well.. nothing to show for the meantime')}</div>
                 </TabsContent>
 
                 <TabsContent value="coupons" className="space-y-4">
-                  <div className="p-8 text-center text-gray-500">{t('Well.. nothing to show for the meantime')}</div>
+                  <div className="text-muted-foreground p-8 text-center">{t('Well.. nothing to show for the meantime')}</div>
                 </TabsContent>
 
                 <TabsContent value="rewards" className="space-y-4">
-                  <div className="p-8 text-center text-gray-500">{t('Well.. nothing to show for the meantime')}</div>
+                  <div className="text-muted-foreground p-8 text-center">{t('Well.. nothing to show for the meantime')}</div>
                 </TabsContent>
               </Tabs>
             </TabsContent>
 
             <TabsContent value="new-customer" className="space-y-4">
-              <div className="p-8 text-center text-gray-500">{t('Well.. nothing to show for the meantime')}</div>
+              <div className="text-muted-foreground p-8 text-center">{t('Well.. nothing to show for the meantime')}</div>
             </TabsContent>
           </Tabs>
         </div>

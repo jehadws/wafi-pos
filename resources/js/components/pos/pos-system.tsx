@@ -311,7 +311,7 @@ export default function PosSystem() {
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Panel - Cart and Actions */}
-        <div className={cn('flex w-1/2 flex-col', isRTL ? 'border-l' : 'border-r')}>
+        <div className={cn('flex w-1/2 flex-col lg:w-2/5 lg:min-w-[360px]', isRTL ? 'border-l' : 'border-r')}>
           <SecondaryNavigation
             setShowSelectCustomerDialog={checkout.setShowSelectCustomerDialog}
             onOpenSearchProductsDialog={() => dialogs.setShowSearchProductsDialog(true)}
@@ -363,16 +363,16 @@ export default function PosSystem() {
         </div>
 
         {/* Right Panel - Products & Scanner */}
-        <div className="flex w-1/2 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col">
           <div className="border-b p-2">
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
-                <Barcode className="text-muted-foreground absolute top-2.5 start-2.5 h-4 w-4" />
+                <Barcode className="text-muted-foreground absolute top-3 start-2.5 h-4 w-4" />
                 <Input
                   ref={barcodeSearch.inputRef}
                   type="search"
                   placeholder={t('Scan barcode or search products...')}
-                  className="ps-8 pe-3"
+                  className="h-11 ps-9 pe-3"
                   value={barcodeSearch.searchQuery}
                   onChange={(e) => barcodeSearch.setSearchQuery(e.target.value)}
                   onKeyDown={barcodeSearch.handleKeyDown}
@@ -383,7 +383,7 @@ export default function PosSystem() {
                 variant={barcodeSearch.isAutoFocusOpen ? 'default' : 'outline'}
                 size="icon"
                 className={cn(
-                  'active:scale-95 relative h-10 w-10 transition-all',
+                  'active:scale-95 relative h-11 w-11 transition-all',
                   barcodeSearch.isAutoFocusOpen && 'bg-primary text-primary-foreground shadow-sm',
                 )}
                 onClick={barcodeSearch.toggleAutoFocus}
@@ -396,8 +396,8 @@ export default function PosSystem() {
                 <Barcode className="h-5 w-5" />
                 {barcodeSearch.isAutoFocusOpen && (
                   <span className="absolute -top-1 -end-1 flex h-3 w-3">
-                    <span className="bg-emerald-400 absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"></span>
-                    <span className="bg-emerald-500 relative inline-flex h-3 w-3 rounded-full"></span>
+                    <span className="bg-primary/60 absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"></span>
+                    <span className="bg-primary relative inline-flex h-3 w-3 rounded-full"></span>
                   </span>
                 )}
               </Button>
@@ -405,7 +405,7 @@ export default function PosSystem() {
                 variant={autoMerge ? 'default' : 'outline'}
                 size="icon"
                 className={cn(
-                  'active:scale-95 relative h-10 w-10 transition-all',
+                  'active:scale-95 relative h-11 w-11 transition-all',
                   autoMerge && 'bg-primary/90 text-primary-foreground',
                 )}
                 onClick={() => setAutoMerge(!autoMerge)}
@@ -420,7 +420,7 @@ export default function PosSystem() {
               <Button
                 variant="outline"
                 size="icon"
-                className="active:scale-95 h-10 w-10 text-muted-foreground hover:text-foreground"
+                className="active:scale-95 h-11 w-11 text-muted-foreground hover:text-foreground"
                 onClick={() => dialogs.setShowSearchProductsDialog(true)}
                 title={t('Quick Search Catalog')}
               >

@@ -67,7 +67,7 @@ export default function TotalsSummary({
           className="group hover:bg-muted/50 active:bg-muted/80 flex items-center justify-between p-2.5 text-start transition-colors"
         >
           <div className="flex min-w-0 items-center gap-2">
-            <div className="bg-sky-500/10 text-sky-600 dark:text-sky-400 flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
+            <div className="bg-primary/10 text-primary flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
               <Truck className="h-3.5 w-3.5" />
             </div>
             <div className="min-w-0">
@@ -103,14 +103,14 @@ export default function TotalsSummary({
             onClick={onOpenDiscountDialog}
             className="text-muted-foreground hover:text-primary active:scale-95 flex items-center gap-1 font-medium underline decoration-dotted underline-offset-2 transition-colors"
           >
-            <Percent className="h-3 w-3 text-amber-500" />
+            <Percent className="h-3 w-3 text-muted-foreground" />
             <span>{t('Discount')}</span>
           </button>
           <span
             onClick={onOpenDiscountDialog}
             className={cn(
               'cursor-pointer font-semibold',
-              discount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground',
+              discount > 0 ? 'text-primary' : 'text-muted-foreground',
             )}
           >
             {discount > 0 ? `-${formatCurrency(discount)}` : formatCurrency(0)}
@@ -118,7 +118,7 @@ export default function TotalsSummary({
         </div>
 
         {totalCoupons > 0 && (
-          <div className="flex items-center justify-between px-3.5 py-1.5 text-emerald-600 dark:text-emerald-400">
+          <div className="flex items-center justify-between px-3.5 py-1.5 text-primary">
             <div className="flex items-center gap-1 font-medium">
               <Tag className="h-3 w-3" />
               <span>{t('Coupons')}</span>
@@ -134,7 +134,7 @@ export default function TotalsSummary({
               onClick={onOpenShippingDialog}
               className="text-muted-foreground hover:text-primary active:scale-95 flex items-center gap-1 font-medium underline decoration-dotted underline-offset-2 transition-colors"
             >
-              <Truck className="h-3 w-3 text-sky-500" />
+              <Truck className="h-3 w-3 text-primary" />
               <span>{t('Shipping')}</span>
             </button>
             <span

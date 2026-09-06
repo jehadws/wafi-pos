@@ -41,8 +41,8 @@ export function OrderTypeDialog({ open, onOpenChange, orderType, onSelectOrderTy
             <button
               onClick={() => handleSelectType('takeaway')}
               className={cn(
-                'group hover:bg-primary/80 relative flex flex-col items-center justify-center p-8 transition-colors focus:ring-blue-500 focus:outline-none',
-                orderType?.identifier === 'takeaway' ? 'bg-primary' : '',
+                'group hover:bg-primary/80 relative flex flex-col items-center justify-center p-8 transition-colors focus:ring-primary focus:outline-none',
+                orderType?.identifier === 'takeaway' ? 'bg-primary text-primary-foreground' : '',
               )}
             >
               <div className="relative mb-4">
@@ -65,14 +65,14 @@ export function OrderTypeDialog({ open, onOpenChange, orderType, onSelectOrderTy
             <button
               onClick={() => handleSelectType('delivery')}
               className={cn(
-                'group hover:bg-primary/80 relative flex flex-col items-center justify-center p-8 transition-colors focus:ring-blue-500 focus:outline-none',
-                orderType?.identifier === 'delivery' ? 'bg-primary' : '',
+                'group hover:bg-primary/80 relative flex flex-col items-center justify-center p-8 transition-colors focus:ring-primary focus:outline-none',
+                orderType?.identifier === 'delivery' ? 'bg-primary text-primary-foreground' : '',
               )}
             >
               <div className="relative mb-4">
                 {/* Delivery scooter illustration */}
                 <div className="relative">
-                  <Bike className="h-16 w-16 text-red-500" />
+                  <Bike className="h-16 w-16 text-inherit" />
                   {/* Delivery person */}
                   <div className="absolute -top-4 -start-2 h-6 w-6 rounded-full bg-red-400"></div>
                   <div className="absolute -top-2 -start-1 h-4 w-4 rounded-full bg-pink-300"></div>

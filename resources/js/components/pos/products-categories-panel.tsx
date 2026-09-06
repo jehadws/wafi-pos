@@ -5,7 +5,7 @@ import { isPosOptionEnabled, POS_OPTION_KEYS } from '@/constants/pos-options';
 import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
 import { categoriesApi, productsApi } from '@/api';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import EmptyState from '@/components/feedback/empty-state';
@@ -231,15 +231,25 @@ export default function ProductsCategoriesPanel() {
 
     return (
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <div className="flex h-13 items-center">
-                <Button variant="ghost" className="cursor-pointer rounded-none" size={'sm'} onClick={() => loadCategories()}>
+            {/* Breadcrumb chips — horizontally scrollable on narrow screens */}
+            <div className="flex h-12 shrink-0 items-center gap-1 overflow-x-auto border-b px-2">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-card h-9 shrink-0 cursor-pointer rounded-full px-4 font-medium shadow-2xs"
+                    onClick={() => loadCategories()}
+                >
                     {t('Home')}
-                    <ChevronLeft className="mx-1 h-4 w-4" />
                 </Button>
                 {breadcrumb.map((bread) => (
-                    <div className="flex items-center" key={bread.id}>
-                        <ChevronRight className="mx-1 h-4 w-4" />
-                        <Button variant="ghost" className="cursor-pointer rounded-none" size={'sm'} onClick={() => loadCategories(bread)}>
+                    <div className="flex shrink-0 items-center" key={bread.id}>
+                        <ChevronRight className="text-muted-foreground/60 mx-0.5 h-4 w-4 shrink-0" />
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-card h-9 shrink-0 cursor-pointer rounded-full px-4 font-medium shadow-2xs"
+                            onClick={() => loadCategories(bread)}
+                        >
                             {bread.name}
                         </Button>
                     </div>
@@ -250,11 +260,11 @@ export default function ProductsCategoriesPanel() {
                 <ScrollArea className="min-h-0 w-full flex-1">
                     <div className={isClothingLayout
                         ? 'grid grid-cols-3 gap-2 p-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
-                        : 'grid grid-cols-2 gap-3 p-3 md:grid-cols-3 lg:grid-cols-5'}>
+                        : 'grid grid-cols-2 gap-3 p-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'}>
                         {categories.map((category) => (
                             <div
                                 key={category.id}
-                                className={`bg-muted/30 hover:bg-muted active:scale-95 flex cursor-pointer rounded-lg border shadow-sm transition-all hover:shadow-md ${
+                                className={`bg-card hover:shadow-md active:scale-[0.98] flex cursor-pointer rounded-xl border shadow-xs transition-all ${
                                     isClothingLayout
                                         ? 'flex-col p-1 pb-0'
                                         : 'flex-col'
@@ -263,7 +273,7 @@ export default function ProductsCategoriesPanel() {
                             >
                                 <div className={isClothingLayout
                                     ? 'relative aspect-square overflow-hidden rounded-lg'
-                                    : 'bg-muted relative aspect-video overflow-hidden rounded-t-lg'}>
+                                    : 'bg-muted relative aspect-video overflow-hidden rounded-t-xl'}>
                                     <img
                                         src={category.preview_url || '/placeholder.svg'}
                                         alt={category.name}
@@ -283,7 +293,7 @@ export default function ProductsCategoriesPanel() {
                 <ScrollArea className="min-h-0 w-full flex-1">
                     <div className={isClothingLayout
                         ? 'grid grid-cols-3 gap-2 p-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
-                        : 'grid grid-cols-2 gap-3 p-3 md:grid-cols-3 lg:grid-cols-4'}>
+                        : 'grid grid-cols-2 gap-3 p-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'}>
                         {products.map((product) => {
                             const unitQuantity = product.unit_quantities?.[0];
                             const available = unitQuantity?.quantity ?? 0;
@@ -293,8 +303,8 @@ export default function ProductsCategoriesPanel() {
                             return (
                                 <div
                                     key={product.id}
-                                    className={`bg-muted/30 active:scale-95 flex rounded-lg border shadow-sm transition-all hover:shadow-md ${
-                                        isAvailable ? 'hover:bg-muted cursor-pointer' : 'cursor-not-allowed opacity-50'
+                                    className={`bg-card active:scale-[0.98] flex rounded-xl border shadow-xs transition-all hover:shadow-md ${
+                                        isAvailable ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
                                     } ${
                                         isClothingLayout
                                             ? 'flex-col p-1 pb-0'
@@ -304,7 +314,7 @@ export default function ProductsCategoriesPanel() {
                                 >
                                     <div className={isClothingLayout
                                         ? 'relative aspect-square overflow-hidden rounded-lg'
-                                        : 'bg-muted relative aspect-video overflow-hidden rounded-t-lg'}>
+                                        : 'bg-muted relative aspect-video overflow-hidden rounded-t-xl'}>
                                         <img
                                             src={product.galleries?.[0]?.url || product.images?.[0] || '/placeholder.svg'}
                                             alt={product.name}
@@ -314,17 +324,17 @@ export default function ProductsCategoriesPanel() {
                                     {isClothingLayout ? (
                                         <div className="flex flex-1 flex-col items-center p-2 text-center">
                                             <h1 className="text-xs leading-tight font-medium break-words">{product.name}</h1>
-                                            <span className="text-xs font-semibold text-primary">{formatCurrency(price)}</span>
+                                            <span className="text-primary mt-0.5 text-xs font-semibold tabular-nums">{formatCurrency(price)}</span>
                                             {!isAvailable && (
-                                                <span className="text-red-500 text-xs">{t('Out of stock')}</span>
+                                                <span className="text-destructive mt-0.5 text-xs">{t('Out of stock')}</span>
                                             )}
                                         </div>
                                     ) : (
                                         <div className="flex flex-1 flex-col justify-between p-3">
                                             <h1 className="text-center text-sm leading-tight font-semibold">{product.name}</h1>
                                             <div className="mt-2 flex items-center justify-between text-xs">
-                                                <span className="font-semibold text-green-600 dark:text-green-400">{formatCurrency(price)}</span>
-                                                <span className={`${isAvailable ? 'text-muted-foreground' : 'text-red-500'}`}>
+                                                <span className="text-primary font-semibold tabular-nums">{formatCurrency(price)}</span>
+                                                <span className={isAvailable ? 'text-muted-foreground' : 'text-destructive'}>
                                                     {available} {t('available')}
                                                 </span>
                                             </div>

@@ -63,24 +63,24 @@ export default function SecondaryNavigation({
     <>
       <div className="bg-background border-b p-2.5">
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" className="active:scale-95 flex h-10 items-center text-xs font-medium" onClick={() => onCommentsDialogOpenChange(true)}>
+          <Button variant="outline" size="sm" className="bg-card active:scale-95 flex h-10 items-center rounded-full text-xs font-medium shadow-2xs" onClick={() => onCommentsDialogOpenChange(true)}>
             <MessageSquare className="me-1.5 h-4 w-4 text-muted-foreground" />
             {t('Comments')}
             {order.note && <span className="bg-primary ms-1.5 h-2 w-2 rounded-full"></span>}
           </Button>
           {showTaxes && (
-            <Button variant="outline" size="sm" className="active:scale-95 flex h-10 items-center text-xs font-medium" onClick={() => setIsTaxesDialogOpen(true)}>
+            <Button variant="outline" size="sm" className="bg-card active:scale-95 flex h-10 items-center rounded-full text-xs font-medium shadow-2xs" onClick={() => setIsTaxesDialogOpen(true)}>
               <Receipt className="me-1.5 h-4 w-4 text-muted-foreground" />
               {t('Taxes')}
               {order.tax_group_id && <span className="bg-primary ms-1.5 h-2 w-2 rounded-full"></span>}
             </Button>
           )}
-          <Button variant="outline" size="sm" className="active:scale-95 flex h-10 items-center text-xs font-medium" onClick={() => setIsCouponsDialogOpen(true)}>
+          <Button variant="outline" size="sm" className="bg-card active:scale-95 flex h-10 items-center rounded-full text-xs font-medium shadow-2xs" onClick={() => setIsCouponsDialogOpen(true)}>
             <Ticket className="me-1.5 h-4 w-4 text-muted-foreground" />
             {t('Coupons')}
             {order.coupons.length > 0 && <span className="bg-primary ms-1.5 h-2 w-2 rounded-full"></span>}
           </Button>
-          <Button variant="outline" size="sm" className="active:scale-95 flex h-10 items-center text-xs font-medium" onClick={() => setIsSettingsDialogOpen(true)}>
+          <Button variant="outline" size="sm" className="bg-card active:scale-95 flex h-10 items-center rounded-full text-xs font-medium shadow-2xs" onClick={() => setIsSettingsDialogOpen(true)}>
             <SettingsIcon className="me-1.5 h-4 w-4 text-muted-foreground" />
             {t('Settings')}
             {order.title && <span className="bg-primary ms-1.5 h-2 w-2 rounded-full"></span>}
@@ -88,7 +88,7 @@ export default function SecondaryNavigation({
           <Button
             variant="outline"
             size="sm"
-            className="active:scale-95 flex h-10 items-center text-xs font-medium"
+            className="bg-card active:scale-95 flex h-10 items-center rounded-full text-xs font-medium shadow-2xs"
             onClick={onOpenSearchProductsDialog}
           >
             <Package className="me-1.5 h-4 w-4 text-muted-foreground" />
