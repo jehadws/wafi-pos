@@ -24,6 +24,7 @@ import { OrderType } from '@/types/models/order-type';
 import { Payment } from '@/types/models/payment';
 
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
+import { ORDER_TYPE_MAP } from '@/constants/order-types';
 import { ordersApi, taxesApi } from '@/api';
 import printAgentService from '@/services/print-agent-service';
 import type { PrintResult } from '@/services/print-agent-service';
@@ -31,6 +32,7 @@ import { computeOrderTaxes, computeOrderTaxGroup } from '@/services/cart-engine'
 import { sumProductsTotals } from '@/services/cart-engine';
 import { defineQuantities } from '@/services/order-quantities';
 import { executeOrderSubmission } from '@/services/order-submission';
+import { pickDefaultOrderType } from '@/services/pos-defaults';
 
 // Slices
 import {
@@ -273,8 +275,24 @@ export const usePOS = create<POSStore>((set, get) => ({
     // Session / reset
     // ─────────────────────────────────────────────────────────────────────────
 
+    applyDefaultOrderType: () => {
+        // Boot/reset default — never clobbers an explicit selection.
+        if (get().order.type) return;
+
+        const identifier = pickDefaultOrderType(get().options?.[POS_OPTION_KEYS.orderTypes]);
+        const meta = identifier ? ORDER_TYPE_MAP[identifier] : undefined;
+        if (!meta) return;
+
+        set({ order: { ...get().order, type: { ...meta, selected: true } as OrderType } });
+    },
+
     reset: async () => {
         try {
+            // reset() creates a fresh order (no type, no customer); the boot
+            // default order type is re-applied here because the boot-time
+            // page effect only runs once per page load — without this, every
+            // new cart after a sale/hold/void has no type while the default
+            // customer IS re-assigned by the init queue below.
             set({
                 isSubmitting: false,
                 order: defaultOrder(),
@@ -283,6 +301,7 @@ export const usePOS = create<POSStore>((set, get) => ({
                 breadcrumbs: [],
                 holdPopupEnabled: true,
             });
+            get().applyDefaultOrderType();
             await get().processInitialQueue();
         } catch (exception) {
             console.error(exception);

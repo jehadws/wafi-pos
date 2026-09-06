@@ -4,10 +4,7 @@ import { OpenRegisterDialog } from '@/components/pos/open-register-dialog';
 import { RegisterSessionDialog } from '@/components/pos/register-session-dialog';
 import { customersApi } from '@/api';
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
-import {
-  pickDefaultOrderType,
-  resolveDefaultCustomerId,
-} from '@/services/pos-defaults';
+import { resolveDefaultCustomerId } from '@/services/pos-defaults';
 import { usePOS } from '@/hooks/usePOS';
 import { usePosBeforeUnload } from '@/hooks/use-pos-before-unload';
 import { useRegisterSession } from '@/hooks/pos/use-register-session';
@@ -17,12 +14,6 @@ import { useEffect } from 'react';
 import { Toaster } from 'sonner';
 import { PaymentType } from '@/types/models/payment-type';
 
-/** Static map of identifier → OrderTypeObj shape (mirrors order-type-dialog.tsx) */
-const ORDER_TYPE_MAP: Record<string, Omit<OrderTypeObj, 'selected'>> = {
-  takeaway: { identifier: 'takeaway', label: 'Take Away', icon: '/images/groceries.png' },
-  delivery: { identifier: 'delivery', label: 'Delivery', icon: '/images/delivery.png' },
-};
-
 export default function PosPage() {
   const { t } = useTranslation();
   const { settings, options, license, paymentTypes } = usePage().props as unknown as { 
@@ -31,7 +22,7 @@ export default function PosPage() {
     license?: { isValid: boolean; isRestricted: boolean; hwid: string };
     paymentTypes: PaymentType[];
   };
-  const { defineOptions, defineSettings, initialize, processInitialQueue, setAutoMerge, setOrderType, order, definedPaymentsType } = usePOS();
+  const { defineOptions, defineSettings, initialize, processInitialQueue, setAutoMerge, order, definedPaymentsType } = usePOS();
 
   usePosBeforeUnload();
 
@@ -65,20 +56,9 @@ export default function PosPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-select order type for new carts:
-  // single enabled type → takeaway (when both are active) → first enabled.
-  // Deliberately not persisted: every POS page load starts from this
-  // deterministic default instead of the terminal's last used type.
-  useEffect(() => {
-    if (order.type) return;
-
-    const identifier = pickDefaultOrderType(options[POS_OPTION_KEYS.orderTypes]);
-    const meta = identifier ? ORDER_TYPE_MAP[identifier] : undefined;
-    if (meta) {
-      setOrderType({ ...meta, selected: true } as OrderTypeObj);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [options[POS_OPTION_KEYS.orderTypes]]);
+  // The default ORDER TYPE is applied by the store itself on boot
+  // (use-pos-session.ts initialize → applyDefaultOrderType) and re-applied
+  // after every cart reset — no page-level effect needed for it.
 
   // Auto-assign the shop's default (walk-in) customer to new carts when configured.
   // Shops without a default customer keep the explicit select-customer requirement.

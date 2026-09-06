@@ -43,6 +43,12 @@ export type POSStoreOrchestration = {
     setDiscount: (value: number, type?: 'flat' | 'percentage') => void;
     setShipping: (value: number, shippingType?: string) => void;
     setNote: (note: string, visibility?: 'hidden' | 'visible') => void;
+    /**
+     * Applies the boot/reset default order type (single enabled type →
+     * takeaway → first enabled) when the cart has none. Called on POS boot
+     * (session initialize) and after reset().
+     */
+    applyDefaultOrderType: () => void;
     setOrderType: (type: OrderType) => void;
     updateAddress: (type: 'billing' | 'shipping', address: any) => void;
     printOrderReceipt: (order: Order, mode?: string) => Promise<PrintResult | false>;

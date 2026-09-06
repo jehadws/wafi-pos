@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { usePOS } from '@/hooks/usePOS';
+import { usersApi } from '@/api';
+import { POS_OPTION_KEYS } from '@/constants/pos-options';
 
 describe('use-cart-store (Zustand Cart Slice)', () => {
     beforeEach(() => {
@@ -157,5 +159,37 @@ describe('use-cart-store (Zustand Cart Slice)', () => {
         } finally {
             dateSpy.mockRestore();
         }
+    });
+
+    it('re-applies the default order type after reset (takeaway when both types are enabled)', async () => {
+        vi.spyOn(usersApi, 'getPermissions').mockResolvedValue([]);
+        usePOS.setState({ options: { [POS_OPTION_KEYS.orderTypes]: ['takeaway', 'delivery'] } } as any);
+
+        await usePOS.getState().reset();
+
+        expect(usePOS.getState().order.type?.identifier).toBe('takeaway');
+    });
+
+    it('re-applies the single enabled order type after reset', async () => {
+        vi.spyOn(usersApi, 'getPermissions').mockResolvedValue([]);
+        usePOS.setState({ options: { [POS_OPTION_KEYS.orderTypes]: ['delivery'] } } as any);
+
+        await usePOS.getState().reset();
+
+        expect(usePOS.getState().order.type?.identifier).toBe('delivery');
+    });
+
+    it('applies the default order type when the POS session initializes', () => {
+        vi.spyOn(usersApi, 'getPermissions').mockResolvedValue([]);
+        usePOS.setState({
+            initialized: false,
+            // Simulate a fresh boot: no type selected yet (e.g. after a wipe).
+            order: { ...usePOS.getState().order, type: undefined },
+            options: { [POS_OPTION_KEYS.orderTypes]: ['delivery', 'takeaway'] },
+        } as any);
+
+        usePOS.getState().initialize();
+
+        expect(usePOS.getState().order.type?.identifier).toBe('takeaway');
     });
 });

@@ -133,6 +133,11 @@ export const createSessionSlice: StateCreator<POSStore, [], [], SessionSlice> = 
 
         set({ initialQueue: newInitialQueue });
 
+        // Boot default: every new cart starts with the configured default
+        // order type (single enabled type → takeaway → first enabled) —
+        // applied synchronously so the type is selected before first paint.
+        get().applyDefaultOrderType();
+
         get().refreshCart();
     },
 
