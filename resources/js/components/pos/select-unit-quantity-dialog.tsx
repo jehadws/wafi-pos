@@ -41,6 +41,10 @@ export default function SelectUnitQuantityDialog({ selectProduct }: { selectProd
             setQuantities(loadedQuantities);
         } catch (e) {
             console.error(e);
+            // Always settle the openDialog('selectQuantity') promise — a
+            // resolver left pending would freeze the product-click queue.
+            closeDialog('selectQuantity', null);
+            toast.error(t('Failed to load product units. Please try again.'));
         } finally {
             setIsLoading(false);
         }

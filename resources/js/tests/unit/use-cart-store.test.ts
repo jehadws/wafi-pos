@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { usePOS } from '@/hooks/usePOS';
 
 describe('use-cart-store (Zustand Cart Slice)', () => {
@@ -133,5 +133,29 @@ describe('use-cart-store (Zustand Cart Slice)', () => {
         expect(revived.quantity).toBe(4);
         expect(revived.unit_price).toBe(products[0].unit_price);
         expect(revived.source.category_id).toBe(3);
+    });
+
+    it('generates unique _uuids even when Date.now() is identical for rapid adds', async () => {
+        usePOS.getState().setAutoMerge(false);
+        const dateSpy = vi.spyOn(Date, 'now').mockReturnValue(1700000000000);
+        try {
+            const product = {
+                id: 8,
+                name: 'Rapid Item',
+                unit_price: 5,
+                quantity: 1,
+                unit_id: 1,
+                unit_quantity_id: 1,
+            };
+
+            await usePOS.getState().addToCart(product);
+            await usePOS.getState().addToCart(product);
+
+            const uuids = usePOS.getState().products.map((p) => p._uuid);
+            expect(uuids).toHaveLength(2);
+            expect(new Set(uuids).size).toBe(2);
+        } finally {
+            dateSpy.mockRestore();
+        }
     });
 });

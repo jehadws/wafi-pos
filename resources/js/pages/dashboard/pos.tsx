@@ -5,7 +5,6 @@ import { RegisterSessionDialog } from '@/components/pos/register-session-dialog'
 import { customersApi } from '@/api';
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import {
-  LAST_ORDER_TYPE_STORAGE_KEY,
   pickDefaultOrderType,
   resolveDefaultCustomerId,
 } from '@/services/pos-defaults';
@@ -67,18 +66,13 @@ export default function PosPage() {
   }, []);
 
   // Auto-select order type for new carts:
-  // last used on this terminal → single enabled type → takeaway → first enabled
+  // single enabled type → takeaway (when both are active) → first enabled.
+  // Deliberately not persisted: every POS page load starts from this
+  // deterministic default instead of the terminal's last used type.
   useEffect(() => {
     if (order.type) return;
 
-    let lastUsed: string | null = null;
-    try {
-      lastUsed = localStorage.getItem(LAST_ORDER_TYPE_STORAGE_KEY);
-    } catch {
-      lastUsed = null;
-    }
-
-    const identifier = pickDefaultOrderType(options[POS_OPTION_KEYS.orderTypes], lastUsed);
+    const identifier = pickDefaultOrderType(options[POS_OPTION_KEYS.orderTypes]);
     const meta = identifier ? ORDER_TYPE_MAP[identifier] : undefined;
     if (meta) {
       setOrderType({ ...meta, selected: true } as OrderTypeObj);

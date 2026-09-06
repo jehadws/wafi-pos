@@ -429,7 +429,7 @@ export default function PosSystem() {
             </div>
           </div>
 
-          <ProductsCategoriesPanel selectedProducts={products} />
+          <ProductsCategoriesPanel />
         </div>
       </div>
 

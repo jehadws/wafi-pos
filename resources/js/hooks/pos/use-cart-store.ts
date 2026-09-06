@@ -20,6 +20,13 @@ import type { POSStore } from './pos-store-types';
 import { StateCreator } from 'zustand';
 import { toast } from 'sonner';
 
+/**
+ * Monotonic counter appended to generated _uuids: two rapid adds of the same
+ * product+unit can otherwise collide on Date.now() within the same
+ * millisecond (consumers use _uuid as an opaque identity for cart selection
+ * keys and list rendering).
+ */
+let uuidCounter = 0;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -98,7 +105,7 @@ export const createCartSlice: StateCreator<POSStore, [], [], CartSlice> = (set, 
             unit_quantity_id: product.unit_quantity_id || 0,
             _uuid:
                 product._uuid ||
-                `${product.id || product.product_id}-${product.unit_id}-${Date.now()}`,
+                `${product.id || product.product_id}-${product.unit_id}-${Date.now()}-${++uuidCounter}`,
         };
 
         set({ processingAddQueue: true });

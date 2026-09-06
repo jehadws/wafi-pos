@@ -1,7 +1,7 @@
 import { useNumericKeypad } from '@/hooks/use-numeric-keypad';
+import { useSequentialTaskQueue } from '@/hooks/use-sequential-task-queue';
 import { usePOS } from '@/hooks/usePOS';
 import { isPosOptionEnabled, POS_OPTION_KEYS } from '@/constants/pos-options';
-import { OrderProduct } from '@/types/models/order-product';
 import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
 import { categoriesApi, productsApi } from '@/api';
@@ -16,11 +16,7 @@ import SelectUnitQuantityDialog from './select-unit-quantity-dialog';
 
 import { validateStockAvailability } from '@/services/stock';
 
-type Props = {
-    selectedProducts: OrderProduct[];
-};
-
-export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
+export default function ProductsCategoriesPanel() {
     const { t } = useTranslation();
     const { addToCart: addProductToCart, openDialog, options } = usePOS();
     // `clothing_shop` layout: products show a badge-style name + price below the image.
@@ -33,7 +29,17 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
 
     const [selectProduct, setSelectProduct] = useState<Product>();
     const [selectedUnitQuantity, setSelectedUnitQuantity] = useState<UnitQuantity>();
-    const [isSelectingUnit, setIsSelectingUnit] = useState(false);
+
+    /**
+     * Click orchestration — see use-sequential-task-queue.ts.
+     *
+     * Replaces the old `isSelectingUnit` React-state guard, which raced:
+     * rapid clicks landed while a handler was still awaiting the units API and
+     * were silently dropped (the product never reached the cart). Tasks drain
+     * strictly one at a time, so every click is honored in click order, and
+     * `isRunningRef` provides synchronous busy detection for dialog mode.
+     */
+    const clickQueue = useSequentialTaskQueue();
 
     const loadCategories = async (parent?: CategoryProduct) => {
         setLoading(true);
@@ -87,7 +93,9 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
     };
 
     const addProductUnit = (product: Product, unit: UnitQuantity, qty: number): boolean => {
-        const quantityInCart = selectedProducts.reduce((acc, item) => {
+        // Read the live store — a render-lagged prop snapshot undercounts the
+        // in-cart quantity during rapid adds and can allow overselling.
+        const quantityInCart = usePOS.getState().products.reduce((acc, item) => {
             if (item.product_id === product.id && item.unit_quantity_id === unit.id) {
                 return acc + item.quantity;
             }
@@ -117,11 +125,12 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
         }
 
         if (selectedUnitQuantity && selectProduct) {
-            if (addProductUnit(selectProduct, selectedUnitQuantity, qty)) {
-                setSelectProduct(undefined);
-                setSelectedUnitQuantity(undefined);
-                setIsSelectingUnit(false);
-            }
+            // The keypad always closes after confirm, so the selection must be
+            // cleared whether the stock check passes or fails — keeping it on
+            // failure would leak stale state into the next interaction.
+            addProductUnit(selectProduct, selectedUnitQuantity, qty);
+            setSelectProduct(undefined);
+            setSelectedUnitQuantity(undefined);
         }
     };
 
@@ -133,42 +142,43 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
         allowDecimal: options[POS_OPTION_KEYS.allowDecimalQuantities] ?? true,
     });
 
-    const handleClickOnProduct = async (product: Product) => {
-        if (isSelectingUnit) return;
-        setIsSelectingUnit(true);
-        try {
-            if (!product.id) return;
-
-            // "Show Quantity" off → resolve the unit inline: a single unit or
-            // the configured default goes straight to the cart (no dialogs).
-            if (!isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) {
-                const units = await productsApi.getUnitQuantities(product.id);
-                if (units.length === 0) {
-                    toast.error(t('Unable to proceed, no product were provided.'));
-                    return;
-                }
-
-                const defaultUnitId = options.sb_subul_quick_product_default_unit;
-                let resolved: UnitQuantity | null = null;
-                if (units.length === 1) {
-                    resolved = units[0];
-                } else if (defaultUnitId) {
-                    resolved =
-                        units.find(
-                            (q) => q.unit?.id === defaultUnitId || q.unit_id === defaultUnitId,
-                        ) ?? null;
-                }
-
-                if (resolved) {
-                    addProductUnit(product, resolved, 1);
-                    return;
-                }
-                // Several units and no default → fall through to the picker.
+    /**
+     * Processes a single product click. May await the units API and/or the
+     * unit-picker dialog. Exactly one of these runs at a time — enforced by
+     * the sequential queue in handleClickOnProduct below.
+     */
+    const processProductClick = async (product: Product) => {
+        // "Show Quantity" off → resolve the unit inline: a single unit or
+        // the configured default goes straight to the cart (no dialogs).
+        if (!isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) {
+            const units = await productsApi.getUnitQuantities(product.id);
+            if (units.length === 0) {
+                toast.error(t('Unable to proceed, no product were provided.'));
+                return;
             }
 
-            setSelectProduct(product);
-            setSelectedUnitQuantity(undefined);
+            const defaultUnitId = options.sb_subul_quick_product_default_unit;
+            let resolved: UnitQuantity | null = null;
+            if (units.length === 1) {
+                resolved = units[0];
+            } else if (defaultUnitId) {
+                resolved =
+                    units.find(
+                        (q) => q.unit?.id === defaultUnitId || q.unit_id === defaultUnitId,
+                    ) ?? null;
+            }
 
+            if (resolved) {
+                addProductUnit(product, resolved, 1);
+                return;
+            }
+            // Several units and no default → fall through to the picker.
+        }
+
+        setSelectProduct(product);
+        setSelectedUnitQuantity(undefined);
+
+        try {
             const unitQuantity: UnitQuantity | null = await openDialog('selectQuantity');
             if (unitQuantity) {
                 setSelectedUnitQuantity(unitQuantity);
@@ -189,9 +199,29 @@ export default function ProductsCategoriesPanel({ selectedProducts }: Props) {
         } catch {
             setSelectProduct(undefined);
             setSelectedUnitQuantity(undefined);
-        } finally {
-            setIsSelectingUnit(false);
         }
+    };
+
+    /**
+     * Entry point for product-tile clicks.
+     *
+     * - Quick-add mode ("Show Quantity" off): every click is buffered in the
+     *   FIFO queue and drained one at a time, so rapid clicks are all honored
+     *   in order instead of being silently dropped.
+     * - Dialog mode ("Show Quantity" on): the unit-picker modal is an
+     *   exclusive user interaction and blocks the grid while open, so clicks
+     *   arriving while it is pending are ignored — this also guarantees a
+     *   second openDialog('selectQuantity') can never clobber the pending
+     *   resolver.
+     */
+    const handleClickOnProduct = (product: Product) => {
+        if (!product.id) return;
+
+        if (isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) {
+            if (clickQueue.isRunningRef.current) return;
+        }
+
+        clickQueue.enqueue(() => processProductClick(product));
     };
 
     useEffect(() => {

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-    LAST_ORDER_TYPE_STORAGE_KEY,
     canAddBarcodeSilently,
     pickDefaultOrderType,
     resolveDefaultCustomerId,
@@ -9,35 +8,24 @@ import { POS_OPTION_KEYS } from '@/constants/pos-options';
 
 describe('services/pos-defaults.ts', () => {
     describe('pickDefaultOrderType', () => {
-        it('exports a stable storage key', () => {
-            expect(LAST_ORDER_TYPE_STORAGE_KEY).toBe('sb_pos_last_order_type');
-        });
-
         it('returns null when no types are enabled', () => {
-            expect(pickDefaultOrderType([], null)).toBeNull();
-            expect(pickDefaultOrderType(undefined, null)).toBeNull();
-            expect(pickDefaultOrderType('takeaway', null)).toBeNull();
+            expect(pickDefaultOrderType([])).toBeNull();
+            expect(pickDefaultOrderType(undefined)).toBeNull();
+            expect(pickDefaultOrderType('takeaway')).toBeNull();
         });
 
-        it('prefers the last used type while it is still enabled', () => {
-            expect(pickDefaultOrderType(['takeaway', 'delivery'], 'delivery')).toBe('delivery');
-            expect(pickDefaultOrderType(['delivery', 'takeaway'], 'delivery')).toBe('delivery');
+        it('uses the single enabled type as the default', () => {
+            expect(pickDefaultOrderType(['takeaway'])).toBe('takeaway');
+            expect(pickDefaultOrderType(['delivery'])).toBe('delivery');
         });
 
-        it('ignores the last used type when it is no longer enabled', () => {
-            expect(pickDefaultOrderType(['takeaway'], 'delivery')).toBe('takeaway');
-        });
-
-        it('uses the single enabled type regardless of what was used last', () => {
-            expect(pickDefaultOrderType(['delivery'], null)).toBe('delivery');
-        });
-
-        it('prefers takeaway when several types are enabled and nothing is remembered', () => {
-            expect(pickDefaultOrderType(['delivery', 'takeaway'], null)).toBe('takeaway');
+        it('defaults to takeaway when both types are active', () => {
+            expect(pickDefaultOrderType(['takeaway', 'delivery'])).toBe('takeaway');
+            expect(pickDefaultOrderType(['delivery', 'takeaway'])).toBe('takeaway');
         });
 
         it('falls back to the first enabled type when takeaway is unavailable', () => {
-            expect(pickDefaultOrderType(['delivery', 'dine_in'], null)).toBe('delivery');
+            expect(pickDefaultOrderType(['delivery', 'dine_in'])).toBe('delivery');
         });
     });
 

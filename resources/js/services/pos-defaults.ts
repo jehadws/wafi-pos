@@ -10,26 +10,19 @@
 
 import { isPosOptionEnabled, POS_OPTION_KEYS } from '@/constants/pos-options';
 
-/** localStorage key holding the last order type used on this terminal. */
-export const LAST_ORDER_TYPE_STORAGE_KEY = 'sb_pos_last_order_type';
-
 /**
  * Picks the default order type identifier for a new cart:
- * last used on this terminal → the single enabled type → takeaway → first enabled.
+ * the single enabled type → takeaway → first enabled.
+ *
+ * With both types active, takeaway is the retail-first default; with only one
+ * type enabled, that type is always the default. Nothing is persisted: every
+ * POS page load starts from this deterministic default.
  *
  * @param enabledTypes raw `sb_subul_order_types` value (expected: string[])
- * @param lastUsed     identifier persisted in localStorage, if any
  * @returns an enabled identifier, or null when no types are enabled
  */
-export function pickDefaultOrderType(
-    enabledTypes: unknown,
-    lastUsed?: string | null,
-): string | null {
+export function pickDefaultOrderType(enabledTypes: unknown): string | null {
     if (!Array.isArray(enabledTypes) || enabledTypes.length === 0) return null;
-
-    if (lastUsed && enabledTypes.includes(lastUsed)) {
-        return lastUsed;
-    }
 
     if (enabledTypes.length === 1) {
         return enabledTypes[0] as string;
