@@ -103,10 +103,13 @@ export function FeaturesTab({ form, options }: FeaturesTabProps) {
             </FormField>
 
             <FormField label={t('Order Types')} description={t('Control the order type enabled.')}>
+                {/* Order-type option values are identifiers ('takeaway' | 'delivery') and must
+                    reach the saved setting untouched — mapping them through Number() produced
+                    NaN, which corrupted the stored value and broke the POS default order type. */}
                 <MultiSelector
-                    value={(form.data.features.sb_subul_order_types || []).map(Number)}
-                    options={options.sb_subul_order_types.map((l) => ({ id: Number(l.value), name: l.label }))}
-                    onChange={(v) => form.setData('features.sb_subul_order_types', v.map(String))}
+                    value={form.data.features.sb_subul_order_types || []}
+                    options={options.sb_subul_order_types.map((l) => ({ id: String(l.value), name: l.label }))}
+                    onChange={(v) => form.setData('features.sb_subul_order_types', v)}
                 />
             </FormField>
 

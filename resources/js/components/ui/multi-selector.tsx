@@ -9,16 +9,16 @@ import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 
-export interface Option {
-  id: number
+export interface Option<T = string> {
+  id: T
   name: string
   disabled?: boolean
 }
 
-interface MultiSelectorProps {
-  options: Option[]
-  value: number[]
-  onChange: (value: number[]) => void
+interface MultiSelectorProps<T> {
+  options: Option<T>[]
+  value: T[]
+  onChange: (value: T[]) => void
   placeholder?: string
   searchPlaceholder?: string
   emptyText?: string
@@ -27,7 +27,13 @@ interface MultiSelectorProps {
   maxItems?: number
 }
 
-export function MultiSelector({
+/**
+ * Generic over the option id type: numeric ids (role/account/category ids)
+ * and string ids (order-type identifiers like 'takeaway') are both valid.
+ * Never coerce ids between types at the call site — Number('takeaway') is
+ * NaN, which silently corrupts the saved selection.
+ */
+export function MultiSelector<T extends string | number = string>({
   options,
   value,
   onChange,
@@ -37,7 +43,7 @@ export function MultiSelector({
   className,
   disabled = false,
   maxItems,
-}: MultiSelectorProps) {
+}: MultiSelectorProps<T>) {
   const { t } = useTranslation()
   const [open, setOpen] = React.useState(false)
   const [searchValue, setSearchValue] = React.useState("")
@@ -49,14 +55,14 @@ export function MultiSelector({
     option.name.toLowerCase().includes(searchValue.toLowerCase()),
   )
 
-  const handleSelect = (optionValue: number) => {
+  const handleSelect = (optionValue: T) => {
     if (maxItems && value.length >= maxItems) {
       return
     }
     onChange([...value, optionValue])
   }
 
-  const handleRemove = (optionValue: number) => {
+  const handleRemove = (optionValue: T) => {
     onChange(value.filter((v) => v !== optionValue))
   }
 
