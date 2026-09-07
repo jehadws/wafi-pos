@@ -415,8 +415,16 @@ export const usePOS = create<POSStore>((set, get) => ({
                     throw new Error(message);
                 }
 
-                const result = await get().canProceedAsLaidAway(order);
-                order = result.data.order;
+                // canProceedAsLaidAway enforces customer-group minimum-payment
+                // rules for credit/layaway orders. When the cashier explicitly
+                // chooses "Unpaid" (payment_status === 'unpaid'), that intent
+                // must be respected as-is — running the layaway guard produces
+                // the misleading "minimum payment required" error for a path
+                // that has nothing to do with instalments or credit groups.
+                if (order.payment_status !== 'unpaid') {
+                    const result = await get().canProceedAsLaidAway(order);
+                    order = result.data.order;
+                }
             }
         }
 
@@ -491,9 +499,25 @@ export const usePOS = create<POSStore>((set, get) => ({
             products.push(orderProduct);
         }
 
-        (fullOrder as any).type = Object.values(get().types).filter(
-            (type: any) => type.identifier === (fullOrder as any).type,
-        )[0];
+        // The API can return `type` as either a plain string identifier
+        // (e.g. "takeaway") or a full object ({ identifier, label, icon }).
+        // Normalise to the identifier string first, then look up the full
+        // OrderType object from the store's loaded types or — when defineTypes
+        // hasn't run yet (e.g. loading a held order right after page load) —
+        // fall back to the static ORDER_TYPE_MAP.
+        const rawType: any = (fullOrder as any).type;
+        const typeIdentifier: string | undefined =
+            typeof rawType === 'string'
+                ? rawType
+                : typeof rawType === 'object' && rawType !== null
+                  ? rawType.identifier
+                  : undefined;
+
+        const resolvedType =
+            Object.values(get().types).find((t: any) => t.identifier === typeIdentifier) ??
+            (typeIdentifier ? ORDER_TYPE_MAP[typeIdentifier] : undefined);
+
+        (fullOrder as any).type = resolvedType ?? undefined;
 
         fullOrder.addresses = {
             shipping: (order as any).shipping_address,

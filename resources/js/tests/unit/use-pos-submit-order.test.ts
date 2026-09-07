@@ -141,4 +141,36 @@ describe('usePOS.submitOrder — unpaid/partial policy guards', () => {
         ).resolves.toBeTruthy();
         expect(vi.mocked(ordersApi.submit)).toHaveBeenCalledTimes(1);
     });
+
+    it('does not run the layaway minimum-payment guard when saving as Unpaid', async () => {
+        // Regression: submitOrder always called canProceedAsLaidAway for
+        // zero-payment non-hold orders, even when the cashier explicitly chose
+        // "Unpaid". If the customer's group had a minimal_credit_payment > 0,
+        // the guard threw "Before saving this order, a minimum payment of X is
+        // required" — completely wrong for the Unpaid intent.
+        setScenario(
+            {
+                [POS_OPTION_KEYS.allowUnpaid]: 'yes',
+                [POS_OPTION_KEYS.allowPartial]: 'yes',
+            },
+            {
+                payment_status: 'unpaid',
+                // Simulate a customer whose group demands a 20% minimum payment
+                customer: {
+                    group: { minimal_credit_payment: 20 },
+                },
+            },
+        );
+
+        // Must resolve without throwing "minimum payment required"
+        await expect(
+            usePOS.getState().submitOrder({ payment_status: 'unpaid' }),
+        ).resolves.toBeTruthy();
+
+        expect(toast.error).not.toHaveBeenCalled();
+        expect(vi.mocked(ordersApi.submit)).toHaveBeenCalledTimes(1);
+        expect(vi.mocked(ordersApi.submit).mock.calls[0][0]).toMatchObject({
+            payment_status: 'unpaid',
+        });
+    });
 });

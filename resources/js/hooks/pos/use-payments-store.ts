@@ -100,7 +100,7 @@ export const createPaymentsSlice: StateCreator<POSStore, [], [], PaymentsSlice> 
                 ? 'paid'
                 : tendered > 0
                   ? 'partially_paid'
-                  : order.payment_status;
+                  : 'unpaid';
 
         const change = tendered - order.total;
 

@@ -64,6 +64,33 @@ describe('use-payments-store (Zustand Payments Slice)', () => {
         usePOS.getState().removePayment(usePOS.getState().order.payments[0]);
         expect(usePOS.getState().order.payments).toHaveLength(0);
         expect(usePOS.getState().order.tendered).toBe(0);
+        expect(usePOS.getState().order.payment_status).toBe('unpaid');
+    });
+
+    it('resets payment_status to unpaid (not partially_paid) when the only payment is removed', () => {
+        // Regression: computePaid used to fall back to `order.payment_status`
+        // (the pre-removal value) when tendered dropped to 0, leaving the order
+        // in a `partially_paid` state even though payments === [].
+        usePOS.setState((state) => ({
+            order: { ...state.order, total: 100, tendered: 0, change: 0, payment_status: 'unpaid' },
+        }));
+
+        const payment = {
+            identifier: 'cash-payment',
+            label: 'Cash',
+            value: 40,
+            readonly: false,
+            selected: true,
+        };
+
+        usePOS.getState().addPayment(payment);
+        expect(usePOS.getState().order.payment_status).toBe('partially_paid');
+
+        // Remove the only payment — status must reset to 'unpaid', not stay 'partially_paid'
+        usePOS.getState().removePayment(usePOS.getState().order.payments[0]);
+        expect(usePOS.getState().order.payments).toHaveLength(0);
+        expect(usePOS.getState().order.tendered).toBe(0);
+        expect(usePOS.getState().order.payment_status).toBe('unpaid');
     });
 
     it('toggles active payment type', () => {

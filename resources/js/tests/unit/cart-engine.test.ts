@@ -214,7 +214,10 @@ describe('services/cart-engine.ts', () => {
             const result = computeItem(product, options);
 
             expect(result.unit_price).toBe(100); // sale_price_without_tax
-            expect(result.total_price).toBe(200); // 100 * 2
+            // total_price must be the full payable amount (with-tax) so that
+            // order.subtotal and order.total are correct. Previously this was
+            // the pre-tax amount (200), which caused the subtotal bug.
+            expect(result.total_price).toBe(230); // sale_price_with_tax (115) * 2
             expect(result.total_tax_value).toBeCloseTo(30, 0); // 15 * 2
         });
 
@@ -223,7 +226,8 @@ describe('services/cart-engine.ts', () => {
             const result = computeItem(product, options);
 
             expect(result.unit_price).toBe(80); // wholesale_price_without_tax
-            expect(result.total_price).toBe(160); // 80 * 2
+            // total_price uses wholesale_price_with_tax (92) * 2
+            expect(result.total_price).toBe(184); // wholesale_price_with_tax (92) * 2
         });
 
         it('keeps custom mode price unchanged', () => {
@@ -240,7 +244,8 @@ describe('services/cart-engine.ts', () => {
             const product = makeProduct({ discount: 10 });
             const result = computeItem(product, options);
 
-            expect(result.total_price).toBe(190); // (100 * 2) - 10
+            // total_price = total_price_with_tax after discount applied in computeProductTaxValue
+            expect(result.total_price).toBe(220); // (115 * 2) - 10
         });
 
         it('never mutates the input product', () => {

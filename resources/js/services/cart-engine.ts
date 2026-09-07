@@ -405,13 +405,6 @@ export function computeProduct(product: OrderProduct, options: POSOptions): Orde
 
     computeProductTaxValue(computed);
 
-    const unitPrice = computed.unit_price;
-    computed.total_price = math
-        .chain(unitPrice)
-        .multiply(computed.quantity)
-        .subtract(computed.discount || 0)
-        .done();
-
     if (computed.total_tax_value === undefined) {
         computed.total_tax_value = math.chain(computed.tax_value).multiply(computed.quantity).done();
     }
@@ -424,6 +417,28 @@ export function computeProduct(product: OrderProduct, options: POSOptions): Orde
         computed.total_price_without_tax = math
             .chain(computed.price_without_tax)
             .multiply(computed.quantity)
+            .done();
+    }
+
+    // total_price must reflect the actual amount the customer pays.
+    // computeProductTaxValue() already split the price correctly into
+    // total_price_with_tax / total_price_without_tax — use those instead of
+    // re-deriving from unit_price (which can be pre-tax when
+    // sb_subul_price_with_tax === 'no', leading to a subtotal that excludes tax).
+    if (options.sb_subul_price_with_tax === 'yes' && computed.total_price_with_tax !== undefined) {
+        computed.total_price = computed.total_price_with_tax;
+    } else if (options.sb_subul_price_with_tax === 'no' && computed.total_price_with_tax !== undefined) {
+        // Even when prices are stored/displayed without tax, the total that feeds
+        // order.subtotal must still be the full (with-tax) amount so that the
+        // final payable total is correct. The UI shows tax separately via
+        // products_tax_value / tax_value rows.
+        computed.total_price = computed.total_price_with_tax;
+    } else {
+        // Fallback: no tax group attached — raw unit_price math is correct.
+        computed.total_price = math
+            .chain(computed.unit_price)
+            .multiply(computed.quantity)
+            .subtract(computed.discount || 0)
             .done();
     }
 
@@ -446,31 +461,30 @@ export function recomputeProducts(
 // ---------------------------------------------------------------------------
 
 /**
- * Sums per-product taxes into the order and updates order.subtotal
- * for products_vat mode.
+ * Sums per-product taxes into order.products_tax_value so the UI can show
+ * a "Product Taxes" line in all VAT modes.
+ *
+ * NOTE: Do NOT add products_tax_value back into order.subtotal here.
+ * total_price (and therefore order.subtotal) already reflects the full
+ * payable amount (including tax) after the fix in computeProduct().
+ * Adding it again would double-count the tax.
  */
 export function sumProductsTaxes(
     order: Order,
     products: OrderProduct[],
     options: POSOptions,
 ): Order {
-    const posVat = options.sb_subul_vat;
-
     order.products = products as any;
     order.total_products = products.length;
 
-    if (['products_vat'].includes(posVat)) {
-        const totalTaxValues = products.map((p: OrderProduct) => p.total_tax_value || 0);
-        if (totalTaxValues.length > 0) {
-            order.products_tax_value = totalTaxValues.reduce(
-                (before: number, after: number) => before + after,
-                0,
-            );
-        }
-    }
-
-    if (options.sb_subul_price_with_tax === 'no') {
-        order.subtotal = math.chain(order.subtotal).add(order.products_tax_value).done();
+    // Always aggregate per-product taxes so the UI tax row is populated
+    // regardless of the active VAT mode (products_vat, flat_vat, etc.).
+    const totalTaxValues = products.map((p: OrderProduct) => p.total_tax_value || 0);
+    if (totalTaxValues.length > 0) {
+        order.products_tax_value = totalTaxValues.reduce(
+            (before: number, after: number) => before + after,
+            0,
+        );
     }
 
     return order;
