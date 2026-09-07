@@ -199,8 +199,11 @@ class OrdersController extends DashboardController
         }),
       'options' => Hook::filter('sb-pos-options', [
         'sb_subul_printing_document' => sb()->option->get('sb_subul_printing_document', 'receipt'),
-        'sb_orders_allow_partial' => sb()->option->get('sb_orders_allow_partial', 'no'),
-        'sb_orders_allow_unpaid' => sb()->option->get('sb_orders_allow_unpaid', 'no'),
+        // Defaults match the enforcement layer (OrdersService:968/973) and the
+        // settings page display default ('yes') — a never-saved option must not
+        // silently disable unpaid/partial orders at the POS.
+        'sb_orders_allow_partial' => sb()->option->get('sb_orders_allow_partial', 'yes'),
+        'sb_orders_allow_unpaid' => sb()->option->get('sb_orders_allow_unpaid', 'yes'),
         'sb_subul_order_types' => sb()->option->get('sb_subul_order_types', []),
         'sb_subul_quick_product' => sb()->option->get('sb_subul_quick_product', 'no'),
         'sb_subul_quick_product_default_unit' => sb()->option->get('sb_subul_quick_product_default_unit', 0),

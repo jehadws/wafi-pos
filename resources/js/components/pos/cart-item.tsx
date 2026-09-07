@@ -19,7 +19,6 @@ interface CartItemProps {
   updateQuantity: (product: OrderProduct, quantity: number) => void;
   updatePrice: (product: OrderProduct, price: number) => void;
   updateDiscountPercentage: (product: OrderProduct, price: number) => void;
-  showQuantity?: boolean;
   onOpenPriceKeypad?: (item: OrderProduct) => void;
   onOpenDiscountKeypad?: (item: OrderProduct) => void;
   onOpenQuantityKeypad?: (item: OrderProduct) => void;
@@ -33,7 +32,6 @@ export default function CartItem({
   updatePrice,
   removeFromCart,
   updateQuantity,
-  showQuantity = true,
   onOpenPriceKeypad,
   onOpenDiscountKeypad,
   onOpenQuantityKeypad,
@@ -218,60 +216,61 @@ export default function CartItem({
           </Button>
       </div>
 
-      {/* Stepper pill — mockup pattern: muted −, tabular qty, brand-tinted + */}
-      {showQuantity && (
-        <div className="flex h-10 shrink-0 items-center gap-0.5 rounded-full border bg-muted/40 px-1">
-          {isEditing ? (
-            <Input
-              type="text"
-              value={quantityInput}
-              onChange={handleQuantityChange}
-              onBlur={handleQuantityBlur}
-              onKeyDown={handleKeyDown}
-              className="h-8 w-14 p-1 text-center text-sm"
-              autoFocus
-            />
-          ) : (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={`h-8 w-8 shrink-0 rounded-full active:scale-95 ${
-                  item.quantity <= 1
-                    ? 'hover:bg-destructive/10 hover:text-destructive'
-                    : 'text-muted-foreground hover:bg-muted'
-                }`}
-                onClick={handleDecrement}
-                aria-label={t('Decrease quantity')}
-              >
-                <Minus className="h-4 w-4" />
-              </Button>
-              <span
-                className="min-w-7 cursor-pointer rounded-full px-1 text-center text-sm font-semibold text-foreground tabular-nums hover:bg-muted active:bg-muted"
-                onClick={() => {
-                  if (onOpenQuantityKeypad) {
-                    onOpenQuantityKeypad(item);
-                  } else {
-                    setIsEditing(true);
-                  }
-                }}
-                title={t('Click to edit quantity')}
-              >
-                {item.quantity}
-              </span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="bg-primary/10 text-primary hover:bg-primary/20 active:scale-95 h-8 w-8 shrink-0 rounded-full"
-                onClick={handleIncrement}
-                aria-label={t('Increase quantity')}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </>
-          )}
-        </div>
-      )}
+      {/* Stepper pill — mockup pattern: muted −, tabular qty, brand-tinted +.
+          Always rendered: with "Show Quantity" off (quick-add mode) this pill
+          is the only place a line's quantity is visible and correctable —
+          hiding it would make merged lines unreadable. */}
+      <div className="flex h-10 shrink-0 items-center gap-0.5 rounded-full border bg-muted/40 px-1">
+        {isEditing ? (
+          <Input
+            type="text"
+            value={quantityInput}
+            onChange={handleQuantityChange}
+            onBlur={handleQuantityBlur}
+            onKeyDown={handleKeyDown}
+            className="h-8 w-14 p-1 text-center text-sm"
+            autoFocus
+          />
+        ) : (
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-8 w-8 shrink-0 rounded-full active:scale-95 ${
+                item.quantity <= 1
+                  ? 'hover:bg-destructive/10 hover:text-destructive'
+                  : 'text-muted-foreground hover:bg-muted'
+              }`}
+              onClick={handleDecrement}
+              aria-label={t('Decrease quantity')}
+            >
+              <Minus className="h-4 w-4" />
+            </Button>
+            <span
+              className="min-w-7 cursor-pointer rounded-full px-1 text-center text-sm font-semibold text-foreground tabular-nums hover:bg-muted active:bg-muted"
+              onClick={() => {
+                if (onOpenQuantityKeypad) {
+                  onOpenQuantityKeypad(item);
+                } else {
+                  setIsEditing(true);
+                }
+              }}
+              title={t('Click to edit quantity')}
+            >
+              {item.quantity}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="bg-primary/10 text-primary hover:bg-primary/20 active:scale-95 h-8 w-8 shrink-0 rounded-full"
+              onClick={handleIncrement}
+              aria-label={t('Increase quantity')}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </>
+        )}
+      </div>
 
       {/* Line total — fixed min width, right aligned like the mockup; never clips */}
       <div className="min-w-24 shrink-0 whitespace-nowrap text-end text-sm font-bold text-foreground tabular-nums">

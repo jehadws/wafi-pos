@@ -115,7 +115,9 @@ export const createPaymentsSlice: StateCreator<POSStore, [], [], PaymentsSlice> 
             ...p,
             selected: p.identifier === payment.identifier,
         }));
-        set({ paymentsType: payments });
+        // Keep the dedicated pointer in sync — the payment sheet reads it as a
+        // fallback when deriving the active method from the flags above.
+        set({ paymentsType: payments, selectedPaymentType: payment });
     },
 
     definedPaymentsType: (payments) => {

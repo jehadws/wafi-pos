@@ -10,7 +10,6 @@ interface NumberPadProps {
   onNumberClick: (num: string) => void;
   onBackspace: () => void;
   onConfirm: () => void;
-  handleFullPayment: () => void;
 }
 
 interface NumberButtonProps {
@@ -20,13 +19,13 @@ interface NumberButtonProps {
 
 function NumberButton({ children, onClick }: NumberButtonProps) {
   return (
-    <Button variant="outline" size="lg" className="bg-card text-foreground h-16 rounded-xl text-xl font-semibold shadow-2xs" onClick={onClick}>
+    <Button variant="outline" size="lg" className="bg-card text-foreground h-14 rounded-xl text-xl font-semibold shadow-2xs lg:h-16" onClick={onClick}>
       {children}
     </Button>
   );
 }
 
-export function NumberPad({ onNumberClick, onBackspace, onConfirm, handleFullPayment }: NumberPadProps) {
+export function NumberPad({ onNumberClick, onBackspace, onConfirm }: NumberPadProps) {
   const { t } = useTranslation();
   const numbers = [
     ['7', '8', '9'],
@@ -63,7 +62,7 @@ export function NumberPad({ onNumberClick, onBackspace, onConfirm, handleFullPay
   }, [onNumberClick, onBackspace, onConfirm]);
 
   return (
-    <div className="mx-auto grid max-w-md grid-cols-3 gap-3">
+    <div className="mx-auto grid max-w-md grid-cols-3 gap-2 lg:gap-3">
       {/* Number rows */}
       {numbers.map((row) =>
         row.map((num) => (
@@ -80,21 +79,11 @@ export function NumberPad({ onNumberClick, onBackspace, onConfirm, handleFullPay
       <NumberButton onClick={() => onNumberClick('0')}>0</NumberButton>
       <Button
         variant="default"
-        className="text-primary-foreground h-16 rounded-xl text-xl font-semibold"
+        className="text-primary-foreground h-14 rounded-xl text-xl font-semibold lg:h-16"
         onClick={onConfirm}
       >
-        {t('Enter')}
+        {t('Add')}
       </Button>
-
-      {/* Full Payment Button */}
-      <div className="col-span-3">
-        <Button
-          onClick={handleFullPayment}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 h-16 w-full rounded-xl text-lg font-semibold"
-        >
-          {t('Full Payment')}
-        </Button>
-      </div>
     </div>
   );
 }

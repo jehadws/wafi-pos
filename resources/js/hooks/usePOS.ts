@@ -394,27 +394,29 @@ export const usePOS = create<POSStore>((set, get) => ({
     submitOrder: async (orderFields: object = {}) => {
         let order = { ...get().order, ...orderFields };
 
-        const minimalPayment = order.customer?.group?.minimal_credit_payment || 0;
-
         if (order.payment_status !== 'hold') {
             if (
                 order.payments.length === 0 &&
                 order.total > 0 &&
                 order.total > order.tendered
             ) {
-                if (get().options[POS_OPTION_KEYS.allowPartial] === 'no') {
-                    const message = 'Partially paid orders are disabled.';
-                    toast.error(message);
-                    throw new Error(message);
-                } else if (get().options[POS_OPTION_KEYS.allowUnpaid] === 'no') {
+                // Zero recorded payments is an UNPAID submission, not a partial
+                // one — gate it on the unpaid policy, mirroring the backend guard
+                // (OrdersService: $totalPayments === 0 → allow_unpaid) and
+                // validateOrderForSubmission. Gating this case on allowPartial
+                // produced the misleading "Partially paid orders are disabled."
+                // toast when saving an order as Unpaid. Partial payments
+                // (tendered > 0 below the total) are still rejected later in the
+                // pipeline by validateOrderForSubmission.
+                if (get().options[POS_OPTION_KEYS.allowUnpaid] === 'no') {
                     const message =
                         'Unpaid orders are not allowed. Please add at least one payment.';
                     toast.error(message);
                     throw new Error(message);
-                } else if (minimalPayment >= 0) {
-                    const result = await get().canProceedAsLaidAway(order);
-                    order = result.data.order;
                 }
+
+                const result = await get().canProceedAsLaidAway(order);
+                order = result.data.order;
             }
         }
 

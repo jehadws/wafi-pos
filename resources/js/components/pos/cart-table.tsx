@@ -4,8 +4,6 @@ import CartItemComponent from '@/components/pos/cart-item';
 import { Button } from '@/components/ui/button';
 import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { POS_OPTION_KEYS } from '@/constants/pos-options';
-import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { OrderProduct } from '@/types/models/order-product';
 import { ShoppingBag, Trash2 } from 'lucide-react';
@@ -44,8 +42,6 @@ export default function CartTable({
     deselectAllItems,
 }: CartTableProps) {
     const { t } = useTranslation();
-    const { options } = usePOS();
-    const showQuantity = options[POS_OPTION_KEYS.showQuantity] !== false;
     const allSelected = cart.length > 0 && selectedItems.length === cart.length;
     const someSelected = selectedItems.length > 0 && selectedItems.length < cart.length;
 
@@ -167,7 +163,6 @@ export default function CartTable({
                                                 updateDiscountPercentage={updateDiscountPercentage}
                                                 removeFromCart={removeFromCart}
                                                 updateQuantity={updateQuantity}
-                                                showQuantity={showQuantity}
                                                 onOpenPriceKeypad={(itm) => setActiveKeypad({ item: itm, type: 'price' })}
                                                 onOpenDiscountKeypad={(itm) => setActiveKeypad({ item: itm, type: 'discount' })}
                                                 onOpenQuantityKeypad={(itm) => setActiveKeypad({ item: itm, type: 'quantity' })}
