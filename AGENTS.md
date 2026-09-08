@@ -11,3 +11,13 @@ Default labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-huma
 ### Domain docs
 
 Single-context layout. See `docs/agents/domain.md`.
+
+## Architecture
+
+Layer map, store / cart-engine / price-basis invariants, ripple map, and the verification loop. Read `docs/agents/architecture.md` before touching any of:
+
+- POS state — `hooks/usePOS.ts`, slices in `hooks/pos/`
+- Cart, tax, or price computation — `services/cart-engine.ts`
+- Option keys & settings — `constants/pos-options.ts`, `app/Settings/`, `components/settings/`
+- Entity types — anything under `resources/js/types/`
+- Backend API — `routes/api/`, `app/Services/`
