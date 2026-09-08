@@ -337,6 +337,7 @@ export default function PosSystem() {
           <TotalsSummary
             subtotal={order.subtotal}
             tax={order.products_tax_value || 0}
+            priceWithTax={isPriceWithTax(options)}
             discount={order.discount || 0}
             totalCoupons={order.total_coupons || 0}
             total={order.total || 0}
@@ -435,13 +436,11 @@ export default function PosSystem() {
 
       {/* Lazy-loaded Dialogs */}
       <Suspense fallback={null}>
-        {dialogs.showSearchProductsDialog && (
-          <SearchProductsDialog
-            open={dialogs.showSearchProductsDialog}
-            onOpenChange={dialogs.setShowSearchProductsDialog}
-            onProductSelected={addToCart}
-          />
-        )}
+        <SearchProductsDialog
+          open={dialogs.showSearchProductsDialog}
+          onOpenChange={dialogs.setShowSearchProductsDialog}
+          onProductSelected={addToCart}
+        />
 
         {checkout.showSelectCustomerDialog && (
           <SelectCustomerDialog

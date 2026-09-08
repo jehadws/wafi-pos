@@ -6,6 +6,9 @@ import { ChevronRight, Percent, Tag, Truck, User } from 'lucide-react';
 interface TotalsSummaryProps {
   subtotal: number;
   tax: number;
+  /** Mirrors the "Show Price With Tax" option — when true the tax above is
+   *  already included in the displayed line prices and subtotal. */
+  priceWithTax?: boolean;
   discount: number;
   totalCoupons: number;
   total: number;
@@ -22,6 +25,7 @@ export default function TotalsSummary({
   subtotal,
   orderType,
   tax,
+  priceWithTax = true,
   shipping,
   discount,
   totalCoupons,
@@ -92,7 +96,9 @@ export default function TotalsSummary({
 
         {tax > 0 && (
           <div className="flex items-center justify-between px-3.5 py-1.5">
-            <span className="text-muted-foreground font-medium">{t('Product Taxes')}</span>
+            <span className="text-muted-foreground font-medium">
+              {priceWithTax ? t('Product Taxes (Included)') : t('Product Taxes')}
+            </span>
             <span className="text-foreground font-semibold">{formatCurrency(tax)}</span>
           </div>
         )}
