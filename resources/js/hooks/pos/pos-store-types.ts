@@ -17,6 +17,23 @@ import type { PaymentsSlice } from './use-payments-store';
 import type { CustomerSlice } from './use-customer-store';
 import type { SessionSlice } from './use-pos-session';
 
+/**
+ * Slice ownership matrix — who writes what.
+ *
+ * | State                                 | Written by           | Read by         |
+ * |---------------------------------------|----------------------|-----------------|
+ * | order (+ isSubmitting/isRefreshing)   | facade orchestration | every slice, UI |
+ * | products, autoMerge                   | cart slice           | facade, UI      |
+ * | dialog open/close flags               | dialogs slice        | UI              |
+ * | payments                              | payments slice       | facade, UI      |
+ * | customer, coupons                     | customer slice       | facade, UI      |
+ * | settings, options, types, permissions | session slice        | every slice, UI |
+ *
+ * Cross-slice reads go through get(); cross-slice WRITES go through the
+ * owning slice's actions or facade orchestration. Known exception, do not
+ * extend: use-pos-session.initialize() seeds order.tax_type/tax_group_id
+ * before the cart is active (docs/agents/architecture.md → Store rules).
+ */
 export type POSStoreCoreState = {
     order: Order;
     isSubmitting: boolean;
