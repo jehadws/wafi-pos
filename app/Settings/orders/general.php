@@ -64,10 +64,10 @@ return SettingForm::tabs(
                 ] ),
             ),
             FormInput::select(
-                label: __( 'Quotation Expiration' ),
+                label: __( 'Hold Order Expiration' ),
                 name: 'sb_orders_quotation_expiration',
                 value: sb()->option->get( 'sb_orders_quotation_expiration' ),
-                description: __( 'Quotations will get deleted after they defined they has reached.' ),
+                description: __( 'Hold orders older than the selected period will be cleared automatically.' ),
                 options: $expirationOptions,
             ),
         )

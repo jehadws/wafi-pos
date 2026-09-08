@@ -4,6 +4,8 @@ use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\LicenseMiddleware;
 use App\Http\Middleware\LoadLangMiddleware;
+use App\Jobs\ClearHoldOrdersJob;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,6 +18,14 @@ return Application::configure(basePath: dirname(__DIR__))
     commands: __DIR__ . '/../routes/console.php',
     health: '/up',
   )
+  ->withSchedule(function (Schedule $schedule) {
+    /**
+     * Hold orders (parked carts) are deleted once they exceed the
+     * sb_orders_quotation_expiration setting. Broader periodic jobs
+     * are tracked separately (issue #11).
+     */
+    $schedule->job(new ClearHoldOrdersJob)->daily();
+  })
   ->withMiddleware(function (Middleware $middleware) {
     $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
     $middleware->validateCsrfTokens(except: ['api/setup/*']);
