@@ -1,7 +1,7 @@
 import { useNumericKeypad } from '@/hooks/use-numeric-keypad';
 import { useSequentialTaskQueue } from '@/hooks/use-sequential-task-queue';
 import { usePOS } from '@/hooks/usePOS';
-import { isPosOptionEnabled, POS_OPTION_KEYS } from '@/constants/pos-options';
+import { isPosOptionEnabled, POS_OPTION_KEYS, resolveUnitDisplayPrice } from '@/constants/pos-options';
 import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
 import { categoriesApi, productsApi } from '@/api';
@@ -297,7 +297,9 @@ export default function ProductsCategoriesPanel() {
                         {products.map((product) => {
                             const unitQuantity = product.unit_quantities?.[0];
                             const available = unitQuantity?.quantity ?? 0;
-                            const price = unitQuantity?.sale_price ?? product.unit_quantities?.[0]?.sale_price ?? 0;
+                            // Same price resolution the cart charges by — never
+                            // the backend `sale_price` alias (always with-tax).
+                            const price = resolveUnitDisplayPrice(unitQuantity, options);
                             const isAvailable = available > 0;
 
                             return (

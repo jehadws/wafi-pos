@@ -85,3 +85,36 @@ export function isPriceWithTax(options: object): boolean {
 export function isVatDisabled(options: object): boolean {
     return (options as Record<string, unknown>)[POS_OPTION_KEYS.vat] === 'disabled';
 }
+
+/** Minimal unit-quantity shape the price resolver needs. */
+export interface UnitDisplayPriceSource {
+    sale_price_edit?: number;
+    sale_price_with_tax?: number;
+    sale_price_without_tax?: number;
+}
+
+/**
+ * Resolves the price a catalog surface (grid tile, unit picker, search
+ * dialog) should display for a unit quantity — using the exact same rules
+ * the cart engine charges by:
+ * - VAT disabled → the merchant-entered (edit) price (with/without collapse).
+ * - Otherwise → with-tax or without-tax per "Show Price With Tax".
+ *
+ * Never read `sale_price` directly: the backend aliases it to the with-tax
+ * price for BOTH tax types (TaxService::computeTax), which is how catalog
+ * tiles ended up disagreeing with the cart.
+ */
+export function resolveUnitDisplayPrice(
+    unit: UnitDisplayPriceSource | undefined | null,
+    options: object,
+): number {
+    if (!unit) return 0;
+
+    if (isVatDisabled(options)) {
+        return unit.sale_price_edit || unit.sale_price_without_tax || 0;
+    }
+
+    return isPriceWithTax(options)
+        ? (unit.sale_price_with_tax ?? 0)
+        : (unit.sale_price_without_tax ?? 0);
+}

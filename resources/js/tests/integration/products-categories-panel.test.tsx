@@ -141,4 +141,45 @@ describe('components/pos/products-categories-panel click handling', () => {
         });
         expect(usePOS.getState().products).toHaveLength(0);
     });
+
+    it('renders the display-setting price on the tile — not the with-tax sale_price alias', async () => {
+        usePOS.setState({
+            options: {
+                [POS_OPTION_KEYS.showQuantity]: 'yes',
+                sb_subul_price_with_tax: 'no',
+                sb_subul_vat: 'products_vat',
+            },
+        } as any);
+
+        vi.mocked(categoriesApi.getPosContent).mockResolvedValue({
+            categories: [],
+            products: [
+                {
+                    id: 2,
+                    name: 'Priced Product',
+                    unit_quantities: [
+                        {
+                            id: 21,
+                            quantity: 5,
+                            sale_price: 100.282, // backend alias — always with-tax
+                            sale_price_edit: 86.45,
+                            sale_price_without_tax: 86.45,
+                            sale_price_with_tax: 100.282,
+                            type: 'piece',
+                            unit: { id: 3, name: 'pcs' },
+                        },
+                    ],
+                } as any,
+            ],
+            currentCategory: null,
+        } as any);
+
+        render(<ProductsCategoriesPanel />);
+        await screen.findByAltText('Priced Product');
+
+        // "Show Price With Tax: no" → the tile must show the without-tax price
+        // (the same amount the cart charges), never the sale_price alias.
+        expect(screen.getByText('$86.45')).toBeTruthy();
+        expect(screen.queryByText('$100.28')).toBeNull();
+    });
 });

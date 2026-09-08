@@ -3,6 +3,7 @@ import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
 import { usePage } from '@inertiajs/react';
+import { resolveUnitDisplayPrice } from '@/constants/pos-options';
 import { productsApi } from '@/api';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -100,9 +101,7 @@ export default function SelectUnitQuantityDialog({ selectProduct }: { selectProd
                                         {quantity.unit.name} ({quantity.quantity})
                                     </div>
                                     <div className="text-sm font-medium">
-                                        {options.sb_subul_price_with_tax === 'yes'
-                                            ? formatCurrency(quantity.sale_price_with_tax)
-                                            : formatCurrency(quantity.sale_price_without_tax)}
+                                        {formatCurrency(resolveUnitDisplayPrice(quantity, options))}
                                     </div>
                                 </div>
                             </div>
