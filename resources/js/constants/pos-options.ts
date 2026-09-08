@@ -17,6 +17,7 @@ export const POS_OPTION_KEYS = {
     // Tax
     taxType: 'sb_subul_tax_type',
     taxGroup: 'sb_subul_tax_group',
+    vat: 'sb_subul_vat',
 
     // Order types
     orderTypes: 'sb_subul_order_types',
@@ -71,6 +72,16 @@ export function isPosOptionEnabled(
 }
 
 /** Returns true when price-with-tax mode is active */
-export function isPriceWithTax(options: Record<string, unknown>): boolean {
-    return options[POS_OPTION_KEYS.priceWithTax] === 'yes';
+export function isPriceWithTax(options: object): boolean {
+    return (options as Record<string, unknown>)[POS_OPTION_KEYS.priceWithTax] === 'yes';
+}
+
+/**
+ * Returns true when the global VAT mode is disabled ("Disabled" in
+ * POS Settings → VAT). When disabled, no tax is computed anywhere and
+ * products sell at their merchant-entered price — regardless of any
+ * per-product tax group left on the catalog.
+ */
+export function isVatDisabled(options: object): boolean {
+    return (options as Record<string, unknown>)[POS_OPTION_KEYS.vat] === 'disabled';
 }

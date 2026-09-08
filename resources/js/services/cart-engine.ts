@@ -25,6 +25,7 @@ import { Order } from '@/types/models/order';
 import { ProductUnitQuantity } from '@/types/models/product-unit-quantity';
 import { CartDraft, ComputedCart, POSOptions, Coupon } from '@/types/cart-engine';
 import { rawCurrency } from '@/utils/format';
+import { isVatDisabled } from '@/constants/pos-options';
 import * as math from 'mathjs';
 
 // ---------------------------------------------------------------------------
@@ -340,14 +341,25 @@ function _computeProductTax(product: OrderProduct): void {
  * Computes and mutates all tax + price fields on a product using its current
  * mode and quantities. INTERNAL: Mutates the passed product object.
  */
-function computeProductTaxValue(product: OrderProduct): void {
+function computeProductTaxValue(product: OrderProduct, options: POSOptions): void {
     const source = product.source ?? null;
-    const tax_group = source?.tax_group;
     const quantities = product.quantities ?? null;
+
+    // When VAT is globally disabled, every product behaves exactly like a
+    // product without a tax group: it sells at the merchant-entered (edit)
+    // price, with/without-tax prices collapse to it, and any per-product
+    // tax group left on the catalog is ignored ("Disabled" must mean no
+    // tax anywhere).
+    const tax_group = isVatDisabled(options) ? null : source?.tax_group;
 
     let unitPrice: number;
 
-    if (product.mode === 'normal') {
+    if (isVatDisabled(options)) {
+        unitPrice =
+            (product.mode === 'normal' || product.mode === 'wholesale') && quantities
+                ? getProductUnitPrice(product.mode, quantities)
+                : product.unit_price;
+    } else if (product.mode === 'normal') {
         unitPrice =
             product.tax_type === 'inclusive'
                 ? (quantities?.sale_price_with_tax ?? 0)
@@ -396,14 +408,20 @@ export function computeProduct(product: OrderProduct, options: POSOptions): Orde
     if (computed.product_type === 'product') {
         const quantities = computed.quantities ?? null;
         if (computed.mode === 'normal' && quantities) {
-            computed.unit_price = getSalePrice(quantities, options);
+            // VAT disabled → sell at the merchant-entered (edit) price; the
+            // with/without-tax display distinction is meaningless without tax.
+            computed.unit_price = isVatDisabled(options)
+                ? getProductUnitPrice('normal', quantities)
+                : getSalePrice(quantities, options);
         } else if (computed.mode === 'wholesale' && quantities) {
-            computed.unit_price = getWholesalePrice(quantities, options);
+            computed.unit_price = isVatDisabled(options)
+                ? getProductUnitPrice('wholesale', quantities)
+                : getWholesalePrice(quantities, options);
         }
         // For 'custom' mode: keep unit_price as-is (user-set price)
     }
 
-    computeProductTaxValue(computed);
+    computeProductTaxValue(computed, options);
 
     if (computed.total_tax_value === undefined) {
         computed.total_tax_value = math.chain(computed.tax_value).multiply(computed.quantity).done();
@@ -472,7 +490,7 @@ export function recomputeProducts(
 export function sumProductsTaxes(
     order: Order,
     products: OrderProduct[],
-    options: POSOptions,
+    _options: POSOptions,
 ): Order {
     order.products = products as any;
     order.total_products = products.length;

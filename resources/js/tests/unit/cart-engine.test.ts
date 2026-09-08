@@ -297,6 +297,42 @@ describe('services/cart-engine.ts', () => {
             // No source snapshot means no tax group — zero tax
             expect(result.total_tax_value).toBe(0);
         });
+
+        it('sells at the edit price with zero tax when VAT is disabled', () => {
+            const product = makeProduct({ mode: 'normal' });
+            const result = computeItem(product, { ...options, sb_subul_vat: 'disabled' });
+
+            // The merchant-entered (edit) price — not the display-setting-derived price
+            expect(result.unit_price).toBe(100); // sale_price_edit
+            // Any leftover per-product tax group must be ignored
+            expect(result.total_tax_value).toBe(0);
+            expect(result.tax_value).toBe(0);
+            // with/without-tax collapse to the same amount
+            expect(result.price_with_tax).toBe(100);
+            expect(result.price_without_tax).toBe(100);
+            expect(result.total_price).toBe(200); // 100 * 2
+            expect(result.total_price_with_tax).toBe(200);
+            expect(result.total_price_without_tax).toBe(200);
+        });
+
+        it('ignores per-product tax groups for exclusive products when VAT is disabled', () => {
+            const product = makeProduct({ mode: 'normal', tax_type: 'exclusive' });
+            const result = computeItem(product, { ...options, sb_subul_vat: 'disabled' });
+
+            expect(result.unit_price).toBe(100); // sale_price_edit
+            expect(result.total_tax_value).toBe(0);
+            expect(result.total_price).toBe(200);
+            expect(result.total_price_with_tax).toBe(200);
+        });
+
+        it('applies VAT disabled to wholesale mode as well', () => {
+            const product = makeProduct({ mode: 'wholesale' });
+            const result = computeItem(product, { ...options, sb_subul_vat: 'disabled' });
+
+            expect(result.unit_price).toBe(80); // wholesale_price_edit
+            expect(result.total_tax_value).toBe(0);
+            expect(result.total_price).toBe(160); // 80 * 2
+        });
     });
 
     // ---------------------------------------------------------------------------
