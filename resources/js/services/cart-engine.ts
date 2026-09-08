@@ -26,7 +26,7 @@ import { Order } from '@/types/models/order';
 import { ProductUnitQuantity } from '@/types/models/product-unit-quantity';
 import { CartDraft, ComputedCart, POSOptions, Coupon } from '@/types/cart-engine';
 import { rawCurrency } from '@/utils/format';
-import { isVatDisabled } from '@/constants/pos-options';
+import { isVatDisabled, isPriceWithTax, POS_OPTION_KEYS } from '@/constants/pos-options';
 import * as math from 'mathjs';
 
 // ---------------------------------------------------------------------------
@@ -158,13 +158,13 @@ export function computeTaxForGroup(
 
 /**
  * Returns the unit sale price for a product quantity entry,
- * respecting the sb_subul_price_with_tax option.
+ * respecting the price-basis option (Show Price With Tax).
  */
 export function getSalePrice(
     item: ProductUnitQuantity | undefined,
     options: POSOptions,
 ): number {
-    if (options.sb_subul_price_with_tax === 'yes') {
+    if (isPriceWithTax(options)) {
         return rawCurrency(item?.sale_price_with_tax);
     }
     return rawCurrency(item?.sale_price_without_tax);
@@ -172,10 +172,10 @@ export function getSalePrice(
 
 /**
  * Returns the custom unit price for a product quantity entry,
- * respecting the sb_subul_price_with_tax option.
+ * respecting the price-basis option (Show Price With Tax).
  */
 export function getCustomPrice(item: any, options: POSOptions): number {
-    if (options.sb_subul_price_with_tax === 'yes') {
+    if (isPriceWithTax(options)) {
         return rawCurrency(item.custom_price_with_tax);
     }
     return rawCurrency(item.custom_price_without_tax);
@@ -183,10 +183,10 @@ export function getCustomPrice(item: any, options: POSOptions): number {
 
 /**
  * Returns the wholesale unit price for a product quantity entry,
- * respecting the sb_subul_price_with_tax option.
+ * respecting the price-basis option (Show Price With Tax).
  */
 export function getWholesalePrice(item: any, options: POSOptions): number {
-    if (options.sb_subul_price_with_tax === 'yes') {
+    if (isPriceWithTax(options)) {
         return rawCurrency(item.wholesale_price_with_tax);
     }
     return rawCurrency(item.wholesale_price_without_tax);
@@ -236,113 +236,11 @@ export interface TaxComputationResult {
 }
 
 /**
- * Core product tax computation.
- * Computes line-level tax values for any given unit price and product.
+ * Computes all tax + price fields for a product using its current mode and
+ * quantities. Returns a field patch — the caller applies it to its own clone,
+ * so the input product is never mutated.
  */
-function proceedProductTaxComputation(
-    product: OrderProduct,
-    price: number,
-): TaxComputationResult {
-    const source = product.source ?? null;
-    const taxGroup = source?.tax_group;
-
-    let price_without_tax = price;
-    let tax_value = 0;
-    let price_with_tax = price;
-    let total_tax_value = 0;
-
-    if (taxGroup !== undefined && taxGroup !== null && taxGroup.taxes !== undefined) {
-        const lineSubtotal = math.chain(price).multiply(product.quantity).done();
-        const lineAfterDiscount = math
-            .chain(lineSubtotal)
-            .subtract(product.discount || 0)
-            .done();
-
-        const result = computeTaxForGroup(lineAfterDiscount, taxGroup, source?.tax_type || '');
-
-        total_tax_value = result.tax_value;
-        tax_value = math.chain(total_tax_value).divide(product.quantity).done();
-        price_with_tax = math.chain(result.price_with_tax).divide(product.quantity).done();
-        price_without_tax = math.chain(result.price_without_tax).divide(product.quantity).done();
-    }
-
-    return { price_without_tax, tax_value, price_with_tax, total_tax_value };
-}
-
-/**
- * Computes and mutates tax fields on a custom-priced product.
- * INTERNAL: Mutates the passed product object (call-sites pass a fresh clone).
- */
-function computeCustomProductTax(product: OrderProduct): void {
-    const quantities = product.quantities ?? null;
-    if (!quantities) return;
-
-    const result = proceedProductTaxComputation(product, quantities.custom_price_edit);
-
-    quantities.custom_price_without_tax = result.price_without_tax;
-    quantities.custom_price_with_tax = result.price_with_tax;
-    quantities.custom_price_tax = result.tax_value;
-    product.tax_value = result.tax_value;
-    product.total_tax_value = result.total_tax_value;
-}
-
-/**
- * Computes and mutates tax fields on a normal-priced product.
- * INTERNAL: Mutates the passed product object (call-sites pass a fresh clone).
- */
-function computeNormalProductTax(product: OrderProduct): void {
-    const quantities = product.quantities ?? null;
-    if (!quantities) return;
-
-    const result = proceedProductTaxComputation(product, quantities.sale_price_edit);
-
-    quantities.sale_price_without_tax = result.price_without_tax;
-    quantities.sale_price_with_tax = result.price_with_tax;
-    quantities.sale_price_tax = result.tax_value;
-    product.tax_value = result.tax_value;
-    product.total_tax_value = result.total_tax_value;
-}
-
-/**
- * Computes and mutates tax fields on a wholesale-priced product.
- * INTERNAL: Mutates the passed product object (call-sites pass a fresh clone).
- */
-function computeWholesaleProductTax(product: OrderProduct): void {
-    const quantities = product.quantities ?? null;
-    if (!quantities) return;
-
-    const result = proceedProductTaxComputation(product, quantities.wholesale_price_edit);
-
-    quantities.wholesale_price_without_tax = result.price_without_tax;
-    quantities.wholesale_price_with_tax = result.price_with_tax;
-    quantities.wholesale_price_tax = result.tax_value;
-    product.tax_value = result.tax_value;
-    product.total_tax_value = result.total_tax_value;
-}
-
-/**
- * Dispatches to the correct per-mode tax computation function.
- * INTERNAL: Mutates the passed product object (call-sites pass a fresh clone).
- */
-function _computeProductTax(product: OrderProduct): void {
-    switch (product.mode) {
-        case 'custom':
-            computeCustomProductTax(product);
-            break;
-        case 'normal':
-            computeNormalProductTax(product);
-            break;
-        case 'wholesale':
-            computeWholesaleProductTax(product);
-            break;
-    }
-}
-
-/**
- * Computes and mutates all tax + price fields on a product using its current
- * mode and quantities. INTERNAL: Mutates the passed product object.
- */
-function computeProductTaxValue(product: OrderProduct, options: POSOptions): void {
+function computeProductTaxValue(product: OrderProduct, options: POSOptions): Partial<OrderProduct> {
     const source = product.source ?? null;
     const quantities = product.quantities ?? null;
 
@@ -382,12 +280,14 @@ function computeProductTaxValue(product: OrderProduct, options: POSOptions): voi
 
     const result = computeTaxForGroup(lineAfterDiscount, tax_group, product.tax_type || '');
 
-    product.tax_value = math.chain(result.tax_value).divide(product.quantity).done();
-    product.total_tax_value = result.tax_value;
-    product.price_with_tax = math.chain(result.price_with_tax).divide(product.quantity).done();
-    product.price_without_tax = math.chain(result.price_without_tax).divide(product.quantity).done();
-    product.total_price_with_tax = result.price_with_tax;
-    product.total_price_without_tax = result.price_without_tax;
+    return {
+        tax_value: math.chain(result.tax_value).divide(product.quantity).done(),
+        total_tax_value: result.tax_value,
+        price_with_tax: math.chain(result.price_with_tax).divide(product.quantity).done(),
+        price_without_tax: math.chain(result.price_without_tax).divide(product.quantity).done(),
+        total_price_with_tax: result.price_with_tax,
+        total_price_without_tax: result.price_without_tax,
+    };
 }
 
 /**
@@ -422,7 +322,8 @@ export function computeProduct(product: OrderProduct, options: POSOptions): Orde
         // For 'custom' mode: keep unit_price as-is (user-set price)
     }
 
-    computeProductTaxValue(computed, options);
+    // Apply the tax patch to the clone — never to the caller's input.
+    Object.assign(computed, computeProductTaxValue(computed, options));
 
     if (computed.total_tax_value === undefined) {
         computed.total_tax_value = math.chain(computed.tax_value).multiply(computed.quantity).done();
@@ -444,9 +345,9 @@ export function computeProduct(product: OrderProduct, options: POSOptions): Orde
     // total_price_with_tax / total_price_without_tax — use those instead of
     // re-deriving from unit_price (which can be pre-tax when
     // sb_subul_price_with_tax === 'no', leading to a subtotal that excludes tax).
-    if (options.sb_subul_price_with_tax === 'yes' && computed.total_price_with_tax !== undefined) {
+    if (isPriceWithTax(options) && computed.total_price_with_tax !== undefined) {
         computed.total_price = computed.total_price_with_tax;
-    } else if (options.sb_subul_price_with_tax === 'no' && computed.total_price_with_tax !== undefined) {
+    } else if (!isPriceWithTax(options) && computed.total_price_with_tax !== undefined) {
         // Even when prices are stored/displayed without tax, the total that feeds
         // order.subtotal must still be the full (with-tax) amount so that the
         // final payable total is correct. The UI shows tax separately via
@@ -493,70 +394,95 @@ export function sumProductsTaxes(
     products: OrderProduct[],
     _options: POSOptions,
 ): Order {
-    order.products = products as any;
-    order.total_products = products.length;
+    const next: Order = {
+        ...order,
+        products: products as any,
+        total_products: products.length,
+    };
 
     // Always aggregate per-product taxes so the UI tax row is populated
     // regardless of the active VAT mode (products_vat, flat_vat, etc.).
     const totalTaxValues = products.map((p: OrderProduct) => p.total_tax_value || 0);
     if (totalTaxValues.length > 0) {
-        order.products_tax_value = totalTaxValues.reduce(
+        next.products_tax_value = totalTaxValues.reduce(
             (before: number, after: number) => before + after,
             0,
         );
     }
 
-    return order;
+    return next;
 }
 
 /**
  * Computes order.subtotal from the given products array and delegates
  * per-product tax aggregation to sumProductsTaxes.
+ *
+ * Pure: returns a NEW order plus a products array in which "dynamic" lines
+ * (percentage-based services) are replaced with clones carrying their
+ * recomputed unit_price/total_price. Callers publish the returned products
+ * back to the store explicitly — inputs are never mutated.
  */
 export function sumProductsTotals(
     order: Order,
     products: OrderProduct[],
     options: POSOptions,
-): Order {
+): { order: Order; products: OrderProduct[] } {
     const staticTotal = products
         .filter((p) => p.product_type !== 'dynamic')
         .map((p) => p.total_price);
 
+    // With no dynamic lines there is nothing to recompute — return the input
+    // array as-is so callers can skip the store write (identity unchanged).
+    const hasDynamic = products.some((p) => p.product_type === 'dynamic');
+
     if (staticTotal.length > 0) {
         const productTotalValue = staticTotal.reduce((b: number, a: number) => b + a);
 
-        const dynamicProducts = products
+        const dynamicProducts = hasDynamic
+            ? products.map((p) => {
+                  if (p.product_type !== 'dynamic') return p;
+
+                  const unit_price = (productTotalValue * (p.rate || 0)) / 100;
+                  const total_price = unit_price * p.quantity;
+                  return { ...p, unit_price, total_price };
+              })
+            : products;
+
+        const dynamicProductValue = dynamicProducts
             .filter((p) => p.product_type === 'dynamic')
-            .map((p) => {
-                p.unit_price = (productTotalValue * (p.rate || 0)) / 100;
-                p.total_price = p.unit_price * p.quantity;
-                return p.total_price;
-            });
+            .map((p) => p.total_price)
+            .reduce((b: number, a: number) => b + a, 0);
 
-        const dynamicProductValue =
-            dynamicProducts.length > 0
-                ? dynamicProducts.reduce((b: number, a: number) => b + a)
-                : 0;
-
-        order.subtotal = productTotalValue + dynamicProductValue;
-    } else {
-        order.subtotal = 0;
+        return {
+            order: sumProductsTaxes(
+                { ...order, subtotal: productTotalValue + dynamicProductValue },
+                dynamicProducts,
+                options,
+            ),
+            products: dynamicProducts,
+        };
     }
 
-    return sumProductsTaxes(order, products, options);
+    return {
+        order: sumProductsTaxes({ ...order, subtotal: 0 }, products, options),
+        products,
+    };
 }
 
 /**
  * Accumulates order-level taxes from order.taxes into order.tax_value
  * depending on the POS VAT mode stored in options.
+ * Pure: returns a new order — the input is never mutated.
  */
 export function computeOrderTaxes(order: Order, options: POSOptions): Order {
-    const posVat = options.sb_subul_vat;
+    const posVat = options[POS_OPTION_KEYS.vat];
 
     if (['flat_vat', 'variable_vat'].includes(posVat) && order.taxes && order.taxes.length > 0) {
-        order.tax_value += order.taxes
+        const orderTaxTotal = order.taxes
             .map((tax: any) => tax.tax_value)
-            .reduce((before: number, after: number) => before + after);
+            .reduce((before: number, after: number) => before + after, 0);
+
+        return { ...order, tax_value: order.tax_value + orderTaxTotal };
     }
 
     return order;
@@ -565,13 +491,17 @@ export function computeOrderTaxes(order: Order, options: POSOptions): Order {
 /**
  * Distributes a tax group's VAT across its sub-taxes and returns the updated order.
  * Calls computeOrderTaxes internally.
+ * Pure: works on a clone of taxGroup and returns a new order — neither the
+ * order nor the (often store-owned) taxGroup object is ever mutated.
  */
 export function computeOrderTaxGroup(
     order: Order,
     taxGroup: any,
     options: POSOptions,
 ): Order {
-    const summarizedRates = taxGroup.taxes
+    const group: any = { ...taxGroup, taxes: [...taxGroup.taxes] };
+
+    const summarizedRates = group.taxes
         .map((tax: any) => parseFloat(tax.rate))
         .reduce((b: number, a: number) => b + a, 0);
 
@@ -581,7 +511,7 @@ export function computeOrderTaxGroup(
         order.tax_type as string,
     );
 
-    taxGroup.taxes = taxGroup.taxes.map((_tax: any) => {
+    group.taxes = group.taxes.map((_tax: any) => {
         const currentPercentage = math
             .chain(math.chain(_tax.rate).divide(summarizedRates).done())
             .multiply(100)
@@ -598,16 +528,12 @@ export function computeOrderTaxGroup(
         };
     });
 
-    if (taxGroup.taxes.length === 0) {
+    if (group.taxes.length === 0) {
         // Caller is responsible for showing a warning toast.
         return order;
     }
 
-    order.tax_group = order.tax_group || {};
-    order.taxes = taxGroup.taxes;
-    order.tax_group = taxGroup;
-
-    return computeOrderTaxes(order, options);
+    return computeOrderTaxes({ ...order, taxes: group.taxes, tax_group: group }, options);
 }
 
 // ---------------------------------------------------------------------------
@@ -707,12 +633,16 @@ export function computeCart(draft: CartDraft, options: POSOptions): ComputedCart
     //    subtotal + shipping − discount − total_coupons. The authoritative
     //    recomputation happens server-side on save
     //    (app/Services/OrdersService.php:354-367,383-425).
-    let order = sumProductsTotals({ ...draft.order }, products, options);
-    order = computeOrderTaxes(order, options);
+    const { order: summedOrder, products: computedProducts } = sumProductsTotals(
+        { ...draft.order },
+        products,
+        options,
+    );
+    let order = computeOrderTaxes(summedOrder, options);
     order = { ...order, total_coupons: computeTotalCoupons(validCoupons, order.subtotal) };
 
     return {
-        products,
+        products: computedProducts,
         order,
         validCoupons,
         invalidCoupons,

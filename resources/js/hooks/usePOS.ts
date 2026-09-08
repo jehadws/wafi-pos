@@ -148,11 +148,18 @@ export const usePOS = create<POSStore>((set, get) => ({
 
                 get().checkCart();
 
-                let order: Order = sumProductsTotals(
+                const { order: summedOrder, products: reconciledProducts } = sumProductsTotals(
                     { ...get().order },
                     get().products,
                     (get().options ?? {}) as any,
                 );
+
+                // The engine returns recomputed objects instead of mutating
+                // store state in place — publish dynamic-product (service
+                // line) totals explicitly.
+                set({ products: reconciledProducts });
+
+                let order: Order = summedOrder;
 
                 // Compute coupon totals immutably
                 const totalValue = order.coupons.map((customerCoupon: any) => {
@@ -242,7 +249,8 @@ export const usePOS = create<POSStore>((set, get) => ({
     // ─────────────────────────────────────────────────────────────────────────
 
     computeTaxes: async () => {
-        let order: Order = get().order;
+        // Clone — the engine is pure and must never mutate the live store object.
+        let order: Order = { ...get().order };
         const options = (get().options ?? {}) as any;
 
         if (order.tax_group_id === undefined || order.tax_group_id === null) {

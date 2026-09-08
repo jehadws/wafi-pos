@@ -17,6 +17,7 @@ import {
     calculateTotalsForQuantityUpdate,
     calculateTotalsForPriceUpdate,
     calculateTotalsForDiscountPercentageUpdate,
+    sumProductsTotals,
 } from '@/services/cart-engine';
 import { OrderProduct } from '@/types/models/order-product';
 
@@ -983,6 +984,98 @@ describe('services/cart-engine.ts', () => {
 
             expect(validCoupons).toHaveLength(1);
             expect(() => JSON.stringify({ line, validCoupons })).not.toThrow();
+        });
+    });
+
+    describe('purity — inputs are never mutated', () => {
+        const deepFreeze = <T,>(value: T): T => {
+            if (value !== null && typeof value === 'object') {
+                for (const key of Object.keys(value as Record<string, unknown>)) {
+                    deepFreeze((value as Record<string, unknown>)[key]);
+                }
+                Object.freeze(value);
+            }
+            return value;
+        };
+
+        const makeLine = (): OrderProduct => ({
+            product_id: 1,
+            name: 'Cart Line',
+            product_type: 'product',
+            mode: 'normal',
+            quantity: 2,
+            discount: 0,
+            discount_percentage: 0,
+            discount_type: 'percentage',
+            unit_price: 0,
+            price_with_tax: 0,
+            price_without_tax: 0,
+            total_price: 0,
+            total_price_with_tax: 0,
+            total_price_without_tax: 0,
+            tax_value: 0,
+            total_tax_value: 0,
+            tax_group_id: 1,
+            tax_type: 'inclusive',
+            unit_id: 1,
+            unit_name: 'Piece',
+            unit_quantity_id: 5,
+            quantities: {
+                sale_price_with_tax: 115,
+                sale_price_without_tax: 100,
+                sale_price_edit: 100,
+            } as any,
+            source: {
+                id: 1,
+                category_id: 77,
+                tax_type: 'inclusive',
+                tax_group: { taxes: [{ id: 1, rate: 15, name: 'VAT' }] },
+            },
+        } as any);
+
+        const options = {
+            sb_subul_price_with_tax: 'no',
+            sb_subul_vat: 'products_vat',
+        } as any;
+
+        it('computeItem does not mutate a deep-frozen input', () => {
+            const frozen = deepFreeze(makeLine());
+            expect(() => computeItem(frozen, options)).not.toThrow();
+        });
+
+        it('computeCart does not mutate a deep-frozen draft', () => {
+            const draft = deepFreeze({
+                products: [makeLine()],
+                coupons: [],
+                order: { subtotal: 0, total: 0, tax_value: 0, taxes: [], discount: 0 },
+            });
+
+            expect(() => computeCart(draft as any, options)).not.toThrow();
+        });
+
+        it('sumProductsTotals recomputes dynamic lines without mutating them', () => {
+            const staticLine = computeItem(makeLine(), options);
+            const dynamicLine = {
+                ...makeLine(),
+                product_type: 'dynamic',
+                rate: 10,
+                quantity: 1,
+            } as any;
+
+            const order = { subtotal: 0, total: 0, tax_value: 0, taxes: [], discount: 0 } as any;
+            const before = JSON.stringify(dynamicLine);
+
+            const { order: summed, products } = sumProductsTotals(order, [staticLine, dynamicLine], options);
+
+            // Inputs untouched…
+            expect(JSON.stringify(dynamicLine)).toBe(before);
+            expect(summed).not.toBe(order);
+
+            // …and the dynamic line was re-derived as a clone (rate% of the static total).
+            const recomputed = products.find((p) => p.product_type === 'dynamic');
+            expect(recomputed).not.toBe(dynamicLine);
+            expect(recomputed!.total_price).toBeCloseTo(staticLine.total_price * 0.1, 5);
+            expect(summed.subtotal).toBeCloseTo(staticLine.total_price * 1.1, 5);
         });
     });
 });
