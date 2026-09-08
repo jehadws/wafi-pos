@@ -13,6 +13,17 @@ export const customersApi = {
     /** Fetch a customer's order history. */
     getOrders: (id: number | string) => get<CustomerOrder[]>(`/customers/${id}/orders`),
 
+    /** Fetch the coupons claimed by a customer (with the parent coupon). */
+    getCustomerCoupons: (id: number | string) => get<CustomerCouponRef[]>(`/customers/${id}/coupons`),
+
+    /** Fetch the paginated list of rewards earned by a customer. */
+    getCustomerRewards: (id: number | string, page = 1) =>
+        get<CustomPaginationData<CustomerReward>>(`/customers/${id}/rewards?page=${page}`),
+
+    /** Fetch the paginated wallet / account history of a customer. */
+    getAccountHistory: (id: number | string, page = 1) =>
+        get<CustomPaginationData<CustomerAccountHistory>>(`/customers/${id}/account-history?page=${page}`),
+
     /** Fetch the group a customer belongs to. */
     getGroup: (id: number | string) => get(`/customers/${id}/group`),
 

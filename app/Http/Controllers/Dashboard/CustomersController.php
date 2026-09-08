@@ -14,7 +14,6 @@ use App\Crud\CustomerAccountCrud;
 use App\Crud\CustomerCouponCrud;
 use App\Crud\CustomerCouponHistoryCrud;
 use App\Crud\CustomerCrud;
-use App\Crud\CustomerOrderCrud;
 use App\Crud\CustomerRewardCrud;
 use App\Exceptions\NotFoundException;
 use App\Http\Controllers\DashboardController;
@@ -313,28 +312,29 @@ class CustomersController extends DashboardController
     return $customer->group;
   }
 
+  /**
+   * Displays the orders placed by a specific customer
+   *
+   * @return \Inertia\Response
+   */
   public function getCustomersOrders(Customer $customer)
   {
-    return CustomerOrderCrud::table([
-      'src' => sb()->url('/api/crud/sb.customers-orders'),
-      'queryParams' => [
-        'customer_id' => $customer->id,
-      ],
+    return Inertia::render('dashboard/customers/orders/page', [
+      'title' => __('Dashboard'),
+      'customer' => $customer->only([ 'id', 'first_name', 'last_name' ]),
     ]);
   }
 
   /**
-   * Returns a crud component table that lists
-   * all customer rewards
+   * Displays the rewards earned by a specific customer
    *
-   * @return string
+   * @return \Inertia\Response
    */
   public function getCustomersRewards(Customer $customer)
   {
-    return CustomerRewardCrud::table([
-      'queryParams' => [
-        'customer_id' => $customer->id,
-      ],
+    return Inertia::render('dashboard/customers/rewards/page', [
+      'title' => __('Dashboard'),
+      'customer' => $customer->only([ 'id', 'first_name', 'last_name' ]),
     ]);
   }
 
@@ -355,18 +355,16 @@ class CustomersController extends DashboardController
   }
 
   /**
-   * Will render the customer coupon table
+   * Displays the coupons claimed by a specific customer
    *
-   * @return string
+   * @return \Inertia\Response
    */
   public function getCustomersCoupons(Customer $customer)
   {
-    return CustomerCouponCrud::table(
-      title: sprintf(__('%s Coupons'), $customer->name),
-      queryParams: [
-        'customer_id' => $customer->id,
-      ],
-    );
+    return Inertia::render('dashboard/customers/customer-coupons/page', [
+      'title' => __('Dashboard'),
+      'customer' => $customer->only([ 'id', 'first_name', 'last_name' ]),
+    ]);
   }
 
   /**
@@ -394,23 +392,13 @@ class CustomersController extends DashboardController
   /**
    * Displays the customer account history
    *
-   * @return string
+   * @return \Inertia\Response
    */
   public function getCustomerAccountHistory(Customer $customer)
   {
-    return CustomerAccountCrud::table([
-      'queryParams' => [
-        'customer_id' => $customer->id,
-      ],
-      'createUrl' => sb()->url('/dashboard/customers/' . $customer->id . '/account-history/create'),
-      'description' => sprintf(
-        __('Displays the customer account history for %s'),
-        $customer->first_name . ' ' . $customer->last_name
-      ),
-      'title' => sprintf(
-        __('Account History : %s'),
-        $customer->first_name . ' ' . $customer->last_name
-      ),
+    return Inertia::render('dashboard/customers/account-history/page', [
+      'title' => __('Dashboard'),
+      'customer' => $customer->only([ 'id', 'first_name', 'last_name' ]),
     ]);
   }
 

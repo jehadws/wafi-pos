@@ -496,6 +496,40 @@ type CustomerOrder = {
   updated_at: string,
 }
 
+type CustomerReward = {
+  id: number
+  customer_id: number
+  reward_id: number
+  reward_name: string
+  target: number
+  created_at: string
+  updated_at: string
+}
+
+type CustomerAccountHistory = {
+  id: number
+  customer_id: number
+  order_id: null | number
+  amount: number
+  operation: "add" | "deduct" | "payment" | "refund"
+  author: number
+  description: null | string
+  created_at: string
+  updated_at: string
+}
+
+type CustomerCouponRef = {
+  id: number
+  code: string
+  author: number
+  coupon_id: number
+  customer_id: number
+  active: boolean
+  created_at: string
+  updated_at: string
+  coupon: Coupon | null
+}
+
 type OrderInstalment = {
   id: number;
   order_id: number;

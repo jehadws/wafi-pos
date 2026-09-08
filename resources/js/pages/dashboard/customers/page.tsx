@@ -107,7 +107,7 @@ export default function Dashboard() {
         {
             id: 'actions',
             cell: ({ row }) => {
-                const product = row.original;
+                const customer = row.original;
 
                 return (
                     <DropdownMenu>
@@ -119,11 +119,11 @@ export default function Dashboard() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>{t('Options')}</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => router.get(`/dashboard/customers/edit/${product.id}`)}>{t('Edit')}</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {}}>{t('Orders')}</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {}}>{t('Rewards')}</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {}}>{t('Coupons')}</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {}}>{t('Wallet History')}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.get(`/dashboard/customers/edit/${customer.id}`)}>{t('Edit')}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.get(`/dashboard/customers/${customer.id}/orders`)}>{t('Orders')}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.get(`/dashboard/customers/${customer.id}/rewards`)}>{t('Rewards')}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.get(`/dashboard/customers/${customer.id}/coupons`)}>{t('Coupons')}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.get(`/dashboard/customers/${customer.id}/account-history`)}>{t('Wallet History')}</DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 onClick={() => setDeleteDialog({ isOpen: true, loading: false, customer: row.original })}
@@ -166,7 +166,7 @@ export default function Dashboard() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={title || t('Category Products')} />
+            <Head title={title || t('Customers List')} />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="grid w-full">
                     <DataTable
