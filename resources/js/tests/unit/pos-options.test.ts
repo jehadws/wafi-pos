@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveUnitDisplayPrice } from '@/constants/pos-options';
+import { POS_OPTION_KEYS, resolveUnitDisplayPrice } from '@/constants/pos-options';
 
 describe('constants/pos-options resolveUnitDisplayPrice', () => {
     // Mirrors the real payload from TaxService::computeTax for an exclusive
@@ -52,5 +52,35 @@ describe('constants/pos-options resolveUnitDisplayPrice', () => {
                 sb_subul_price_with_tax: 'no',
             }),
         ).toBe(0);
+    });
+});
+
+describe('POS_OPTION_KEYS registry', () => {
+    it('has no duplicate values (aliases would silently mask each other)', () => {
+        const values = Object.values(POS_OPTION_KEYS);
+        expect(new Set(values).size).toBe(values.length);
+    });
+
+    it('every key is a backend sb_ option string', () => {
+        for (const value of Object.values(POS_OPTION_KEYS)) {
+            expect(value).toMatch(/^sb_(subul|orders|customers)_/);
+        }
+    });
+
+    it('covers the keyboard shortcut keys defined in app/Settings/pos/shortcuts.php', () => {
+        for (const key of [
+            POS_OPTION_KEYS.keyboardPayment,
+            POS_OPTION_KEYS.keyboardCancelOrder,
+            POS_OPTION_KEYS.keyboardShipping,
+            POS_OPTION_KEYS.keyboardOrderType,
+            POS_OPTION_KEYS.keyboardQuickSearch,
+            POS_OPTION_KEYS.keyboardToggleMerge,
+            POS_OPTION_KEYS.keyboardHoldOrder,
+            POS_OPTION_KEYS.keyboardNote,
+            POS_OPTION_KEYS.keyboardCreateCustomer,
+            POS_OPTION_KEYS.keyboardFullscreen,
+        ]) {
+            expect(key).toMatch(/^sb_subul_keyboard_/);
+        }
     });
 });

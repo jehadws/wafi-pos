@@ -37,10 +37,35 @@ export default [
             'react-hooks/exhaustive-deps': 'warn',
             '@typescript-eslint/no-explicit-any': 'off',
             '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
+            // POS option keys live in the typed registry (constants/pos-options.ts).
+            // Raw 'sb_*' string literals in runtime code are how typo-class bugs
+            // silently return undefined. Settings mirrors are exempt below.
+            'no-restricted-syntax': [
+                'error',
+                {
+                    selector: "Literal[value=/^sb_(subul|orders|customers)_/]",
+                    message: "Use POS_OPTION_KEYS from '@/constants/pos-options' instead of a raw option-key string.",
+                },
+            ],
         },
     },
     {
         ignores: ['vendor', 'node_modules', 'public', 'bootstrap/ssr', 'tailwind.config.js', 'playwright-report/**', 'print-agent/**', 'scripts/**', 'tests/**', '.agents/**'],
+    },
+    {
+        // Files that legitimately spell out backend option keys: the registry
+        // itself, the settings UI that mirrors the PHP settings pages, ambient
+        // type declarations, and test fixtures.
+        files: [
+            'resources/js/constants/pos-options.ts',
+            'resources/js/components/settings/**',
+            'resources/js/pages/dashboard/settings/**',
+            'resources/js/types/**',
+            'resources/js/tests/**',
+        ],
+        rules: {
+            'no-restricted-syntax': 'off',
+        },
     },
     prettier, // Turn off all rules that might conflict with Prettier
 ];

@@ -50,6 +50,30 @@ export const POS_OPTION_KEYS = {
     // Quick product creation
     quickProduct: 'sb_subul_quick_product',
     quickProductDefaultUnit: 'sb_subul_quick_product_default_unit',
+
+    // Layout & catalog behavior
+    forceAutofocus: 'sb_subul_force_autofocus',
+    hideEmptyCategories: 'sb_subul_hide_empty_categories',
+    hideExhaustedProducts: 'sb_subul_hide_exhausted_products',
+    numpad: 'sb_subul_numpad',
+    // NOTE: the backend key carries the "ediable" spelling — keep verbatim.
+    unitPriceEditable: 'sb_subul_unit_price_ediable',
+
+    // Printing gateway
+    printingGateway: 'sb_subul_printing_gateway',
+
+    // Keyboard shortcuts
+    keyboardCancelOrder: 'sb_subul_keyboard_cancel_order',
+    keyboardCreateCustomer: 'sb_subul_keyboard_create_customer',
+    keyboardFullscreen: 'sb_subul_keyboard_fullscreen',
+    keyboardHoldOrder: 'sb_subul_keyboard_hold_order',
+    keyboardNote: 'sb_subul_keyboard_note',
+    keyboardOrderType: 'sb_subul_keyboard_order_type',
+    keyboardPayment: 'sb_subul_keyboard_payment',
+    keyboardQuickSearch: 'sb_subul_keyboard_quick_search',
+    keyboardShipping: 'sb_subul_keyboard_shipping',
+    keyboardShortcuts: 'sb_subul_keyboard_shortcuts',
+    keyboardToggleMerge: 'sb_subul_keyboard_toggle_merge',
 } as const;
 
 export type PosOptionKey = (typeof POS_OPTION_KEYS)[keyof typeof POS_OPTION_KEYS];
