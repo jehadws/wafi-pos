@@ -7,7 +7,8 @@
  * Architecture:
  *   - computeCart(): Full cart recomputation
  *   - computeItem(): Single item recomputation
- *   - validateCoupons(): Coupon validation and application
+ *   - validateCoupons(): Coupon validation (product/category conditions)
+ *   - computeCouponValue()/computeTotalCoupons(): order-level coupon totals
  *
  * All functions return NEW objects — inputs are never mutated.
  *
@@ -610,7 +611,7 @@ export function computeOrderTaxGroup(
 }
 
 // ---------------------------------------------------------------------------
-// Section 5: Coupon Validation & Application
+// Section 5: Coupon Validation & Order-Level Discount Totals
 // ---------------------------------------------------------------------------
 
 /**
@@ -650,19 +651,36 @@ export function validateCoupons(
 }
 
 /**
- * Applies coupon discounts to products.
- * Returns new products array — does not mutate input.
+ * Computes the order-level value of a single coupon against the given
+ * order subtotal.
+ *
+ * Coupon attribution is ORDER-LEVEL ONLY — coupons never reduce individual
+ * product lines. Percentage coupons take a fraction of the order subtotal;
+ * flat coupons subtract their raw value. This mirrors the live POS path
+ * (usePOS.refreshCart) and the backend's __computeCouponValue
+ * (app/Services/OrdersService.php:369-375). The backend may prefer a
+ * precomputed `value` when persisting (OrdersService.php:358-362), but the
+ * client always recomputes against the current subtotal.
  */
-function applyCouponDiscounts(
-    products: OrderProduct[],
-    coupons: Coupon[],
-): OrderProduct[] {
-    if (coupons.length === 0) return products;
+export function computeCouponValue(coupon: Coupon, subtotal: number): number {
+    if (coupon.type === 'percentage_discount') {
+        return (subtotal * coupon.discount_value) / 100;
+    }
+    return coupon.discount_value;
+}
 
-    // For now, return products unchanged
-    // Coupon discount application logic would go here
-    // This is a placeholder for the actual coupon discount calculation
-    return products;
+/**
+ * Sums the order-level values of every VALID coupon (stacking additively,
+ * same as the backend's __computeOrderCoupons, OrdersService.php:354-367).
+ *
+ * Only coupons that passed validateCoupons() (product/category conditions)
+ * may be passed in — invalid coupons contribute nothing. The manual order
+ * discount (order.discount) is independent and also stacks additively: the
+ * caller composes the payable total as
+ * subtotal + shipping − discount − total_coupons (usePOS.refreshCart).
+ */
+export function computeTotalCoupons(coupons: Coupon[], subtotal: number): number {
+    return coupons.reduce((total, coupon) => total + computeCouponValue(coupon, subtotal), 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -678,18 +696,23 @@ export function computeCart(draft: CartDraft, options: POSOptions): ComputedCart
     // 1. Compute all products
     const products = draft.products.map((p) => computeProduct(p, options));
 
-    // 2. Validate coupons
+    // 2. Validate coupons — validCoupons is the single source of truth for
+    //    which coupons discount the order.
     const { validCoupons, invalidCoupons } = validateCoupons(products, draft.coupons, options);
 
-    // 3. Apply coupon discounts to products
-    const productsWithCoupons = applyCouponDiscounts(products, validCoupons);
-
-    // 4. Compute order-level totals
-    let order = sumProductsTotals({ ...draft.order }, productsWithCoupons, options);
+    // 3. Compute order-level totals. Coupon attribution is ORDER-LEVEL ONLY:
+    //    coupons never modify product lines (line discounts are manual only).
+    //    Multiple coupons and the manual order discount (order.discount) stack
+    //    additively; the caller composes the payable total as
+    //    subtotal + shipping − discount − total_coupons. The authoritative
+    //    recomputation happens server-side on save
+    //    (app/Services/OrdersService.php:354-367,383-425).
+    let order = sumProductsTotals({ ...draft.order }, products, options);
     order = computeOrderTaxes(order, options);
+    order = { ...order, total_coupons: computeTotalCoupons(validCoupons, order.subtotal) };
 
     return {
-        products: productsWithCoupons,
+        products,
         order,
         validCoupons,
         invalidCoupons,

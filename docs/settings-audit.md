@@ -1,24 +1,25 @@
 # Settings Audit — General, POS, Orders
 
-*Audited 2026-08-25. Every claim cites file:line.*
+*Re-audited 2026-09-08 (supersedes the 2026-08-25 audit). Every claim cites file:line against the current code.*
 
 ## 1. How the settings system works end-to-end
 
-**Storage.** All three groups store their values as rows in the `Option` model's table (key/value, `user_id = null`), accessed via `sb()->option->get()` server-side (`app/Services/Options.php:18-80`). Defaults live in `Options::setDefault()` (`app/Services/Options.php:29-51`). A separate migration exists for `subul_orders_settings` but the active code path uses the plain options table.
+**Storage.** All three groups store their values as rows in the `Option` model's table (key/value, `user_id = null`), accessed via `sb()->option->get()` server-side (`app/Services/Options.php`). Defaults live in `Options::setDefault()` (`app/Services/Options.php:29-51`). A separate migration exists for `subul_orders_settings` but the active code path uses the plain options table.
 
 **Definition.** Each group is a `SettingsPage` subclass with `IDENTIFIER` + `AUTOLOAD=true`, autoloaded through the `ns.settings` hook filter (`app/Providers/SettingsPageProvider.php:30-45`):
 - General: `app/Settings/GeneralSettings.php`
 - POS: `app/Settings/PosSettings.php`
 - Orders: `app/Settings/OrdersSettings.php`
+- Invoices: `app/Settings/InvoiceSettings.php`
 
 Each class exposes two payloads: `getPayload()` (current values) and `getOptions()` (select choices).
 
 **Read paths (two different pipes):**
-1. *Settings pages*: `GET /dashboard/settings/{identifier}` → `SettingsController::getSettings` (`app/Http/Controllers/Dashboard/SettingsController.php:20`) → `SettingsPage::renderForm()` which returns `{payload, options}` (`app/Services/SettingsPage.php:109-110`).
-2. *POS runtime*: `GET /dashboard/pos` builds a flat `options` object with ~40 keys, each read individually with an inline default (`app/Http/Controllers/Dashboard/OrdersController.php:200-255`), passed via Inertia to `resources/js/pages/dashboard/pos.tsx:19`, which pushes it into the Zustand store via `defineOptions` (`resources/js/hooks/pos/use-pos-session.ts:156`).
-3. *General settings (every page)*: shared Inertia prop `'settings' => (new GeneralSettings)->getPayload()` (`app/Http/Middleware/HandleInertiaRequests.php:85`), captured client-side into a singleton `Settings.set()` (`resources/js/app.tsx:12`, `resources/js/lib/settings.ts:59-61`), consumed by `format.ts` and receipt/print components.
+1. *Settings pages*: `GET /dashboard/settings/{identifier}` → `SettingsController::getSettings` → `SettingsPage::renderForm()` which returns `{payload, options}` (`app/Services/SettingsPage.php`).
+2. *POS runtime*: `GET /dashboard/pos` builds a flat `options` object with ~50 keys, each read individually with an inline default (`app/Http/Controllers/Dashboard/OrdersController.php:200-257`), passed via Inertia to `resources/js/pages/dashboard/pos.tsx`, which pushes it into the Zustand store via `defineOptions` (`resources/js/hooks/pos/use-pos-session.ts:161`). The key→store mapping lives in `resources/js/constants/pos-options.ts`.
+3. *General settings (every page)*: shared Inertia prop `'settings' => (new GeneralSettings)->getPayload()` (`app/Http/Middleware/HandleInertiaRequests.php:95`), captured client-side into a singleton `Settings.set()` (`resources/js/lib/settings.ts:61`, wired in `resources/js/app.tsx`), consumed by `utils/format.ts` and the receipt/print components.
 
-**Write path.** All groups save through one endpoint: `POST /api/settings/{identifier}` → `SettingsController::saveSettingsForm` (`routes/api/settings.php:7`) → `SettingsPage::saveForm`. Frontend callers: `use-general-settings.ts:67`, `use-pos-settings.ts:60`, `pages/dashboard/settings/orders.tsx:59`.
+**Write path.** All groups save through one endpoint: `POST /api/settings/{identifier}` → `SettingsController::saveSettingsForm` (`routes/api/settings.php`) → `SettingsPage::saveForm`. Frontend callers: `use-general-settings.ts`, `use-pos-settings.ts`, `pages/dashboard/settings/orders.tsx`.
 
 ---
 
@@ -26,75 +27,62 @@ Each class exposes two payloads: `getPayload()` (current values) and `getOptions
 
 | Setting | Type/Default | Defined | Read where | Status |
 |---|---|---|---|---|
-| `sb_store_name` | text, 'Subul' | Identification tab (:39) | Receipt page (`orders/receipt/page.tsx:11`), `print-invoice.tsx:58`, POS title (`OrdersController.php:194`) | **ALIVE** |
-| `sb_store_address` / `_city` / `_phone` / `_email` | text | :46-69 | `print-invoice.tsx:59-60` (address+phone only) | **PARTIAL** — city/email/pobox/fax/additional never rendered |
-| `sb_store_square_logo` / `_rectangle_logo` | media | :88-99 | No consumer found | **DEAD** |
-| `sb_store_language` | select, 'en' | :100 | `LoadLangMiddleware.php:24,36` (backend locale) | **ALIVE** (backend only) |
-| `sb_default_theme` | dark/light | :107 | Only `DoctorService.php:47` demo seed. Dark mode was removed in commit ac7e3dc | **DEAD/STALE** |
-| `sb_currency_symbol/position/thousand_separator/decimal_separator/precision` | text/select | Currency tab (:127-196) | Frontend `utils/format.ts:25-33` via Settings singleton; backend `AppServiceProvider.php:168` (precision) | **ALIVE** |
-| `sb_currency_iso` / `sb_currency_prefered` | text/select | :134-172 | `AppServiceProvider.php:173-174` only | **PARTIAL** — not used in frontend formatting |
-| `sb_date_format` / `sb_datetime_format` / `sb_datetime_timezone` | select | Date tab (:207-244) | ⚠️ `format.ts:88` hardcodes `{ sb_date_format: 'Y-m-d', sb_datetime_timezone: 'UTC' }` — the Settings values are **not wired in** | **BROKEN** (saved, never applied) |
-| `sb_registration_enabled` | yes/no, 'no' | Registration tab (:255) | `SignUpRequest.php:22`, `RegistrationMiddleware.php:19` | **ALIVE** |
-| `sb_registration_role` | role id | :265 | Registration flow (role assignment) | **ALIVE** |
-| `sb_registration_validated` | yes/no | :272 | Validation flow | **ALIVE** |
-| `sb_recovery_enabled` | switch, 'no' | :282 | `PasswordRecoveryMiddleware.php:19` | **ALIVE** |
+| `sb_store_name` | text, 'Subul' | Identification tab (:40) | Receipt page (`orders/receipt/page.tsx:10`), `print-invoice.tsx`, POS title (`OrdersController.php`) | **ALIVE** |
+| `sb_store_address` / `_city` / `_phone` / `_email` / `_pobox` | text | :47-72 | `print-invoice.tsx:59-61` (address+phone only) | **PARTIAL** — city/email/pobox never rendered |
+| `sb_store_square_logo` | media | :89-90 | `app-logo-icon.tsx:12` (fallback `/logo.svg`), `print-invoice.tsx:62` | **ALIVE** |
+| `sb_store_rectangle_logo` | media | :95-96 | Editable only (`identification-tab.tsx:93-94`); no runtime consumer | **EDIT-BUT-UNCONSUMED** — see findings |
+| `sb_store_language` | select, 'en' | :101-102 | `LoadLangMiddleware.php` (backend locale) | **ALIVE** (backend only) |
+| `sb_default_theme` | dark/light | :108-109 | `use-appearance.tsx:46-48` `getConfiguredTheme()` (fallback 'system'), editable in `identification-tab.tsx:119-126` | **ALIVE** |
+| `sb_currency_symbol/position/thousand_separator/decimal_separator/precision` | text/select | Currency tab (:127-196) | Frontend `utils/format.ts:24-26` via Settings singleton; backend `AppServiceProvider.php:168-172` | **ALIVE** |
+| `sb_currency_iso` / `sb_currency_prefered` | text/select | :135-136 / :158-159 | `AppServiceProvider.php:173-174`; frontend `lib/settings.ts:20-22` | **ALIVE** |
+| `sb_date_format` / `sb_datetime_format` / `sb_datetime_timezone` | select | Date tab (:209+) | `format.ts:62-97` (`formatDate`) and `format.ts:99+` (`formatDateTime`) read `Settings.get()` and apply the stored values, with inline fallbacks used only when settings are unavailable | **ALIVE** |
+
+---
 
 ## 3. POS settings (`app/Settings/PosSettings.php`)
 
-Runtime consumers get values from the flat `options` object built in `OrdersController.php:200-255`.
+All previously-dead tab settings are now wired: each has an editable form (component under `resources/js/components/settings/pos/`), a definition in `app/Settings/pos/*.php`, and either a POS-runtime consumer via `pos-options.ts` / `OrdersController.php:200-257` or a direct hook consumer.
 
-| Setting | Type/Default | Defined (tab file) | Read where | Status |
-|---|---|---|---|---|
-| `sb_subul_layout` | grocery/clothing | layout.php | No consumer found | **DEAD** |
-| `sb_subul_complete_sale_audio` | audio url | layout.php | `services/order-submission.ts:73-77` (plays after sale) | **ALIVE** |
-| `sb_subul_new_item_audio` | audio url | layout.php | Key registered (`constants/pos-options.ts:25`) but never played | **DEAD** |
-| `sb_subul_printing_document` | invoice/receipt | printing.php | Persisted + typed (`pos.d.ts:128`) but `printOrderReceipt` takes `mode` from caller, not this setting | **PARTIAL** |
-| `sb_subul_printing_enabled_for` | disabled/all/partial/paid | printing.php | `usePOS.ts:536-547` gates auto-print | **ALIVE** |
-| `sb_subul_printing_gateway` | 'default' | printing.php | No branching consumer | **DEAD** (single option) |
-| *(no key)* `sb_subul_printing_auto` | — | **not in any UI** | Referenced `usePOS.ts:552` via `POS_OPTION_KEYS.printingAuto`; never sent by backend → always `undefined` → falls back to `true` | **ORPHAN** (consumed, never configured/sent) |
-| `sb_subul_registers_enabled` | yes/no, 'no' | registers.php | Sent to POS (`OrdersController.php:212`) but no component branches on it | **DEAD** (frontend) |
-| `sb_subul_idle_counter` | min/0 | registers.php | Sent, never consumed | **DEAD** |
-| `sb_subul_disbursement` | yes/no | registers.php | Sent, never consumed | **DEAD** |
-| `sb_subul_registers_default_change_payment_type` | payment type id | registers.php | Sent, never consumed | **DEAD** |
-| `sb_subul_vat` | disabled/flat/variable/products | vat.php | `cart-engine.ts:457,521-523` (order tax modes); `secondary-navigation.tsx:23` | **ALIVE** |
-| `sb_subul_tax_group` / `sb_subul_tax_type` | id / inclusive-exclusive | vat.php | `use-pos-session.ts:90-93` assigns to new order | **ALIVE** |
-| `sb_subul_keyboard_*` (10 actions) | key arrays | shortcuts.php | `hooks/use-pos-shortcuts.ts:58-83` | **ALIVE** |
-| `sb_subul_amount_shortcut` | number | shortcuts.php | Registered in constants; no verified consumer | **PARTIAL** |
-| `sb_subul_show_quantity` | yes/no→bool | features.php | `services/pos-defaults.ts` `canAddBarcodeSilently` — gates silent barcode add (`pos-system.tsx`) and quantity-pad skip on product clicks (`products-categories-panel.tsx`) | **ALIVE** |
-| `sb_subul_items_merge` | yes/no→bool | features.php | `pos.tsx:28-30` → `setAutoMerge` | **ALIVE** |
-| `sb_subul_allow_wholesale_price` | yes/no→bool | features.php | Sent as bool; typed boolean | **ALIVE** (POS gating) |
-| `sb_subul_allow_decimal_quantities` | yes/no→bool | features.php | Sent as bool | **ALIVE** |
-| `sb_subul_quick_product` (+`_default_unit`) | yes/no, unit id | features.php | Sent (`OrdersController.php:207-208`), unit dialog `select-unit-quantity-dialog.tsx:31` | **ALIVE** |
-| `sb_subul_unit_price_ediable` | yes/no→bool | features.php | Sent as bool | **ALIVE** |
-| `sb_subul_price_with_tax` | yes/no (string) | features.php | `cart-engine.ts:165,176,187,472` — price resolution core | **ALIVE** (most critical) |
-| `sb_subul_order_types` | string[] | features.php | `pos.tsx:46-55` auto-select; `order-type-dialog.tsx:17`; backend filter (`OrdersController.php:196-199`) | **ALIVE** |
-| `sb_subul_numpad` | default/advanced | features.php | Typed; numpad component selection | **ALIVE** |
-| `sb_subul_force_autofocus` | yes/no→bool | features.php | Sent as bool | **ALIVE** |
-| `sb_subul_hide_exhausted_products` | yes/no | features.php | Sent; typed string | **ALIVE** |
-| `sb_subul_hide_empty_categories` | yes/no, 'yes' | features.php | Sent; product category filtering | **ALIVE** |
-| `sb_customers_default` | customer id (searchSelect) | CustomersSettings.php:44 (outside POS tabs) | POS walk-in default customer — `services/pos-defaults.ts` resolve + `pages/dashboard/pos.tsx` auto-assign effect | **ALIVE** (POS runtime) |
+| Setting | Where edited | Consumed where | Status |
+|---|---|---|---|
+| Layout (`sb_subul_layout`) | `pos/layout-tab.tsx:22-32` (`app/Settings/pos/layout.php:17-18`) | `pos-options.ts:43` | **ALIVE** |
+| Audio (`sb_subul_new_item_audio`, `sb_subul_complete_sale_audio`) | `pos/layout-tab.tsx:43-77` | `pos-options.ts:26-27` | **ALIVE** |
+| Printing gateway (`sb_subul_printing_gateway`) | `pos/printing-tab.tsx:95-105` (`pos/printing.php:32-33`) | `pos-options.ts`, `OrdersController.php:221` | **ALIVE** |
+| Registers (`sb_subul_registers_enabled`, `sb_subul_idle_counter`, `sb_subul_disbursement`, `sb_subul_registers_default_change_payment_type`) | `pos/registers-tab.tsx` (`pos/registers.php:10-58`) | `pos-options.ts:37-40`, `use-register-session.ts:7-11`, `register-session-dialog.tsx:39`, `CashRegistersService.php:333`, `MenusFilter.php:9`, `OrdersService.php:811` | **ALIVE** |
+| Features (`sb_subul_numpad`, `sb_subul_order_types`, `sb_subul_quick_product`, …) | `pos/features-tab.tsx` (`pos/features.php`) | `pos-options.ts:23,51-52`, `OrdersController.php:207-209,225`, `products-categories-panel.tsx:160` | **ALIVE** |
+| Keyboard shortcuts (`sb_subul_keyboard_*`, `sb_subul_amount_shortcut`) | `pos/shortcuts-tab.tsx` | `pos-options.ts:15`, `use-pos-shortcuts.ts:108`, `OrdersController.php:245-256` | **ALIVE** |
 
-**Orphan options** — sent by backend, editable nowhere: `sb_subul_order_sms` (`OrdersController.php:205`), `sb_subul_sound_enabled` (:206), `sb_customers_credit_enabled` (:230), customer constraints (:232-235), `sb_invoice_receipt_template/logo/footer/merge/display` (:237-241).
+**Removed since the last audit:** `sb_subul_order_sms` and `sb_subul_sound_enabled` no longer appear anywhere in the codebase (previously backend-sent orphans; the keys were dropped).
+
+**Customer keys on the POS payload** (`OrdersController.php:217,232-237`): `sb_customers_default` (walk-in default, `pos-defaults.ts`), `sb_customers_credit_enabled` (coerced to bool), rewards/valid-email/unique-phone/default-group constraints. `sb_customers_credit_enabled` is editable in `app/Settings/customers/general.php:61-64` ("Enable Credit & Account").
+
+---
 
 ## 4. Orders settings (`app/Settings/OrdersSettings.php`)
 
 | Setting | Type/Default | Defined | Read where | Status |
 |---|---|---|---|---|
-| `sb_orders_code_type` | sequential/random/number | orders/general.php:28 | ⚠️ `generateOrderCode` has `@todo we need to be able to change the code format` and hardcodes date+counter (`app/Services/OrdersService.php:1486-1511`) | **DEAD** |
-| `sb_orders_allow_unpaid` | yes/no | general.php:38 | Frontend gate `order-submission.ts:34`; menu filter `MenusFilter.php:37` | **ALIVE (FE)** |
-| `sb_orders_allow_partial` | yes/no | general.php:48 | Frontend `order-submission.ts:40`; backend `OrdersService.php:968` | **BROKEN (BE)** — see below |
-| `sb_orders_strict_instalments` | yes/no | general.php:58 | Backend `OrdersService.php:823` | **BROKEN** — see below |
-| `sb_orders_quotation_expiration` | days/never | general.php:68 | `Jobs/ClearHoldOrdersJob.php:44-55` (hold-order cleanup, not quotations) | **PARTIAL/MISLABELED** |
+| `sb_orders_code_type` | date_sequential/random/number | :27, :49 | `OrdersService::generateOrderCode` (`app/Services/OrdersService.php:1489-1499`) switches on `random_code` / `number_sequential` / default date-sequential | **ALIVE** |
+| `sb_orders_allow_unpaid` | yes/no, 'yes' | :28, :54 | Frontend gate `order-submission.ts`; backend `OrdersService.php:973-976` (`!== 'yes'`); POS payload `OrdersController.php:205-206` (defaults intentionally match the enforcement layer) | **ALIVE (FE+BE)** |
+| `sb_orders_allow_partial` | yes/no, 'yes' | :29, :58 | Frontend `order-submission.ts`; backend `OrdersService.php:968-971` (`!== 'yes'`) | **ALIVE (FE+BE)** |
+| `sb_orders_strict_instalments` | yes/no, 'no' | :30, :62 | Backend `OrdersService.php:823` (`=== 'yes'`); POS payload `OrdersController.php:231` (bool-coerced) | **ALIVE** |
+| `sb_orders_quotation_expiration` | days/never | :31, :66 | `Jobs/ClearHoldOrdersJob.php:44-55` (hold-order cleanup applies it as a day offset) | **PARTIAL** — consumed, but by hold-order cleanup rather than actual quotation expiry |
 
-### Confirmed backend bugs
+**Previously-reported backend bugs are fixed:**
+1. `strict_instalments` now compares the stored string: `=== 'yes'` (`OrdersService.php:823`).
+2. The partial/unpaid guards now use string comparison and the real keys — `sb_orders_allow_partial` (:968) and `sb_orders_allow_unpaid` (:973), both `!== 'yes'` with a `'yes'` default. The phantom `sb_orders_allow_incomplete` key is gone.
+3. `OrdersController.php:202-206` still sends `allow_partial`/`allow_unpaid` as raw `'yes'/'no'` strings while neighbouring booleans are coerced (:222-232) — deliberate per the inline comment (defaults must match the enforcement layer), though the mixed typing remains a consistency wart.
 
-1. **`strict_instalments` never triggers** — `OrdersService.php:823`: `sb()->option->get('sb_orders_strict_instalments', 'no') === true`. The stored value is the string `'yes'`/`'no'`, so strict comparison against boolean `true` is always false.
-2. **Backend partial/unpaid guards never fire** — `OrdersService.php:968`: `$this->optionsService->get('sb_orders_allow_partial', true) === false`. Stored value is `'no'`, compared to boolean `false` → never equal. Same pattern at :973 with `sb_orders_allow_incomplete` — **a key that doesn't exist anywhere** (the real key is `sb_orders_allow_unpaid`). Server-side enforcement currently relies entirely on the frontend check in `order-submission.ts`.
-3. **Frontend/backend type mismatch** — `OrdersController.php:202-203` sends `allow_unpaid`/`allow_partial` as raw `'yes'/'no'` strings, while neighbouring booleans (:220-230) are coerced. The frontend compares against `'no'` strings, which works, but is inconsistent with every other toggle.
+---
 
-## 5. Findings summary
+## 5. Findings summary (2026-09-08)
 
-- **Dead settings (saved, zero consumers):** `sb_store_square_logo`, `sb_store_rectangle_logo`, `sb_default_theme`, `sb_subul_layout`, `sb_subul_new_item_audio`, `sb_subul_printing_gateway`, all four register-tab settings, `sb_orders_code_type`, plus orphan backend-sent keys (`printing_auto`, `order_sms`, `sound_enabled`, invoice keys…).
-- **Broken wiring:** date formats (hardcoded in `format.ts:88`), backend payment-policy guards (type-comparison bugs + wrong key name), order code format.
-- **Two-pipe inconsistency:** General reaches the client via the `settings` Inertia prop; POS/Orders reach the client only via the hand-built `options` object in `OrdersController.php` — adding a POS setting requires touching 4 files (tab php, payload php, options php, OrdersController).
-- **Duplicate defaults:** e.g. currency precision defaults to `'0'` in the form (`GeneralSettings.php:187`), `2` in `Options::setDefault` (`Options.php:39`), and `2` again in `format.ts:13`.
+- **Edit-but-unconsumed (1):** `sb_store_rectangle_logo` — editable in the identification tab (`identification-tab.tsx:93-94`, `GeneralSettings.php:95-96`) but rendered by nothing. The square logo IS consumed (`app-logo-icon.tsx:12`, `print-invoice.tsx:62`). **Decision: wontfix for now** — no current surface needs a wide logo; revisit if a wide-header surface (PDF invoice header, login screen, email templates) is added, then wire it as a fallback chain like the receipt logo does (`orders/receipt/page.tsx:12`).
+- **Truly orphan keys: none.** The last audit's orphans (`order_sms`, `sound_enabled`, invoice receipt keys, customer constraints, register-tab settings) are either removed from the codebase or fully wired (§3).
+- **Partial rendering:** store city/email/pobox are editable but never printed (§2).
+- **PARTIAL semantics:** `sb_orders_quotation_expiration` only affects hold-order cleanup (`ClearHoldOrdersJob.php:44-55`), not quotations themselves.
+- **Two-pipe inconsistency (structural, unchanged):** General reaches the client via the `settings` Inertia prop (`HandleInertiaRequests.php:95`); POS/Orders reach the client only via the hand-built `options` object (`OrdersController.php:200-257`) — adding a POS setting still requires touching the tab PHP, payload PHP, options PHP, and `OrdersController.php` (+ `pos-options.ts`).
+- **Duplicate defaults (unchanged):** currency precision defaults to `'2'` in the form (`GeneralSettings.php:186`), `2` in `format.ts:12`, and `0` in `AppServiceProvider.php:168` — three-way divergence.
+
+### Changelog vs the 2026-08-25 audit
+Fixed since then: instalment/payment-policy guards (string comparisons + real keys), date formats in `format.ts`, `sb_orders_code_type`, `sb_default_theme`, audio + layout + printing-gateway + register-tab + keyboard-shortcut settings, invoice receipt settings (new `InvoiceSettings` group + `settings/invoices.tsx` page), `sb_customers_credit_enabled`, `sb_store_square_logo`, `sb_currency_iso/prefered` frontend reads. Removed: `sb_subul_order_sms`, `sb_subul_sound_enabled`. Remaining: rectangle logo (wontfix), quotation-expiration semantics, store-address partial rendering, two-pipe architecture, precision default divergence.

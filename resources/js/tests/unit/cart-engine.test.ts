@@ -3,6 +3,8 @@ import {
     computeCart,
     computeItem,
     validateCoupons,
+    computeCouponValue,
+    computeTotalCoupons,
     computeInclusive,
     computeExclusive,
     getTaxValue,
@@ -519,6 +521,94 @@ describe('services/cart-engine.ts', () => {
 
             expect(result.validCoupons).toEqual([]);
             expect(result.invalidCoupons).toEqual([]);
+            expect(result.order.total_coupons).toBe(0);
+        });
+
+        const makeCoupon = (overrides: Partial<any> = {}): any => ({
+            id: 1,
+            name: 'Coupon',
+            code: 'SAVE10',
+            type: 'percentage_discount',
+            discount_value: 10,
+            products: [],
+            categories: [],
+            ...overrides,
+        });
+
+        it('applies percentage coupons at the order level', () => {
+            const draft = {
+                products: [makeLine()],
+                coupons: [makeCoupon({ type: 'percentage_discount', discount_value: 10 })],
+                order: {} as any,
+            };
+
+            const result = computeCart(draft, options);
+
+            expect(result.order.total_coupons).toBeCloseTo(result.order.subtotal * 0.1);
+        });
+
+        it('applies flat coupons at the order level', () => {
+            const draft = {
+                products: [makeLine()],
+                coupons: [makeCoupon({ type: 'flat_discount', discount_value: 15 })],
+                order: {} as any,
+            };
+
+            const result = computeCart(draft, options);
+
+            expect(result.order.total_coupons).toBe(15);
+        });
+
+        it('stacks multiple coupons additively', () => {
+            const draft = {
+                products: [makeLine()],
+                coupons: [
+                    makeCoupon({ id: 1, type: 'percentage_discount', discount_value: 10 }),
+                    makeCoupon({ id: 2, type: 'flat_discount', discount_value: 5 }),
+                ],
+                order: {} as any,
+            };
+
+            const result = computeCart(draft, options);
+
+            expect(result.order.total_coupons).toBeCloseTo(result.order.subtotal * 0.1 + 5);
+        });
+
+        it('never modifies product lines for coupons', () => {
+            const draft = {
+                products: [makeLine()],
+                coupons: [makeCoupon({ type: 'flat_discount', discount_value: 15 })],
+                order: {} as any,
+            };
+
+            const withCoupon = computeCart(draft, options);
+            const withoutCoupon = computeCart({ ...draft, coupons: [] }, options);
+
+            expect(withCoupon.products[0].total_price).toBe(withoutCoupon.products[0].total_price);
+            expect(withCoupon.products[0].unit_price).toBe(withoutCoupon.products[0].unit_price);
+        });
+
+        it('excludes invalid coupons from the order-level total', () => {
+            const draft = {
+                products: [makeLine({ product_id: 1 })],
+                coupons: [
+                    makeCoupon({ id: 1, type: 'flat_discount', discount_value: 15, products: [{ product_id: 999 }] }),
+                ],
+                order: {} as any,
+            };
+
+            const result = computeCart(draft, options);
+
+            expect(result.validCoupons).toHaveLength(0);
+            expect(result.invalidCoupons).toHaveLength(1);
+            expect(result.order.total_coupons).toBe(0);
+        });
+
+        it('computes single coupon values against the subtotal', () => {
+            expect(computeCouponValue(makeCoupon({ type: 'percentage_discount', discount_value: 25 }), 200)).toBe(50);
+            expect(computeCouponValue(makeCoupon({ type: 'flat_discount', discount_value: 30 }), 200)).toBe(30);
+            expect(computeTotalCoupons([makeCoupon({ type: 'flat_discount', discount_value: 5 })], 200)).toBe(5);
+            expect(computeTotalCoupons([], 200)).toBe(0);
         });
     });
 
