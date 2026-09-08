@@ -621,7 +621,7 @@ describe('services/cart-engine.ts', () => {
     });
 
     describe('calculateTotalsForPriceUpdate', () => {
-        const makeProduct = (): OrderProduct => {
+        const makeProduct = (overrides: Partial<OrderProduct> = {}): OrderProduct => {
             return {
                 unit_price: 100,
                 price_without_tax: 100,
@@ -630,15 +630,56 @@ describe('services/cart-engine.ts', () => {
                 tax_type: 'exclusive',
                 quantity: 2,
                 discount_percentage: 0,
+                ...overrides,
             } as any;
         };
 
-        it('sets mode to custom', () => {
+        it('sets mode to custom and interprets the entered price as with-tax', () => {
             const product = makeProduct();
-            const result = calculateTotalsForPriceUpdate(product, 80, true);
+            // Display = with-tax: the cashier types the gross price they saw (115).
+            const result = calculateTotalsForPriceUpdate(product, 115, true);
 
             expect(result.mode).toBe('custom');
-            expect(result.unit_price).toBe(80);
+            // 15% exclusive: gross 115 → net 100, unit_price stays in the
+            // product's tax basis (exclusive = net).
+            expect(result.price_without_tax).toBeCloseTo(100, 5);
+            expect(result.price_with_tax).toBeCloseTo(115, 5);
+            expect(result.unit_price).toBeCloseTo(100, 5);
+            expect(result.tax_value).toBeCloseTo(15, 5);
+            // Typing the currently displayed price is a no-op.
+            expect(result.total_price).toBeCloseTo(230, 5);
+        });
+
+        it('treats the entered price as net when display is without-tax', () => {
+            const product = makeProduct();
+            const result = calculateTotalsForPriceUpdate(product, 80, false);
+
+            expect(result.price_without_tax).toBe(80);
+            expect(result.price_with_tax).toBeCloseTo(92, 5); // 80 + 15%
+            expect(result.unit_price).toBe(80); // exclusive basis = net
+            expect(result.total_price).toBeCloseTo(184, 5); // payable = with-tax total
+        });
+
+        it('keeps unit_price in the inclusive basis for inclusive products', () => {
+            const product = makeProduct({ tax_type: 'inclusive' });
+            // Inclusive: displayed unit price (115) is the tax-in price.
+            const result = calculateTotalsForPriceUpdate(product, 115, true);
+
+            expect(result.price_without_tax).toBeCloseTo(100, 5);
+            expect(result.price_with_tax).toBeCloseTo(115, 5);
+            expect(result.unit_price).toBeCloseTo(115, 5); // tax-in basis
+            expect(result.tax_value).toBeCloseTo(15, 5);
+            expect(result.total_tax_value).toBeCloseTo(30, 5);
+        });
+
+        it('passes the price through untouched when the product has no tax', () => {
+            const product = makeProduct({ tax_value: 0 });
+            const result = calculateTotalsForPriceUpdate(product, 90, true);
+
+            expect(result.price_without_tax).toBe(90);
+            expect(result.price_with_tax).toBe(90);
+            expect(result.total_tax_value).toBe(0);
+            expect(result.total_price).toBe(180);
         });
     });
 

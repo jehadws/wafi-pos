@@ -80,9 +80,13 @@ export default function CartItem({
     const quantities = item.quantities ?? null;
 
     if (item.mode === 'wholesale') {
-      // Switch back to normal — use quantities snapshot if available, else keep current price
+      // Switch back to normal — use quantities snapshot if available, else keep current price.
+      // Pass the price in the DISPLAY basis (with-tax when "Show Price With Tax" is on)
+      // so updatePrice interprets it correctly.
       const salePrice = quantities
-        ? quantities.sale_price_without_tax || quantities.sale_price || item.unit_price
+        ? (isTaxIncluded
+            ? quantities.sale_price_with_tax || quantities.sale_price_without_tax
+            : quantities.sale_price_without_tax || quantities.sale_price_with_tax) || item.unit_price
         : item.unit_price;
       updatePrice(item, salePrice);
       // Update mode via the store directly so Zustand triggers a re-render
@@ -91,7 +95,9 @@ export default function CartItem({
     } else {
       // Switch to wholesale — use quantities snapshot if available
       const wholesalePrice = quantities
-        ? quantities.wholesale_price_without_tax || quantities.wholesale_price || 0
+        ? (isTaxIncluded
+            ? quantities.wholesale_price_with_tax || quantities.wholesale_price_without_tax
+            : quantities.wholesale_price_without_tax || quantities.wholesale_price_with_tax) || 0
         : 0;
       if (wholesalePrice <= 0) {
         toast.warning(t('No wholesale price defined for this product'));

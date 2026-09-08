@@ -4,6 +4,8 @@ import CartItemComponent from '@/components/pos/cart-item';
 import { Button } from '@/components/ui/button';
 import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { usePOS } from '@/hooks/usePOS';
+import { isPriceWithTax } from '@/constants/pos-options';
 import { useTranslation } from '@/lib/i18n';
 import { OrderProduct } from '@/types/models/order-product';
 import { ShoppingBag, Trash2 } from 'lucide-react';
@@ -42,6 +44,7 @@ export default function CartTable({
     deselectAllItems,
 }: CartTableProps) {
     const { t } = useTranslation();
+    const { options } = usePOS();
     const allSelected = cart.length > 0 && selectedItems.length === cart.length;
     const someSelected = selectedItems.length > 0 && selectedItems.length < cart.length;
 
@@ -72,11 +75,22 @@ export default function CartTable({
               : t('Item Discount')
         : '';
 
+    // The price keypad pre-fills with the price in the DISPLAY basis the
+    // cashier sees on the line — with-tax or without-tax per the
+    // "Show Price With Tax" option (identical when VAT is disabled). The
+    // entered value is interpreted back in the same basis by
+    // calculateTotalsForPriceUpdate, so typing the shown price is a no-op.
     const keypadInitialValue = activeKeypad
         ? activeKeypad.type === 'quantity'
             ? String(activeKeypad.item.quantity || '')
             : activeKeypad.type === 'price'
-              ? String(activeKeypad.item.price_without_tax || activeKeypad.item.unit_price || '')
+              ? String(
+                    (isPriceWithTax(options)
+                        ? activeKeypad.item.price_with_tax
+                        : activeKeypad.item.price_without_tax) ??
+                        activeKeypad.item.unit_price ??
+                        '',
+                )
               : String(activeKeypad.item.discount_percentage || '')
         : '';
 

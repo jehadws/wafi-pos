@@ -786,27 +786,45 @@ export function calculateTotalsForQuantityUpdate(product: OrderProduct, quantity
 }
 
 /**
- * Calculates totals when price is updated.
+ * Calculates totals when the unit price is updated.
+ *
+ * `price` is expressed in the DISPLAY basis the cashier sees and typed:
+ * - "Show Price With Tax: yes" → the with-tax price
+ * - "Show Price With Tax: no"  → the without-tax price
+ * - VAT disabled               → the plain price (no tax to split; the rate is 0)
+ *
+ * Typing the currently displayed price must be a no-op, so the entered value
+ * is converted to the product's own TAX basis for the custom recompute
+ * (computeProductTaxValue reads `unit_price` through computeTaxForGroup):
+ * - inclusive products are priced tax-in  → unit_price = the with-tax number
+ * - exclusive products are priced tax-out → unit_price = the without-tax number
  */
 export function calculateTotalsForPriceUpdate(product: OrderProduct, price: number, isPriceWithTax: boolean) {
-    const discount_value = ((product.discount_percentage || 0) / 100) * price * product.quantity;
-    const newTaxValue = calculateNewTaxValue(product.price_without_tax, product.tax_value, price).newTaxValue;
-    const totalTaxValue = newTaxValue * product.quantity;
-    const total_price = price * product.quantity;
-    const total_price_with_tax = total_price + totalTaxValue - discount_value;
-    const total_price_without_tax = total_price - discount_value;
+    const oldTaxRate =
+        product.price_without_tax > 0 ? product.tax_value / product.price_without_tax : 0;
+
+    const price_without_tax = isPriceWithTax ? price / (1 + oldTaxRate) : price;
+    const price_with_tax = price_without_tax * (1 + oldTaxRate);
+    const unit_price = product.tax_type === 'inclusive' ? price_with_tax : price_without_tax;
+
+    const discount_value = ((product.discount_percentage || 0) / 100) * unit_price * product.quantity;
+    const totalAfterDiscount = unit_price * product.quantity - discount_value;
+    const totalTaxValue =
+        product.tax_type === 'inclusive'
+            ? totalAfterDiscount - totalAfterDiscount / (1 + oldTaxRate)
+            : totalAfterDiscount * oldTaxRate;
 
     return {
         discount: discount_value,
-        unit_price: price,
-        price_without_tax: price,
-        price_with_tax: price + newTaxValue,
-        tax_value: newTaxValue,
+        unit_price,
+        price_without_tax,
+        price_with_tax,
+        tax_value: product.quantity > 0 ? totalTaxValue / product.quantity : 0,
         total_tax_value: totalTaxValue,
         mode: 'custom' as const,
-        total_price: isPriceWithTax ? total_price_with_tax : total_price_without_tax,
-        total_price_with_tax,
-        total_price_without_tax,
+        total_price: totalAfterDiscount + totalTaxValue,
+        total_price_with_tax: totalAfterDiscount + totalTaxValue,
+        total_price_without_tax: totalAfterDiscount,
     };
 }
 
