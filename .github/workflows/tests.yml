@@ -37,6 +37,12 @@ jobs:
       - name: Build Assets
         run: npm run build
 
+      - name: Typecheck Frontend
+        run: npm run types
+
+      - name: Frontend Unit Tests
+        run: npm run test
+
       - name: Install Dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
