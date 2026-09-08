@@ -350,6 +350,8 @@ function buildReceiptEscPos(receiptData, config = {}) {
 
     builder.setAlign('center');
     if (receiptData.storeAddress) builder.line(receiptData.storeAddress);
+    if (receiptData.storeCity) builder.line(receiptData.storeCity);
+    if (receiptData.storePobox) builder.line(`P.O.Box: ${receiptData.storePobox}`);
     if (receiptData.storePhone) builder.line(`Tel: ${receiptData.storePhone}`);
     if (receiptData.storeEmail) builder.line(receiptData.storeEmail);
 

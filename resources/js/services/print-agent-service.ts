@@ -49,8 +49,10 @@ export interface PrinterSettings {
 export interface FormattedReceiptData {
     storeName?: string;
     storeAddress?: string;
+    storeCity?: string;
     storePhone?: string;
     storeEmail?: string;
+    storePobox?: string;
     storeLogo?: string;
     orderCode?: string;
     date?: string;

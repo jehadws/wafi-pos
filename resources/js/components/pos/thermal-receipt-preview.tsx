@@ -90,7 +90,10 @@ export function ThermalReceiptPreview({ data, onClose, autoPrint = false }: Ther
                     )}
                     <div className="text-lg uppercase tracking-wider">{data.storeName || 'Subul POS'}</div>
                     {data.storeAddress && <div className="text-xs font-normal text-neutral-600 dark:text-neutral-400">{data.storeAddress}</div>}
+                    {data.storeCity && <div className="text-xs font-normal text-neutral-600 dark:text-neutral-400">{data.storeCity}</div>}
+                    {data.storePobox && <div className="text-xs font-normal text-neutral-600 dark:text-neutral-400">P.O.Box: {data.storePobox}</div>}
                     {data.storePhone && <div className="text-xs font-normal text-neutral-600 dark:text-neutral-400">Tel: {data.storePhone}</div>}
+                    {data.storeEmail && <div className="text-xs font-normal text-neutral-600 dark:text-neutral-400">{data.storeEmail}</div>}
                 </div>
 
                 {/* Divider */}

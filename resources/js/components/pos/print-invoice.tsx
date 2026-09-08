@@ -51,7 +51,10 @@ export function SimplePrintInvoice({ invoice }: SimplePrintInvoiceProps) {
 
     const storeName = generalSettings?.identification?.sb_store_name || 'Subul POS';
     const storeAddress = generalSettings?.identification?.sb_store_address || '';
+    const storeCity = generalSettings?.identification?.sb_store_city || '';
     const storePhone = generalSettings?.identification?.sb_store_phone || '';
+    const storeEmail = generalSettings?.identification?.sb_store_email || '';
+    const storePobox = generalSettings?.identification?.sb_store_pobox || '';
     const storeLogo =
         generalSettings?.identification?.sb_store_square_logo ||
         (options?.sb_invoice_receipt_logo as string | undefined) ||
@@ -62,7 +65,10 @@ export function SimplePrintInvoice({ invoice }: SimplePrintInvoiceProps) {
     const receiptData: FormattedReceiptData = {
         storeName,
         storeAddress,
+        storeCity,
         storePhone,
+        storeEmail,
+        storePobox,
         storeLogo: storeLogo || undefined,
         orderCode: invoice.orderReceipt,
         date: invoice.date ? new Date(invoice.date).toLocaleString() : new Date().toLocaleString(),

@@ -11,6 +11,11 @@ export default function OrderReceiptPage({ order, optionsService, title }: any) 
     const storeName = generalSettings?.identification?.sb_store_name || 'Subul POS';
     const receiptLogo = optionsService?.sb_invoice_receipt_logo || generalSettings?.identification?.sb_store_square_logo || '';
     const receiptFooter = optionsService?.sb_invoice_receipt_footer || '';
+    const storeAddress = generalSettings?.identification?.sb_store_address || '';
+    const storeCity = generalSettings?.identification?.sb_store_city || '';
+    const storePobox = generalSettings?.identification?.sb_store_pobox || '';
+    const storePhone = generalSettings?.identification?.sb_store_phone || '';
+    const storeEmail = generalSettings?.identification?.sb_store_email || '';
 
     useEffect(() => {
         // Optional: automatically open print dialog when page loads
@@ -64,6 +69,11 @@ export default function OrderReceiptPage({ order, optionsService, title }: any) 
                     ) : (
                         <div style={{ fontSize: '20px', fontWeight: 'bold', letterSpacing: '1px', textTransform: 'uppercase' }}>{storeName}</div>
                     )}
+                    {storeAddress && <div style={{ fontSize: '11px' }}>{storeAddress}</div>}
+                    {storeCity && <div style={{ fontSize: '11px' }}>{storeCity}</div>}
+                    {storePobox && <div style={{ fontSize: '11px' }}>{`P.O.Box: ${storePobox}`}</div>}
+                    {storePhone && <div style={{ fontSize: '11px' }}>{`Tel: ${storePhone}`}</div>}
+                    {storeEmail && <div style={{ fontSize: '11px' }}>{storeEmail}</div>}
                 </div>
 
                 {/* Divider */}
