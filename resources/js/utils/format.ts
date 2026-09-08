@@ -3,6 +3,19 @@ import { enUS } from 'date-fns/locale';
 import NumeralJS from "numeral";
 import { format, toZonedTime } from 'date-fns-tz';
 
+/**
+ * Resolve the currency precision from a settings payload.
+ *
+ * Accepts numbers or numeric strings in the 0..5 range the settings form
+ * offers (GeneralSettings.php); anything else (null, undefined, NaN, out of
+ * range) falls back to 2. Never use `|| 2` for this: a deliberate precision
+ * of 0 is valid and falsy, so `||` silently rewrites it to 2.
+ */
+export const resolveCurrencyPrecision = (value: number | string | null | undefined): number => {
+    const parsed = typeof value === 'number' ? value : parseInt(String(value ?? ''), 10);
+    return Number.isInteger(parsed) && parsed >= 0 && parsed <= 5 ? parsed : 2;
+};
+
 export const formatCurrency = (amount: number) => {
   let currency: any = {
     sb_currency_symbol: '$',
@@ -23,7 +36,8 @@ export const formatCurrency = (amount: number) => {
 
   const { sb_currency_symbol, sb_currency_position, sb_currency_thousand_separator, sb_currency_decimal_separator, sb_currency_precision } = currency;
   const num = typeof amount === 'number' && !isNaN(amount) ? amount : 0;
-  const formattedAmount = num.toFixed(sb_currency_precision || 2).replace('.', sb_currency_decimal_separator || '.').replace(/\B(?=(\d{3})+(?!\d))/g, sb_currency_thousand_separator || ',');
+  const precision = resolveCurrencyPrecision(sb_currency_precision);
+  const formattedAmount = num.toFixed(precision).replace('.', sb_currency_decimal_separator || '.').replace(/\B(?=(\d{3})+(?!\d))/g, sb_currency_thousand_separator || ',');
 
   if (sb_currency_position === 'before') {
     return `${sb_currency_symbol || '$'}${formattedAmount}`;

@@ -6,6 +6,7 @@ import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import Settings from '@/lib/settings';
 import PrintAgentService, { FormattedReceiptData } from '@/services/print-agent-service';
+import { formatCurrency } from '@/utils/format';
 import { Eye, Loader2, Printer, Settings2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -47,13 +48,6 @@ export function SimplePrintInvoice({ invoice }: SimplePrintInvoiceProps) {
     const [isPrinting, setIsPrinting] = useState(false);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
-    const formatCurrency = (amount: number) => {
-        const symbol = generalSettings?.currency?.sb_currency_symbol || '$';
-        const position = generalSettings?.currency?.sb_currency_position || 'before';
-        const formatted = amount.toFixed(generalSettings?.currency?.sb_currency_precision || 2);
-        return position === 'before' ? `${symbol}${formatted}` : `${formatted}${symbol}`;
-    };
 
     const storeName = generalSettings?.identification?.sb_store_name || 'Subul POS';
     const storeAddress = generalSettings?.identification?.sb_store_address || '';

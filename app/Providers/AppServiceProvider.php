@@ -165,7 +165,7 @@ class AppServiceProvider extends ServiceProvider
 
             return new CurrencyService(
                 0, [
-                    'decimal_precision' => $options->get( 'sb_currency_precision', 0 ),
+                    'decimal_precision' => $options->get( 'sb_currency_precision', 2 ),
                     'decimal_separator' => $options->get( 'sb_currency_decimal_separator', ',' ),
                     'thousand_separator' => $options->get( 'sb_currency_thousand_separator', '.' ),
                     'currency_position' => $options->get( 'sb_currency_position', 'before' ),

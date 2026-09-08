@@ -64,4 +64,47 @@ describe('format utilities', () => {
             expect(formatDateTime('')).toBe('');
         });
     });
+
+    describe('formatCurrency precision handling', () => {
+        const baseCurrency = {
+            sb_currency_symbol: '$',
+            sb_currency_position: 'before',
+            sb_currency_thousand_separator: ',',
+            sb_currency_decimal_separator: '.',
+        };
+
+        const setCurrency = (precision: number | string | null) => {
+            Settings.set({
+                identification: {} as any,
+                registration: {} as any,
+                date: {} as any,
+                currency: { ...baseCurrency, sb_currency_precision: precision } as any,
+            });
+        };
+
+        it('renders no decimals when precision is explicitly 0', () => {
+            setCurrency(0);
+            expect(formatCurrency(1250.4)).toBe('$1,250');
+        });
+
+        it('renders no decimals when precision arrives as a string "0"', () => {
+            setCurrency('0');
+            expect(formatCurrency(1250.4)).toBe('$1,250');
+        });
+
+        it('falls back to 2 decimals when precision is null', () => {
+            setCurrency(null);
+            expect(formatCurrency(1250.5)).toBe('$1,250.50');
+        });
+
+        it('uses the configured number of decimals when valid', () => {
+            setCurrency(3);
+            expect(formatCurrency(1250.5)).toBe('$1,250.500');
+        });
+
+        it('falls back to 2 decimals for out-of-range precision', () => {
+            setCurrency(9);
+            expect(formatCurrency(1250.5)).toBe('$1,250.50');
+        });
+    });
 });
