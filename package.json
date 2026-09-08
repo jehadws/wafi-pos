@@ -12,6 +12,7 @@
         "test:e2e": "playwright test",
         "test:watch": "vitest",
         "types": "tsc --noEmit",
+        "types:ambient": "tsc -p tsconfig.types.json",
         "translation:check": "node scripts/translation/check-all.mjs",
         "translation:sync": "node scripts/translation/check-sync.mjs",
         "translation:missing": "node scripts/translation/check-missing.mjs",
