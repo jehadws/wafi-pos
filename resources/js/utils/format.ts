@@ -4,6 +4,22 @@ import NumeralJS from "numeral";
 import { format, toZonedTime } from 'date-fns-tz';
 
 /**
+ * Dev-only warning for the silent-fallback path: format utils catch the
+ * "Settings have not been initialized" throw and fall back to $/UTC
+ * defaults. In production the fallback stands (a crash is worse); in dev
+ * this surfaces initialization-order bugs the first time they fire.
+ */
+let warnedUninitializedSettings = false;
+const warnUninitializedSettings = (context: string) => {
+    if (warnedUninitializedSettings || import.meta.env?.PROD) return;
+    warnedUninitializedSettings = true;
+    console.warn(
+        `[format] ${context}: app settings are not initialized yet — using default formatting. ` +
+            'Settings are hydrated in app.tsx; render the app only after that.',
+    );
+};
+
+/**
  * Resolve the currency precision from a settings payload.
  *
  * Accepts numbers or numeric strings in the 0..5 range the settings form
@@ -31,7 +47,7 @@ export const formatCurrency = (amount: number) => {
       currency = settings.currency;
     }
   } catch {
-    // fallback to default currency formatting
+    warnUninitializedSettings('formatCurrency');
   }
 
   const { sb_currency_symbol, sb_currency_position, sb_currency_thousand_separator, sb_currency_decimal_separator, sb_currency_precision } = currency;
@@ -73,7 +89,7 @@ const phpToDateFnsFormat = (phpFormat: string): string => {
   return formatMap[phpFormat] || phpFormat;
 };
 
-export const formatDate = (dateString: string) => {
+export const formatDate = (dateString: string | null | undefined) => {
   let dateConfig: any = { sb_date_format: 'Y-m-d', sb_datetime_timezone: 'UTC' };
   try {
     const settings = Settings.get();
@@ -81,7 +97,7 @@ export const formatDate = (dateString: string) => {
       dateConfig = settings.date;
     }
   } catch {
-    // fallback
+    warnUninitializedSettings('formatDate');
   }
 
   const { sb_date_format, sb_datetime_timezone } = dateConfig;
@@ -110,7 +126,7 @@ export const formatDate = (dateString: string) => {
   });
 }
 
-export const formatDateTime = (dateString: string) => {
+export const formatDateTime = (dateString: string | null | undefined) => {
   let dateConfig: any = { sb_datetime_format: 'Y-m-d H:i', sb_datetime_timezone: 'UTC' };
   try {
     const settings = Settings.get();
@@ -118,7 +134,7 @@ export const formatDateTime = (dateString: string) => {
       dateConfig = settings.date;
     }
   } catch {
-    // fallback
+    warnUninitializedSettings('formatDateTime');
   }
 
   const { sb_datetime_format, sb_datetime_timezone } = dateConfig;
