@@ -23,7 +23,7 @@ import { OrderProduct } from '@/types/models/order-product';
 import { OrderType } from '@/types/models/order-type';
 import { Payment } from '@/types/models/payment';
 
-import { POS_OPTION_KEYS } from '@/constants/pos-options';
+import { POS_OPTION_KEYS, isPriceWithTax } from '@/constants/pos-options';
 import { ORDER_TYPE_MAP } from '@/constants/order-types';
 import { ordersApi, taxesApi } from '@/api';
 import printAgentService from '@/services/print-agent-service';
@@ -610,8 +610,15 @@ export const usePOS = create<POSStore>((set, get) => ({
         // Delegate to PrintAgentService — maps Order → FormattedReceiptData internally.
         // Resolves with the print result so callers can surface retry affordances;
         // never rejects (print failures resolve with { success: false }).
-        return printAgentService.printOrderReceipt(order, resolvedMode, {
-            autoPrintOnSale: options[POS_OPTION_KEYS.printingAuto] ?? true,
-        });
+        // The receipt mirrors the "Show Price With Tax" option so printed items
+        // match what the cashier saw in the cart.
+        return printAgentService.printOrderReceipt(
+            order,
+            resolvedMode,
+            {
+                autoPrintOnSale: options[POS_OPTION_KEYS.printingAuto] ?? true,
+            },
+            isPriceWithTax(options),
+        );
     },
 }));

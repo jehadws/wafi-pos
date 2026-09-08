@@ -37,4 +37,68 @@ describe('receipt-template service', () => {
         expect(html).toContain('Caramel Macchiato');
         expect(html).toContain('Powered by Subul POS');
     });
+
+    it('renders with-tax item prices by default', () => {
+        const order = {
+            code: 'ORD-2',
+            created_at: '2026-08-21T01:30:00Z',
+            subtotal: 20,
+            discount: 0,
+            tax_value: 3,
+            total: 26,
+            tendered: 30,
+            change: 4,
+        };
+
+        const products = [
+            {
+                name: 'Espresso',
+                price_with_tax: 11.5,
+                price_without_tax: 10,
+                unit_name: 'cup',
+                quantity: 2,
+                total_price_with_tax: 23,
+                total_price_without_tax: 20,
+            },
+        ];
+
+        const html = generateReceiptHtml(order as any, products as any);
+
+        // Historical behavior: item lines show the with-tax amounts
+        expect(html).toContain('11.50');
+        expect(html).toContain('23.00');
+    });
+
+    it('renders without-tax item prices when priceWithTax is false', () => {
+        const order = {
+            code: 'ORD-2',
+            created_at: '2026-08-21T01:30:00Z',
+            subtotal: 20,
+            discount: 0,
+            tax_value: 3,
+            total: 26,
+            tendered: 30,
+            change: 4,
+        };
+
+        const products = [
+            {
+                name: 'Espresso',
+                price_with_tax: 11.5,
+                price_without_tax: 10,
+                unit_name: 'cup',
+                quantity: 2,
+                total_price_with_tax: 23,
+                total_price_without_tax: 20,
+            },
+        ];
+
+        const html = generateReceiptHtml(order as any, products as any, false);
+
+        // Item lines mirror the without-tax cart display
+        expect(html).toContain('10.00');
+        expect(html).toContain('20.00');
+        expect(html).not.toContain('11.50');
+        expect(html).not.toContain('23.00');
+    });
 });

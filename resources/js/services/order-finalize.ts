@@ -29,6 +29,12 @@ export interface SubmitAndFinalizeOrderParams {
     submitOrder: (orderFields: object) => Promise<any>;
     /** Store printOrderReceipt action (printingEnabledFor / printingDocument gating). */
     printOrderReceipt: (order: Order, mode?: string) => Promise<PrintResult | false>;
+    /**
+     * Mirrors the "Show Price With Tax" POS option for the direct-service
+     * retry path (the primary print path resolves it from the store).
+     * Defaults to true (historical behavior) when not supplied.
+     */
+    priceWithTax?: boolean;
     /** Clears the cart after a successful finalize. */
     resetCart: () => void;
     /** Invoked after a successful finalize (e.g. close the payment dialog). */
@@ -82,6 +88,7 @@ export async function submitAndFinalizeOrder({
     products,
     submitOrder,
     printOrderReceipt,
+    priceWithTax = true,
     resetCart,
     onSuccess,
 }: SubmitAndFinalizeOrderParams): Promise<void> {
@@ -125,7 +132,7 @@ export async function submitAndFinalizeOrder({
                     action: {
                         label: t('Retry Print'),
                         onClick: () => {
-                            PrintAgentService.printOrderReceipt(receiptOrder).then((retryRes) => {
+                            PrintAgentService.printOrderReceipt(receiptOrder, 'sale', {}, priceWithTax).then((retryRes) => {
                                 if (retryRes.success) {
                                     toast.success(t('Receipt printed successfully.'));
                                 } else {

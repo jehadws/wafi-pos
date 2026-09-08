@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { POS_OPTION_KEYS } from '@/constants/pos-options';
+import { POS_OPTION_KEYS, isPriceWithTax } from '@/constants/pos-options';
 import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -208,6 +208,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
       products,
       submitOrder,
       printOrderReceipt: (receiptOrder) => usePOS.getState().printOrderReceipt(receiptOrder),
+      priceWithTax: isPriceWithTax(options),
       resetCart,
       onSuccess: () => onOpenChange(false),
     });

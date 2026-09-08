@@ -61,6 +61,52 @@ describe('PrintAgentService', () => {
         });
     });
 
+    describe('printOrderReceipt price mapping', () => {
+        const makeOrder = (products: any[]) =>
+            ({
+                code: 'ORD-55',
+                created_at: new Date().toISOString(),
+                subtotal: 200,
+                discount: 0,
+                tax_value: 0,
+                total: 200,
+                products,
+            }) as any;
+
+        const lineItem = {
+            name: 'Latte',
+            quantity: 2,
+            unit_price: 100,
+            price_with_tax: 115,
+            price_without_tax: 100,
+            total_price: 230,
+            total_price_with_tax: 230,
+            total_price_without_tax: 200,
+        };
+
+        it('maps with-tax item prices by default', async () => {
+            service.saveSettings({ receiptPrinter: 'XP-80C' });
+            mockedAxios.post.mockResolvedValueOnce({ data: { success: true } });
+
+            await service.printOrderReceipt(makeOrder([lineItem]));
+
+            const payload = mockedAxios.post.mock.calls[0][1] as any;
+            expect(payload.data.items[0].price).toContain('115.00');
+            expect(payload.data.items[0].total).toContain('230.00');
+        });
+
+        it('maps without-tax item prices when priceWithTax is false', async () => {
+            service.saveSettings({ receiptPrinter: 'XP-80C' });
+            mockedAxios.post.mockResolvedValueOnce({ data: { success: true } });
+
+            await service.printOrderReceipt(makeOrder([lineItem]), 'sale', {}, false);
+
+            const payload = mockedAxios.post.mock.calls[0][1] as any;
+            expect(payload.data.items[0].price).toContain('100.00');
+            expect(payload.data.items[0].total).toContain('200.00');
+        });
+    });
+
     describe('printReceipt', () => {
         it('returns success: false when no printer is configured', async () => {
             service.saveSettings({ receiptPrinter: '' });

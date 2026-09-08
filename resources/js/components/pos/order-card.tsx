@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { usePOS } from '@/hooks/usePOS';
+import { isPriceWithTax } from '@/constants/pos-options';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import PrintAgentService from '@/services/print-agent-service';
@@ -21,7 +22,7 @@ type Props = {
 
 export default function OrderCard({ order, onOpenChange }: Props) {
   const { t } = useTranslation();
-  const { loadOrder } = usePOS();
+  const { loadOrder, options } = usePOS();
   const [loading, setLoading] = useState(false);
   const [orderProducts, setOrderProducts] = useState<TOrderProducts[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -48,8 +49,14 @@ export default function OrderCard({ order, onOpenChange }: Props) {
 
       // Canonical receipt path — Order → FormattedReceiptData mapping and
       // printer configuration live in PrintAgentService (Subul branding).
+      // Items mirror the "Show Price With Tax" option like the cart does.
       const receiptOrder = { ...order, products: productsList } as unknown as Order;
-      const result = await PrintAgentService.printOrderReceipt(receiptOrder);
+      const result = await PrintAgentService.printOrderReceipt(
+        receiptOrder,
+        'sale',
+        {},
+        isPriceWithTax(options),
+      );
 
       if (result.success) {
         toast.success(t('Receipt sent to thermal printer.'));

@@ -357,11 +357,17 @@ export class PrintAgentService {
     /**
      * Print an order receipt.
      * Maps the POS Order object to FormattedReceiptData and sends it to the agent.
+     *
+     * @param priceWithTax  mirrors the "Show Price With Tax" POS option so the
+     *                      printed items match what the cashier saw on screen.
+     *                      Defaults to true (dashboard callers have no POS
+     *                      options and the historical behavior was with-tax).
      */
     public async printOrderReceipt(
         order: Order,
         mode: string = 'sale',
         options: Partial<PrinterSettings> = {},
+        priceWithTax: boolean = true,
     ): Promise<PrintResult> {
         void mode;
         const orderRecord = order as unknown as Record<string, unknown>;
@@ -375,8 +381,16 @@ export class PrintAgentService {
             items: (order.products ?? []).map((p: any) => ({
                 name: p.name,
                 quantity: p.quantity,
-                price: formatCurrency(p.price_with_tax ?? p.unit_price ?? 0),
-                total: formatCurrency(p.total_price_with_tax ?? p.total_price ?? 0),
+                price: formatCurrency(
+                    priceWithTax
+                        ? (p.price_with_tax ?? p.unit_price ?? 0)
+                        : (p.price_without_tax ?? p.unit_price ?? 0),
+                ),
+                total: formatCurrency(
+                    priceWithTax
+                        ? (p.total_price_with_tax ?? p.total_price ?? 0)
+                        : (p.total_price_without_tax ?? p.total_price ?? 0),
+                ),
             })),
             subtotal: formatCurrency(order.subtotal ?? 0),
             discount: order.discount ? formatCurrency(order.discount) : undefined,

@@ -28,16 +28,26 @@ interface TOrder {
 interface TOrderProduct {
     name: string;
     price_with_tax: number;
+    price_without_tax?: number;
     unit_name?: string;
     quantity: number;
     total_price_with_tax: number;
+    total_price_without_tax?: number;
 }
 
 /**
  * Generates a full HTML receipt document as a string.
  * Suitable for printing via react-to-print or an iframe.
+ *
+ * @param priceWithTax  mirrors the "Show Price With Tax" POS option so item
+ *                      lines match what was displayed in the cart. Defaults
+ *                      to true (the historical behavior).
  */
-export function generateReceiptHtml(order: TOrder, orderProducts: TOrderProduct[]): string {
+export function generateReceiptHtml(
+    order: TOrder,
+    orderProducts: TOrderProduct[],
+    priceWithTax: boolean = true,
+): string {
     return `
 <!DOCTYPE html>
 <html lang="en">
@@ -149,15 +159,23 @@ export function generateReceiptHtml(order: TOrder, orderProducts: TOrderProduct[
           </tr>
         </thead>
         <tbody>
-          ${orderProducts.map((item) => `
+          ${orderProducts.map((item) => {
+            const unitPrice = priceWithTax
+                ? item.price_with_tax
+                : (item.price_without_tax ?? item.price_with_tax);
+            const lineTotal = priceWithTax
+                ? item.total_price_with_tax
+                : (item.total_price_without_tax ?? item.total_price_with_tax);
+            return `
           <tr>
             <td class="col-product">
               <div class="item-name">${item.name}</div>
-              <div class="item-unit-price">${formatCurrency(item.price_with_tax)} / ${item.unit_name || 'unit'}</div>
+              <div class="item-unit-price">${formatCurrency(unitPrice)} / ${item.unit_name || 'unit'}</div>
             </td>
             <td class="col-qty">${item.quantity}</td>
-            <td class="col-total">${formatCurrency(item.total_price_with_tax)}</td>
-          </tr>`).join('')}
+            <td class="col-total">${formatCurrency(lineTotal)}</td>
+          </tr>`;
+          }).join('')}
         </tbody>
       </table>
 
