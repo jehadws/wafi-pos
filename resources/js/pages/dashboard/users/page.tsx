@@ -21,9 +21,17 @@ import { MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+type DashboardUser = {
+    id: number;
+    username: string;
+    email: string | null;
+    active: boolean;
+    roles: Role[];
+};
+
 export default function Dashboard() {
     const { t } = useTranslation();
-    const { users } = usePage<{ users: Customer[]; title: string }>().props;
+    const { users } = usePage<{ users: DashboardUser[]; title: string }>().props;
     const breadcrumbs = [
         { title: t('Dashboard'), href: '/dashboard' },
         { title: t('Users'), href: '/dashboard/users' },
@@ -31,22 +39,22 @@ export default function Dashboard() {
     const [deleteDialog, setDeleteDialog] = useState<{
         isOpen: boolean;
         loading: boolean;
-        customer: Customer | null;
+        user: DashboardUser | null;
     }>({
         isOpen: false,
         loading: false,
-        customer: null,
+        user: null,
     });
 
     const handleDeleteConfirm = async () => {
-        if (!deleteDialog.customer || deleteDialog.loading) return;
+        if (!deleteDialog.user || deleteDialog.loading) return;
 
         setDeleteDialog(prev => ({ ...prev, loading: true }));
 
         try {
-            await usersApi.remove(deleteDialog.customer.id);
+            await usersApi.remove(deleteDialog.user.id);
             toast.success(t('User deleted successfully'));
-            setDeleteDialog({ isOpen: false, loading: false, customer: null });
+            setDeleteDialog({ isOpen: false, loading: false, user: null });
             router.reload();
         } catch (err) {
             toast.error(t('Failed to delete user'));
@@ -55,7 +63,7 @@ export default function Dashboard() {
         }
     };
 
-    const columns: ColumnDef<Customer>[] = [
+    const columns: ColumnDef<DashboardUser>[] = [
         {
             id: 'select',
             header: ({ table }) => (
@@ -88,18 +96,6 @@ export default function Dashboard() {
             },
         },
         {
-            accessorKey: 'account_amount',
-            header: t('Wallet'),
-        },
-        {
-            accessorKey: 'owed_amount',
-            header: t('Owed Amount'),
-        },
-        {
-            accessorKey: 'purchases_amount',
-            header: t('Purchases Amount'),
-        },
-        {
             accessorKey: 'roles',
             header: t('Roles'),
             cell: ({ row }) => {
@@ -112,7 +108,7 @@ export default function Dashboard() {
         {
             id: 'actions',
             cell: ({ row }) => {
-                const product = row.original;
+                const user = row.original;
 
                 return (
                     <DropdownMenu>
@@ -124,14 +120,10 @@ export default function Dashboard() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>{t('Options')}</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => router.get(`/dashboard/users/edit/${product.id}`)}>{t('Edit')}</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {}}>{t('Orders')}</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {}}>{t('Rewards')}</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {}}>{t('Coupons')}</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {}}>{t('Wallet History')}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.get(`/dashboard/users/edit/${user.id}`)}>{t('Edit')}</DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                                onClick={() => setDeleteDialog({ isOpen: true, loading: false, customer: row.original })}
+                                onClick={() => setDeleteDialog({ isOpen: true, loading: false, user: row.original })}
                                 className="text-destructive"
                             >
                                 {t('Delete')}
@@ -146,7 +138,7 @@ export default function Dashboard() {
     const bulkActions = [
         {
             label: t('Delete Selected'),
-            action: async (selectedRows: Customer[]) => {
+            action: async (selectedRows: DashboardUser[]) => {
                 const entries = selectedRows.map((row) => row.id);
 
                 try {
@@ -171,7 +163,7 @@ export default function Dashboard() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={t('Category Products')} />
+            <Head title={t('Users List')} />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="grid w-full">
                     <DataTable
@@ -188,10 +180,10 @@ export default function Dashboard() {
 
                 <ConfirmationDialog
                     isOpen={deleteDialog.isOpen}
-                    onClose={() => setDeleteDialog({ isOpen: false, loading: false, customer: null })}
+                    onClose={() => setDeleteDialog({ isOpen: false, loading: false, user: null })}
                     onConfirm={handleDeleteConfirm}
-                    title={t('Delete {{name}}', { name: deleteDialog.customer?.first_name ?? '' })}
-                    description={t('Are you sure you want to delete this customer? This action cannot be undone.')}
+                    title={t('Delete {{name}}', { name: deleteDialog.user?.username ?? '' })}
+                    description={t('Are you sure you want to delete this user? This action cannot be undone.')}
                     confirmText={t('Delete')}
                     cancelText={t('Cancel')}
                     variant="destructive"
