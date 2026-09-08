@@ -4,7 +4,7 @@ import { usePOS } from '@/hooks/usePOS';
 import { isPosOptionEnabled, POS_OPTION_KEYS, resolveUnitDisplayPrice } from '@/constants/pos-options';
 import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
-import { categoriesApi, productsApi } from '@/api';
+import { categoriesApi } from '@/api';
 import { ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -14,6 +14,7 @@ import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import SelectUnitQuantityDialog from './select-unit-quantity-dialog';
 
+import { resolveProductUnitQuantities } from '@/services/product-units';
 import { validateStockAvailability } from '@/services/stock';
 
 export default function ProductsCategoriesPanel() {
@@ -143,15 +144,19 @@ export default function ProductsCategoriesPanel() {
     });
 
     /**
-     * Processes a single product click. May await the units API and/or the
-     * unit-picker dialog. Exactly one of these runs at a time — enforced by
-     * the sequential queue in handleClickOnProduct below.
+     * Processes a single product click. Resolves unit quantities from the
+     * preloaded category payload (no network) — the units API is only hit
+     * when the payload omitted them — and may await the unit-picker dialog.
+     * Exactly one of these runs at a time — enforced by the sequential queue
+     * in handleClickOnProduct below.
      */
     const processProductClick = async (product: Product) => {
         // "Show Quantity" off → resolve the unit inline: a single unit or
         // the configured default goes straight to the cart (no dialogs).
         if (!isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) {
-            const units = await productsApi.getUnitQuantities(product.id);
+            // Payload-first: the category content already hydrated
+            // unit_quantities (with the unit relation) — no refetch needed.
+            const units = await resolveProductUnitQuantities(product);
             if (units.length === 0) {
                 toast.error(t('Unable to proceed, no product were provided.'));
                 return;

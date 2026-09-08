@@ -61,8 +61,6 @@ const product = {
     ],
 } as any;
 
-const unitQuantity = product.unit_quantities[0];
-
 describe('components/pos/products-categories-panel click handling', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -77,43 +75,78 @@ describe('components/pos/products-categories-panel click handling', () => {
         } as any);
     });
 
-    it('adds every product on rapid clicks — none silently dropped (quick-add mode)', async () => {
-        // Each lookup hangs until the test resolves it, so serialization is
-        // observable: the next lookup must not fire before the previous one
-        // has been resolved.
-        const pending: Array<(units: any[]) => void> = [];
-        vi.mocked(productsApi.getUnitQuantities).mockImplementation(
-            () =>
-                new Promise((resolve) => {
-                    pending.push(resolve);
-                }),
-        );
-
+    it('adds every product on rapid clicks from the preloaded payload — none silently dropped (quick-add mode)', async () => {
         render(<ProductsCategoriesPanel />);
         const tile = await screen.findByAltText('Rapid Product');
         expect(productsApi.getUnitQuantities).not.toHaveBeenCalled();
 
-        // 7 rapid clicks — the exact scenario from the bug report.
+        // 7 rapid clicks — the exact scenario from the bug report. Units are
+        // resolved from the category payload (unit_quantities), so the queue
+        // drains instantly and every click is honored without a round-trip.
         for (let i = 0; i < 7; i++) {
             fireEvent.click(tile);
         }
 
-        // While the first lookup is in flight nothing else may fire: the
-        // remaining clicks are buffered, not dropped, not run concurrently.
-        expect(productsApi.getUnitQuantities).toHaveBeenCalledTimes(1);
-
-        for (let i = 0; i < 7; i++) {
-            await waitFor(() =>
-                expect(productsApi.getUnitQuantities).toHaveBeenCalledTimes(i + 1),
-            );
-            await act(async () => {
-                pending[i]([unitQuantity]);
-            });
-        }
-
         await waitFor(() => expect(usePOS.getState().products).toHaveLength(7));
-        expect(productsApi.getUnitQuantities).toHaveBeenCalledTimes(7);
+        expect(productsApi.getUnitQuantities).not.toHaveBeenCalled();
         expect(usePOS.getState().products.every((p) => p.quantity === 1)).toBe(true);
+        expect(usePOS.getState().products.every((p) => p.unit_quantity_id === 11)).toBe(true);
+    });
+
+    it('filters invisible units from the preloaded payload — mirrors the units API visible() scope', async () => {
+        vi.mocked(categoriesApi.getPosContent).mockResolvedValue({
+            categories: [],
+            products: [
+                {
+                    id: 3,
+                    name: 'Multi Unit Product',
+                    unit_quantities: [
+                        { id: 31, quantity: 5, sale_price: 10, type: 'piece', unit: { id: 3, name: 'pcs' } },
+                        { id: 32, quantity: 9, sale_price: 90, type: 'box', visible: 0, unit: { id: 4, name: 'box' } },
+                    ],
+                } as any,
+            ],
+            currentCategory: null,
+        } as any);
+
+        render(<ProductsCategoriesPanel />);
+        const tile = await screen.findByAltText('Multi Unit Product');
+
+        // Two preloaded units → after filtering the hidden box away only the
+        // visible piece remains, so quick-add resolves it inline (no dialog,
+        // no API call) exactly like the units API response would have.
+        fireEvent.click(tile);
+
+        await waitFor(() => expect(usePOS.getState().products).toHaveLength(1));
+        expect(usePOS.getState().products[0].unit_quantity_id).toBe(31);
+        expect(productsApi.getUnitQuantities).not.toHaveBeenCalled();
+        expect(usePOS.getState().openDialogs['selectQuantity']).toBeFalsy();
+    });
+
+    it('respects Show Quantity = yes — unit picker first, then the quantity keypad; never a direct qty-1 add', async () => {
+        usePOS.setState({ options: { [POS_OPTION_KEYS.showQuantity]: 'yes' } } as any);
+
+        render(<ProductsCategoriesPanel />);
+        const tile = await screen.findByAltText('Rapid Product');
+
+        fireEvent.click(tile);
+
+        // The unit picker opens (fed from the preloaded payload — no API
+        // call)… and a click alone must never reach the cart.
+        await waitFor(() => expect(usePOS.getState().openDialogs['selectQuantity']).toBe(true));
+        expect(usePOS.getState().products).toHaveLength(0);
+        expect(productsApi.getUnitQuantities).not.toHaveBeenCalled();
+
+        // The cashier picks the unit in the picker…
+        await act(async () => {
+            usePOS.getState().closeDialog('selectQuantity', product.unit_quantities[0]);
+        });
+
+        // …and the QUANTITY KEYPAD opens: the line only lands in the cart
+        // after a quantity is confirmed. A direct qty-1 add here would
+        // violate the setting.
+        await screen.findByText('Define Quantity');
+        expect(usePOS.getState().products).toHaveLength(0);
     });
 
     it('ignores extra clicks while the unit-picker dialog is pending (dialog mode)', async () => {

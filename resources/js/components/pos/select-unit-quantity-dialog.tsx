@@ -4,7 +4,7 @@ import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
 import { usePage } from '@inertiajs/react';
 import { resolveUnitDisplayPrice } from '@/constants/pos-options';
-import { productsApi } from '@/api';
+import { resolveProductUnitQuantities } from '@/services/product-units';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -21,7 +21,7 @@ export default function SelectUnitQuantityDialog({ selectProduct }: { selectProd
         try {
             setQuantities([]);
             setIsLoading(true);
-            const loadedQuantities = await productsApi.getUnitQuantities(product.id);
+            const loadedQuantities = await resolveProductUnitQuantities(product);
 
             if (loadedQuantities.length === 0) {
                 closeDialog('selectQuantity', null);
