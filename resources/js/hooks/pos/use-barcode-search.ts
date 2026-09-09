@@ -7,12 +7,21 @@ export interface UseBarcodeSearchOptions {
     onProductFound: (product: any) => void;
     onProductNotFound?: (barcode: string) => void;
     debounceMs?: number;
+    /** Seeds the autofocus toggle from the "Force Barcode Auto Focus" POS
+     *  setting (sb_subul_force_autofocus). The user can still toggle it
+     *  off for the session. */
+    autoFocusEnabled?: boolean;
 }
 
-export function useBarcodeSearch({ onProductFound, onProductNotFound, debounceMs = 300 }: UseBarcodeSearchOptions) {
+export function useBarcodeSearch({
+    onProductFound,
+    onProductNotFound,
+    debounceMs = 300,
+    autoFocusEnabled = false,
+}: UseBarcodeSearchOptions) {
     const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
-    const [isAutoFocusOpen, setIsAutoFocusOpen] = useState(false);
+    const [isAutoFocusOpen, setIsAutoFocusOpen] = useState(autoFocusEnabled);
     const [isSearching, setIsSearching] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
@@ -58,6 +67,32 @@ export function useBarcodeSearch({ onProductFound, onProductNotFound, debounceMs
         if (isAutoFocusOpen && inputRef.current) {
             inputRef.current.focus();
         }
+    }, [isAutoFocusOpen]);
+
+    // Kiosk reassertion while autofocus is active: a modal dialog opening
+    // steals focus (the Radix focus trap wins the blur-refocus race) and
+    // after it closes focus lands on the dialog opener — never back on the
+    // scan input. Reassert whenever focus moves to something outside a
+    // dialog, plus once shortly after mount for dialogs that auto-open on
+    // boot (e.g. the register gate).
+    useEffect(() => {
+        if (!isAutoFocusOpen) return;
+
+        const mountTimer = setTimeout(() => inputRef.current?.focus(), 250);
+        const reassert = () => {
+            const el = document.activeElement;
+            if (!inputRef.current || el === inputRef.current) return;
+            if (el instanceof HTMLElement && el.closest('[role="dialog"]')) return;
+            inputRef.current.focus();
+        };
+
+        document.addEventListener('focusin', reassert);
+        window.addEventListener('focus', reassert);
+        return () => {
+            clearTimeout(mountTimer);
+            document.removeEventListener('focusin', reassert);
+            window.removeEventListener('focus', reassert);
+        };
     }, [isAutoFocusOpen]);
 
     // Debounced search effect for auto-focus / scanner input

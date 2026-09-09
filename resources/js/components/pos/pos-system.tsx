@@ -154,6 +154,9 @@ export default function PosSystem() {
   };
 
   const barcodeSearch = useBarcodeSearch({
+    // Seed the barcode-input autofocus from the "Force Barcode Auto Focus"
+    // POS setting; the toolbar toggle can still override it per session.
+    autoFocusEnabled: isPosOptionEnabled(options, POS_OPTION_KEYS.forceAutofocus),
     onProductFound: (product) => {
       dialogs.setSelectedProduct(product);
       scanUnitRef.current = null;

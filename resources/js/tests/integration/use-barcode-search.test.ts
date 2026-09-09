@@ -41,6 +41,15 @@ describe('hooks/pos/use-barcode-search', () => {
         expect(result.current.isAutoFocusOpen).toBe(false);
     });
 
+    it('seeds autofocus from the POS setting (autoFocusEnabled)', () => {
+        const onProductFound = vi.fn();
+        const { result } = renderHook(() =>
+            useBarcodeSearch({ onProductFound, autoFocusEnabled: true }),
+        );
+
+        expect(result.current.isAutoFocusOpen).toBe(true);
+    });
+
     it('executes barcode lookup and calls onProductFound on success', async () => {
         const mockProduct = { id: 101, name: 'Sample Item' };
         vi.mocked(productsApi.searchByBarcode).mockResolvedValueOnce(mockProduct as any);
