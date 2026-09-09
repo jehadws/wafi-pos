@@ -11,7 +11,10 @@ import { useTranslation } from '../../lib/i18n';
 import { formatCurrency } from '../../utils/format';
 import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
 import { usePage } from '@inertiajs/react';
-import { resolveUnitDisplayPrice } from '@/constants/pos-options';
+import { isPosOptionEnabled, POS_OPTION_KEYS, resolveUnitDisplayPrice } from '@/constants/pos-options';
+import { pickExpressUnit, resolveProductUnitQuantities } from '@/services/product-units';
+import { validateStockAvailability } from '@/services/stock';
+import { usePOS } from '@/hooks/usePOS';
 
 interface SearchProductsDialogProps {
   open: boolean;
@@ -81,6 +84,27 @@ export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: 
     };
   };
 
+  // ─── Express add ("Show Quantity" off) — parity with the categories panel ──
+  const addDirectly = (product: Product, unit: UnitQuantity, qty: number) => {
+    // Live-store in-cart count so rapid adds cannot oversell (panel parity).
+    const quantityInCart = usePOS.getState().products.reduce((acc, item) => {
+      if (item.product_id === product.id && item.unit_quantity_id === unit.id) {
+        return acc + item.quantity;
+      }
+      return acc;
+    }, 0);
+
+    const stockCheck = validateStockAvailability(unit.quantity, qty, quantityInCart);
+    if (!stockCheck.allowed) {
+      toast.warning(t(stockCheck.reason || 'Not enough stock.'));
+      return;
+    }
+
+    onProductSelected(buildCartProduct(product, unit, qty));
+    selectedProductRef.current = null;
+    selectedUnitRef.current = null;
+  };
+
   // ─── Quantity keypad confirm ───────────────────────────────────────────
   const handleQuantityConfirm = (qty: string) => {
     const quantity = parseFloat(qty);
@@ -112,6 +136,19 @@ export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: 
   const handleUnitCardClick = (unit: UnitQuantity) => {
     selectedUnitRef.current = unit;
     setIsUnitPickerOpen(false);
+
+    // "Show Quantity" off → the picked unit is added with the default
+    // quantity (1) — no keypad, matching the categories panel.
+    if (!isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) {
+      const product = selectedProductRef.current;
+      if (product) {
+        addDirectly(product, unit, 1);
+      } else {
+        selectedUnitRef.current = null;
+      }
+      return;
+    }
+
     quantityKeypad.openKeypad();
   };
 
@@ -126,7 +163,9 @@ export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: 
 
     setLoading(true);
     try {
-      const units = await productsApi.getUnitQuantities(product.id);
+      // Payload-first: the search endpoint hydrates unit_quantities —
+      // no extra round-trip unless the payload omitted them.
+      const units = await resolveProductUnitQuantities(product);
       if (!units || units.length === 0) {
         toast.error(t('Unable to proceed, no unit quantities were found.'));
         selectedProductRef.current = null;
@@ -134,6 +173,19 @@ export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: 
       }
 
       setUnitQuantities(units);
+
+      // "Show Quantity" off → express flow: a single unit or the configured
+      // default goes straight to the cart (no unit picker, no keypad).
+      if (!isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) {
+        const resolved = pickExpressUnit(units, options.sb_subul_quick_product_default_unit);
+        if (resolved) {
+          addDirectly(product, resolved, 1);
+          return;
+        }
+        // Ambiguous units → picker; the pick is added with quantity 1.
+        setIsUnitPickerOpen(true);
+        return;
+      }
 
       if (units.length === 1) {
         // Single unit — skip picker, go straight to quantity keypad
