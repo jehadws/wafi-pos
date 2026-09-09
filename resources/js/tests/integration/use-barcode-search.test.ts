@@ -50,6 +50,55 @@ describe('hooks/pos/use-barcode-search', () => {
         expect(result.current.isAutoFocusOpen).toBe(true);
     });
 
+    it('re-seeds autofocus when the setting arrives after mount (full-reload race)', () => {
+        const onProductFound = vi.fn();
+        // Simulates a full page reload: the hook mounts while the POS options
+        // store is still empty (autoFocusEnabled: false), then pos.tsx's
+        // defineOptions effect populates the store and re-renders with the
+        // real setting value.
+        const { result, rerender } = renderHook(
+            ({ autoFocusEnabled }: { autoFocusEnabled?: boolean }) =>
+                useBarcodeSearch({ onProductFound, autoFocusEnabled }),
+            { initialProps: { autoFocusEnabled: false } },
+        );
+
+        expect(result.current.isAutoFocusOpen).toBe(false);
+
+        rerender({ autoFocusEnabled: true });
+
+        expect(result.current.isAutoFocusOpen).toBe(true);
+    });
+
+    it('keeps the user manual toggle over later setting changes', () => {
+        const onProductFound = vi.fn();
+        const { result, rerender } = renderHook(
+            ({ autoFocusEnabled }: { autoFocusEnabled?: boolean }) =>
+                useBarcodeSearch({ onProductFound, autoFocusEnabled }),
+            { initialProps: { autoFocusEnabled: true } },
+        );
+
+        // User toggles the toolbar switch off for the session.
+        act(() => {
+            result.current.toggleAutoFocus();
+        });
+        expect(result.current.isAutoFocusOpen).toBe(false);
+
+        // Setting re-delivered (partial reload / store refresh) must not
+        // override the user's per-session choice.
+        rerender({ autoFocusEnabled: true });
+        expect(result.current.isAutoFocusOpen).toBe(false);
+
+        // Same in the other direction: user opted in, setting is off.
+        rerender({ autoFocusEnabled: false });
+        act(() => {
+            result.current.toggleAutoFocus();
+        });
+        expect(result.current.isAutoFocusOpen).toBe(true);
+
+        rerender({ autoFocusEnabled: true });
+        expect(result.current.isAutoFocusOpen).toBe(true);
+    });
+
     it('executes barcode lookup and calls onProductFound on success', async () => {
         const mockProduct = { id: 101, name: 'Sample Item' };
         vi.mocked(productsApi.searchByBarcode).mockResolvedValueOnce(mockProduct as any);

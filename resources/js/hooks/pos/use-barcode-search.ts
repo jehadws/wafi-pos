@@ -22,6 +22,9 @@ export function useBarcodeSearch({
     const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
     const [isAutoFocusOpen, setIsAutoFocusOpen] = useState(autoFocusEnabled);
+    // Set once the user overrides the "Force Barcode Auto Focus" setting from
+    // the toolbar — from then on the session toggle wins over the setting.
+    const userToggledRef = useRef(false);
     const [isSearching, setIsSearching] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
@@ -61,6 +64,19 @@ export function useBarcodeSearch({
         },
         [onProductFound, onProductNotFound, t],
     );
+
+    // Re-seed the session toggle from the "Force Barcode Auto Focus" setting
+    // until the user overrides it. On a full page reload the POS options reach
+    // the Zustand store in a post-mount effect (pos.tsx defineOptions), while
+    // this hook's first render — and thus the useState seed above — still sees
+    // the empty initial store, which left autofocus dead after every reload.
+    // Re-seeding on prop change closes that race; once the user toggles from
+    // the toolbar, their per-session choice wins.
+    useEffect(() => {
+        if (!userToggledRef.current) {
+            setIsAutoFocusOpen(autoFocusEnabled);
+        }
+    }, [autoFocusEnabled]);
 
     // Auto-focus handling
     useEffect(() => {
@@ -133,6 +149,7 @@ export function useBarcodeSearch({
     };
 
     const toggleAutoFocus = () => {
+        userToggledRef.current = true;
         setIsAutoFocusOpen((prev) => !prev);
     };
 
