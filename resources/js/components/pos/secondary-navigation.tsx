@@ -3,6 +3,7 @@ import CouponsDialog from '@/components/pos/coupons-dialog';
 import SettingsDialog from '@/components/pos/settings-dialog';
 import TaxesDialog from '@/components/pos/taxes-dialog';
 import { Button } from '@/components/ui/button';
+import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { MessageSquare, Package, Receipt, SettingsIcon, Ticket } from 'lucide-react';
@@ -10,14 +11,14 @@ import { useState } from 'react';
 
 type Props = {
   setShowSelectCustomerDialog: (value: boolean) => void;
-  onOpenSearchProductsDialog?: () => void;
+  onOpenQuickAddProductDialog?: () => void;
   isCommentsDialogOpen: boolean;
   onCommentsDialogOpenChange: (open: boolean) => void;
 };
 
 export default function SecondaryNavigation({
   setShowSelectCustomerDialog,
-  onOpenSearchProductsDialog,
+  onOpenQuickAddProductDialog,
   isCommentsDialogOpen,
   onCommentsDialogOpenChange,
 }: Props) {
@@ -28,6 +29,10 @@ export default function SecondaryNavigation({
   const [isCouponsDialogOpen, setIsCouponsDialogOpen] = useState(false);
 
   const showTaxes = options.sb_subul_vat === 'variable_vat';
+
+  // NexoPOS parity: the quick product button is only shown when the
+  // "quick product" POS option is enabled (ns_pos_quick_product === 'yes').
+  const showQuickProduct = options[POS_OPTION_KEYS.quickProduct] === 'yes';
 
   const handleSaveNote = (note: string, display: boolean) => {
     setNote(note, display ? 'visible' : 'hidden');
@@ -85,15 +90,17 @@ export default function SecondaryNavigation({
             {t('Settings')}
             {order.title && <span className="bg-primary ms-1.5 h-2 w-2 rounded-full"></span>}
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-card active:scale-95 flex h-10 items-center rounded-full text-xs font-medium shadow-2xs"
-            onClick={onOpenSearchProductsDialog}
-          >
-            <Package className="me-1.5 h-4 w-4 text-muted-foreground" />
-            {t('Product')}
-          </Button>
+          {showQuickProduct && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-card active:scale-95 flex h-10 items-center rounded-full text-xs font-medium shadow-2xs"
+              onClick={() => onOpenQuickAddProductDialog?.()}
+            >
+              <Package className="me-1.5 h-4 w-4 text-muted-foreground" />
+              {t('Product')}
+            </Button>
+          )}
         </div>
       </div>
 

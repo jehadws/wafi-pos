@@ -56,8 +56,8 @@ const SearchProductsDialog = lazy(() =>
 const ShippingDialog = lazy(() =>
   import('./shipping-dialog').then((m) => ({ default: m.ShippingDialog })),
 );
-const QuickAddProductDialog = lazy(() =>
-  import('./quick-add-product-dialog').then((m) => ({ default: m.QuickAddProductDialog })),
+const QuickProductPopup = lazy(() =>
+  import('./quick-product-popup').then((m) => ({ default: m.QuickProductPopup })),
 );
 
 export default function PosSystem() {
@@ -314,7 +314,12 @@ export default function PosSystem() {
         <div className={cn('flex w-1/2 flex-col lg:w-2/5 lg:min-w-[360px]', isRTL ? 'border-l' : 'border-r')}>
           <SecondaryNavigation
             setShowSelectCustomerDialog={checkout.setShowSelectCustomerDialog}
-            onOpenSearchProductsDialog={() => dialogs.setShowSearchProductsDialog(true)}
+            onOpenQuickAddProductDialog={() => {
+              // Clear any barcode left over from the scan-not-found flow so
+              // the popup opens without a name prefill, then show it.
+              dialogs.setPendingBarcode('');
+              dialogs.setShowQuickAddProduct(true);
+            }}
             isCommentsDialogOpen={isCommentsDialogOpen}
             onCommentsDialogOpenChange={setIsCommentsDialogOpen}
           />
@@ -503,21 +508,10 @@ export default function PosSystem() {
         )}
 
         {dialogs.showQuickAddProduct && (
-          <QuickAddProductDialog
+          <QuickProductPopup
             open={dialogs.showQuickAddProduct}
             onOpenChange={dialogs.setShowQuickAddProduct}
-            barcode={dialogs.pendingBarcode}
-            onProductCreated={(product) => {
-              // After creation, try to add it to cart
-              if (product) {
-                dialogs.setSelectedProduct(product);
-                if (canAddBarcodeSilently(options, product)) {
-                  addProductWithUnit(product, 1);
-                } else {
-                  dialogs.quantityKeypad.openKeypad();
-                }
-              }
-            }}
+            defaultName={dialogs.pendingBarcode}
           />
         )}
       </Suspense>

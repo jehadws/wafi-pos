@@ -19,7 +19,7 @@ export const productsApi = {
     /** Submit a stock adjustment for a set of products. */
     createAdjustment: (products: unknown[]) => post<{ message: string }>('/products/adjustments', { products }),
 
-    /** Create a new product (used by the POS quick-add dialog). */
+    /** Create a new product. */
     create: (data: unknown) => post('/products', data),
 
     // ── CRUD — sb.products ──────────────────────────────────────────────────
