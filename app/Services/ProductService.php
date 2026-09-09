@@ -2128,7 +2128,7 @@ class ProductService
      *
      * @throws NotFoundException
      */
-    public function searchProduct( ?string $search, int $limit = 5, array $arguments = [] )
+    public function searchProduct( ?string $search, int $limit = 5, array $arguments = [], bool $posVisibility = false )
     {
         /**
          * @var Builder $query
@@ -2144,8 +2144,19 @@ class ProductService
                 'unit_quantities.unit',
                 'category',
                 'tax_group.taxes',
-            ] )
-            ->limit( $limit );
+            ] );
+
+        /**
+         * POS callers respect the same visibility rules as the POS grid
+         * (CategoryController::getCategories): the "Hide Exhausted Products"
+         * setting is honored and only products available on sale are returned.
+         */
+        if ( $posVisibility ) {
+            $this->applyPosProductVisibility( $query );
+            $query->onSale();
+        }
+
+        $query->limit( $limit );
 
         /**
          * if custom arguments are provided
@@ -2170,6 +2181,31 @@ class ProductService
 
                 return $product;
             } );
+    }
+
+    /**
+     * Apply the POS product visibility rules to a products query: honors
+     * the "Hide Exhausted Products" setting (sb_subul_hide_exhausted_products)
+     * exactly like the POS grid does. The conditions are wrapped in their own
+     * group, so it is safe to call on any top-level products query.
+     */
+    public function applyPosProductVisibility( $query )
+    {
+        if ( sb()->option->get( 'sb_subul_hide_exhausted_products' ) !== 'yes' ) {
+            return $query;
+        }
+
+        $query->where( function ( $query ) {
+            $query->where( 'stock_management', Product::STOCK_MANAGEMENT_DISABLED )
+                ->orWhere( function ( $query ) {
+                    $query->where( 'stock_management', Product::STOCK_MANAGEMENT_ENABLED )
+                        ->whereHas( 'unit_quantities', function ( $query ) {
+                            $query->where( 'quantity', '>', 0 );
+                        } );
+                } );
+        } );
+
+        return $query;
     }
 
     /**

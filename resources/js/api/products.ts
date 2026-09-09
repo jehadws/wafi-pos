@@ -7,8 +7,11 @@ export const productsApi = {
     /** Fetch all products. */
     getAll: () => get('/products'),
 
-    /** Search products by name / SKU / barcode. */
-    search: (query: string) => post('/products/search', { search: query }),
+    /** Search products by name / SKU / barcode. Respects the POS visibility
+     *  settings ("Hide Exhausted Products", on-sale only) unless
+     *  `respectPosSettings` is false. */
+    search: (query: string, respectPosSettings = true) =>
+        post('/products/search', { search: query, pos: respectPosSettings }),
 
     /** Look up a single product by its barcode (POS scanner). */
     searchByBarcode: (barcode: string) => get<ProductSearchBarcode>(`/products/search/using-barcode/${barcode}`),

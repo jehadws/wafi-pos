@@ -47,7 +47,7 @@ describe('API Resource Modules', () => {
         it('search posts query to /products/search', async () => {
             const spy = vi.spyOn(http, 'post').mockResolvedValueOnce({ products: [] } as any);
             await productsApi.search('Latte');
-            expect(spy).toHaveBeenCalledWith('/products/search', { search: 'Latte' });
+            expect(spy).toHaveBeenCalledWith('/products/search', { search: 'Latte', pos: true });
         });
 
         it('searchByBarcode fetches from /products/search/using-barcode/:barcode', async () => {
