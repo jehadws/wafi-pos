@@ -18,6 +18,7 @@ import {
     calculateTotalsForPriceUpdate,
     calculateTotalsForDiscountPercentageUpdate,
     sumProductsTotals,
+    sumProductsTaxes,
 } from '@/services/cart-engine';
 import { OrderProduct } from '@/types/models/order-product';
 
@@ -1076,6 +1077,54 @@ describe('services/cart-engine.ts', () => {
             expect(recomputed).not.toBe(dynamicLine);
             expect(recomputed!.total_price).toBeCloseTo(staticLine.total_price * 0.1, 5);
             expect(summed.subtotal).toBeCloseTo(staticLine.total_price * 1.1, 5);
+        });
+    });
+
+    // ---------------------------------------------------------------------------
+    // Section 10: sumProductsTaxes — products_tax_value derivation
+    // ---------------------------------------------------------------------------
+
+    describe('sumProductsTaxes', () => {
+        const makeTaxedLine = (totalTaxValue: number): OrderProduct =>
+            ({
+                product_id: 1,
+                name: 'Cart Line',
+                product_type: 'product',
+                quantity: 1,
+                total_tax_value: totalTaxValue,
+            }) as OrderProduct;
+
+        const makeOrder = (productsTaxValue = 0) =>
+            ({
+                subtotal: 0,
+                total: 0,
+                tax_value: 0,
+                taxes: [],
+                discount: 0,
+                products_tax_value: productsTaxValue,
+            }) as any;
+
+        it('sums total_tax_value across lines in any VAT mode', () => {
+            const result = sumProductsTaxes(makeOrder(), [makeTaxedLine(6.32), makeTaxedLine(5.6)], {} as any);
+
+            expect(result.products_tax_value).toBeCloseTo(11.92, 5);
+        });
+
+        it('resets products_tax_value to 0 when the cart is emptied', () => {
+            // Regression: the live store order keeps the last non-empty
+            // products_tax_value (11.92 from the bug report). The empty-cart
+            // recompute must derive 0 from the inputs — not inherit the
+            // previous value through the order spread — or the
+            // "Product Taxes (Included)" row stays visible on an empty cart.
+            const result = sumProductsTaxes(makeOrder(11.92), [], {} as any);
+
+            expect(result.products_tax_value).toBe(0);
+        });
+
+        it('sumProductsTotals derives products_tax_value for an emptied cart', () => {
+            const { order } = sumProductsTotals(makeOrder(11.92), [], {} as any);
+
+            expect(order.products_tax_value).toBe(0);
         });
     });
 });

@@ -402,13 +402,15 @@ export function sumProductsTaxes(
 
     // Always aggregate per-product taxes so the UI tax row is populated
     // regardless of the active VAT mode (products_vat, flat_vat, etc.).
-    const totalTaxValues = products.map((p: OrderProduct) => p.total_tax_value || 0);
-    if (totalTaxValues.length > 0) {
-        next.products_tax_value = totalTaxValues.reduce(
-            (before: number, after: number) => before + after,
-            0,
-        );
-    }
+    // Deliberately UNCONDITIONAL: an empty cart must derive 0, so emptying
+    // the cart resets the UI row instead of freezing it at the last
+    // non-empty value (the old `length > 0` guard did exactly that — it
+    // only ever existed to protect an initial-value-less reduce that no
+    // longer exists).
+    next.products_tax_value = products.reduce(
+        (before: number, after: OrderProduct) => before + (after.total_tax_value || 0),
+        0,
+    );
 
     return next;
 }
