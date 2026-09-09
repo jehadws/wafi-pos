@@ -80,7 +80,7 @@ export type PosOptionKey = (typeof POS_OPTION_KEYS)[keyof typeof POS_OPTION_KEYS
 
 /** Read a POS option value with a typed key */
 export function getPosOption<K extends PosOptionKey>(
-    options: Record<string, unknown>,
+    options: Record<string, any>,
     key: K,
 ): unknown {
     return options[key];
@@ -88,7 +88,7 @@ export function getPosOption<K extends PosOptionKey>(
 
 /** Returns true when the option is explicitly enabled ('yes' or truthy boolean) */
 export function isPosOptionEnabled(
-    options: Record<string, unknown>,
+    options: Record<string, any>,
     key: PosOptionKey,
 ): boolean {
     const value = options[key];

@@ -14,7 +14,7 @@ import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import SelectUnitQuantityDialog from './select-unit-quantity-dialog';
 
-import { resolveProductUnitQuantities } from '@/services/product-units';
+import { pickExpressUnit, resolveProductUnitQuantities } from '@/services/product-units';
 import { validateStockAvailability } from '@/services/stock';
 
 export default function ProductsCategoriesPanel() {
@@ -162,16 +162,7 @@ export default function ProductsCategoriesPanel() {
                 return;
             }
 
-            const defaultUnitId = options.sb_subul_quick_product_default_unit;
-            let resolved: UnitQuantity | null = null;
-            if (units.length === 1) {
-                resolved = units[0];
-            } else if (defaultUnitId) {
-                resolved =
-                    units.find(
-                        (q) => q.unit?.id === defaultUnitId || q.unit_id === defaultUnitId,
-                    ) ?? null;
-            }
+            const resolved = pickExpressUnit(units, options.sb_subul_quick_product_default_unit);
 
             if (resolved) {
                 addProductUnit(product, resolved, 1);

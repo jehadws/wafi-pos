@@ -4,16 +4,26 @@ import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
 import { usePage } from '@inertiajs/react';
 import { resolveUnitDisplayPrice } from '@/constants/pos-options';
-import { resolveProductUnitQuantities } from '@/services/product-units';
+import { pickExpressUnit, resolveProductUnitQuantities } from '@/services/product-units';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-export default function SelectUnitQuantityDialog({ selectProduct }: { selectProduct: Product | undefined }) {
+interface SelectUnitQuantityDialogProps {
+    selectProduct: Product | undefined;
+    /** Store dialog key — a second instance (barcode-scan flow) runs
+     *  alongside the categories-panel one without sharing open-state. */
+    dialogKey?: 'selectQuantity' | 'unitPicker';
+}
+
+export default function SelectUnitQuantityDialog({
+    selectProduct,
+    dialogKey = 'selectQuantity',
+}: SelectUnitQuantityDialogProps) {
     const { t } = useTranslation();
     const { options } = usePage<{ options: SbPosOptions }>().props;
     const { openDialogs, closeDialog } = usePOS();
-    const open = openDialogs['selectQuantity'] || false;
+    const open = openDialogs[dialogKey] || false;
     const [quantities, setQuantities] = useState<UnitQuantity[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -24,27 +34,23 @@ export default function SelectUnitQuantityDialog({ selectProduct }: { selectProd
             const loadedQuantities = await resolveProductUnitQuantities(product);
 
             if (loadedQuantities.length === 0) {
-                closeDialog('selectQuantity', null);
+                closeDialog(dialogKey, null);
                 return toast.error(t('Unable to proceed, no product were provided.'));
             }
 
-            // Auto-select: if exactly one unit, or if a default unit is configured and matches
-            const defaultUnitId = options.sb_subul_quick_product_default_unit;
-            if (loadedQuantities.length === 1) {
-                return closeDialog('selectQuantity', loadedQuantities[0]);
-            } else if (defaultUnitId) {
-                const matched = loadedQuantities.find((q) => q.unit?.id === defaultUnitId || q.unit_id === defaultUnitId);
-                if (matched) {
-                    return closeDialog('selectQuantity', matched);
-                }
+            // Auto-select: a single unit, or the configured default unit
+            // (the same express rule the categories panel uses).
+            const auto = pickExpressUnit(loadedQuantities, options.sb_subul_quick_product_default_unit);
+            if (auto) {
+                return closeDialog(dialogKey, auto);
             }
 
             setQuantities(loadedQuantities);
         } catch (e) {
             console.error(e);
-            // Always settle the openDialog('selectQuantity') promise — a
-            // resolver left pending would freeze the product-click queue.
-            closeDialog('selectQuantity', null);
+            // Always settle the openDialog promise — a resolver left pending
+            // would freeze the product-click queue.
+            closeDialog(dialogKey, null);
             toast.error(t('Failed to load product units. Please try again.'));
         } finally {
             setIsLoading(false);
@@ -55,9 +61,9 @@ export default function SelectUnitQuantityDialog({ selectProduct }: { selectProd
         if (unit.unit === null) {
             toast.error(t('The form is not valid.'));
 
-            return closeDialog('selectQuantity', null);
+            return closeDialog(dialogKey, null);
         }
-        closeDialog('selectQuantity', unit);
+        closeDialog(dialogKey, unit);
     };
 
     useEffect(() => {

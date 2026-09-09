@@ -42,3 +42,21 @@ export async function resolveProductUnitQuantities(product: Product): Promise<Un
     }
     return productsApi.getUnitQuantities(product.id);
 }
+
+/**
+ * Picks the unit to use when a product is added without dialogs ("Show
+ * Quantity" off — the categories-panel express rule): a single unit, or the
+ * configured default unit when the product carries it. Returns null when the
+ * choice is ambiguous and the cashier must pick a unit.
+ */
+export function pickExpressUnit(units: UnitQuantity[], defaultUnitId: unknown): UnitQuantity | null {
+    if (units.length === 0) return null;
+    if (units.length === 1) return units[0];
+
+    const id = Number(defaultUnitId);
+    if (Number.isFinite(id) && id > 0) {
+        return units.find((q) => q.unit?.id === id || q.unit_id === id) ?? null;
+    }
+
+    return null;
+}

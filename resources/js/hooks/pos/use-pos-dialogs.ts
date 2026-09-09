@@ -16,6 +16,8 @@ import { StateCreator } from 'zustand';
 
 interface DialogMap {
     selectQuantity: UnitQuantity;
+    /** Unit picker driven by the barcode-scan flow in pos-system.tsx. */
+    unitPicker: UnitQuantity;
 }
 
 type DialogKey = keyof DialogMap;

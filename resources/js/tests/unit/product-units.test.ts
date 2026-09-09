@@ -7,7 +7,7 @@
  * must mirror it before the payload is preferred.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { resolveProductUnitQuantities } from '@/services/product-units';
+import { pickExpressUnit, resolveProductUnitQuantities } from '@/services/product-units';
 import { productsApi } from '@/api';
 
 vi.mock('@/api', () => ({
@@ -57,5 +57,31 @@ describe('services/product-units.ts', () => {
         expect(productsApi.getUnitQuantities).toHaveBeenCalledTimes(1);
         expect(productsApi.getUnitQuantities).toHaveBeenCalledWith(7);
         expect(units).toEqual([visibleUnit]);
+    });
+});
+
+describe('pickExpressUnit', () => {
+    const unit = (id: number, unitId: number) =>
+        ({ id, unit_id: unitId, unit: { id: unitId, name: `u${unitId}` } }) as any;
+
+    it('returns the only unit when the product has exactly one', () => {
+        const units = [unit(1, 10)];
+        expect(pickExpressUnit(units, 0)).toBe(units[0]);
+    });
+
+    it('returns the configured default unit when it matches', () => {
+        const units = [unit(1, 10), unit(2, 20)];
+        expect(pickExpressUnit(units, 20)).toBe(units[1]);
+    });
+
+    it('returns null when several units exist and none matches the default', () => {
+        const units = [unit(1, 10), unit(2, 20)];
+        expect(pickExpressUnit(units, 99)).toBeNull();
+        expect(pickExpressUnit(units, 0)).toBeNull();
+        expect(pickExpressUnit(units, undefined)).toBeNull();
+    });
+
+    it('returns null for an empty unit list', () => {
+        expect(pickExpressUnit([], 10)).toBeNull();
     });
 });
