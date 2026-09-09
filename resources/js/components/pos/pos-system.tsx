@@ -326,7 +326,18 @@ export default function PosSystem() {
       quantity: qty,
       tax_group_id: +(product.product.tax_group_id || 0),
       tax_type: product.product.tax_type,
-      tax_value: selectedUnit.sale_price_tax,
+      // The cart engine derives the unit price from `quantities` and the tax
+      // split from `source.tax_group` on every recompute (computeProduct →
+      // computeProductTaxValue, both `?? 0` when absent) — a line without
+      // them is priced at 0 no matter what unit_price says here. The explicit
+      // price fields below are initial values only.
+      quantities: selectedUnit,
+      source: {
+        id: product.product.id,
+        category_id: (product.product as any).category_id,
+        tax_type: product.product.tax_type,
+        tax_group: product.product.tax_group ?? null,
+      },
       unit_id: selectedUnit.unit.id,
       unit_price: selectedUnit.sale_price,
       price_with_tax: selectedUnit.sale_price_with_tax,

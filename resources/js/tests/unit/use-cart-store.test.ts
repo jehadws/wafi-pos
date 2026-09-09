@@ -192,4 +192,54 @@ describe('use-cart-store (Zustand Cart Slice)', () => {
 
         expect(usePOS.getState().order.type?.identifier).toBe('takeaway');
     });
+
+    it('prices a scanned product line from quantities + source (barcode scan payload contract)', async () => {
+        // Payload shape built by addProductWithUnit (pos-system) from the
+        // /products/search/using-barcode response. The engine derives the
+        // unit price from `quantities` and the tax split from
+        // `source.tax_group` on recompute — a line without them is priced 0.
+        await usePOS.getState().addToCart({
+            order_id: null,
+            product_id: 1,
+            name: 'Twin Comforter Sets',
+            product_type: 'product',
+            rate: 16,
+            quantity: 1,
+            tax_group_id: 1,
+            tax_type: 'inclusive',
+            quantities: {
+                id: 1, unit_id: 1, quantity: 775,
+                sale_price: 86.45, sale_price_edit: 86.45,
+                sale_price_without_tax: 74.5259, sale_price_with_tax: 86.45,
+                sale_price_tax: 11.9241,
+                unit: { id: 1, name: 'Piece' },
+            },
+            source: {
+                id: 1, category_id: 1, tax_type: 'inclusive',
+                tax_group: {
+                    id: 1, name: 'GST',
+                    taxes: [{ id: 1, name: 'SGST', rate: 8 }, { id: 2, name: 'CGST', rate: 8 }],
+                },
+            },
+            unit_id: 1,
+            unit_price: 86.45,
+            price_with_tax: 86.45,
+            price_without_tax: 74.5259,
+            unit_name: 'Piece',
+            mode: 'normal',
+            unit_quantity_id: 1,
+            _uuid: 'scan-1-1',
+        } as any);
+
+        const [line] = usePOS.getState().products;
+
+        // Unit price follows the price basis (option off → without tax).
+        expect(line.unit_price).toBeCloseTo(74.5259, 3);
+        // Tax split from source.tax_group (GST 8% + 8% on the inclusive 86.45).
+        expect(line.price_with_tax).toBeCloseTo(86.45, 3);
+        expect(line.price_without_tax).toBeCloseTo(74.5259, 3);
+        expect(line.total_tax_value).toBeCloseTo(11.9241, 3);
+        // The payable total is always the with-tax amount.
+        expect(line.total_price).toBeCloseTo(86.45, 3);
+    });
 });
