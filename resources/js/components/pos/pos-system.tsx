@@ -3,7 +3,7 @@ import PaymentActions from '@/components/pos/payment-actions';
 import TotalsSummary from '@/components/pos/totals-summary';
 import PrimaryNavigation from '@/components/common/primary-navigation';
 import SecondaryNavigation from '@/components/pos/secondary-navigation';
-import { POS_OPTION_KEYS, isPriceWithTax } from '@/constants/pos-options';
+import { isPosOptionEnabled, POS_OPTION_KEYS, isPriceWithTax } from '@/constants/pos-options';
 import { useRegisterStore } from '@/hooks/pos/use-register-store';
 import { usePOSShortcuts } from '@/hooks/use-pos-shortcuts';
 import { useRTL } from '@/hooks/use-rtl';
@@ -14,11 +14,13 @@ import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Barcode, Search, Shrink } from 'lucide-react';
 import { toast } from 'sonner';
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useRef, useState } from 'react';
 import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
+import SelectUnitQuantityDialog from './select-unit-quantity-dialog';
+import { pickExpressUnit, resolveProductUnitQuantities } from '@/services/product-units';
 import {
     calculateTotalsForDiscountPercentageUpdate,
     calculateTotalsForPriceUpdate,
@@ -133,9 +135,28 @@ export default function PosSystem() {
     allowDecimalQuantities: options[POS_OPTION_KEYS.allowDecimalQuantities] ?? true,
   });
 
+  // Unit resolved for the current scan before the quantity keypad opens.
+  const scanUnitRef = useRef<UnitQuantity | null>(null);
+  const [unitPickerProduct, setUnitPickerProduct] = useState<any>(null);
+
+  const openScanUnitPicker = (product: any): Promise<UnitQuantity | null> => {
+    setUnitPickerProduct(product);
+    return usePOS.getState().openDialog('unitPicker');
+  };
+
+  // Units for a scanned product: the lookup pre-resolves the unit when the
+  // barcode matched a unit quantity; otherwise resolve from the payload
+  // (unit_quantities is hydrated by the barcode endpoint) or the units API.
+  const resolveScanUnits = async (product: any): Promise<UnitQuantity[]> => {
+    const scanned = product?.product?.selectedUnitQuantity;
+    if (scanned) return [scanned as UnitQuantity];
+    return resolveProductUnitQuantities(product?.product);
+  };
+
   const barcodeSearch = useBarcodeSearch({
     onProductFound: (product) => {
       dialogs.setSelectedProduct(product);
+      scanUnitRef.current = null;
 
       // Express scan: with "Show Quantity" off, a scan that already resolved
       // its unit goes straight to the cart with the default quantity (1).
@@ -144,7 +165,49 @@ export default function PosSystem() {
         return;
       }
 
-      dialogs.quantityKeypad.openKeypad();
+      // A scan matching the product barcode (vs a unit barcode) arrives
+      // without a resolved unit — resolve it the same way the categories
+      // panel does instead of blindly opening the keypad (whose confirm
+      // previously dropped the item silently).
+      resolveScanUnits(product).then((units) => {
+        if (units.length === 0) {
+          toast.error(t('Unable to proceed, no product were provided.'));
+          return;
+        }
+
+        const resolved = pickExpressUnit(units, options.sb_subul_quick_product_default_unit);
+
+        if (isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) {
+          // Quantity requested → resolve the unit first (single unit, the
+          // configured default, or the picker), then open the keypad.
+          if (product?.product?.selectedUnitQuantity) {
+            dialogs.quantityKeypad.openKeypad();
+            return;
+          }
+          if (resolved) {
+            scanUnitRef.current = resolved;
+            dialogs.quantityKeypad.openKeypad();
+            return;
+          }
+          openScanUnitPicker(product).then((unit) => {
+            setUnitPickerProduct(null);
+            if (!unit) return;
+            scanUnitRef.current = unit;
+            dialogs.quantityKeypad.openKeypad();
+          });
+          return;
+        }
+
+        // "Show Quantity" off → default quantity (1), no keypad.
+        if (resolved) {
+          addProductWithUnit(product, 1, resolved);
+          return;
+        }
+        openScanUnitPicker(product).then((unit) => {
+          setUnitPickerProduct(null);
+          if (unit) addProductWithUnit(product, 1, unit);
+        });
+      });
     },
     onProductNotFound: (barcode) => {
       // When quick-product is enabled, open the add dialog directly
@@ -233,8 +296,8 @@ export default function PosSystem() {
     cartSelection.deselectAllItems();
   };
 
-  const addProductWithUnit = (product: ProductSearchBarcode, qty: number) => {
-    const selectedUnit = product?.product?.selectedUnitQuantity;
+  const addProductWithUnit = (product: ProductSearchBarcode, qty: number, unitOverride?: UnitQuantity) => {
+    const selectedUnit = unitOverride ?? product?.product?.selectedUnitQuantity;
     if (!selectedUnit) return;
 
     const currentInCart = products.reduce(
@@ -293,7 +356,7 @@ export default function PosSystem() {
       return toast.warning(t('Not enough quantity to proceed.'));
     }
 
-    addProductWithUnit(dialogs.selectedProduct, qty);
+    addProductWithUnit(dialogs.selectedProduct, qty, scanUnitRef.current ?? undefined);
   };
 
   return (
@@ -518,6 +581,10 @@ export default function PosSystem() {
 
       <NumericKeypadDialog {...dialogs.discountKeypad.keypadProps} />
       <NumericKeypadDialog {...dialogs.quantityKeypad.keypadProps} />
+
+      {/* Unit picker for the barcode-scan flow (own store key so it can run
+          alongside the categories-panel picker). */}
+      <SelectUnitQuantityDialog selectProduct={unitPickerProduct} dialogKey="unitPicker" />
 
       <ConfirmationDialog
         isOpen={dialogs.isResetCartOpen}
