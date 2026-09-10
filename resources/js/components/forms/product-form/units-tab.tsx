@@ -1,11 +1,12 @@
 'use client';
 
+import { SbCrudForm } from '@/components/forms/config-form/sb-crud-form';
 import FormField from '@/components/forms/shared/form-field';
 import ToggleButtons from '@/components/forms/shared/toggle-buttons';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslation } from '@/lib/i18n';
+import type { FormFieldDef } from '@/types/forms';
 import { usePage } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 import SellingGroupCard from './selling-group-card';
@@ -14,6 +15,17 @@ import type { UnitsTabProps } from './types';
 export default function UnitsTab({ form, handleInputChange }: UnitsTabProps) {
     const { t } = useTranslation();
     const { unitGroups } = usePage<{ unitGroups: UnitGroupWithUnits[] }>().props;
+
+    const unitGroupField: FormFieldDef = {
+        name: 'unit_group',
+        label: t('Unit Group'),
+        type: 'search-select',
+        component: 'sbCrudForm',
+        namespace: 'sb.units-groups',
+        validation: 'required',
+        options: (unitGroups ?? []).map((group) => ({ label: group.name, value: group.id })),
+        description: t('What unit group applies to the actual item. This group will apply during the procurement.'),
+    };
 
     const addSellingGroup = () => {
         const newSellingGroup = {
@@ -63,23 +75,14 @@ export default function UnitsTab({ form, handleInputChange }: UnitsTabProps) {
                         error={form.errors?.units_unit_group}
                         required
                     >
-                        <Select
-                            value={form.data.units_unit_group?.toString()}
-                            onValueChange={(value) => handleInputChange('units_unit_group', value)}
-                            defaultValue="Select Unit Group"
+                        <SbCrudForm
+                            field={unitGroupField}
+                            value={form.data.units_unit_group}
+                            onChange={(value) => handleInputChange('units_unit_group', value as number)}
+                            error={form.errors?.units_unit_group}
                             disabled={!!form.data.units_unit_group && form.data.units_selling_group.length > 0}
-                        >
-                            <SelectTrigger className="w-full">
-                                <SelectValue placeholder={t('Select Unit Group')} />
-                            </SelectTrigger>
-                            <SelectContent className="w-full">
-                                {unitGroups?.map((group) => (
-                                    <SelectItem key={group.id} value={group.id.toString()}>
-                                        {group.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                            id="unit_group"
+                        />
                     </FormField>
                     <FormField
                         label={t('Accurate Tracking')}

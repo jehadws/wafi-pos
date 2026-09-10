@@ -1,3 +1,4 @@
+import { SbCrudForm } from '@/components/forms/config-form/sb-crud-form';
 import FormField from '@/components/forms/shared/form-field';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -10,6 +11,17 @@ import { IdentificationTabProps, ProductFormData } from './types';
 export default function IdentificationTab({ form, handleInputChange }: IdentificationTabProps) {
     const { t } = useTranslation();
     const { categories } = usePage<{ categories: CategoryProduct[] }>().props;
+
+    const categoryField = {
+        name: 'category_id',
+        label: t('Category'),
+        type: 'search-select',
+        component: 'sbCrudForm',
+        namespace: 'sb.products-categories',
+        validation: 'required',
+        options: categories.map((category) => ({ label: category.name, value: category.id })),
+        description: t('Select to which category the item is assigned.'),
+    } as const;
 
     const handleChange = (name: keyof ProductFormData, value: string | number | number[]) => {
         handleInputChange(name, value);
@@ -28,22 +40,13 @@ export default function IdentificationTab({ form, handleInputChange }: Identific
                     error={form.errors?.identification_category_id}
                     required
                 >
-                    <Select
-                        value={form.data.identification_category_id?.toString()}
-                        onValueChange={(value) => handleChange('identification_category_id', value)}
-                        defaultValue={t('Select an option')}
-                    >
-                        <SelectTrigger className="w-full">
-                            <SelectValue placeholder={t('Select an option')} defaultValue={t('Select an option')} />
-                        </SelectTrigger>
-                        <SelectContent className="w-full">
-                            {categories.map((category) => (
-                                <SelectItem key={category.id} value={category.id.toString()}>
-                                    {category.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <SbCrudForm
+                        field={categoryField}
+                        value={form.data.identification_category_id}
+                        onChange={(value) => handleChange('identification_category_id', value as number)}
+                        error={form.errors?.identification_category_id}
+                        id="identification_category_id"
+                    />
                 </FormField>
 
                 <FormField

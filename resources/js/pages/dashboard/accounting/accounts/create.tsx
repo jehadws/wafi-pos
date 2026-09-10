@@ -1,16 +1,17 @@
+import { transactionsApi } from '@/api';
+import { SbCrudForm } from '@/components/forms/config-form/sb-crud-form';
 import FormField from '@/components/forms/shared/form-field';
 import FormHeader from '@/components/forms/shared/form-header';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import type { FormFieldDef } from '@/types/forms';
 import { extractValidationErrors } from '@/utils/api-errors';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { transactionsApi } from '@/api';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -35,6 +36,16 @@ export default function CreateProductPage() {
         },
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const subCategoryField: FormFieldDef = {
+        name: 'sub_category_id',
+        label: t('Sub Account'),
+        type: 'search-select',
+        component: 'sbCrudForm',
+        namespace: 'sb.transactions-accounts',
+        options: subCategories,
+        description: t('Assign to a sub category.'),
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -160,26 +171,20 @@ export default function CreateProductPage() {
                                     description={t('Assign to a sub category.')}
                                     error={form.errors?.['general.sub_category_id']}
                                 >
-                                    <Select
+                                    <SbCrudForm
+                                        field={subCategoryField}
                                         value={form.data.general.sub_category_id}
-                                        onValueChange={(value) => form.setData('general.sub_category_id', value)}
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder={t('Not set')} />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {subCategories?.map((category) => (
-                                                <SelectItem key={category.value.toString()} value={category.value.toString()}>
-                                                    {category.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                        onChange={(value) => form.setData('general.sub_category_id', value != null ? String(value) : '')}
+                                        error={form.errors?.['general.sub_category_id']}
+                                        id="general_sub_category_id"
+                                    />
                                 </FormField>
                                 <FormField
                                     label={t('Account')}
                                     htmlFor="general_last_name"
-                                    description={t('Provide the accounting number for this category. If left empty, it will be generated automatically.')}
+                                    description={t(
+                                        'Provide the accounting number for this category. If left empty, it will be generated automatically.',
+                                    )}
                                     error={form.errors?.['general.account']}
                                 >
                                     <Input

@@ -1,3 +1,4 @@
+import { SbCrudForm } from '@/components/forms/config-form/sb-crud-form';
 import FormField from '@/components/forms/shared/form-field';
 import ToggleButtons from '@/components/forms/shared/toggle-buttons';
 import { Button } from '@/components/ui/button';
@@ -5,12 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslation } from '@/lib/i18n';
+import type { FormFieldDef } from '@/types/forms';
 import { InertiaFormProps } from '@inertiajs/react';
 import { Trash, Upload, X } from 'lucide-react';
 import type { ProductFormData } from './types';
-
-// TODO: if there is no units on the group, show create unit button
-// We were not able to load the units. Make sure there are units attached on the unit group selected.
 
 interface SellingGroupCardProps {
     form: InertiaFormProps<ProductFormData>;
@@ -21,6 +20,18 @@ interface SellingGroupCardProps {
 
 export default function SellingGroupCard({ form, units, index, onRemove }: SellingGroupCardProps) {
     const { t } = useTranslation();
+
+    const unitField: FormFieldDef = {
+        name: 'unit_id',
+        label: t('Assigned Unit'),
+        type: 'search-select',
+        component: 'sbCrudForm',
+        namespace: 'sb.units',
+        validation: 'required',
+        options: (units ?? []).map((unit) => ({ label: unit.name, value: unit.id })),
+        description: t('The assigned unit for sale'),
+    };
+
     const handleGroupChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         const newSellingGroups = [...form.data.units_selling_group];
@@ -88,21 +99,12 @@ export default function SellingGroupCard({ form, units, index, onRemove }: Selli
                         error={(form.errors as any)?.['units_selling_group.' + index + '.unit_id']}
                         description={t('The assigned unit for sale')}
                     >
-                        <Select
-                            value={form.data.units_selling_group[index].unit_id.toString()}
-                            onValueChange={(value) => handleGroupSelectChange('unit_id', +value)}
-                        >
-                            <SelectTrigger className="w-full">
-                                <SelectValue placeholder={t('Choose...')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {units?.map((unit) => (
-                                    <SelectItem key={unit.id.toString()} value={unit.id.toString()}>
-                                        {unit.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <SbCrudForm
+                            field={unitField}
+                            value={form.data.units_selling_group[index].unit_id}
+                            onChange={(value) => handleGroupSelectChange('unit_id', value as number)}
+                            error={(form.errors as any)?.['units_selling_group.' + index + '.unit_id']}
+                        />
                     </FormField>
 
                     <FormField

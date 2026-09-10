@@ -1,15 +1,16 @@
+import { transactionsApi } from '@/api';
+import { SbCrudForm } from '@/components/forms/config-form/sb-crud-form';
 import FormField from '@/components/forms/shared/form-field';
 import FormHeader from '@/components/forms/shared/form-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import type { FormFieldDef } from '@/types/forms';
 import { extractValidationErrors } from '@/utils/api-errors';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { transactionsApi } from '@/api';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -58,6 +59,15 @@ export default function EditTransactionPage() {
 
     const [loading, setLoading] = useState(false);
     const [accounts, setAccounts] = useState<{ label: string; value: number }[]>([]);
+    const accountField: FormFieldDef = {
+        name: 'account_id',
+        label: t('Account'),
+        type: 'search-select',
+        component: 'sbCrudForm',
+        namespace: 'sb.transactions-accounts',
+        options: accounts,
+        description: t('Assign the transaction to an account'),
+    };
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -117,9 +127,7 @@ export default function EditTransactionPage() {
                         form={{ ...form, processing: isSubmitting || form.processing }}
                     />
 
-                    {infoMessage && (
-                        <div className="bg-accent/30 border-primary border-l border-l-3 p-2">{infoMessage}</div>
-                    )}
+                    {infoMessage && <div className="bg-accent/30 border-primary border-l border-l-3 p-2">{infoMessage}</div>}
 
                     {loading ? (
                         <div className="flex h-64 items-center justify-center">
@@ -161,21 +169,13 @@ export default function EditTransactionPage() {
                             </FormField>
 
                             <FormField label={t('Account')} htmlFor="general_account_id" error={form.errors?.['general.account_id'] || ''}>
-                                <Select
+                                <SbCrudForm
+                                    field={accountField}
                                     value={form.data.general.account_id}
-                                    onValueChange={(value) => form.setData('general.account_id', value)}
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder={t('Select an option')} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {accounts?.map((account) => (
-                                            <SelectItem key={account.value} value={account.value.toString()}>
-                                                {account.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                    onChange={(value) => form.setData('general.account_id', value as string)}
+                                    error={form.errors?.['general.account_id']}
+                                    id="general_account_id"
+                                />
                             </FormField>
 
                             <FormField

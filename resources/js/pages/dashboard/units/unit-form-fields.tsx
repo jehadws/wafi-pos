@@ -1,13 +1,12 @@
-import React from 'react';
+import { SbCrudForm } from '@/components/forms/config-form/sb-crud-form';
 import FormField from '@/components/forms/shared/form-field';
-import { RadioGroup } from '@/components/ui/radio-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroupItem } from '@/components/ui/radio-group';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import type { FormFieldDef } from '@/types/forms';
 import type { UnitFormData } from './use-unit-form';
 
 interface UnitFormFieldsProps {
@@ -21,6 +20,17 @@ interface UnitFormFieldsProps {
 
 export function UnitFormFields({ form, unitGroups, handleInputChange }: UnitFormFieldsProps) {
     const { t } = useTranslation();
+
+    const groupField: FormFieldDef = {
+        name: 'group_id',
+        label: t('Group'),
+        type: 'search-select',
+        component: 'sbCrudForm',
+        namespace: 'sb.units-groups',
+        validation: 'required',
+        options: unitGroups.map((group) => ({ label: group.name, value: group.id })),
+        description: t('Define to which group the unit should be assigned.'),
+    };
 
     return (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -58,24 +68,13 @@ export function UnitFormFields({ form, unitGroups, handleInputChange }: UnitForm
                 />
             </FormField>
 
-            <FormField
-                label={t('Group')}
-                error={form.errors.group_id}
-                description={t('Define to which group the unit should be assigned.')}
-                required
-            >
-                <Select value={`${form.data.group_id}`} onValueChange={(value) => handleInputChange('group_id', +value)}>
-                    <SelectTrigger className={cn(form.errors.group_id && 'border-destructive')}>
-                        <SelectValue placeholder={t('Select Group')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {unitGroups.map((group) => (
-                            <SelectItem key={`${group.id}`} value={`${group.id}`}>
-                                {group.name}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+            <FormField label={t('Group')} error={form.errors.group_id} description={t('Define to which group the unit should be assigned.')} required>
+                <SbCrudForm
+                    field={groupField}
+                    value={form.data.group_id}
+                    onChange={(value) => handleInputChange('group_id', value as number)}
+                    error={form.errors.group_id}
+                />
             </FormField>
 
             <FormField
@@ -105,11 +104,7 @@ export function UnitFormFields({ form, unitGroups, handleInputChange }: UnitForm
                 </RadioGroup>
             </FormField>
 
-            <FormField
-                label={t('Description')}
-                error={form.errors.description}
-                description={t('Provide a short description about the unit.')}
-            >
+            <FormField label={t('Description')} error={form.errors.description} description={t('Provide a short description about the unit.')}>
                 <Textarea
                     id="description"
                     name="description"

@@ -6,7 +6,7 @@ import { useTranslation } from '@/lib/i18n';
 import type { CrudFormConfig, FormFieldDef, FormOption } from '@/types/forms';
 import { extractValidationErrors, getApiErrorMessage } from '@/utils/api-errors';
 import { Plus } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { ConfigForm, initialValuesFromConfig } from './config-form';
 import type { CustomFieldComponentProps } from './registry';
@@ -23,10 +23,7 @@ import { registerCustomComponent } from './registry';
  * so empty modal fields are simply omitted from the create body.
  */
 
-interface SbCrudFormProps extends CustomFieldComponentProps {
-    /** Managed options override (defaults to `field.options`). */
-    options?: FormOption[];
-}
+type SbCrudFormProps = CustomFieldComponentProps;
 
 function resolveEmbeddedConfig(field: FormFieldDef): CrudFormConfig | null {
     const props = field.props as Partial<CrudFormConfig> | undefined;
@@ -57,14 +54,21 @@ function entryToOption(entry: Record<string, unknown>, config: CrudFormConfig): 
     return { label: String(rawLabel), value: rawValue as FormOption['value'] };
 }
 
-export function SbCrudForm({ field, value, onChange, error, disabled, id, options: optionsProp }: SbCrudFormProps) {
+export function SbCrudForm({ field, value, onChange, error, disabled, id }: SbCrudFormProps) {
     const { t } = useTranslation();
 
     const embedded = useMemo(() => resolveEmbeddedConfig(field), [field]);
     const namespace = useMemo(() => resolveNamespace(field), [field]);
 
-    const [ownOptions, setOwnOptions] = useState<FormOption[]>(Array.isArray(field.options) ? field.options : []);
-    const options = optionsProp ?? ownOptions;
+    // Server options arrive via Inertia props and are re-created every
+    // render; entities created in this session are kept separately and
+    // merged so the fresh selection never loses its label.
+    const serverOptions = useMemo(() => (Array.isArray(field.options) ? field.options : []), [field.options]);
+    const [createdEntries, setCreatedEntries] = useState<FormOption[]>([]);
+    const options = useMemo(() => {
+        const known = new Set(serverOptions.map((option) => String(option.value)));
+        return [...serverOptions, ...createdEntries.filter((option) => !known.has(String(option.value)))];
+    }, [serverOptions, createdEntries]);
 
     const [modalOpen, setModalOpen] = useState(false);
     const [modalConfig, setModalConfig] = useState<CrudFormConfig | null>(embedded);
@@ -73,13 +77,6 @@ export function SbCrudForm({ field, value, onChange, error, disabled, id, option
     const [submitError, setSubmitError] = useState<string | undefined>(undefined);
     const [submitting, setSubmitting] = useState(false);
     const [probeFailed, setProbeFailed] = useState(false);
-
-    useEffect(() => {
-        if (!Array.isArray(field.options)) {
-            return;
-        }
-        setOwnOptions(field.options);
-    }, [field.options]);
 
     const selectValue = value === undefined || value === null ? '' : String(value);
     const selectedOption = options.find((option) => String(option.value) === selectValue);
@@ -129,9 +126,7 @@ export function SbCrudForm({ field, value, onChange, error, disabled, id, option
             const entry = (response?.entry ?? {}) as Record<string, unknown>;
             const option = entryToOption(entry, modalConfig);
 
-            if (!Array.isArray(field.options)) {
-                setOwnOptions((current) => [...current, option]);
-            }
+            setCreatedEntries((current) => [...current, option]);
             onChange(option.value, entry);
             toast.success(response?.message ?? t('A new entry has been successfully created.'));
             setModalOpen(false);

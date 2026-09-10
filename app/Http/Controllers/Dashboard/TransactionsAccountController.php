@@ -46,7 +46,15 @@ class TransactionsAccountController extends DashboardController
 
   public function editTransactionsAccounts(TransactionAccount $account)
   {
-    return TransactionAccountCrud::form($account);
+    $options = collect(config('accounting.accounts'))->map(fn($accountType, $key) => [
+      'label' => $accountType['label'],
+      'value' => $key,
+    ])->values();
+
+    return Inertia::render('dashboard/accounting/accounts/edit', [
+      'category_identifiers' => $options,
+      'transaction_account' => $account->toArray(),
+    ]);
   }
 
   public function listTransactionsRules()

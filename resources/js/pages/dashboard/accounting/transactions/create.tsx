@@ -1,17 +1,18 @@
+import { transactionsApi } from '@/api';
+import { SbCrudForm } from '@/components/forms/config-form/sb-crud-form';
 import FormField from '@/components/forms/shared/form-field';
 import FormHeader from '@/components/forms/shared/form-header';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import type { FormFieldDef } from '@/types/forms';
 import { extractValidationErrors } from '@/utils/api-errors';
 import { Head, router, useForm } from '@inertiajs/react';
 import { DialogTitle } from '@radix-ui/react-dialog';
-import { transactionsApi } from '@/api';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -40,6 +41,15 @@ export default function CreateProductPage({ infoMessage }: { infoMessage?: strin
 
     const [loading, setLoading] = useState(false);
     const [accounts, setAccounts] = useState<{ label: string; value: number }[]>([]);
+    const accountField: FormFieldDef = {
+        name: 'account_id',
+        label: t('Account'),
+        type: 'search-select',
+        component: 'sbCrudForm',
+        namespace: 'sb.transactions-accounts',
+        options: accounts,
+        description: t('Assign the transaction to an account'),
+    };
     const [showModal, setShowModal] = useState(false);
     const [configurations, setConfigurations] = useState<any>({});
 
@@ -167,24 +177,14 @@ export default function CreateProductPage({ infoMessage }: { infoMessage?: strin
                                 </div>
                             </FormField>
 
-                            <FormField label={t('Description')} htmlFor="general_description" error={form.errors?.['general.description'] || ''}>
-                                <Select
+                            <FormField label={t('Account')} htmlFor="general_account_id" error={form.errors?.['general.account_id'] || ''}>
+                                <SbCrudForm
+                                    field={accountField}
                                     value={form.data.general.account_id}
-                                    onValueChange={(value) => {
-                                        form.setData('general.account_id', value);
-                                    }}
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder={t('Select an option')} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {accounts?.map((category) => (
-                                            <SelectItem key={category.value} value={category.value.toString()}>
-                                                {category.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                    onChange={(value) => form.setData('general.account_id', value as string)}
+                                    error={form.errors?.['general.account_id']}
+                                    id="general_account_id"
+                                />
                             </FormField>
 
                             <FormField

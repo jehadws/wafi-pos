@@ -1,10 +1,11 @@
-import React from 'react';
+import { SbCrudForm } from '@/components/forms/config-form/sb-crud-form';
 import FormField from '@/components/forms/shared/form-field';
 import ToggleButtons from '@/components/forms/shared/toggle-buttons';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslation } from '@/lib/i18n';
+import type { FormFieldDef } from '@/types/forms';
 import type { ProcurementFormData } from './use-procurement-form';
 
 const DeliveryStatus = [
@@ -30,6 +31,16 @@ interface ProcurementGeneralTabProps {
 export function ProcurementGeneralTab({ form, providers, handleInputChange }: ProcurementGeneralTabProps) {
     const { t } = useTranslation();
 
+    const providerField: FormFieldDef = {
+        name: 'provider_id',
+        label: t('Provider'),
+        type: 'search-select',
+        component: 'sbCrudForm',
+        namespace: 'sb.providers',
+        options: providers.map((provider) => ({ label: provider.name, value: provider.id })),
+        description: t('Determine what is the actual provider of the current procurement.'),
+    };
+
     return (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             <FormField
@@ -53,10 +64,7 @@ export function ProcurementGeneralTab({ form, providers, handleInputChange }: Pr
                 description={t('If the procurement has to be delivered at a specific time, define the moment here.')}
                 error={form.errors?.general_delivery_time}
             >
-                <DatePicker
-                    onDateChange={(value) => handleInputChange('general_delivery_time', value)}
-                    date={form.data.general_delivery_time}
-                />
+                <DatePicker onDateChange={(value) => handleInputChange('general_delivery_time', value)} date={form.data.general_delivery_time} />
             </FormField>
 
             <FormField
@@ -65,10 +73,7 @@ export function ProcurementGeneralTab({ form, providers, handleInputChange }: Pr
                 description={t('If you would like to define a custom invoice date.')}
                 error={form.errors?.general_invoice_date}
             >
-                <DatePicker
-                    onDateChange={(value) => handleInputChange('general_invoice_date', value)}
-                    date={form.data.general_invoice_date}
-                />
+                <DatePicker onDateChange={(value) => handleInputChange('general_invoice_date', value)} date={form.data.general_invoice_date} />
             </FormField>
 
             <FormField
@@ -86,13 +91,12 @@ export function ProcurementGeneralTab({ form, providers, handleInputChange }: Pr
             <FormField
                 label={t('Delivery Status')}
                 htmlFor="general_delivery_status"
-                description={t('Determine what is the actual value of the procurement. Once "Delivered" the status can\'t be changed, and the stock will be updated.')}
+                description={t(
+                    'Determine what is the actual value of the procurement. Once "Delivered" the status can\'t be changed, and the stock will be updated.',
+                )}
                 error={form.errors?.general_delivery_status}
             >
-                <Select
-                    value={form.data.general_delivery_status}
-                    onValueChange={(value) => handleInputChange('general_delivery_status', value)}
-                >
+                <Select value={form.data.general_delivery_status} onValueChange={(value) => handleInputChange('general_delivery_status', value)}>
                     <SelectTrigger className="w-full">
                         <SelectValue placeholder={t('Not set')} />
                     </SelectTrigger>
@@ -112,10 +116,7 @@ export function ProcurementGeneralTab({ form, providers, handleInputChange }: Pr
                 description={t('Determine what is the actual payment status of the procurement.')}
                 error={form.errors?.general_payment_status}
             >
-                <Select
-                    value={form.data.general_payment_status}
-                    onValueChange={(value) => handleInputChange('general_payment_status', value)}
-                >
+                <Select value={form.data.general_payment_status} onValueChange={(value) => handleInputChange('general_payment_status', value)}>
                     <SelectTrigger className="w-full">
                         <SelectValue placeholder={t('Not set')} />
                     </SelectTrigger>
@@ -135,21 +136,13 @@ export function ProcurementGeneralTab({ form, providers, handleInputChange }: Pr
                 description={t('Determine what is the actual provider of the current procurement.')}
                 error={form.errors?.general_provider_id}
             >
-                <Select
-                    value={form.data.general_provider_id.toString()}
-                    onValueChange={(value) => handleInputChange('general_provider_id', +value)}
-                >
-                    <SelectTrigger className="w-full">
-                        <SelectValue placeholder={t('Not set')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {providers.map((provider) => (
-                            <SelectItem key={provider.id} value={provider.id.toString()}>
-                                {provider.name}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <SbCrudForm
+                    field={providerField}
+                    value={form.data.general_provider_id}
+                    onChange={(value) => handleInputChange('general_provider_id', value as number)}
+                    error={form.errors?.general_provider_id}
+                    id="general_provider_id"
+                />
             </FormField>
         </div>
     );

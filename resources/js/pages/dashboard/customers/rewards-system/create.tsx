@@ -1,20 +1,19 @@
-import AppLayout from '@/layouts/app-layout';
-import { useTranslation } from '@/lib/i18n';
-import { Head, router, usePage } from '@inertiajs/react';
-import React, { useState } from 'react';
+import { rewardsApi } from '@/api';
+import { SbCrudForm } from '@/components/forms/config-form/sb-crud-form';
 import FormField from '@/components/forms/shared/form-field';
 import FormHeader from '@/components/forms/shared/form-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/app-layout';
+import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { useForm } from '@inertiajs/react';
-import { rewardsApi } from '@/api';
+import type { FormFieldDef } from '@/types/forms';
 import { extractValidationErrors } from '@/utils/api-errors';
-import { Select } from '@radix-ui/react-select';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { Plus, X } from 'lucide-react';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
 
 interface RewardRule {
@@ -35,6 +34,16 @@ type FormData = {
 export default function CreateRewardSystemPage() {
     const { t } = useTranslation();
     const { coupons } = usePage<{ coupons: Coupon[] }>().props;
+
+    const couponField: FormFieldDef = {
+        name: 'coupon_id',
+        label: t('Coupon'),
+        type: 'search-select',
+        component: 'sbCreateCoupons',
+        namespace: 'sb.coupons',
+        options: coupons.map((coupon) => ({ label: coupon.name, value: coupon.id })),
+        description: t('Decide which coupon you would apply to the system.'),
+    };
 
     const breadcrumbs = [
         { title: t('Dashboard'), href: '/dashboard' },
@@ -215,20 +224,13 @@ export default function CreateRewardSystemPage() {
                                 htmlFor="coupon_id"
                                 error={form.errors.coupon_id}
                             >
-                                <Select onValueChange={(value) => handleSelectChange('coupon_id', +value)}>
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {coupons.map((coupon) => {
-                                            return (
-                                                <SelectItem key={coupon.id} value={coupon.id.toString()}>
-                                                    <div className="flex items-center gap-2">{coupon.name}</div>
-                                                </SelectItem>
-                                            );
-                                        })}
-                                    </SelectContent>
-                                </Select>
+                                <SbCrudForm
+                                    field={couponField}
+                                    value={form.data.coupon_id}
+                                    onChange={(value) => handleSelectChange('coupon_id', value as number)}
+                                    error={form.errors.coupon_id}
+                                    id="coupon_id"
+                                />
                             </FormField>
 
                             <FormField
@@ -278,7 +280,7 @@ export default function CreateRewardSystemPage() {
                                                 type="button"
                                                 variant="ghost"
                                                 size="icon"
-                                                className="absolute top-2 end-2 h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-700"
+                                                className="absolute end-2 top-2 h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-700"
                                                 onClick={() => removeRule(rule.id)}
                                             >
                                                 <X className="h-4 w-4" />
