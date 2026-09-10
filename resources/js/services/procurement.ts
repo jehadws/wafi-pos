@@ -6,6 +6,7 @@
  */
 
 import { format } from 'date-fns';
+import { getPriceWithTax, getPriceWithoutTax, getVatValue } from '@/services/cart-engine';
 
 export interface ProcurementProductItem {
     id?: number;
@@ -28,6 +29,10 @@ export interface ProcurementProductItem {
     expiration_date?: any;
     tax_group_id?: number | null;
     tax_type?: 'inclusive' | 'exclusive' | string;
+    /** Total rate (sum of the group's tax rates) resolved when the group is picked — used by `calculateLineItemPrices`. */
+    tax_rate?: number;
+    /** Unique client-side row identity, stable across product_id/id collisions. */
+    _key?: string;
     $invalid?: boolean;
     [key: string]: any;
 }
@@ -47,13 +52,17 @@ export interface ProcurementGeneralData {
  */
 export function calculateLineItemPrices(item: ProcurementProductItem, field: 'purchase_price' | 'quantity', value: number): ProcurementProductItem {
     const updated = { ...item, [field]: value };
-    const price = field === 'purchase_price' ? value : (updated.purchase_price || 0);
-    const qty = field === 'quantity' ? value : (updated.quantity || 0);
+    const price = field === 'purchase_price' ? value : Number(updated.purchase_price || 0);
+    const qty = field === 'quantity' ? value : Number(updated.quantity || 0);
+    const rate = Number(updated.tax_rate || 0);
+    const type = updated.tax_type || 'inclusive';
 
-    updated.total_purchase_price = price * qty;
     updated.purchase_price_edit = price;
-    updated.gross_purchase_price = price;
-    updated.net_purchase_price = price;
+    updated.gross_purchase_price = rate > 0 ? getPriceWithTax(price, rate, type) : price;
+    updated.net_purchase_price = rate > 0 ? getPriceWithoutTax(price, rate, type) : price;
+    updated.total_purchase_price = price * qty;
+    updated.total_price = (rate > 0 ? getPriceWithTax(price, rate, type) : price) * qty;
+    updated.tax_value = rate > 0 ? getVatValue(price, rate, type) * qty : 0;
 
     return updated;
 }
@@ -78,14 +87,17 @@ export function buildProcurementPayload(
             provider_id: general.provider_id,
         },
         products: products.map((product) => ({
-            gross_purchase_price: !Number.isNaN(product.gross_purchase_price) ? product.gross_purchase_price : 0,
-            purchase_price_edit: !Number.isNaN(product.purchase_price_edit) ? product.purchase_price_edit : 0,
+            // The backend matches existing procurement products by `id`
+            // (ProcurementService::saveProducts) — omitting it duplicates rows on edit.
+            ...(product.id ? { id: product.id } : {}),
+            gross_purchase_price: !Number.isNaN(Number(product.gross_purchase_price)) ? Number(product.gross_purchase_price) : 0,
+            purchase_price_edit: !Number.isNaN(Number(product.purchase_price_edit)) ? Number(product.purchase_price_edit) : 0,
             tax_value: !Number.isNaN(Number(product.tax_value)) ? Number(product.tax_value) : 0,
-            net_purchase_price: !Number.isNaN(product.net_purchase_price) ? product.net_purchase_price : 0,
-            purchase_price: !Number.isNaN(product.purchase_price) ? product.purchase_price : 0,
-            total_price: !Number.isNaN(product.total_price) ? product.total_price : 0,
-            total_purchase_price: !Number.isNaN(product.total_purchase_price) ? product.total_purchase_price : 0,
-            quantity: !Number.isNaN(product.quantity) ? product.quantity.toString() : '0',
+            net_purchase_price: !Number.isNaN(Number(product.net_purchase_price)) ? Number(product.net_purchase_price) : 0,
+            purchase_price: !Number.isNaN(Number(product.purchase_price)) ? Number(product.purchase_price) : 0,
+            total_price: !Number.isNaN(Number(product.total_price)) ? Number(product.total_price) : 0,
+            total_purchase_price: !Number.isNaN(Number(product.total_purchase_price)) ? Number(product.total_purchase_price) : 0,
+            quantity: !Number.isNaN(Number(product.quantity)) ? Number(product.quantity).toString() : '0',
             expiration_date: product.expiration_date ? format(new Date(product.expiration_date), 'yyyy-MM-dd HH:mm:ss') : null,
             tax_group_id: product.tax_group_id ? product.tax_group_id : null,
             tax_type: product.tax_type ? product.tax_type : 'inclusive',

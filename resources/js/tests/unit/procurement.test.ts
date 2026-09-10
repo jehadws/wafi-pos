@@ -34,6 +34,61 @@ describe('procurement service', () => {
             expect(updated.quantity).toBe(4);
             expect(updated.total_purchase_price).toBe(100);
         });
+
+        it('applies exclusive tax to gross/net/total/tax_value', () => {
+            const item: ProcurementProductItem = {
+                product_id: 1,
+                name: 'Taxed Product',
+                purchase_price: 100,
+                total_purchase_price: 0,
+                quantity: 2,
+                unit_id: 1,
+                tax_rate: 10,
+                tax_type: 'exclusive',
+            };
+
+            const updated = calculateLineItemPrices(item, 'quantity', 2);
+            expect(updated.net_purchase_price).toBe(100);
+            expect(updated.gross_purchase_price).toBe(110);
+            expect(updated.total_purchase_price).toBe(200);
+            expect(updated.total_price).toBe(220);
+            expect(updated.tax_value).toBeCloseTo(20, 5);
+        });
+
+        it('splits inclusive tax out of the purchase price', () => {
+            const item: ProcurementProductItem = {
+                product_id: 1,
+                name: 'Inclusive Product',
+                purchase_price: 110,
+                total_purchase_price: 0,
+                quantity: 1,
+                unit_id: 1,
+                tax_rate: 10,
+                tax_type: 'inclusive',
+            };
+
+            const updated = calculateLineItemPrices(item, 'quantity', 1);
+            expect(updated.net_purchase_price).toBe(100);
+            expect(updated.gross_purchase_price).toBe(110);
+            expect(updated.tax_value).toBeCloseTo(10, 5);
+        });
+
+        it('keeps tax fields at zero when no tax rate is set', () => {
+            const item: ProcurementProductItem = {
+                product_id: 1,
+                name: 'No Tax',
+                purchase_price: 50,
+                total_purchase_price: 0,
+                quantity: 3,
+                unit_id: 1,
+            };
+
+            const updated = calculateLineItemPrices(item, 'purchase_price', 50);
+            expect(updated.tax_value).toBe(0);
+            expect(updated.gross_purchase_price).toBe(50);
+            expect(updated.net_purchase_price).toBe(50);
+            expect(updated.total_purchase_price).toBe(150);
+        });
     });
 
     describe('buildProcurementPayload', () => {
