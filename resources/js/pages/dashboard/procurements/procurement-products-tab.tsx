@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { DropdownSearch } from '@/components/ui/dropdown-search';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/lib/i18n';
+import { formatCurrency } from '@/utils/format';
 import { ArrowRightLeft, Calculator, Package, Settings, Trash2 } from 'lucide-react';
 import type { ProcurementFormData, ProcurementModalState } from './use-procurement-form';
 import type { ProcurementProductItem } from '@/services/procurement';
@@ -13,12 +14,16 @@ interface ProcurementProductsTabProps {
     };
     searchQuery: string;
     searchResults: any[];
-    taxGroups: { id: number; name: string }[];
+    taxGroups: { id: number; name: string; taxes?: { id: number; rate: number }[] }[];
     onSearchQueryChange: (query: string) => void;
     onSearch: (query: string) => void;
     onSelectProduct: (product: any) => void;
-    onUpdateProduct: (id: number, field: keyof ProcurementProductItem, value: any) => void;
-    onRemoveProduct: (id: number) => void;
+    onUpdateProduct: (
+        key: number | string,
+        field: keyof ProcurementProductItem | Partial<ProcurementProductItem>,
+        value?: any,
+    ) => void;
+    onRemoveProduct: (key: number | string) => void;
     onOpenModal: (modal: ProcurementModalState) => void;
     onGetConvertUnits: (groupId: number) => void;
 }
@@ -66,9 +71,15 @@ export function ProcurementProductsTab({
                     </div>
                 ) : (
                     form.data.products.map((product) => {
-                        const targetId = (product.product_id || product.id) as number;
+                        const rowKey = product._key as string;
+                        const selectedUnit = product.unit_id
+                            ? product.unit_quantities?.find((uq: any) => uq.unit_id === product.unit_id)
+                            : product.unit_quantities?.[0];
                         return (
-                            <div key={targetId} className="flex flex-col border-b p-4 last:border-b-0">
+                            <div
+                                key={rowKey}
+                                className={product.$invalid ? 'flex flex-col border-b p-4 last:border-b-0 bg-destructive/5' : 'flex flex-col border-b p-4 last:border-b-0'}
+                            >
                                 <div className="grid grid-cols-5 gap-4">
                                     <div>
                                         <div className="px-3 py-2 font-medium">{product.name}</div>
@@ -76,9 +87,11 @@ export function ProcurementProductsTab({
                                     <div>
                                         <Input
                                             type="number"
+                                            min="0"
+                                            step="0.01"
                                             value={product.purchase_price}
                                             onChange={(e) =>
-                                                onUpdateProduct(targetId, 'purchase_price', Number.parseFloat(e.target.value))
+                                                onUpdateProduct(rowKey, 'purchase_price', Number.parseFloat(e.target.value) || 0)
                                             }
                                             placeholder="0.00"
                                         />
@@ -89,24 +102,26 @@ export function ProcurementProductsTab({
                                     <div>
                                         <Input
                                             type="number"
+                                            min="0"
+                                            step="1"
                                             value={product.quantity}
-                                            onChange={(e) => onUpdateProduct(targetId, 'quantity', Number.parseInt(e.target.value) || 0)}
+                                            onChange={(e) => onUpdateProduct(rowKey, 'quantity', Number.parseInt(e.target.value) || 0)}
                                             placeholder="0"
                                         />
                                     </div>
                                     <div>
-                                        <div className="px-3 py-2 font-medium">USD {(product.total_purchase_price || 0).toFixed(2)}</div>
+                                        <div className="px-3 py-2 font-medium">{formatCurrency(product.total_purchase_price || 0)}</div>
                                     </div>
                                 </div>
 
                                 <div className="mt-2 flex w-full flex-row flex-wrap gap-3">
-                                    <Button onClick={() => onRemoveProduct(targetId)} variant="outline" size="sm" type="button">
+                                    <Button onClick={() => onRemoveProduct(rowKey)} variant="outline" size="sm" type="button">
                                         <Trash2 className="h-3 w-3" />
                                         {t('Delete')}
                                     </Button>
                                     <Button
                                         type="button"
-                                        onClick={() => onOpenModal({ type: 'options', product_id: targetId, group_id: null })}
+                                        onClick={() => onOpenModal({ type: 'options', product_id: rowKey, group_id: null })}
                                         variant="outline"
                                         size="sm"
                                     >
@@ -115,18 +130,18 @@ export function ProcurementProductsTab({
                                     </Button>
                                     <Button
                                         type="button"
-                                        onClick={() => onOpenModal({ type: 'unit', product_id: targetId, group_id: null })}
+                                        onClick={() => onOpenModal({ type: 'unit', product_id: rowKey, group_id: null })}
                                         variant="outline"
                                         size="sm"
                                     >
                                         <Package className="h-3 w-3" />
-                                        {t('Unit')}: {product.unit_id && product.unit_quantities?.[0]?.unit?.name ? product.unit_quantities[0].unit.name : 'N/A'}
+                                        {t('Unit')}: {selectedUnit?.unit?.name || 'N/A'}
                                     </Button>
                                     <Button
                                         type="button"
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => onOpenModal({ type: 'tax', product_id: targetId, group_id: null })}
+                                        onClick={() => onOpenModal({ type: 'tax', product_id: rowKey, group_id: null })}
                                     >
                                         <Calculator className="h-3 w-3" />
                                         {t('Tax')}: {product.tax_group_id ? taxGroups.find((g) => g.id === product.tax_group_id)?.name : 'N/A'}
@@ -139,7 +154,7 @@ export function ProcurementProductsTab({
                                             if (product.unit_group) {
                                                 onGetConvertUnits(product.unit_group);
                                             }
-                                            onOpenModal({ type: 'convert', product_id: targetId, group_id: product.unit_group || null });
+                                            onOpenModal({ type: 'convert', product_id: rowKey, group_id: product.unit_group || null });
                                         }}
                                     >
                                         <ArrowRightLeft className="h-3 w-3" />

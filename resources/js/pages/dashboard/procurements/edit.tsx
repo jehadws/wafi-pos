@@ -17,7 +17,7 @@ interface EditProcurementProps {
         products: any[];
     };
     providers: { id: number; name: string }[];
-    tax_groups: { id: number; name: string }[];
+    tax_groups: { id: number; name: string; taxes?: { id: number; rate: number }[] }[];
 }
 
 export default function EditProcurementPage() {

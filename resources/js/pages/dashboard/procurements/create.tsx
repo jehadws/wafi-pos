@@ -15,7 +15,7 @@ export default function CreateProcurementPage() {
     const { t } = useTranslation();
     const { providers, tax_groups } = usePage<{
         providers: { id: number; name: string }[];
-        tax_groups: { id: number; name: string }[];
+        tax_groups: { id: number; name: string; taxes?: { id: number; rate: number }[] }[];
     }>().props;
 
     const breadcrumbs = [

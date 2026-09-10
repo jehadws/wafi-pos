@@ -13,10 +13,14 @@ interface ProcurementItemModalsProps {
         data: ProcurementFormData;
     };
     activeModal: ProcurementModalState;
-    taxGroups: { id: number; name: string }[];
+    taxGroups: { id: number; name: string; taxes?: { id: number; rate: number }[] }[];
     units: any[];
     onCloseModal: () => void;
-    onUpdateProduct: (id: number, field: keyof ProcurementProductItem, value: any) => void;
+    onUpdateProduct: (
+        key: number | string,
+        field: keyof ProcurementProductItem | Partial<ProcurementProductItem>,
+        value?: any,
+    ) => void;
 }
 
 export function ProcurementItemModals({
@@ -28,10 +32,8 @@ export function ProcurementItemModals({
     onUpdateProduct,
 }: ProcurementItemModalsProps) {
     const { t } = useTranslation();
-    const activeProduct = form.data.products.find(
-        (p) => p.id === activeModal.product_id || p.product_id === activeModal.product_id,
-    );
-    const targetId = activeModal.product_id as number;
+    const activeProduct = form.data.products.find((p) => p._key === activeModal.product_id);
+    const rowKey = activeModal.product_id as number | string;
 
     return (
         <>
@@ -47,7 +49,7 @@ export function ProcurementItemModals({
                             description={t('Define when that specific product should expire.')}
                         >
                             <DatePicker
-                                onDateChange={(value) => onUpdateProduct(targetId, 'expiration_date', value)}
+                                onDateChange={(value) => onUpdateProduct(rowKey, 'expiration_date', value)}
                                 date={activeProduct?.expiration_date || null}
                             />
                         </FormField>
@@ -68,7 +70,7 @@ export function ProcurementItemModals({
                         >
                             <Select
                                 value={activeProduct?.tax_type || 'inclusive'}
-                                onValueChange={(value) => onUpdateProduct(targetId, 'tax_type', value)}
+                                onValueChange={(value) => onUpdateProduct(rowKey, 'tax_type', value)}
                             >
                                 <SelectTrigger className="w-full">
                                     <SelectValue placeholder={t('Select an option')} />
@@ -99,7 +101,7 @@ export function ProcurementItemModals({
                         <FormField label="" description="">
                             <Select
                                 value={activeProduct?.unit_id?.toString() || ''}
-                                onValueChange={(value) => onUpdateProduct(targetId, 'unit_id', +value)}
+                                onValueChange={(value) => onUpdateProduct(rowKey, 'unit_id', +value)}
                             >
                                 <SelectTrigger className="w-full">
                                     <SelectValue placeholder={t('Select an option')} />
@@ -132,12 +134,16 @@ export function ProcurementItemModals({
                             <Select
                                 value={activeProduct?.tax_group_id?.toString() || ''}
                                 onValueChange={(value) => {
-                                    onUpdateProduct(targetId, 'tax_group_id', +value);
-                                    onUpdateProduct(
-                                        targetId,
-                                        'tax_value',
-                                        taxGroups.find((group) => group.id === +value)?.name || 0,
-                                    );
+                                    const group = taxGroups.find((g) => g.id === +value);
+                                    // Single atomic patch: sets the group and its total rate
+                                    // (sum of the group's tax rates) so line prices recompute
+                                    // for the chosen tax_type. Never store the group *name*
+                                    // as tax_value.
+                                    const tax_rate = (group?.taxes ?? []).reduce((sum, tax) => sum + Number(tax.rate || 0), 0);
+                                    onUpdateProduct(rowKey, {
+                                        tax_group_id: +value,
+                                        tax_rate,
+                                    });
                                 }}
                             >
                                 <SelectTrigger className="w-full">
@@ -167,12 +173,12 @@ export function ProcurementItemModals({
                             <Select
                                 value={activeProduct?.convert_unit_id?.toString() || ''}
                                 onValueChange={(value) => {
-                                    onUpdateProduct(targetId, 'convert_unit_id', +value);
-                                    onUpdateProduct(
-                                        targetId,
-                                        'convert_unit_label',
-                                        units.find((unit) => unit.id === +value)?.name || '',
-                                    );
+                                    // Single atomic patch — avoids the lost-update race of
+                                    // two consecutive onUpdateProduct calls.
+                                    onUpdateProduct(rowKey, {
+                                        convert_unit_id: +value,
+                                        convert_unit_label: units.find((unit) => unit.id === +value)?.name || '',
+                                    });
                                 }}
                             >
                                 <SelectTrigger className="w-full">
