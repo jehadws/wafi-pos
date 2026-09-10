@@ -423,6 +423,13 @@ class CrudService
         'status' => 'success',
         'message' => $message,
         'redirect' => route($resource->to_route),
+
+        /**
+         * The created/updated attributes. API clients that embed the
+         * resource as an option (inline "create and select" flows)
+         * need the entry without a second fetch.
+         */
+        'entry' => $entry->toArray(),
       ]);
     }
 
