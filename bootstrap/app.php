@@ -5,6 +5,8 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\LicenseMiddleware;
 use App\Http\Middleware\LoadLangMiddleware;
 use App\Jobs\ClearHoldOrdersJob;
+use App\Jobs\DetectLowStockProductsJob;
+use App\Jobs\StockProcurementJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -21,10 +23,21 @@ return Application::configure(basePath: dirname(__DIR__))
   ->withSchedule(function (Schedule $schedule) {
     /**
      * Hold orders (parked carts) are deleted once they exceed the
-     * sb_orders_quotation_expiration setting. Broader periodic jobs
-     * are tracked separately (issue #11).
+     * sb_orders_quotation_expiration setting.
      */
     $schedule->job(new ClearHoldOrdersJob)->daily();
+
+    /**
+     * Procurements that are "pending" with automatic approval
+     * are stocked once their delivery time has occurred.
+     */
+    $schedule->job(new StockProcurementJob)->everyThirtyMinutes();
+
+    /**
+     * Notifies administrators about products whose
+     * quantity went below the low quantity threshold.
+     */
+    $schedule->job(new DetectLowStockProductsJob)->daily();
   })
   ->withMiddleware(function (Middleware $middleware) {
     $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);

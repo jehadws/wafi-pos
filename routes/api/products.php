@@ -35,7 +35,7 @@ Route::middleware([
 
 Route::post('products', [ProductsController::class, 'saveProduct'])->middleware(SbRestrictMiddleware::arguments('subul.create.products'))->name('sb.products.saveProduct');
 Route::post('products/search', [ProductsController::class, 'searchProduct'])->middleware(SbRestrictMiddleware::arguments('subul.read.products'));
-Route::post('products/adjustments', [ProductsController::class, 'createAdjustment'])->middleware(SbRestrictMiddleware::arguments('subul.update.products'));
+Route::post('products/adjustments', [ProductsController::class, 'createAdjustment'])->middleware(SbRestrictMiddleware::arguments('subul.make.products-adjustments'));
 Route::post('products/{identifier}/variations/{variation_id}', [ProductsController::class, 'createSingleVariation'])->middleware(SbRestrictMiddleware::arguments('subul.create.products'));
 Route::post('products/{product}/units/conversion', [ProductsController::class, 'convertUnits'])->middleware(SbRestrictMiddleware::arguments('subul.update.products'));
 

@@ -47,7 +47,7 @@ class ProcurementRefreshJob implements ShouldQueue
                 $this->procurement->name
             ),
             'identifier' => 'sb.procurement-refresh' . $this->procurement->id,
-            'url' => sb()->route( 'sb.procurement-invoice', [ 'procurement' => $this->procurement->id ] ),
+            'url' => sb()->route( 'sb.dashboard.procurement-invoice', [ 'procurement' => $this->procurement->id ] ),
         ] )->dispatchForGroup( [
             Role::ADMIN,
             Role::STOREADMIN,

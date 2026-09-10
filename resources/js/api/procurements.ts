@@ -26,6 +26,10 @@ export const procurementsApi = {
     /** Mark a procurement as paid. */
     setAsPaid: (id: number | string) => get(`/procurements/${id}/set-as-paid`),
 
+    /** Change a procurement's payment status (paid | unpaid). */
+    changePaymentStatus: (id: number | string, paymentStatus: 'paid' | 'unpaid') =>
+        put(`/procurements/${id}/change-payment-status`, { payment_status: paymentStatus }),
+
     /** Trigger a procurement refresh. */
     refresh: (id: number | string) => get(`/procurements/${id}/refresh`),
 

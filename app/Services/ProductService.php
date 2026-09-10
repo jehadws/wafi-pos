@@ -1152,7 +1152,7 @@ class ProductService
         return [
             'status' => 'success',
             'message' => __( 'The product stock has been updated.' ),
-            'compac' => compact( 'history' ),
+            'compact' => compact( 'history' ),
         ];
     }
 
@@ -1187,12 +1187,19 @@ class ProductService
         }
 
         $product_id = $product->id;
-        $unit_id = isset( $unit_id ) ? $unit_id : $unit->id;
         $unit = Unit::find( $unit_id );
 
         if ( ! $unit instanceof Unit ) {
             throw new NotFoundException( __( 'The unit doesn\'t exists.' ) );
         }
+
+        /**
+         * the procurement product might be referenced by its id
+         * (eg. when adjusted from the stock adjustment screen).
+         * We'll resolve it so that the operation updates the batch
+         * "available_quantity" and gets linked to the batch history.
+         */
+        $procurementProduct = isset( $procurementProduct ) ? $procurementProduct : ( isset( $procurement_product_id ) ? ProcurementProduct::find( $procurement_product_id ) : null );
 
         /**
          * let's check the different
@@ -1238,8 +1245,9 @@ class ProductService
                     total_price: $total_price,
                     unit_price: $unit_price,
                     orderProduct: isset( $orderProduct ) ? $orderProduct : null,
-                    procurementProduct: isset( $procurementProduct ) ? $procurementProduct : null,
+                    procurementProduct: $procurementProduct,
                     author: $author ?? 0,
+                    description: $description ?? '',
                 );
             }
         }
@@ -1388,7 +1396,7 @@ class ProductService
      * @param  ProcurementProduct $procurementProduct
      * @return ProductHistory
      */
-    private function handleStockAdjustmentRegularProducts( $action, $quantity, $product_id, $unit_id, $author = 0, $orderProduct = null, $unit_price = 0, $total_price = 0, $procurementProduct = null )
+    private function handleStockAdjustmentRegularProducts( $action, $quantity, $product_id, $unit_id, $author = 0, $orderProduct = null, $unit_price = 0, $total_price = 0, $procurementProduct = null, $description = '' )
     {
         /**
          * we would like to verify if
@@ -1445,8 +1453,9 @@ class ProductService
                 unit_price: $unit_price,
                 quantity: $quantity,
                 total_price: $total_price,
+                description: $description,
                 procurement_product_id: $procurementProduct?->id ?: null,
-                procurement_id: $procurementProduct->procurement_id ?? null,
+                procurement_id: $procurementProduct?->procurement_id ?? null,
                 order_id: isset( $orderProduct ) ? $orderProduct->order_id : null,
                 order_product_id: isset( $orderProduct ) ? $orderProduct->id : null,
                 old_quantity: $result[ 'data' ][ 'oldQuantity' ],
@@ -1459,6 +1468,13 @@ class ProductService
                 product_id: $product_id,
                 unit_id: $unit_id
             );
+
+            /**
+             * initialize the adjusted quantity so that a "set"
+             * operation performed on an unchanged quantity still
+             * records a valid history entry.
+             */
+            $adjustQuantity = 0;
 
             if ( $currentQuantity < $quantity ) {
                 $action = ProductHistory::ACTION_ADDED;
@@ -1490,8 +1506,9 @@ class ProductService
                 unit_price: $unit_price,
                 quantity: $adjustQuantity,
                 total_price: $total_price,
+                description: $description,
                 procurement_product_id: $procurementProduct?->id ?: null,
-                procurement_id: $procurementProduct->procurement_id ?? null,
+                procurement_id: $procurementProduct?->procurement_id ?? null,
                 order_id: isset( $orderProduct ) ? $orderProduct->order_id : null,
                 order_product_id: isset( $orderProduct ) ? $orderProduct->id : null,
                 old_quantity: $currentQuantity,
@@ -1532,7 +1549,8 @@ class ProductService
         $procurement_product_id = null,
         $procurement_id = null,
         $old_quantity = 0,
-        $new_quantity = 0 )
+        $new_quantity = 0,
+        $description = '' )
     {
         $history = new ProductHistory;
         $history->product_id = $product_id;
@@ -1544,7 +1562,7 @@ class ProductService
         $history->operation_type = $action;
         $history->unit_price = $unit_price;
         $history->total_price = $total_price;
-        $history->description = $description ?? ''; // a description might be provided to describe the operation
+        $history->description = $description; // a description might be provided to describe the operation
         $history->before_quantity = $old_quantity; // if the stock management is 0, it shouldn't change
         $history->quantity = abs( $quantity );
         $history->after_quantity = $new_quantity; // if the stock management is 0, it shouldn't change

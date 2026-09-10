@@ -10,6 +10,7 @@ import type { ProcurementFormData } from './use-procurement-form';
 const DeliveryStatus = [
     { value: 'delivered', label: 'Delivered' },
     { value: 'pending', label: 'Pending' },
+    { value: 'draft', label: 'Draft' },
 ];
 
 const PaymentStatus = [

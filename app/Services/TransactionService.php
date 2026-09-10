@@ -689,7 +689,7 @@ class TransactionService
             ->where( 'created_at', '<=', $date->endOfDay()->toDateTimeString() )
             ->get();
 
-        return $history instanceof TransactionHistory;
+        return $history->isNotEmpty();
     }
 
     /**

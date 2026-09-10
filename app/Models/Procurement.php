@@ -79,7 +79,9 @@ class Procurement extends SbModel
     const PAYMENT_PAID = 'paid';
 
     protected $dispatchesEvents = [
-        'creating' => ProcurementAfterCreateEvent::class,
+        // "creating" is intentionally not mapped: the custom
+        // ProcurementBeforeCreateEvent expects (procurement, data)
+        // and is dispatched manually by ProcurementService::create().
         'created' => ProcurementAfterCreateEvent::class,
         'deleting' => ProcurementBeforeDeleteEvent::class,
         'updating' => ProcurementBeforeUpdateEvent::class,

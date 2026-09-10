@@ -5,13 +5,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { toast } from 'sonner'
 import { usePage } from '@inertiajs/react'
 import { useConfirmDialog } from '@/components/providers/confirm-dialog-provider'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import SelectableItem from '@/components/ui/selectable-item'
 import { useNumericKeypad } from '@/hooks/use-numeric-keypad'
 import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog'
 import { Button } from '@/components/ui/button'
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { useTranslation } from '@/lib/i18n'
+import { Textarea } from '@/components/ui/textarea'
 
 interface StockAdjustmentProduct extends Product {
   selected: boolean;
@@ -45,21 +46,42 @@ export default function Page() {
   const [selectingUnitFor, setSelectingUnitFor] = useState<string | null>(null);
   const [selectingActionFor, setSelectingActionFor] = useState<string | null>(null);
   const [selectingQuantityFor, setSelectingQuantityFor] = useState<string | null>(null);
+  const [reasonDialogFor, setReasonDialogFor] = useState<string | null>(null);
+  const [pendingReason, setPendingReason] = useState<string>('');
+
+  /**
+   * Pure helper: returns a new product copy with adjust_value recomputed.
+   * Does not mutate the original product object.
+   */
+  const recalculateProduct = (product: StockAdjustmentProduct): StockAdjustmentProduct => {
+    if (product.adjust_unit === null) return product;
+    const adjust_value = ['deleted', 'defective', 'lost'].includes(product.adjust_action)
+      ? -(product.adjust_quantity * product.adjust_unit.sale_price)
+      : product.adjust_quantity * product.adjust_unit.sale_price;
+    return { ...product, adjust_value };
+  };
 
   const handleQuantity = (quantity: string) => {
     if (selectingQuantityFor) {
-      const product = products.find(product => `${product.id}-${product.adjust_unit?.unit?.id}` === selectingQuantityFor);
-      if (product) {
+      setProducts(prev => prev.map(product => {
+        if (`${product.id}-${product.adjust_unit?.unit?.id}` !== selectingQuantityFor) return product;
+
         if (!['added', 'set'].includes(product.adjust_action)) {
-          if (product.accurate_tracking !== undefined && +quantity > product.available_quantity) {
-            return toast(t('The specified quantity exceed the available quantity.'));
-          } else if (product?.adjust_unit !== null && +quantity > product?.adjust_unit?.quantity) {
-            return toast(t('The specified quantity exceed the available quantity.'));
+          // Use accurate_tracking to decide which stock ceiling applies.
+          // For procurement-tracked products use the batch available_quantity;
+          // for regular products use the unit quantity on hand.
+          const maxQty = product.accurate_tracking
+            ? product.available_quantity
+            : (product.adjust_unit?.quantity ?? Infinity);
+
+          if (+quantity > maxQty) {
+            toast(t('The specified quantity exceed the available quantity.'));
+            return product;
           }
         }
-        product.adjust_quantity = Number(quantity);
-        recalculateProduct(product);
-      }
+
+        return recalculateProduct({ ...product, adjust_quantity: Number(quantity) });
+      }));
     }
     setSelectingQuantityFor(null);
   }
@@ -113,8 +135,9 @@ export default function Page() {
       selected: false,
       // @ts-expect-error Inertia form type
       id: product.product_id,
-      // @ts-expect-error Inertia form type
-      unit_quantities: [product.unit],
+      // @ts-expect-error Inertia form type - use the full UnitQuantity object (not the bare Unit)
+      // so the unit-selector dialog compares UnitQuantity ids consistently.
+      unit_quantities: [product.unit_quantity],
       // @ts-expect-error Inertia form type
       adjust_unit: product.unit_quantity,
       // @ts-expect-error Inertia form type
@@ -132,26 +155,17 @@ export default function Page() {
       }]
     }
 
-    recalculateProduct(finalProduct);
-    setProducts(prev => [finalProduct, ...prev]);
+    setProducts(prev => [recalculateProduct(finalProduct), ...prev]);
     closeSearch();
 
   }
 
-  const recalculateProduct = (product: StockAdjustmentProduct) => {
-    if (product.adjust_unit !== null) {
-      if (['deleted', 'defective', 'lost'].includes(product.adjust_action)) {
-        product.adjust_value = - (product.adjust_quantity * product.adjust_unit.sale_price);
-      } else {
-        product.adjust_value = product.adjust_quantity * product.adjust_unit.sale_price;
-      }
-    }
-    // this.$forceUpdate();
-  }
-
-
   const addSuggestion = async (suggestion: Product) => {
-    const alreadyAdded = products.filter(product => product.id === suggestion.id).length > 0;
+    // Guard against both search-branch duplicates (by product id) and
+    // procurement-branch duplicates (by procurement_product_id carrying the same product).
+    const alreadyAdded = products.some(
+      p => p.id === suggestion.id || p.procurement_product_id === suggestion.id
+    );
 
     if (alreadyAdded) {
       closeSearch();
@@ -172,17 +186,15 @@ export default function Page() {
         adjust_quantity: 1,
         adjust_action: defaultAction.value,
         adjust_reason: '',
-        adjust_unit: defaultUnit.length > 0 && !alreadyAdded ? defaultUnit[0] : null,
+        // Fall back to the first available unit when no base unit is configured (avoids null adjust_unit).
+        adjust_unit: defaultUnit.length > 0 ? defaultUnit[0] : data[0],
         adjust_value: 0,
         procurement_product_id: 0,
         procurement_history: [],
         available_quantity: 0,
       }
 
-
-
-      recalculateProduct(modified);
-      setProducts(prev => [modified, ...prev]);
+      setProducts(prev => [recalculateProduct(modified), ...prev]);
       closeSearch();
     } else {
       return toast(t("This product doesn't have any stock to adjust."));
@@ -197,6 +209,7 @@ export default function Page() {
       // })
     }
   }
+
   const removeProduct = async (product: StockAdjustmentProduct) => {
     const ok = await confirm({
       title: t("Confirm Your Action"),
@@ -214,6 +227,7 @@ export default function Page() {
       });
     }
   }
+
   const selectAdjustmentUnit = (product: StockAdjustmentProduct, unitQuantity: UnitQuantity) => {
     const index = products.indexOf(product);
     const otherProducts = products.filter((_, _index) => _index !== index);
@@ -224,18 +238,19 @@ export default function Page() {
       return toast(t('A similar product with the same unit already exists.'));
     }
 
-    product.adjust_unit = unitQuantity;
-    recalculateProduct(product);
+    setProducts(prev => prev.map(p => {
+      if (p !== product) return p;
+      return recalculateProduct({ ...p, adjust_unit: unitQuantity });
+    }));
     setSelectingUnitFor(null);
   }
 
 
   const selectStockAdjustementAction = (product: StockAdjustmentProduct, action: string) => {
-    const index = products.indexOf(product);
-    if (index !== -1) {
-      product.adjust_action = action;
-      recalculateProduct(product);
-    }
+    setProducts(prev => prev.map(p => {
+      if (p !== product) return p;
+      return recalculateProduct({ ...p, adjust_action: action });
+    }));
     setSelectingActionFor(null);
   }
 
@@ -244,10 +259,31 @@ export default function Page() {
     setSelectingQuantityFor(`${product.id}-${product.adjust_unit?.unit?.id}`);
   }
 
+  const openReasonDialog = (product: StockAdjustmentProduct) => {
+    setReasonDialogFor(`${product.id}-${product.adjust_unit?.unit?.id}`);
+    setPendingReason(product.adjust_reason);
+  }
+
+  const saveReason = () => {
+    if (!reasonDialogFor) return;
+    setProducts(prev => prev.map(p => {
+      if (`${p.id}-${p.adjust_unit?.unit?.id}` !== reasonDialogFor) return p;
+      return { ...p, adjust_reason: pendingReason };
+    }));
+    setReasonDialogFor(null);
+    setPendingReason('');
+  }
+
   const proceedStockAdjustment = async () => {
     if (products.length === 0) {
       return toast(t('Unable to proceed as the table is empty.'));
     }
+
+    const missingUnit = products.find(p => p.adjust_unit === null);
+    if (missingUnit) {
+      return toast(t('Please select a unit for all products before proceeding.'));
+    }
+
     const ok = await confirm({
       title: t("Confirm Your Action"),
       message: t("The stock adjustment is about to be made. Would you like to confirm ?"),
@@ -320,7 +356,7 @@ export default function Page() {
                     <TableRow className="bg-muted/50">
                       <TableCell className="font-medium">
                         <div>
-                          {product.name} ({(product.accurate_tracking ? product.available_quantity : product.adjust_unit!.quantity) || 0})
+                          {product.name} ({(product.accurate_tracking ? product.available_quantity : (product.adjust_unit?.quantity ?? 0)) || 0})
                         </div>
                         <div className="flex -mx-2 md:flex-row flex-wrap">
                           {/* Unit */}
@@ -358,7 +394,7 @@ export default function Page() {
                                     label={unit.unit.name}
                                     value={unit.id.toString()}
                                     key={unit.id}
-                                    selected={product.adjust_unit!.id === unit.id}
+                                    selected={product.adjust_unit?.id === unit.id}
                                   />
                                 ))}
                               </div>
@@ -423,7 +459,7 @@ export default function Page() {
                           {/* Reason */}
                           <div
                             className="px-2 w-1/2 md:w-auto"
-                          // onClick={() => provideReason(product)}
+                            onClick={() => openReasonDialog(product)}
                           >
                             <div className="text-xs cursor-pointer border-b border-dashed border-info-secondary py-1">
                               <span className="text-xs">{t("Reason")}:</span>&nbsp;
@@ -469,6 +505,28 @@ export default function Page() {
         </div>
 
         <NumericKeypadDialog {...quantityKeypad.keypadProps} />
+
+        {/* Reason dialog — shared across all product rows, controlled by reasonDialogFor key */}
+        <Dialog open={reasonDialogFor !== null} onOpenChange={(isOpen) => { if (!isOpen) setReasonDialogFor(null); }}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>{t("Adjustment Reason")}</DialogTitle>
+              <DialogDescription>
+                {t("Useful to describe better what are the reasons behind this stock adjustment.")}
+              </DialogDescription>
+            </DialogHeader>
+            <Textarea
+              value={pendingReason}
+              onChange={(e) => setPendingReason(e.target.value)}
+              placeholder={t("Enter reason...")}
+              rows={4}
+            />
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setReasonDialogFor(null)}>{t("Cancel")}</Button>
+              <Button onClick={saveReason}>{t("Save")}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
       </div>
     </AppLayout>

@@ -139,8 +139,14 @@ class ProcurementService
         Procurement::withoutEvents( function () use ( $procurement, $data ) {
             $procurement->name = $data[ 'name' ] ?: $this->procurementName();
 
+            /**
+             * Only the whitelisted fields coming from
+             * the "general" section can be assigned.
+             */
             foreach ( $data[ 'general' ] as $field => $value ) {
-                $procurement->$field = $value;
+                if ( in_array( $field, [ 'provider_id', 'delivery_status', 'payment_status', 'invoice_reference', 'delivery_time', 'invoice_date', 'automatic_approval' ] ) ) {
+                    $procurement->$field = $value;
+                }
             }
 
             if ( ! empty( $procurement->created_at ) || ! empty( $procurement->updated_at ) ) {
@@ -219,10 +225,16 @@ class ProcurementService
                 throw new Exception( __( 'Unable to edit a procurement that has already been stocked. Please consider performing and stock adjustment.' ) );
             }
 
-            $procurement->name = $data[ 'name' ];
+            $procurement->name = $data[ 'name' ] ?: $this->procurementName();
 
+            /**
+             * Only the whitelisted fields coming from
+             * the "general" section can be assigned.
+             */
             foreach ( $data[ 'general' ] as $field => $value ) {
-                $procurement->$field = $value;
+                if ( in_array( $field, [ 'provider_id', 'delivery_status', 'payment_status', 'invoice_reference', 'delivery_time', 'invoice_date', 'automatic_approval' ] ) ) {
+                    $procurement->$field = $value;
+                }
             }
 
             if ( ! empty( $procurement->created_at ) || ! empty( $procurement->updated_at ) ) {
@@ -350,7 +362,7 @@ class ProcurementService
     {
         /**
          * @var ProcurementProduct $procurementProduct
-         * @var $storeUnitReference
+         * @var $storedUnitReference
          * @var Procurement $procurement
          * @var $itemsToSave
          * @var $item
@@ -359,6 +371,14 @@ class ProcurementService
 
         if ( $item->purchase_unit_type === 'unit' ) {
             extract( $this->__procureForSingleUnit( compact( 'procurementProduct', 'storedUnitReference', 'itemsToSave', 'item' ) ) );
+
+            /**
+             * the inner "extract" decouples the local variables
+             * from "$data". We'll write them back so that the
+             * caller receives the updated values.
+             */
+            $data[ 'itemsToSave' ]          = $itemsToSave;
+            $data[ 'storedUnitReference' ]  = $storedUnitReference;
         } elseif ( $item->purchase_unit_type === 'unit-group' ) {
             if ( ! isset( $procurementProduct->unit_id ) ) {
                 /**
@@ -383,7 +403,7 @@ class ProcurementService
             }
 
             try {
-                extract( $this->__procureForUnitGroup( compact( 'procurementProduct', 'storedunitReference', 'itemsToSave', 'item' ) ) );
+                extract( $this->__procureForUnitGroup( compact( 'procurementProduct', 'storedUnitReference', 'itemsToSave', 'item' ) ) );
             } catch ( Exception $exception ) {
                 $errors[] = [
                     'status' => 'error',
@@ -393,6 +413,9 @@ class ProcurementService
                     ],
                 ];
             }
+
+            $data[ 'itemsToSave' ]          = $itemsToSave;
+            $data[ 'storedUnitReference' ]  = $storedUnitReference;
         }
 
         return $data;
@@ -447,15 +470,15 @@ class ProcurementService
             $procurementProduct->quantity = $procuredProduct[ 'quantity' ];
             $procurementProduct->available_quantity = $procuredProduct[ 'quantity' ];
             $procurementProduct->tax_group_id = $procuredProduct[ 'tax_group_id' ] ?? 0;
-            $procurementProduct->tax_type = $procuredProduct[ 'tax_type' ];
-            $procurementProduct->tax_value = $procuredProduct[ 'tax_value' ];
+            $procurementProduct->tax_type = $procuredProduct[ 'tax_type' ] ?? 'inclusive';
+            $procurementProduct->tax_value = $procuredProduct[ 'tax_value' ] ?? 0;
             $procurementProduct->expiration_date = $procuredProduct[ 'expiration_date' ] ?? null;
             $procurementProduct->total_purchase_price = $procuredProduct[ 'total_purchase_price' ];
             $procurementProduct->convert_unit_id = $procuredProduct[ 'convert_unit_id' ] ?? null;
             $procurementProduct->unit_id = $procuredProduct[ 'unit_id' ];
             $procurementProduct->author = Auth::id();
             $procurementProduct->save();
-            $procurementProduct->barcode = str_pad( $product->barcode, 5, '0', STR_PAD_LEFT ) . '-' . str_pad( $procurementProduct->unit_id, 3, '0', STR_PAD_LEFT ) . '-' . str_pad( $procurementProduct->id, 3, '0', STR_PAD_LEFT );
+            $procurementProduct->barcode = str_pad( (string) $product->barcode, 5, '0', STR_PAD_LEFT ) . '-' . str_pad( $procurementProduct->unit_id, 3, '0', STR_PAD_LEFT ) . '-' . str_pad( $procurementProduct->id, 3, '0', STR_PAD_LEFT );
             $procurementProduct->save();
 
             event( new ProcurementAfterSaveProductEvent( $procurement, $procurementProduct, $procuredProduct ) );
@@ -472,9 +495,8 @@ class ProcurementService
     private function __procureForUnitGroup( array $data )
     {
         /**
-         * @var $storeUnitReference
+         * @var $storedUnitReference
          * @var ProcurementProduct $procurementProduct
-         * @var $storedBase
          * @var $item
          */
         extract( $data );
@@ -484,7 +506,7 @@ class ProcurementService
             $group = $this->unitService->getGroups( $item->purchase_unit_id ); // which should retrieve the group
             $base = $unit->base_unit ? $unit : $this->unitService->getBaseUnit( $group );
             $base_quantity = $this->unitService->computeBaseUnit( $unit, $base, $procurementProduct->quantity );
-            $storedBase[ $procurementProduct->unit_id ] = compact( 'base', 'unit', 'group' );
+            $storedUnitReference[ $procurementProduct->unit_id ] = compact( 'base', 'unit', 'group' );
         } else {
             extract( $stored );
             $base_quantity = $this->unitService->computeBaseUnit( $unit, $base, $procurementProduct->quantity );
@@ -685,6 +707,7 @@ class ProcurementService
         $item = $this->productService->get( $procurementProduct->product_id );
         $storedUnitReference = [];
         $itemsToSave = [];
+        $errors = [];
 
         /**
          * the idea here it to update the procurement
@@ -699,14 +722,16 @@ class ProcurementService
          * @var array $itemsToSave
          * @var array errors
          */
-        extract( $this->__computeProcurementProductValues( compact( 'item', 'procurementProduct', 'storeUnitReference', 'itemsToSave', 'errors' ) ) );
+        extract( $this->__computeProcurementProductValues( compact( 'item', 'procurementProduct', 'storedUnitReference', 'itemsToSave', 'errors' ) ) );
 
         /**
          * typically since the items to save should be
          * only a single entry, we'll harcode it to be "0"
          */
-        foreach ( $itemsToSave[0] as $field => $value ) {
-            $procurementProduct->$field = $value;
+        if ( ! empty( $itemsToSave ) ) {
+            foreach ( $itemsToSave[0] as $field => $value ) {
+                $procurementProduct->$field = $value;
+            }
         }
 
         $procurementProduct->author = Auth::id();
@@ -803,7 +828,7 @@ class ProcurementService
         event( new ProcurementAfterDeleteProductEvent( $procurementProduct->id, $procurement ) );
 
         return [
-            'status' => 'sucecss',
+            'status' => 'success',
             'message' => sprintf(
                 __( 'The product %s has been deleted from the procurement %s' ),
                 $procurementProduct->name,

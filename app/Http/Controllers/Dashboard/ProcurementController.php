@@ -12,6 +12,7 @@ use App\Classes\Hook;
 use App\Crud\ProcurementCrud;
 use App\Crud\ProcurementProductCrud;
 use App\Exceptions\NotAllowedException;
+use App\Exceptions\NotFoundException;
 use App\Http\Controllers\DashboardController;
 use App\Http\Requests\ProcurementRequest;
 use App\Jobs\ProcurementRefreshJob;
@@ -32,6 +33,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Exception;
 
 class ProcurementController extends DashboardController
 {
@@ -70,7 +72,12 @@ class ProcurementController extends DashboardController
       'products',
     ]));
 
-    return to_route('sb.dashboard.procurement-list', $result);
+    /**
+     * Inertia expects a plain redirect after a successful submission.
+     * Passing "$result" to "to_route" would provide an array
+     * as the HTTP status code, which fails the response.
+     */
+    return to_route('sb.dashboard.procurement-list');
   }
 
   public function edit(Procurement $procurement, ProcurementRequest $request)
@@ -128,8 +135,18 @@ class ProcurementController extends DashboardController
       throw new NotAllowedException(__('You cannot change the status of an already paid procurement.'));
     }
 
-    $procurement->payment_status = $request->input('payment_status');
-    $procurement->save();
+    $validator = Validator::make($request->all(), [
+      'payment_status' => 'required|in:'.Procurement::PAYMENT_PAID.','.Procurement::PAYMENT_UNPAID,
+    ]);
+
+    if ($validator->fails()) {
+      throw new Exception(__('Unable to proceed as the request is not valid.'));
+    }
+
+    Procurement::withoutEvents(function () use ($procurement, $request) {
+      $procurement->payment_status = $request->input('payment_status');
+      $procurement->save();
+    });
 
     return [
       'status' => 'success',
@@ -169,6 +186,12 @@ class ProcurementController extends DashboardController
    */
   public function editProduct(Request $request, $procurement_id, $product_id)
   {
+    $procurement = $this->procurementService->get($procurement_id);
+
+    if ($procurement->delivery_status === Procurement::STOCKED) {
+      throw new NotAllowedException(__('Unable to edit a procurement that is stocked. Consider performing an adjustment or either delete the procurement.'));
+    }
+
     if ($this->procurementService->hasProduct($procurement_id, $product_id)) {
       return $this->procurementService->updateProcurementProduct($product_id, $request->only(['quantity', 'unit_id', 'purchase_price']));
     }
@@ -207,6 +230,10 @@ class ProcurementController extends DashboardController
   public function deleteProcurementProduct($product_id)
   {
     $procurementProduct = ProcurementProduct::find($product_id);
+
+    if (! $procurementProduct instanceof ProcurementProduct) {
+      throw new NotFoundException(__('Unable to find the procurement product using the provided id.'));
+    }
 
     return $this->procurementService->deleteProduct(
       $procurementProduct,

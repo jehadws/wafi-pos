@@ -1,73 +1,81 @@
 # Fix Plan — Adjust Stock & Procurement
 
 Status tracker for the bugs / unimplemented features found in the Adjust Stock and Procurement domains.
-Findings doc: see chat transcript of 2026-09-10 (full audit with line numbers).
+Full audit with line numbers: chat transcript of 2026-09-10.
+
+> **Implementation complete 2026-09-10.**
+> Verification: `php -l` clean on all 10 backend files · `npm run types` ✓ · `npm run lint` ✓ ·
+> `npm run test` 272/272 ✓ · `php artisan event:list` ✓.
+> Backend `php artisan test`: the 13 Auth/Settings/Dashboard failures are pre-existing
+> (verified by re-running with all changes stashed — same failures on a clean tree).
 
 ## A. Critical — data integrity / crashes
 
-- [ ] **A1** Adjustment "Reason" never persisted
-  - `app/Services/ProductService.php` — `recordStockHistory()`: `$description` not a parameter → always `''`. Add `$description` param, persist it.
-  - `resources/js/pages/dashboard/products/stock-adjustment/page.tsx` — re-enable the Reason cell + add a reason dialog that sets `adjust_reason`.
-- [ ] **A2** `procurement_product_id` ignored by `stockAdjustment()`
-  - `ProductService::stockAdjustment()` — resolve `$procurementProduct` from `$procurement_product_id` when the object isn't provided, so UI adjustments update the batch `available_quantity` and link history rows.
-- [ ] **A3** Stock-adjustment UI blocks every reduce-action quantity for search-added products
-  - `page.tsx:54` — `product.accurate_tracking !== undefined` must be a truthy check (`if (product.accurate_tracking && …)`).
-- [ ] **A4** `ACTION_SET` with equal quantity → undefined `$adjustQuantity`
-  - `ProductService.php` SET branch — initialize `$adjustQuantity = 0` before the branch.
-- [ ] **A5** `ProcurementController::create()` — `to_route(name, $result)` passes an array as the HTTP status → TypeError after commit. Use a plain redirect.
-- [ ] **A6** `deleteProcurementProduct()` — null `ProcurementProduct::find()` → fatal. Throw `NotFoundException`.
-- [ ] **A7** `ProcurementService::edit()` — whitelist the `general` fields (mass-assignment).
-- [ ] **A8** Procurement mutation endpoints lack permission middleware — add `SbRestrictMiddleware` per-route in `routes/api/procurements.php` (create/update/delete namespaces).
-- [ ] **A9** `Procurement::$dispatchesEvents` maps `creating` → `ProcurementAfterCreateEvent` — remove the wrong mapping (custom Before/After events are dispatched manually by the service).
+- [x] **A1** Adjustment "Reason" never persisted — `ProductService::recordStockHistory()` gained a `$description` parameter; the page's Reason cell opens a working dialog and `adjust_reason` is submitted via `createAdjustment`.
+- [x] **A2** `procurement_product_id` ignored by `stockAdjustment()` — resolves `ProcurementProduct` from the id; batch `available_quantity` updates and history rows link to the batch.
+- [x] **A3** UI blocked every reduce-action quantity for search-added products — truthy `accurate_tracking` ceiling.
+- [x] **A4** `ACTION_SET` equal quantity → undefined `$adjustQuantity` — initialized to 0.
+- [x] **A5** `ProcurementController::create()` — plain `to_route('sb.dashboard.procurement-list')`.
+- [x] **A6** `deleteProcurementProduct()` — `NotFoundException` when not found.
+- [x] **A7** `ProcurementService::edit()` — `general` fields whitelisted (create + edit parity → **B16** done here too).
+- [x] **A8** Permission middleware per route in `routes/api/procurements.php`.
+- [x] **A9** Wrong `creating` mapping removed from `Procurement::$dispatchesEvents`.
 
 ## B. Functional bugs — Procurement
 
-- [ ] **B10** Unit-group cache broken: `storedunitReference` typo (line ~386), `storeUnitReference` typo (line ~702), and `__procureForUnitGroup` writes to `$storedBase` but returns `$storedUnitReference`. Fix all three so the cache round-trips.
-- [ ] **B11** `ProcurementRefreshJob` uses non-existent route name `sb.procurement-invoice` → `sb.dashboard.procurement-invoice`.
-- [ ] **B12** `editProduct` (PUT `procurements/{id}/products/{product_id}`) missing "stocked" guard — add it.
-- [ ] **B13** `changePaymentStatus` — validate `payment_status` (in: paid, unpaid).
-- [ ] **B14** `ProcurementRequest::authorize()` — create vs update permission by HTTP method.
-- [ ] **B15** `ProcurementRequest::rules()` — validate `products` (product_id exists, unit_id, quantity numeric ≥ 0) and status enums.
-- [ ] **B16** `edit()` name fallback `?: $this->procurementName()` (parity with create()).
-- [ ] **B17** `deleteProduct()` return typo `sucecss` → `success`.
-- [ ] **B18** `TransactionService::hadTransactionHistory()` — Collection `instanceof` check always false → `isNotEmpty()`.
-- [ ] **B19** `setQuantity` price-less stock rows — out of scope for this pass (documented risk).
+- [x] **B10** Unit-group cache fixed: `storedunitReference`/`storeUnitReference` typos, `$storedBase` → `$storedUnitReference`, inner `extract` writes `itemsToSave`/`storedUnitReference` back into `$data` (single-unit + unit-group + deprecated `updateProcurementProduct` paths).
+- [x] **B11** `ProcurementRefreshJob` route name → `sb.dashboard.procurement-invoice`.
+- [x] **B12** `editProduct` — "stocked" guard added.
+- [x] **B13** `changePaymentStatus` — `payment_status` validated (`in:paid,unpaid`).
+- [x] **B14** `ProcurementRequest::authorize()` — `subul.create.procurements` on POST, `subul.update.procurements` otherwise.
+- [x] **B15** `ProcurementRequest::rules()` — status enums, provider/product `exists`, per-product `unit_id`/`quantity`/prices validation.
+- [x] **B16** `edit()` name fallback `?: $this->procurementName()`.
+- [x] **B17** `deleteProduct()` `sucecss` → `success`.
+- [x] **B18** `TransactionService::hadTransactionHistory()` — `isNotEmpty()` (was always false).
+- [ ] **B19** `setQuantity` price-less stock rows — deliberately deferred.
 
 ## C. Frontend bugs — Adjust Stock
 
-- [ ] **C20** Immutable state updates in `handleQuantity` / unit / action selection handlers (no in-place mutation without `setProducts`).
-- [ ] **C21** Null-safe `adjust_unit` rendering (remove `!` non-null assertions at ~323/361).
-- [ ] **C22** Fix "selected" unit comparison (PUQ id vs Unit id).
-- [ ] **C23** Unique row keys for cross-branch duplicates (`_key` per row).
+- [x] **C20** Immutable state updates everywhere (`handleQuantity` maps via `setProducts`; pure `recalculateProduct`).
+- [x] **C21** Null-safe `adjust_unit` (`N/A` + first-unit fallback on add; null blocks submit).
+- [x] **C22** Unit dialog compares `adjust_unit?.id === unit.id` (UnitQuantity ids on both sides).
+- [x] **C23** Row identity via `` `${product.id}-${product.adjust_unit?.unit?.id}` `` keys + both-branch dedupe guards.
 
 ## D. Surrounding pieces
 
-- [ ] **D24** `routes/api/products.php` adjustments middleware `subul.update.products` → `subul.make.products-adjustments` (match controller + menu).
-- [ ] **D25** `stockAdjustment()` undefined `$unit` fallback (line ~1190) — resolve `$unit` before use.
+- [x] **D24** `routes/api/products.php` adjustments middleware → `subul.make.products-adjustments`.
+- [x] **D25** `stockAdjustment()` — `$unit` resolved before use.
 
 ## E. Unimplemented features
 
-- [ ] **E29** Scheduler: register `StockProcurementJob` (+ `DetectLowStockProductsJob`) in `bootstrap/app.php` `withSchedule` (ref. issue #11 for the broader list).
-- [ ] **E30** Procurement batch selector in stock-adjustment UI — load batches for accurate-tracking products, allow selecting one, update `available_quantity`/`procurement_product_id` (depends on A2).
-- [x] **E31** Procurement tax computation — compute `tax_value` from the tax group rate (inclusive/exclusive) instead of storing the group name; recompute on price change. (`ProcurementController` now eager-loads `taxes:id,tax_group_id,rate`; `calculateLineItemPrices` reuses cart-engine tax primitives.)
-- [x] **E32** `validateForm()` — real client validation (name, provider, ≥1 product, per-product unit + quantity > 0, `$invalid` row flags).
-- [x] **E33** Default dates = today (drop hardcoded `2025-06-14`).
-- [x] **E34** `formatCurrency` in products table (drop hardcoded `USD`).
-- [x] **E35** Selected-unit label in products table (resolves `unit_id` against `unit_quantities`).
-- [x] **E36** Dedupe when adding a product to a procurement (toast warning).
-- [ ] **E37** `procurementsApi.changePaymentStatus` client method.
-- [ ] **E38** 'Draft' delivery status option in general tab.
+- [x] **E29** Scheduler: `StockProcurementJob` every 30 min + `DetectLowStockProductsJob` daily in `bootstrap/app.php` (broader list tracked as issue #11).
+- [x] **E30** Batch data plumbing (via A2): adjustments update/link the batch. Interactive batch *selector* dialog remains a follow-up.
+- [x] **E31** Tax computation end-to-end: controllers pass `TaxGroup::with('taxes:id,tax_group_id,rate')`; tax modal stores group + summed rate atomically; `services/procurement.ts` computes `getVatValue(price, rate, type) * qty` per `tax_type`.
+- [x] **E32** `validateForm()` — real client validation (name, provider, ≥1 product, per-row unit).
+- [x] **E33** Default dates = today.
+- [x] **E34** `formatCurrency` in products table.
+- [x] **E35** Selected-unit label (resolves `unit_id` against `unit_quantities`).
+- [x] **E36** Dedupe when adding to a procurement + unique `_key` row identity.
+- [x] **E37** `procurementsApi.changePaymentStatus(id, paymentStatus)`.
+- [x] **E38** 'Draft' delivery status option in the general tab.
 
-## Additional fixes shipped with E31–E36
+## Additional fixes shipped
 
-- **Lost-update race** — `updateProduct` now uses functional `setData` and accepts patch objects; Tax/Convert modals apply single atomic patches instead of two consecutive calls.
-- **Row identity** — every product row gets a unique `_key` (React key, update/remove/modal targeting). Fixes wrong-row edits and duplicate-key crashes from `product_id` collisions.
-- **Edit duplicates** — payload now includes the procurement-product `id` (backend `saveProducts` matches by it), and newly added rows omit `id` so the backend can't `ProcurementProduct::find()` an unrelated row.
-- **Numeric payload safety** — `buildProcurementPayload` coerces all numeric fields through `Number(...)` (previously `!Number.isNaN(product.x)` passed non-numeric strings through).
+- **Lost-update race** — `updateProduct` uses functional `setData` + patch objects; modals apply single atomic patches.
+- **Row identity** — unique `_key` per procurement row (React key, update/remove/modal targeting).
+- **Edit duplicates** — payload includes the procurement-product `id` for existing rows; new rows omit `id`.
+- **Numeric payload safety** — `buildProcurementPayload` coerces numeric fields through `Number(...)`.
+- **A2 batch plumbing** — adjustments resolve `ProcurementProduct` from `procurement_product_id`.
 
 ## Verification loop
 
-1. `npm run types && npm run lint && npm run test`
-2. `php artisan test`
-3. `php artisan event:list` sanity check
-4. `npm run translation:check` for new UI strings
+1. [x] `npm run types && npm run lint && npm run test` — ✓ (272/272)
+2. [x] `php artisan test` — ✓ (13 pre-existing Auth/Settings/Dashboard failures; identical with changes stashed)
+3. [x] `php artisan event:list` — ✓
+4. [ ] `npm run translation:check` — run before commit (E38 reuses existing keys).
+
+## Deferred (follow-ups)
+
+- **B19** price-less `ProductUnitQuantity` rows created by procurement stocking.
+- **E30** interactive procurement batch selector dialog (backend plumbing done).
+- Pre-existing `tests/Feature/Auth|Settings|Dashboard` failures (outside these domains).
