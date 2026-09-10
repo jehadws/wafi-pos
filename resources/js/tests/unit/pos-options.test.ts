@@ -1,3 +1,5 @@
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { POS_OPTION_KEYS, resolveUnitDisplayPrice } from '@/constants/pos-options';
 
@@ -82,5 +84,61 @@ describe('POS_OPTION_KEYS registry', () => {
         ]) {
             expect(key).toMatch(/^sb_subul_keyboard_/);
         }
+    });
+});
+
+describe('POS_OPTION_KEYS registry integrity', () => {
+    // Runtime source roots scanned for POS_OPTION_KEYS.<key> consumers.
+    const RUNTIME_DIRS = ['components', 'hooks', 'services', 'pages', 'utils', 'lib', 'api', 'constants'];
+
+    // Keys with no frontend runtime consumer by design:
+    // - hideEmptyCategories / hideExhaustedProducts are enforced backend-side
+    //   (CategoryController::applyHideProducts / applyHideCategories).
+    // - registerChangePaymentType is enforced backend-side
+    //   (CashRegistersService::saveOrderChange).
+    // - keyboardShortcuts (sb_subul_keyboard_shortcuts) is the MultiKeySelector
+    //   choices list for the settings UI, not a runtime option.
+    // - numpad / printingGateway are pending the T4 decision in
+    //   docs/plans/pos-settings-enforcement.md.
+    const BACKEND_ENFORCED_OR_SETTINGS_ONLY = new Set([
+        'hideEmptyCategories',
+        'hideExhaustedProducts',
+        'registerChangePaymentType',
+        'keyboardShortcuts',
+        'numpad',
+        'printingGateway',
+    ]);
+
+    function collectSourceFiles(dir: string): string[] {
+        const files: string[] = [];
+        for (const name of readdirSync(dir)) {
+            const full = join(dir, name);
+            if (statSync(full).isDirectory()) {
+                files.push(...collectSourceFiles(full));
+            } else if (/\.(ts|tsx)$/.test(name)) {
+                files.push(full);
+            }
+        }
+        return files;
+    }
+
+    it('has no dead keys — every registered key is read by runtime code', () => {
+        const used = new Set<string>();
+        for (const dir of RUNTIME_DIRS) {
+            const root = resolve(process.cwd(), 'resources/js', dir);
+            for (const file of collectSourceFiles(root)) {
+                const source = readFileSync(file, 'utf-8');
+                for (const match of source.matchAll(/POS_OPTION_KEYS\.(\w+)/g)) {
+                    used.add(match[1]);
+                }
+            }
+        }
+
+        // A key that is registered but consumed nowhere silently ignores its
+        // setting (the "Editable Unit Price" bug). Fail loudly and list them.
+        const dead = Object.keys(POS_OPTION_KEYS).filter(
+            (key) => !used.has(key) && !BACKEND_ENFORCED_OR_SETTINGS_ONLY.has(key),
+        );
+        expect(dead).toEqual([]);
     });
 });
