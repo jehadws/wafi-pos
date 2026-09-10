@@ -3,11 +3,22 @@ import { useForm } from '@inertiajs/react';
 import { useTranslation } from '@/lib/i18n';
 import { procurementsApi } from '@/api';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
 import {
     buildProcurementPayload,
     calculateLineItemPrices,
     ProcurementProductItem,
 } from '@/services/procurement';
+
+/** Build a unique client-side row key (stable across product_id / procurement-product id collisions). */
+const makeRowKey = (product_id: number, id?: number | null) =>
+    `row-${id ?? 'new'}-${product_id}-${Math.random().toString(36).slice(2, 9)}`;
+
+/** Ensure every product row carries a unique `_key` used for React keys + row mutations. */
+const normalizeProductRow = (product: ProcurementProductItem): ProcurementProductItem => ({
+    ...product,
+    _key: product._key ?? makeRowKey(product.product_id, product.id),
+});
 
 export interface ProcurementFormData {
     name: string;
@@ -23,7 +34,8 @@ export interface ProcurementFormData {
 
 export type ProcurementModalState = {
     type: 'options' | 'unit' | 'tax' | 'convert' | null;
-    product_id: number | null;
+    /** Holds the product row's `_key` (string) — the client-side row identity. */
+    product_id: number | string | null;
     group_id: number | null;
 };
 
@@ -51,16 +63,18 @@ export function useProcurementForm(initialData?: ProcurementInitialData) {
         group_id: null,
     });
 
+    const today = format(new Date(), 'yyyy-MM-dd');
+
     const form = useForm<ProcurementFormData>({
         name: initialData?.name ?? '',
         general_automatic_approval: initialData?.automatic_approval ?? 1,
         general_delivery_status: initialData?.delivery_status ?? 'delivered',
-        general_delivery_time: initialData?.delivery_time ?? '2025-06-14',
-        general_invoice_date: initialData?.invoice_date ?? '2025-06-14',
+        general_delivery_time: initialData?.delivery_time ?? today,
+        general_invoice_date: initialData?.invoice_date ?? today,
         general_invoice_reference: initialData?.invoice_reference ?? '',
         general_payment_status: initialData?.payment_status ?? 'paid',
         general_provider_id: initialData?.provider_id ?? '',
-        products: initialData?.products ?? [],
+        products: (initialData?.products ?? []).map(normalizeProductRow),
     });
 
     const handleInputChange = (name: keyof ProcurementFormData, value: any) => {
@@ -69,9 +83,19 @@ export function useProcurementForm(initialData?: ProcurementInitialData) {
     };
 
     const addProduct = (product: any) => {
-        const newProduct: ProcurementProductItem = {
+        // Dedupe: the same product can't be procured twice on one procurement.
+        if (form.data.products.some((p) => p.product_id === product.id)) {
+            toast.warning(t('This product is already added to the procurement.'));
+            setSearchQuery('');
+            setSearchResults([]);
+            return;
+        }
+
+        const newProduct: ProcurementProductItem = normalizeProductRow({
             product_id: product.id,
-            id: product.id,
+            // No `id` here: only rows loaded from an existing procurement carry a
+            // procurement-product id. Sending the catalog product id would make the
+            // backend `ProcurementProduct::find($id)` overwrite an unrelated row.
             name: product.name,
             expiration_date: null,
             gross_purchase_price: 0,
@@ -80,7 +104,7 @@ export function useProcurementForm(initialData?: ProcurementInitialData) {
             purchase_price: 0,
             total_price: 0,
             total_purchase_price: 0,
-            quantity: 0,
+            quantity: 1,
             unit_id: product.unit_quantities?.length > 0 ? product.unit_quantities[0].unit_id : null,
             unit_group: product.unit_group,
             unit_quantities: product.unit_quantities || [],
@@ -88,33 +112,43 @@ export function useProcurementForm(initialData?: ProcurementInitialData) {
             procurement_id: null,
             $invalid: false,
             convert_unit_label: null,
-        };
+        });
 
-        form.setData('products', [newProduct, ...form.data.products]);
+        form.setData((data) => ({ ...data, products: [newProduct, ...data.products] }));
         setSearchQuery('');
         setSearchResults([]);
     };
 
-    const removeProduct = (id: number) => {
-        form.setData(
-            'products',
-            form.data.products.filter((p) => (p.product_id !== id && p.id !== id)),
-        );
+    const removeProduct = (key: number | string) => {
+        form.setData((data) => ({
+            ...data,
+            products: data.products.filter((p) => p._key !== key),
+        }));
     };
 
-    const updateProduct = (id: number, field: keyof ProcurementProductItem, value: any) => {
-        form.setData(
-            'products',
-            form.data.products.map((p) => {
-                if (p.product_id === id || p.id === id) {
-                    if (field === 'purchase_price' || field === 'quantity') {
-                        return calculateLineItemPrices(p, field, Number(value) || 0);
-                    }
-                    return { ...p, [field]: value };
-                }
-                return p;
+    /**
+     * Update a product row. `field` may be a single field name or a patch
+     * object (used by modals to update several related fields atomically,
+     * avoiding lost-update races between consecutive calls).
+     * Always recomputes the line prices afterwards.
+     */
+    const updateProduct = (
+        key: number | string,
+        field: keyof ProcurementProductItem | Partial<ProcurementProductItem>,
+        value?: any,
+    ) => {
+        form.setData((data) => ({
+            ...data,
+            products: data.products.map((p) => {
+                if (p._key !== key) return p;
+                const patch =
+                    typeof field === 'object' && field !== null
+                        ? field
+                        : { [field]: value };
+                const merged = { ...p, ...patch } as ProcurementProductItem;
+                return calculateLineItemPrices(merged, 'quantity', Number(merged.quantity || 0));
             }),
-        );
+        }));
     };
 
     const searchProduct = async (search: string) => {
@@ -145,7 +179,39 @@ export function useProcurementForm(initialData?: ProcurementInitialData) {
 
     const validateForm = (): boolean => {
         form.clearErrors();
-        return true;
+        let valid = true;
+
+        if (!form.data.name?.trim()) {
+            form.setError('name', t('The procurement name is required.'));
+            valid = false;
+        }
+
+        if (!form.data.general_provider_id) {
+            form.setError('general_provider_id', t('Please select a provider.'));
+            valid = false;
+        }
+
+        if (form.data.products.length === 0) {
+            toast.error(t('Add at least one product to the procurement.'));
+            valid = false;
+        }
+
+        const invalidKeys = new Set<string>();
+        form.data.products.forEach((p) => {
+            if (!p.unit_id) invalidKeys.add(p._key!);
+            if (!Number(p.quantity) || Number(p.quantity) <= 0) invalidKeys.add(p._key!);
+        });
+
+        if (invalidKeys.size > 0) {
+            form.setData((data) => ({
+                ...data,
+                products: data.products.map((p) => ({ ...p, $invalid: invalidKeys.has(p._key!) })),
+            }));
+            toast.error(t('Every product needs a unit and a quantity greater than zero.'));
+            valid = false;
+        }
+
+        return valid;
     };
 
     const handleSubmit = (e: React.FormEvent) => {
