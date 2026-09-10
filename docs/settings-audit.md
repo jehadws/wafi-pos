@@ -41,16 +41,38 @@ Each class exposes two payloads: `getPayload()` (current values) and `getOptions
 
 ## 3. POS settings (`app/Settings/PosSettings.php`)
 
-All previously-dead tab settings are now wired: each has an editable form (component under `resources/js/components/settings/pos/`), a definition in `app/Settings/pos/*.php`, and either a POS-runtime consumer via `pos-options.ts` / `OrdersController.php:200-257` or a direct hook consumer.
+**Corrected 2026-09-09** (see `docs/plans/pos-settings-enforcement.md`): the table below
+separates *delivered* (present in the boot payload, editable in settings) from
+*enforced* (changes POS behavior). The previous "Features … ALIVE" row was wrong —
+`sb_subul_unit_price_ediable` and `sb_subul_numpad` were delivered but enforced nowhere.
 
-| Setting | Where edited | Consumed where | Status |
-|---|---|---|---|
-| Layout (`sb_subul_layout`) | `pos/layout-tab.tsx:22-32` (`app/Settings/pos/layout.php:17-18`) | `pos-options.ts:43` | **ALIVE** |
-| Audio (`sb_subul_new_item_audio`, `sb_subul_complete_sale_audio`) | `pos/layout-tab.tsx:43-77` | `pos-options.ts:26-27` | **ALIVE** |
-| Printing gateway (`sb_subul_printing_gateway`) | `pos/printing-tab.tsx:95-105` (`pos/printing.php:32-33`) | `pos-options.ts`, `OrdersController.php:221` | **ALIVE** |
-| Registers (`sb_subul_registers_enabled`, `sb_subul_idle_counter`, `sb_subul_disbursement`, `sb_subul_registers_default_change_payment_type`) | `pos/registers-tab.tsx` (`pos/registers.php:10-58`) | `pos-options.ts:37-40`, `use-register-session.ts:7-11`, `register-session-dialog.tsx:39`, `CashRegistersService.php:333`, `MenusFilter.php:9`, `OrdersService.php:811` | **ALIVE** |
-| Features (`sb_subul_numpad`, `sb_subul_order_types`, `sb_subul_quick_product`, …) | `pos/features-tab.tsx` (`pos/features.php`) | `pos-options.ts:23,51-52`, `OrdersController.php:207-209,225`, `products-categories-panel.tsx:160` | **ALIVE** |
-| Keyboard shortcuts (`sb_subul_keyboard_*`, `sb_subul_amount_shortcut`) | `pos/shortcuts-tab.tsx` | `pos-options.ts:15`, `use-pos-shortcuts.ts:108`, `OrdersController.php:245-256` | **ALIVE** |
+| Setting | Enforced at | Status |
+|---|---|---|
+| `sb_subul_layout` | `products-categories-panel.tsx:24` (`clothing_shop` badges) | ALIVE |
+| `sb_subul_new_item_audio` / `sb_subul_complete_sale_audio` | `use-cart-store.ts:144` / `order-submission.ts:73` | ALIVE |
+| `sb_subul_printing_document` / `_enabled_for` / `_auto` | `usePOS.ts:601-627` | ALIVE |
+| `sb_subul_printing_gateway` | `usePOS.printOrderReceipt` — port of NexoPOS `libraries/print.ts:48`: `'default'` → web printing; non-default → warned + falls back until a module system provides gateway handlers | ALIVE (wired 2026-09-09, T4) |
+| `sb_subul_registers_enabled` / `_idle_counter` / `_disbursement` | `use-register-session.ts:52-111`, `pos-system.tsx:104`, `register-session-dialog.tsx:40` | ALIVE |
+| `sb_subul_registers_default_change_payment_type` | `CashRegistersService::saveOrderChange:333` (BE) | ALIVE (BE) |
+| `sb_subul_vat` / `_tax_group` / `_tax_type` | `cart-engine.ts` + `quick-product-popup.tsx:71` | ALIVE |
+| `sb_subul_price_with_tax` | `isPriceWithTax` accessors (cart-engine + UI) | ALIVE |
+| `sb_subul_order_types` | server-filtered payload (`OrdersController.php:196-199`) + `usePOS.ts:290` | ALIVE |
+| `sb_subul_show_quantity` | 7 call sites (panel, search dialog, barcode) | ALIVE |
+| `sb_subul_items_merge` | `pages/dashboard/pos.tsx:37` (payload bool-coerced at `OrdersController.php:229`) | ALIVE |
+| `sb_subul_allow_wholesale_price` | `cart-item.tsx:196` | ALIVE |
+| `sb_subul_allow_decimal_quantities` | numpad decimal handling (3 sites) | ALIVE |
+| `sb_subul_quick_product` / `_default_unit` | `secondary-navigation.tsx:35` / `quick-product-popup.tsx:72` | ALIVE |
+| `sb_subul_force_autofocus` | `pos-system.tsx:159` | ALIVE |
+| `sb_subul_hide_exhausted_products` / `_hide_empty_categories` | BE `CategoryController.php:312/329`, `ProductService` POS visibility | ALIVE (BE) |
+| `sb_subul_unit_price_ediable` | `cart-item.tsx` price link + `cart-table.tsx` keypad guard (wired 2026-09-09, T1; payload default normalized to `'yes'`) | **WAS DEAD → fixed** |
+| `sb_subul_numpad` | `resolveNumpadVariant` (`pos-options.ts`) → `NumericKeypadDialog variant` in cart keypads + search dialog — "advanced" ports NexoPOS `ns-numpad-plus` (explicit `.` key, full-width Enter) | ALIVE (wired 2026-09-09, T4) |
+| `sb_subul_keyboard_*` / `sb_subul_amount_shortcut` | `use-pos-shortcuts.ts` (via `POS_OPTION_KEYS` since T3), `payment-gateway-dialog.tsx:82` | ALIVE |
+
+**Registry note:** `POS_OPTION_KEYS.keyboardShortcuts` (`sb_subul_keyboard_shortcuts`)
+is not a runtime option — it is the `MultiKeySelector` choices list for the settings UI
+(`shortcuts-tab.tsx:26`). A dead-key guard test in `pos-options.test.ts` now fails the
+suite when a registered key has no runtime consumer outside the backend-enforced
+allowlist.
 
 **Removed since the last audit:** `sb_subul_order_sms` and `sb_subul_sound_enabled` no longer appear anywhere in the codebase (previously backend-sent orphans; the keys were dropped).
 
@@ -77,6 +99,7 @@ All previously-dead tab settings are now wired: each has an editable form (compo
 
 ## 5. Findings summary (2026-09-08)
 
+- **POS corrections (2026-09-09):** the §3 "Features … ALIVE" row was wrong — `sb_subul_unit_price_ediable` and `sb_subul_numpad` were delivered but enforced nowhere, and `sb_subul_printing_gateway` had no runtime consumer either. Unit-price gating is now wired and the payload default normalized (T1); a dead-key guard test in `pos-options.test.ts` fails the suite when a registered key has no runtime consumer outside the backend-enforced allowlist (T2). Details and remaining work: `docs/plans/pos-settings-enforcement.md`.
 - **Edit-but-unconsumed (1):** `sb_store_rectangle_logo` — editable in the identification tab (`identification-tab.tsx:93-94`, `GeneralSettings.php:95-96`) but rendered by nothing. The square logo IS consumed (`app-logo-icon.tsx:12`, `print-invoice.tsx:62`). **Decision: wontfix for now** — no current surface needs a wide logo; revisit if a wide-header surface (PDF invoice header, login screen, email templates) is added, then wire it as a fallback chain like the receipt logo does (`orders/receipt/page.tsx:12`).
 - **Truly orphan keys: none.** The last audit's orphans (`order_sms`, `sound_enabled`, invoice receipt keys, customer constraints, register-tab settings) are either removed from the codebase or fully wired (§3).
 - **Partial rendering (fixed, #8):** store city/email/pobox now render on every receipt surface (thermal preview, ESC/POS print agent, POS print dialog payload, receipt page header).
