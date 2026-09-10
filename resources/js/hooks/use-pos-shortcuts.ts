@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 
+import { POS_OPTION_KEYS } from '@/constants/pos-options';
+
 interface UsePOSShortcutsProps {
   options: Partial<SbPosOptions>;
   autoMerge: boolean;
@@ -100,37 +102,37 @@ export function usePOSShortcuts({
 
       // Payment (configured or F4 / Ctrl+Enter)
       if (
-        matchesUnguarded(e, o.sb_subul_keyboard_payment, typingGuard) ||
+        matchesUnguarded(e, o[POS_OPTION_KEYS.keyboardPayment], typingGuard) ||
         (e.key === 'F4' && !e.ctrlKey && !e.altKey)
       ) {
         e.preventDefault();
         onPayment();
-      } else if (matchesUnguarded(e, o.sb_subul_keyboard_cancel_order, typingGuard)) {
+      } else if (matchesUnguarded(e, o[POS_OPTION_KEYS.keyboardCancelOrder], typingGuard)) {
         e.preventDefault();
         onCancel();
-      } else if (matchesUnguarded(e, o.sb_subul_keyboard_shipping, typingGuard)) {
+      } else if (matchesUnguarded(e, o[POS_OPTION_KEYS.keyboardShipping], typingGuard)) {
         e.preventDefault();
         onShipping();
-      } else if (matchesUnguarded(e, o.sb_subul_keyboard_order_type, typingGuard)) {
+      } else if (matchesUnguarded(e, o[POS_OPTION_KEYS.keyboardOrderType], typingGuard)) {
         e.preventDefault();
         onOrderType();
-      } else if (matchesUnguarded(e, o.sb_subul_keyboard_quick_search, typingGuard)) {
+      } else if (matchesUnguarded(e, o[POS_OPTION_KEYS.keyboardQuickSearch], typingGuard)) {
         e.preventDefault();
         onQuickSearch();
-      } else if (matchesUnguarded(e, o.sb_subul_keyboard_toggle_merge, typingGuard)) {
+      } else if (matchesUnguarded(e, o[POS_OPTION_KEYS.keyboardToggleMerge], typingGuard)) {
         e.preventDefault();
         onToggleMerge();
-      } else if (matchesUnguarded(e, o.sb_subul_keyboard_hold_order, typingGuard)) {
+      } else if (matchesUnguarded(e, o[POS_OPTION_KEYS.keyboardHoldOrder], typingGuard)) {
         e.preventDefault();
         onHold();
-      } else if (matchesUnguarded(e, o.sb_subul_keyboard_note, typingGuard)) {
+      } else if (matchesUnguarded(e, o[POS_OPTION_KEYS.keyboardNote], typingGuard)) {
         e.preventDefault();
         onNote();
-      } else if (matchesUnguarded(e, o.sb_subul_keyboard_create_customer, typingGuard)) {
+      } else if (matchesUnguarded(e, o[POS_OPTION_KEYS.keyboardCreateCustomer], typingGuard)) {
         e.preventDefault();
         onCreateCustomer();
       } else if (
-        matchesUnguarded(e, o.sb_subul_keyboard_fullscreen, typingGuard) ||
+        matchesUnguarded(e, o[POS_OPTION_KEYS.keyboardFullscreen], typingGuard) ||
         e.key === 'F11'
       ) {
         e.preventDefault();

@@ -3,7 +3,7 @@ import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
 import { usePage } from '@inertiajs/react';
-import { resolveUnitDisplayPrice } from '@/constants/pos-options';
+import { POS_OPTION_KEYS, resolveUnitDisplayPrice } from '@/constants/pos-options';
 import { pickExpressUnit, resolveProductUnitQuantities } from '@/services/product-units';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -40,7 +40,7 @@ export default function SelectUnitQuantityDialog({
 
             // Auto-select: a single unit, or the configured default unit
             // (the same express rule the categories panel uses).
-            const auto = pickExpressUnit(loadedQuantities, options.sb_subul_quick_product_default_unit);
+            const auto = pickExpressUnit(loadedQuantities, options[POS_OPTION_KEYS.quickProductDefaultUnit]);
             if (auto) {
                 return closeDialog(dialogKey, auto);
             }

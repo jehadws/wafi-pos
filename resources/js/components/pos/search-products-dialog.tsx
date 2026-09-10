@@ -129,7 +129,7 @@ export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: 
     initialValue: '',
     title: t('Define Quantity'),
     maxLength: 6,
-    allowDecimal: options.sb_subul_allow_decimal_quantities ?? true,
+    allowDecimal: options[POS_OPTION_KEYS.allowDecimalQuantities] ?? true,
   });
 
   // ─── Unit picker: unit card clicked ──────────────────────────────────
@@ -177,7 +177,7 @@ export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: 
       // "Show Quantity" off → express flow: a single unit or the configured
       // default goes straight to the cart (no unit picker, no keypad).
       if (!isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) {
-        const resolved = pickExpressUnit(units, options.sb_subul_quick_product_default_unit);
+        const resolved = pickExpressUnit(units, options[POS_OPTION_KEYS.quickProductDefaultUnit]);
         if (resolved) {
           addDirectly(product, resolved, 1);
           return;

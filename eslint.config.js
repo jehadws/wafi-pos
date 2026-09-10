@@ -46,6 +46,16 @@ export default [
                     selector: "Literal[value=/^sb_(subul|orders|customers)_/]",
                     message: "Use POS_OPTION_KEYS from '@/constants/pos-options' instead of a raw option-key string.",
                 },
+                {
+                    // Property access (options.sb_subul_x) is the same typo-class
+                    // bug and is invisible to the Literal selector above.
+                    selector: "MemberExpression[property.name=/^sb_(subul|orders|customers)_/]",
+                    message: "Use POS_OPTION_KEYS from '@/constants/pos-options' instead of a raw option-key property access.",
+                },
+                {
+                    selector: "MemberExpression[property.value=/^sb_(subul|orders|customers)_/]",
+                    message: "Use POS_OPTION_KEYS from '@/constants/pos-options' instead of a raw option-key property access.",
+                },
             ],
         },
     },

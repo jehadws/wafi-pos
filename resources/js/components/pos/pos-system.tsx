@@ -178,7 +178,7 @@ export default function PosSystem() {
           return;
         }
 
-        const resolved = pickExpressUnit(units, options.sb_subul_quick_product_default_unit);
+        const resolved = pickExpressUnit(units, options[POS_OPTION_KEYS.quickProductDefaultUnit]);
 
         if (isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) {
           // Quantity requested → resolve the unit first (single unit, the

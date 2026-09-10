@@ -162,7 +162,7 @@ export default function ProductsCategoriesPanel() {
                 return;
             }
 
-            const resolved = pickExpressUnit(units, options.sb_subul_quick_product_default_unit);
+            const resolved = pickExpressUnit(units, options[POS_OPTION_KEYS.quickProductDefaultUnit]);
 
             if (resolved) {
                 addProductUnit(product, resolved, 1);

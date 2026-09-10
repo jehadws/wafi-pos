@@ -28,7 +28,7 @@ export default function SecondaryNavigation({
   const [isTaxesDialogOpen, setIsTaxesDialogOpen] = useState(false);
   const [isCouponsDialogOpen, setIsCouponsDialogOpen] = useState(false);
 
-  const showTaxes = options.sb_subul_vat === 'variable_vat';
+  const showTaxes = options[POS_OPTION_KEYS.vat] === 'variable_vat';
 
   // NexoPOS parity: the quick product button is only shown when the
   // "quick product" POS option is enabled (ns_pos_quick_product === 'yes').

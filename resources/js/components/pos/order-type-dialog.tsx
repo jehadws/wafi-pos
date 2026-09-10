@@ -1,4 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { POS_OPTION_KEYS } from '@/constants/pos-options';
 import { cn } from '@/lib/utils';
 import { usePage } from '@inertiajs/react';
 import { Bike, ShoppingBasket } from 'lucide-react';
@@ -14,7 +15,7 @@ interface OrderTypeDialogProps {
 export function OrderTypeDialog({ open, onOpenChange, orderType, onSelectOrderType }: OrderTypeDialogProps) {
   const { t } = useTranslation();
   const { options } = usePage<{ options: SbPosOptions }>().props;
-  const enabledTypes = options.sb_subul_order_types || [];
+  const enabledTypes = options[POS_OPTION_KEYS.orderTypes] || [];
 
   const handleSelectType = (type: 'takeaway' | 'delivery') => {
     if (type === 'takeaway') {
