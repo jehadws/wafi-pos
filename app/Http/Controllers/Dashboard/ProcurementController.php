@@ -268,7 +268,7 @@ class ProcurementController extends DashboardController
   {
     sb()->restrict(['subul.create.procurements']);
 
-    $tax_groups = TaxGroup::get(['id', 'name']);
+    $tax_groups = TaxGroup::with('taxes:id,tax_group_id,rate')->get(['id', 'name']);
     $providers = Provider::get(['id', 'first_name', 'last_name']);
     $providers = $providers->map(function ($provider) {
       return [
@@ -296,7 +296,7 @@ class ProcurementController extends DashboardController
       throw new NotAllowedException(__('Unable to edit a procurement that is stocked. Consider performing an adjustment or either delete the procurement.'));
     }
 
-    $tax_groups = TaxGroup::get(['id', 'name']);
+    $tax_groups = TaxGroup::with('taxes:id,tax_group_id,rate')->get(['id', 'name']);
     $providers = Provider::get(['id', 'first_name', 'last_name']);
     $providers = $providers->map(function ($provider) {
       return [
