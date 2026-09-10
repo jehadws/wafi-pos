@@ -98,15 +98,11 @@ describe('POS_OPTION_KEYS registry integrity', () => {
     //   (CashRegistersService::saveOrderChange).
     // - keyboardShortcuts (sb_subul_keyboard_shortcuts) is the MultiKeySelector
     //   choices list for the settings UI, not a runtime option.
-    // - numpad / printingGateway are pending the T4 decision in
-    //   docs/plans/pos-settings-enforcement.md.
     const BACKEND_ENFORCED_OR_SETTINGS_ONLY = new Set([
         'hideEmptyCategories',
         'hideExhaustedProducts',
         'registerChangePaymentType',
         'keyboardShortcuts',
-        'numpad',
-        'printingGateway',
     ]);
 
     function collectSourceFiles(dir: string): string[] {

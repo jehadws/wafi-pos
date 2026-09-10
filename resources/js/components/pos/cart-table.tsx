@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { usePOS } from '@/hooks/usePOS';
-import { isPosOptionEnabled, isPriceWithTax, POS_OPTION_KEYS } from '@/constants/pos-options';
+import { isPosOptionEnabled, isPriceWithTax, POS_OPTION_KEYS, resolveNumpadVariant } from '@/constants/pos-options';
 import { useTranslation } from '@/lib/i18n';
 import { OrderProduct } from '@/types/models/order-product';
 import { ShoppingBag, Trash2 } from 'lucide-react';
@@ -221,6 +221,7 @@ export default function CartTable({
                     title={keypadTitle}
                     allowDecimal={activeKeypad.type !== 'quantity'}
                     maxLength={activeKeypad.type === 'quantity' ? 4 : 8}
+                    variant={resolveNumpadVariant(options)}
                 />
             )}
         </div>

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNumericKeypad } from '@/hooks/use-numeric-keypad';
 import { usePOS } from '@/hooks/usePOS';
-import { isPosOptionEnabled, isPriceWithTax, POS_OPTION_KEYS } from '@/constants/pos-options';
+import { isPosOptionEnabled, isPriceWithTax, POS_OPTION_KEYS, resolveNumpadVariant } from '@/constants/pos-options';
 import { OrderProduct } from '@/types/models/order-product';
 import { useTranslation } from '@/lib/i18n';
 import { formatCurrency } from '@/utils/format';
@@ -294,8 +294,8 @@ export default function CartItem({
         {formatCurrency(itemTotal)}
       </div>
 
-      {!onOpenDiscountKeypad && <NumericKeypadDialog {...fallbackDiscountKeypad.keypadProps} />}
-      {!onOpenPriceKeypad && <NumericKeypadDialog {...fallbackPriceKeypad.keypadProps} />}
+      {!onOpenDiscountKeypad && <NumericKeypadDialog {...fallbackDiscountKeypad.keypadProps} variant={resolveNumpadVariant(options)} />}
+      {!onOpenPriceKeypad && <NumericKeypadDialog {...fallbackPriceKeypad.keypadProps} variant={resolveNumpadVariant(options)} />}
     </div>
   );
 }

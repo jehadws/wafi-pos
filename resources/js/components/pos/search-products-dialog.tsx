@@ -11,7 +11,7 @@ import { useTranslation } from '../../lib/i18n';
 import { formatCurrency } from '../../utils/format';
 import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
 import { usePage } from '@inertiajs/react';
-import { isPosOptionEnabled, POS_OPTION_KEYS, resolveUnitDisplayPrice } from '@/constants/pos-options';
+import { isPosOptionEnabled, POS_OPTION_KEYS, resolveNumpadVariant, resolveUnitDisplayPrice } from '@/constants/pos-options';
 import { pickExpressUnit, resolveProductUnitQuantities } from '@/services/product-units';
 import { validateStockAvailability } from '@/services/stock';
 import { usePOS } from '@/hooks/usePOS';
@@ -291,7 +291,7 @@ export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: 
       </Dialog>
 
       {/* ── Quantity Keypad ── */}
-      <NumericKeypadDialog {...quantityKeypad.keypadProps} />
+      <NumericKeypadDialog {...quantityKeypad.keypadProps} variant={resolveNumpadVariant(options)} />
     </>
   );
 }

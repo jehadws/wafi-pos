@@ -110,6 +110,18 @@ export function isVatDisabled(options: object): boolean {
     return (options as Record<string, unknown>)[POS_OPTION_KEYS.vat] === 'disabled';
 }
 
+/**
+ * Resolves the keypad layout configured for the POS — the "Numpad" setting
+ * (POS Settings → Features). Port of NexoPOS `ns_pos_numpad`:
+ * 'default' → ns-numpad, 'advanced' → ns-numpad-plus (explicit "." key and
+ * full-width Enter). Anything unrecognized falls back to 'default'.
+ */
+export function resolveNumpadVariant(options: object): 'default' | 'advanced' {
+    return (options as Record<string, unknown>)[POS_OPTION_KEYS.numpad] === 'advanced'
+        ? 'advanced'
+        : 'default';
+}
+
 /** Minimal unit-quantity shape the price resolver needs. */
 export interface UnitDisplayPriceSource {
     sale_price_edit?: number;

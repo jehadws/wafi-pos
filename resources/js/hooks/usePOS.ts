@@ -615,6 +615,18 @@ export const usePOS = create<POSStore>((set, get) => ({
 
         if (!shouldPrint) return Promise.resolve(false);
 
+        // Printing gateway — NexoPOS (libraries/print.ts:48) routes 'default'
+        // to web printing and anything else to a custom, module-registered
+        // gateway. This frontend has no module gateway handlers yet: surface
+        // the mismatch and fall back to the default web printing instead of
+        // silently ignoring the option.
+        const printingGateway = (options[POS_OPTION_KEYS.printingGateway] as string) || 'default';
+        if (printingGateway !== 'default') {
+            console.warn(
+                `[print] Unsupported printing gateway "${printingGateway}" — falling back to default web printing.`,
+            );
+        }
+
         // Delegate to PrintAgentService — maps Order → FormattedReceiptData internally.
         // Resolves with the print result so callers can surface retry affordances;
         // never rejects (print failures resolve with { success: false }).

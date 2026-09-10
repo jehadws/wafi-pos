@@ -15,6 +15,14 @@ interface NumericKeypadDialogProps {
   onCancel?: () => void
   maxLength?: number
   allowDecimal?: boolean
+  /**
+   * Keypad layout variant — port of NexoPOS `ns-numpad` (default) vs
+   * `ns-numpad-plus` (advanced): the advanced variant swaps the trailing
+   * decimal row for an explicit "." key next to 0 and a full-width Enter
+   * row. Selected POS-wide by the "Numpad" setting (sb_subul_numpad) via
+   * resolveNumpadVariant().
+   */
+  variant?: 'default' | 'advanced'
 }
 
 export function NumericKeypadDialog({
@@ -25,6 +33,7 @@ export function NumericKeypadDialog({
   onConfirm,
   maxLength = 10,
   allowDecimal = false,
+  variant = "default",
 }: NumericKeypadDialogProps) {
   const { t } = useTranslation()
   const [value, setValue] = useState<string>("")
@@ -89,66 +98,128 @@ export function NumericKeypadDialog({
 
         {/* Keypad */}
         <div className="border-t">
-          {/* Number rows */}
-          {keypadButtons.map((row, rowIndex) => (
-            <div key={rowIndex} className="grid grid-cols-3">
-              {row.map((num) => (
-                <Button
-                  key={num}
-                  variant="ghost"
-                  className="h-16 rounded-none border-e border-b last:border-e-0 text-lg font-medium hover:bg-gray-50"
-                  onClick={() => handleNumberClick(num)}
-                >
-                  {num}
-                </Button>
+          {variant === 'advanced' ? (
+            <>
+              {/* Advanced — ns-numpad-plus port: digits, an explicit decimal
+                  key (inert unless allowDecimal), backspace in the bottom row
+                  and a full-width Enter. */}
+              {[
+                ['7', '8', '9'],
+                ['4', '5', '6'],
+                ['1', '2', '3'],
+              ].map((row, rowIndex) => (
+                <div key={rowIndex} className="grid grid-cols-3">
+                  {row.map((num) => (
+                    <Button
+                      key={num}
+                      variant="ghost"
+                      className="h-16 rounded-none border-e border-b last:border-e-0 text-lg font-medium hover:bg-gray-50"
+                      onClick={() => handleNumberClick(num)}
+                    >
+                      {num}
+                    </Button>
+                  ))}
+                </div>
               ))}
-            </div>
-          ))}
 
-          {/* Bottom row */}
-          <div className="grid grid-cols-3">
-            <Button
-              variant="ghost"
-              className="h-16 rounded-none border-e border-b text-lg font-medium hover:bg-gray-50"
-              onClick={handleBackspace}
-            >
-              <Delete className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              className="h-16 rounded-none border-e border-b text-lg font-medium hover:bg-gray-50"
-              onClick={() => handleNumberClick("0")}
-            >
-              0
-            </Button>
-            <Button
-              variant="ghost"
-              className="h-16 rounded-none border-e border-b text-lg font-medium hover:bg-gray-50 text-blue-600"
-              onClick={handleEnter}
-            >
-              {t('Enter')}
-            </Button>
-          </div>
+              <div className="grid grid-cols-3">
+                <Button
+                  variant="ghost"
+                  className="h-16 rounded-none border-e border-b text-lg font-medium hover:bg-gray-50"
+                  onClick={() => handleNumberClick('.')}
+                >
+                  .
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="h-16 rounded-none border-e border-b text-lg font-medium hover:bg-gray-50"
+                  onClick={() => handleNumberClick('0')}
+                >
+                  0
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="h-16 rounded-none border-b text-lg font-medium hover:bg-gray-50"
+                  onClick={handleBackspace}
+                >
+                  <Delete className="h-5 w-5" />
+                </Button>
+              </div>
 
-          {/* Decimal row (if enabled) */}
-          {allowDecimal && (
-            <div className="grid grid-cols-3">
-              <Button
-                variant="ghost"
-                className="h-16 rounded-none border-e text-lg font-medium hover:bg-gray-50"
-                onClick={handleClear}
-              >
-                {t('Clear')}
-              </Button>
-              <Button
-                variant="ghost"
-                className="h-16 rounded-none border-e text-lg font-medium hover:bg-gray-50"
-                onClick={() => handleNumberClick(".")}
-              >
-                .
-              </Button>
-              <div className="h-16"></div>
-            </div>
+              <div className="grid grid-cols-1">
+                <Button
+                  variant="ghost"
+                  className="h-16 w-full rounded-none text-lg font-medium text-blue-600 hover:bg-gray-50"
+                  onClick={handleEnter}
+                >
+                  {t('Enter')}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Number rows */}
+              {keypadButtons.map((row, rowIndex) => (
+                <div key={rowIndex} className="grid grid-cols-3">
+                  {row.map((num) => (
+                    <Button
+                      key={num}
+                      variant="ghost"
+                      className="h-16 rounded-none border-e border-b last:border-e-0 text-lg font-medium hover:bg-gray-50"
+                      onClick={() => handleNumberClick(num)}
+                    >
+                      {num}
+                    </Button>
+                  ))}
+                </div>
+              ))}
+
+              {/* Bottom row */}
+              <div className="grid grid-cols-3">
+                <Button
+                  variant="ghost"
+                  className="h-16 rounded-none border-e border-b text-lg font-medium hover:bg-gray-50"
+                  onClick={handleBackspace}
+                >
+                  <Delete className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="h-16 rounded-none border-e border-b text-lg font-medium hover:bg-gray-50"
+                  onClick={() => handleNumberClick("0")}
+                >
+                  0
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="h-16 rounded-none border-e border-b text-lg font-medium hover:bg-gray-50 text-blue-600"
+                  onClick={handleEnter}
+                >
+                  {t('Enter')}
+                </Button>
+              </div>
+
+              {/* Decimal row (if enabled) */}
+              {allowDecimal && (
+                <div className="grid grid-cols-3">
+                  <Button
+                    variant="ghost"
+                    className="h-16 rounded-none border-e text-lg font-medium hover:bg-gray-50"
+                    onClick={handleClear}
+                  >
+                    {t('Clear')}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="h-16 rounded-none border-e text-lg font-medium hover:bg-gray-50"
+                    onClick={() => handleNumberClick(".")}
+                  >
+                    .
+                  </Button>
+                  <div className="h-16"></div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </DialogContent>
