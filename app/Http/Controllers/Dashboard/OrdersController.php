@@ -208,7 +208,9 @@ class OrdersController extends DashboardController
         'sb_subul_quick_product' => sb()->option->get('sb_subul_quick_product', 'no'),
         'sb_subul_quick_product_default_unit' => sb()->option->get('sb_subul_quick_product_default_unit', 0),
         'sb_subul_price_with_tax' => sb()->option->get('sb_subul_price_with_tax', 'no'),
-        'sb_subul_unit_price_ediable' => sb()->option->get('sb_subul_unit_price_ediable', 'no'),
+        // Default matches Options::setDefault() ('yes') — a never-saved option
+        // must not silently lock unit-price editing at the POS.
+        'sb_subul_unit_price_ediable' => sb()->option->get('sb_subul_unit_price_ediable', 'yes'),
         'sb_subul_printing_enabled_for' => sb()->option->get('sb_subul_printing_enabled_for', 'only_paid_orders'),
         'sb_subul_printing_auto' => sb()->option->get('sb_subul_printing_auto', 'yes'),
         'sb_subul_registers_enabled' => sb()->option->get('sb_subul_registers_enabled', 'no'),

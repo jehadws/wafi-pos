@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { usePOS } from '@/hooks/usePOS';
-import { isPriceWithTax } from '@/constants/pos-options';
+import { isPosOptionEnabled, isPriceWithTax, POS_OPTION_KEYS } from '@/constants/pos-options';
 import { useTranslation } from '@/lib/i18n';
 import { OrderProduct } from '@/types/models/order-product';
 import { ShoppingBag, Trash2 } from 'lucide-react';
@@ -53,6 +53,17 @@ export default function CartTable({
 
     const handleKeypadConfirm = (value: string) => {
         if (!activeKeypad) return;
+        // Defense in depth: the price entry point is already gated at the
+        // source in CartItem ("Editable Unit Price" off → the link is inert).
+        // If a future entry point opens the price keypad anyway, refuse to
+        // apply the edit.
+        if (
+            activeKeypad.type === 'price' &&
+            !isPosOptionEnabled(options, POS_OPTION_KEYS.unitPriceEditable)
+        ) {
+            setActiveKeypad(null);
+            return;
+        }
         const numValue = Number.parseFloat(value);
         if (isNaN(numValue)) return;
 

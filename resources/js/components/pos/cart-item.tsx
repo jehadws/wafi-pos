@@ -42,6 +42,11 @@ export default function CartItem({
   const [quantityInput, setQuantityInput] = useState(item.quantity.toString());
 
   const isTaxIncluded = isPriceWithTax(options);
+  // "Editable Unit Price" (sb_subul_unit_price_ediable) gates the price keypad
+  // entry point — the discount link and the wholesale toggle are governed by
+  // their own options and stay interactive regardless.
+  const isUnitPriceEditable = isPosOptionEnabled(options, POS_OPTION_KEYS.unitPriceEditable);
+
   const itemTotal = isTaxIncluded
     ? (item.total_price_with_tax ?? item.total_price ?? 0)
     : (item.total_price_without_tax ?? item.unit_price * item.quantity);
@@ -159,20 +164,26 @@ export default function CartItem({
             )}
           </p>
           <div className="mt-0.5 flex flex-row flex-wrap items-center gap-x-3 gap-y-0.5">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onOpenPriceKeypad) {
-                  onOpenPriceKeypad(item);
-                } else {
-                  fallbackPriceKeypad.openKeypad();
-                }
-              }}
-              className={CART_ITEM_LINK_CLASSES}
-            >
-              {t('Price')}: <span className="text-foreground font-medium tabular-nums">{formatCurrency(displayedPrice)}</span>
-            </button>
+            {isUnitPriceEditable ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onOpenPriceKeypad) {
+                    onOpenPriceKeypad(item);
+                  } else {
+                    fallbackPriceKeypad.openKeypad();
+                  }
+                }}
+                className={CART_ITEM_LINK_CLASSES}
+              >
+                {t('Price')}: <span className="text-foreground font-medium tabular-nums">{formatCurrency(displayedPrice)}</span>
+              </button>
+            ) : (
+              <span className="text-muted-foreground text-xs">
+                {t('Price')}: <span className="text-foreground font-medium tabular-nums">{formatCurrency(displayedPrice)}</span>
+              </span>
+            )}
             <button
               type="button"
               onClick={(e) => {
