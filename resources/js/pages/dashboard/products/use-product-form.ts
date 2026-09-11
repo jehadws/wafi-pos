@@ -17,7 +17,19 @@ const editDefaults = (product: any): ProductFormData => ({
   name: product.name ?? '',
   expiracy_expires: product.expires ?? false,
   expiracy_on_expiration: product.on_expiration === 'allow_sales' ? 'allow_sales' : 'prevent_sales',
-  groups_product_subitems: [],
+  groups_product_subitems: (product.sub_items ?? []).map((subItem: any) => ({
+    id: subItem.id,
+    product_id: subItem.product_id,
+    unit_id: subItem.unit_id,
+    unit_quantity_id: subItem.unit_quantity_id,
+    quantity: subItem.quantity,
+    sale_price: subItem.sale_price,
+    total_price: subItem.total_price,
+    name: subItem.product?.name ?? '',
+    product: subItem.product
+      ? { name: subItem.product.name, unit_quantities: subItem.product.unit_quantities ?? [] }
+      : { unit_quantities: [] },
+  })),
   identification_barcode: product.barcode ?? '',
   identification_barcode_type: product.barcode_type ?? '',
   identification_category_id: product.category_id ?? '',
@@ -26,7 +38,12 @@ const editDefaults = (product: any): ProductFormData => ({
   identification_status: product.status ?? '',
   identification_stock_management: product.stock_management === false || product.stock_management === 'disabled' ? 'disabled' : 'enabled',
   identification_type: product.type ?? '',
-  images: [],
+  /**
+   * Hydrate the gallery URLs from the loaded `galleries` relation.
+   * `ProductService::saveGallery` deletes then re-creates all rows on
+   * every save — submitting `[]` would silently drop the images.
+   */
+  images: (product.galleries ?? []).map((gallery: any) => gallery.url),
   taxes_tax_group_id: product.tax_group_id ?? '',
   taxes_tax_type: product.tax_type ?? '',
   units_accurate_tracking: product.accurate_tracking ?? false,
@@ -67,7 +84,17 @@ const buildTransform = (data: ProductFormData) => ({
         stock_management: data.identification_stock_management,
         description: data.identification_description,
       },
-      groups: { ...data.groups_product_subitems },
+      groups: {
+        product_subitems: data.groups_product_subitems.map((row) => ({
+          id: row.id,
+          product_id: row.product_id,
+          unit_id: row.unit_id,
+          unit_quantity_id: row.unit_quantity_id,
+          quantity: row.quantity,
+          sale_price: row.sale_price,
+          total_price: row.total_price,
+        })),
+      },
       units: {
         unit_group: data.units_unit_group,
         accurate_tracking: data.units_accurate_tracking,
@@ -82,7 +109,7 @@ const buildTransform = (data: ProductFormData) => ({
         tax_group_id: data.taxes_tax_group_id,
         tax_type: data.taxes_tax_type,
       },
-      images: { ...data.images },
+      images: data.images.map((url) => ({ url })),
       $primary: true,
     },
   ],
@@ -111,6 +138,18 @@ export function useProductForm(mode: ProductFormMode, product?: any) {
       form.setError('identification_error', t('This field is required'));
       toast.error(t('Category is required'));
       isValid = false;
+    }
+    if (form.data.identification_type === 'grouped') {
+      if (form.data.groups_product_subitems.length === 0) {
+        form.setError('groups_error', t('A grouped product cannot be saved without any sub items.'));
+        toast.error(t('A grouped product cannot be saved without any sub items.'));
+        isValid = false;
+      }
+      if (form.data.groups_product_subitems.some((row) => !row.unit_quantity_id)) {
+        form.setError('groups_error', t('Assign a unit to the product.'));
+        toast.error(t('Assign a unit to the product.'));
+        isValid = false;
+      }
     }
     if (!form.data.units_unit_group) {
       form.setError('units_unit_group', t('Unit group is required'));
@@ -166,8 +205,7 @@ export function useProductForm(mode: ProductFormMode, product?: any) {
 
     form.transform(() => buildTransform(form.data));
 
-    const onError = (errors: Record<string, string>) => {
-      console.error('Validation errors:', errors);
+    const onError = () => {
       toast.error(t('The form is not valid. Please check it and try again'));
     };
 

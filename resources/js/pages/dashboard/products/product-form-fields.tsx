@@ -8,6 +8,7 @@
  */
 
 import ExpiryTab from '@/components/forms/product-form/expiry-tab';
+import GroupsTab from '@/components/forms/product-form/groups-tab';
 import IdentificationTab from '@/components/forms/product-form/identification-tab';
 import ImagesTab from '@/components/forms/product-form/images-tab';
 import TaxesTab from '@/components/forms/product-form/taxes-tab';
@@ -36,6 +37,12 @@ interface ProductFormFieldsProps {
 export function ProductFormFields({ form, handleInputChange }: ProductFormFieldsProps) {
   const { t } = useTranslation();
 
+  /**
+   * The backend groups tab only exists for grouped products
+   * (`ProductCrud` groups `show` gate).
+   */
+  const isGrouped = form.data?.identification_type === 'grouped';
+
   return (
     <>
       {/* Product Name */}
@@ -53,10 +60,15 @@ export function ProductFormFields({ form, handleInputChange }: ProductFormFields
 
       {/* Tabs */}
       <Tabs defaultValue="identification" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className={cn('grid w-full', isGrouped ? 'grid-cols-6' : 'grid-cols-5')}>
           <TabsTrigger value="identification" className={cn(form.errors?.identification_error ? 'text-destructive' : '')}>
             {t('Identification')}
           </TabsTrigger>
+          {isGrouped && (
+            <TabsTrigger value="groups" className={cn(form.errors?.groups_error ? 'text-destructive' : '')}>
+              {t('Groups')}
+            </TabsTrigger>
+          )}
           <TabsTrigger value="units" className={cn(form.errors?.units_error ? 'text-destructive' : '')}>
             {t('Units')}
           </TabsTrigger>
@@ -74,6 +86,12 @@ export function ProductFormFields({ form, handleInputChange }: ProductFormFields
         <TabsContent value="identification" className="mt-6">
           <IdentificationTab form={form} handleInputChange={handleInputChange} />
         </TabsContent>
+
+        {isGrouped && (
+          <TabsContent value="groups" className="mt-6">
+            <GroupsTab form={form} />
+          </TabsContent>
+        )}
 
         <TabsContent value="units" className="mt-6">
           <UnitsTab form={form} handleInputChange={handleInputChange} />

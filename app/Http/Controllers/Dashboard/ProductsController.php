@@ -351,6 +351,13 @@ class ProductsController extends DashboardController
   {
     sb()->restrict(['subul.update.products']);
     $product->unit_quantities;
+    /**
+     * Eager-load the sub items (with each sub product's unit quantities)
+     * so the grouped-product "Groups" tab can hydrate its rows. Without
+     * this, a grouped product edit would submit no rows and
+     * `ProductService::saveSubItems` would delete them all.
+     */
+    $product->load( 'sub_items.product.unit_quantities.unit' );
     $unitsGroup = UnitGroup::with('units')->get(['id', 'name']);
     $categories = ProductCategory::get(['id', 'name']);
     $taxes = TaxGroup::get(['id', 'name']);

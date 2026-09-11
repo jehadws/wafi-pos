@@ -1,53 +1,32 @@
 import { InertiaFormProps } from '@inertiajs/react';
 
 export type Tab = 'identification' | 'groups' | 'images' | 'units' | 'taxes' | 'expiracy';
-export type ProductFormData = {
-  // name: string
-  // expiracy: {
-  //   expires: boolean
-  //   on_expiration: "allow_sales" | "prevent_sales"
-  // }
-  // groups: {
-  //   product_subitems: any[]
-  // }
-  // identification: {
-  //   barcode: string
-  //   barcode_type: string
-  //   category_id: number | undefined
-  //   description: string
-  //   sku: string
-  //   status: "available" | "unavailable"
-  //   stock_management: "enabled" | "disabled"
-  //   type: "materialized" | "dematerialized" | "grouped"
-  // }
-  // images: string[]
-  // taxes: {
-  //   tax_group_id: number | string
-  //   tax_type: "inclusive" | "exclusive"
-  // }
-  // units: {
-  //   accurate_tracking: boolean
-  //   auto_cogs: boolean
-  //   unit_group: number
-  //   selling_group: {
-  //     cogs: number
-  //     convert_unit_id: string
-  //     id?: number
-  //     low_quantity: number
-  //     preview_url: string
-  //     quantity: number
-  //     sale_price_edit: string
-  //     stock_alert_enabled: boolean
-  //     unit_id: string
-  //     visible: boolean
-  //     wholesale_price_edit: string
-  //   }[]
-  // }
 
+/**
+ * A sub item attached to a grouped product.
+ *
+ * Submitted rows must carry the keys consumed by `ProductService::saveSubItems`
+ * (id?/product_id/unit_id/unit_quantity_id/quantity/sale_price — `total_price`
+ * is computed server-side when absent). `name`/`product` are display-only
+ * extras the server ignores.
+ */
+export type ProductSubItemRow = {
+  id?: number;
+  product_id: number;
+  unit_id: number | string;
+  unit_quantity_id: number | string;
+  quantity: number;
+  sale_price: number;
+  total_price?: number;
+  name?: string;
+  product?: { name?: string; unit_quantities?: UnitQuantity[] };
+};
+
+export type ProductFormData = {
   name: string;
   expiracy_expires: boolean;
   expiracy_on_expiration: 'allow_sales' | 'prevent_sales';
-  groups_product_subitems: [];
+  groups_product_subitems: ProductSubItemRow[];
   identification_barcode: string;
   identification_barcode_type: string;
   identification_category_id: number | null;
@@ -131,6 +110,11 @@ export interface ExpiryTabProps {
 }
 
 export interface TaxesTabProps {
+  form: InertiaFormProps<ProductFormData>;
+  handleInputChange: (name: keyof ProductFormData, value: string | number | number[] | boolean) => void;
+}
+
+export interface GroupsTabProps {
   form: InertiaFormProps<ProductFormData>;
   handleInputChange: (name: keyof ProductFormData, value: string | number | number[] | boolean) => void;
 }
