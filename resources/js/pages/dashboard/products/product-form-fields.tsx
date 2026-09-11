@@ -27,7 +27,7 @@ import { InertiaFormProps } from '@inertiajs/react';
 
 interface ProductFormFieldsProps {
   form: InertiaFormProps<ProductFormData>;
-  handleInputChange: (name: keyof ProductFormData, value: any) => void;
+  handleInputChange: (name: keyof ProductFormData, value: string | number | number[] | boolean) => void;
 }
 
 // ---------------------------------------------------------------------------
