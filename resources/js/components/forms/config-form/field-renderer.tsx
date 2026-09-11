@@ -15,6 +15,7 @@ import { useRef } from 'react';
 import { GroupRenderer } from './group-renderer';
 import { parseValidation } from './parse-validation';
 import { getCustomComponent } from './registry';
+import { RichTextEditor } from './rich-text-editor';
 
 /**
  * Renders one backend form field, mapping `field.type` to a UI primitive
@@ -233,18 +234,17 @@ export function FieldRenderer({ field, value, onChange, error, disabled, id }: F
       );
 
     case 'ckeditor':
-      // Documented downgrade (Plan A §4): a real rich-text editor needs
-      // a dependency decision (@tiptap/react) and is out of A's scope.
-      // The value stays HTML and round-trips unchanged.
+      // B1.5: replaced the Plan A textarea downgrade with the lightweight
+      // contenteditable RichTextEditor (no external dep; HTML string interface).
       return (
-        <FormField
-          label={field.label ?? ''}
-          description={field.description ?? t('Rich text editing is not available here; plain text is saved.')}
-          required={required}
-          error={shownError}
-          htmlFor={id}
-        >
-          <Textarea {...textProps} />
+        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
+          <RichTextEditor
+            id={id}
+            value={stringValue}
+            onChange={onChange}
+            disabled={isDisabled}
+            aria-invalid={Boolean(shownError)}
+          />
         </FormField>
       );
 
