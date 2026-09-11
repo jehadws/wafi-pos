@@ -1,158 +1,153 @@
-import { useState } from 'react';
-import { router, useForm } from '@inertiajs/react';
-import { useTranslation } from '@/lib/i18n';
 import { couponsApi } from '@/api';
-import { extractValidationErrors } from '@/utils/api-errors';
+import { useTranslation } from '@/lib/i18n';
+import { router, useForm } from '@inertiajs/react';
 import { format } from 'date-fns';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 export interface CouponFormData {
-    name: string;
-    code: string;
-    type: string;
-    discount_value: number;
-    minimum_cart_value: number;
-    maximum_cart_value: number;
-    valid_until: any;
-    valid_hours_end: any;
-    valid_hours_start: any;
-    limit_usage: number;
-    description: string;
-    selected_products: number[];
-    selected_categories: number[];
-    selected_groups: number[];
+  name: string;
+  code: string;
+  type: string;
+  discount_value: number;
+  minimum_cart_value: number;
+  maximum_cart_value: number;
+  valid_until: any;
+  valid_hours_end: any;
+  valid_hours_start: any;
+  limit_usage: number;
+  selected_products: number[];
+  selected_categories: number[];
+  selected_groups: number[];
 }
 
 export type CouponFormMode = 'create' | 'edit';
 
 export function useCouponForm(mode: CouponFormMode, coupon?: any) {
-    const { t } = useTranslation();
-    const [isSubmitting, setIsSubmitting] = useState(false);
+  const { t } = useTranslation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const form = useForm<CouponFormData>(
-        mode === 'edit' && coupon
-            ? {
-                  name: coupon.name ?? '',
-                  code: coupon.code ?? '',
-                  type: coupon.type ?? 'percentage_discount',
-                  discount_value: coupon.discount_value ?? 0,
-                  minimum_cart_value: coupon.minimum_cart_value ?? 0,
-                  maximum_cart_value: coupon.maximum_cart_value ?? 0,
-                  valid_until: coupon.valid_until ?? Date.now(),
-                  valid_hours_end: coupon.valid_hours_end ?? Date.now(),
-                  valid_hours_start: coupon.valid_hours_start ?? Date.now(),
-                  limit_usage: coupon.limit_usage ?? 1,
-                  description: coupon.description ?? '',
-                  selected_products: coupon.products?.map((p: any) => p.product_id) || [],
-                  selected_categories: coupon.categories?.map((c: any) => c.category_id) || [],
-                  selected_groups: coupon.groups?.map((g: any) => g.group_id) || [],
-              }
-            : {
-                  name: '',
-                  code: '',
-                  type: 'percentage_discount',
-                  discount_value: 0,
-                  minimum_cart_value: 0,
-                  maximum_cart_value: 0,
-                  valid_until: Date.now(),
-                  valid_hours_end: Date.now(),
-                  valid_hours_start: Date.now(),
-                  limit_usage: 1,
-                  description: '',
-                  selected_products: [],
-                  selected_categories: [],
-                  selected_groups: [],
-              },
-    );
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        form.setData({ ...form.data, [name]: value });
-                if ((form.errors as any)[name]) form.clearErrors(name as any);
-    };
-
-    const handleSelectChange = (name: keyof CouponFormData, value: any) => {
-        form.setData({ ...form.data, [name]: value });
-                if ((form.errors as any)[name]) form.clearErrors(name as any);
-    };
-
-    const generateCouponCode = () => {
-        const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-        form.setData({ ...form.data, code });
-        toast.info(t('Generated code: {{code}}', { code }));
-    };
-
-    const validateForm = (): boolean => {
-        let isValid = true;
-        form.clearErrors();
-        if (!form.data.name.trim()) {
-            form.setError('name', t('Coupon name is required'));
-            isValid = false;
+  const form = useForm<CouponFormData>(
+    mode === 'edit' && coupon
+      ? {
+          name: coupon.name ?? '',
+          code: coupon.code ?? '',
+          type: coupon.type ?? 'percentage_discount',
+          discount_value: coupon.discount_value ?? 0,
+          minimum_cart_value: coupon.minimum_cart_value ?? 0,
+          maximum_cart_value: coupon.maximum_cart_value ?? 0,
+          valid_until: coupon.valid_until ?? Date.now(),
+          valid_hours_end: coupon.valid_hours_end ?? Date.now(),
+          valid_hours_start: coupon.valid_hours_start ?? Date.now(),
+          limit_usage: coupon.limit_usage ?? 1,
+          selected_products: coupon.products?.map((p: any) => p.product_id) || [],
+          selected_categories: coupon.categories?.map((c: any) => c.category_id) || [],
+          selected_groups: coupon.groups?.map((g: any) => g.group_id) || [],
         }
-        if (!form.data.code.trim()) {
-            form.setError('code', t('Coupon code is required'));
-            isValid = false;
-        }
-        return isValid;
-    };
-
-    const buildTransform = () => ({
-        name: form.data.name,
-        general: {
-            code: form.data.code,
-            discount_value: form.data.discount_value,
-            limit_usage: form.data.limit_usage,
-            maximum_cart_value: form.data.maximum_cart_value,
-            minimum_cart_value: form.data.minimum_cart_value,
-            type: form.data.type,
-            valid_hours_end: form.data.valid_hours_end ? format(new Date(form.data.valid_hours_end), 'yyyy-MM-dd HH:mm:ss') : '',
-            valid_hours_start: form.data.valid_hours_start ? format(new Date(form.data.valid_hours_start), 'yyyy-MM-dd HH:mm:ss') : '',
-            valid_until: form.data.valid_until,
+      : {
+          name: '',
+          code: '',
+          type: 'percentage_discount',
+          discount_value: 0,
+          minimum_cart_value: 0,
+          maximum_cart_value: 0,
+          valid_until: Date.now(),
+          valid_hours_end: Date.now(),
+          valid_hours_start: Date.now(),
+          limit_usage: 1,
+          selected_products: [],
+          selected_categories: [],
+          selected_groups: [],
         },
-        selected_categories: {
-            categories: form.data.selected_categories,
-        },
-        selected_groups: {
-            groups: form.data.selected_groups,
-        },
-        selected_products: {
-            products: form.data.selected_products,
-        },
-    });
+  );
 
-    const onError = (errors: Record<string, string>) => {
-        console.error('Validation errors:', errors);
-        toast.error(t('Please fix the validation errors'));
-    };
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    form.setData({ ...form.data, [name]: value });
+    if (form.errors[name as keyof CouponFormData]) form.clearErrors(name as keyof CouponFormData);
+  };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!validateForm() || isSubmitting) return;
+  const handleSelectChange = (name: keyof CouponFormData, value: any) => {
+    form.setData({ ...form.data, [name]: value });
+    if (form.errors[name]) form.clearErrors(name);
+  };
 
-        setIsSubmitting(true);
-        try {
-            if (mode === 'edit' && coupon) {
-                const res = await couponsApi.update(coupon.id, buildTransform());
-                toast.success(t('Successfully saved'));
-                if (res?.redirect) router.visit(res.redirect);
-            } else {
-                const res = await couponsApi.create(buildTransform());
-                toast.success(t('Coupon created successfully'));
-                if (res?.redirect) router.visit(res.redirect);
-            }
-        } catch (err) {
-            onError(extractValidationErrors(err));
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+  const generateCouponCode = () => {
+    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+    form.setData({ ...form.data, code });
+    toast.info(t('Generated code: {{code}}', { code }));
+  };
 
-    return {
-        form: { ...form, processing: isSubmitting || form.processing },
-        handleSubmit,
-        handleInputChange,
-        handleSelectChange,
-        generateCouponCode,
-    };
+  const validateForm = (): boolean => {
+    let isValid = true;
+    form.clearErrors();
+    if (!form.data.name.trim()) {
+      form.setError('name', t('Coupon name is required'));
+      isValid = false;
+    }
+    if (!form.data.code.trim()) {
+      form.setError('code', t('Coupon code is required'));
+      isValid = false;
+    }
+    return isValid;
+  };
+
+  const buildTransform = () => ({
+    name: form.data.name,
+    general: {
+      code: form.data.code,
+      discount_value: form.data.discount_value,
+      limit_usage: form.data.limit_usage,
+      maximum_cart_value: form.data.maximum_cart_value,
+      minimum_cart_value: form.data.minimum_cart_value,
+      type: form.data.type,
+      valid_hours_end: form.data.valid_hours_end ? format(new Date(form.data.valid_hours_end), 'yyyy-MM-dd HH:mm:ss') : '',
+      valid_hours_start: form.data.valid_hours_start ? format(new Date(form.data.valid_hours_start), 'yyyy-MM-dd HH:mm:ss') : '',
+      valid_until: form.data.valid_until,
+    },
+    selected_categories: {
+      categories: form.data.selected_categories,
+    },
+    selected_groups: {
+      groups: form.data.selected_groups,
+    },
+    selected_products: {
+      products: form.data.selected_products,
+    },
+  });
+
+  const onError = () => {
+    toast.error(t('Please fix the validation errors'));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!validateForm() || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      if (mode === 'edit' && coupon) {
+        const res = await couponsApi.update(coupon.id, buildTransform());
+        toast.success(t('Successfully saved'));
+        if (res?.redirect) router.visit(res.redirect);
+      } else {
+        const res = await couponsApi.create(buildTransform());
+        toast.success(t('Coupon created successfully'));
+        if (res?.redirect) router.visit(res.redirect);
+      }
+    } catch {
+      onError();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return {
+    form: { ...form, processing: isSubmitting || form.processing },
+    handleSubmit,
+    handleInputChange,
+    handleSelectChange,
+    generateCouponCode,
+  };
 }

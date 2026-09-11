@@ -1,20 +1,18 @@
+import { paymentTypesApi } from '@/api';
 import FormField from '@/components/forms/shared/form-field';
 import FormHeader from '@/components/forms/shared/form-header';
-import { RadioGroup } from '@/components/ui/radio-group';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroupItem } from '@/components/ui/radio-group';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
-import { paymentTypesApi } from '@/api';
-import { extractValidationErrors } from '@/utils/api-errors';
 import { cn } from '@/lib/utils';
+import { extractValidationErrors } from '@/utils/api-errors';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-
 
 export default function EditPaymentType() {
   const { t } = useTranslation();
@@ -36,7 +34,7 @@ export default function EditPaymentType() {
   const handleInputChange = (name: keyof typeof form.data, value: string | number | number[]) => {
     form.setData({ ...form.data, [name]: value });
 
-        if (form.errors[name]) form.clearErrors(name);
+    if (form.errors[name]) form.clearErrors(name);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,9 +58,8 @@ export default function EditPaymentType() {
       if (res?.redirect) router.visit(res.redirect);
     } catch (err) {
       const errors = extractValidationErrors(err);
-      console.error('Validation errors:', errors);
       if (errors.error) {
-        alert(errors.error);
+        toast.error(errors.error);
       }
     } finally {
       setIsSubmitting(false);
@@ -89,7 +86,7 @@ export default function EditPaymentType() {
             title={t('Edit payment type')}
             description={t('Modify  Payment Type.')}
             onCancel={() => window.history.back()}
-            onSave={() => { }}
+            onSave={() => {}}
             form={{ ...form, processing: isSubmitting || form.processing }}
           />
 
@@ -127,7 +124,7 @@ export default function EditPaymentType() {
               </RadioGroup>
             </FormField>
 
-            <FormField label={t('Label')} error={form.errors.label} description={t('Provide a label to the resource.')} required>
+            <FormField label={t('Priority')} error={form.errors.priority} required>
               <Input
                 id="priority"
                 name="priority"

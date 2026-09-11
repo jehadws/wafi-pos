@@ -6,190 +6,185 @@
  * so this hook only needs to own form state, validation, and submit.
  */
 
-import { useForm } from '@inertiajs/react';
-import { useTranslation } from '@/lib/i18n';
-import { toast } from 'sonner';
 import { defaultFormData, ProductFormData } from '@/components/forms/product-form/types';
+import { useTranslation } from '@/lib/i18n';
+import { useForm } from '@inertiajs/react';
+import { toast } from 'sonner';
 
 export type ProductFormMode = 'create' | 'edit';
 
 const editDefaults = (product: any): ProductFormData => ({
-    name: product.name ?? '',
-    expiracy_expires: product.expires ?? false,
-    expiracy_on_expiration: product.on_expiration ?? '',
-    groups_product_subitems: [],
-    identification_barcode: product.barcode ?? '',
-    identification_barcode_type: product.barcode_type ?? '',
-    identification_category_id: product.category_id ?? '',
-    identification_description: product.description ?? '',
-    identification_sku: product.sku ?? '',
-    identification_status: product.status ?? '',
-    identification_stock_management: product.stock_management ?? false,
-    identification_type: product.type ?? '',
-    images: [],
-    taxes_tax_group_id: product.tax_group_id ?? '',
-    taxes_tax_type: product.tax_type ?? '',
-    units_accurate_tracking: product.accurate_tracking ?? false,
-    units_auto_cogs: product.auto_cogs ?? false,
-    units_unit_group: product.unit_group ?? '',
-    units_selling_group: (product?.unit_quantities ?? []).map((unit: any) => ({
-        cogs: unit.cogs,
-        convert_unit_id: unit.convert_unit_id,
-        id: unit.id,
-        low_quantity: unit.low_quantity,
-        preview_url: unit.preview_url,
-        quantity: unit.quantity,
-        sale_price_edit: unit.sale_price_edit,
-        stock_alert_enabled: unit.stock_alert_enabled,
-        unit_id: unit.unit_id,
-        visible: unit.visible,
-        wholesale_price_edit: unit.wholesale_price_edit,
-    })),
-    identification_error: null,
-    groups_error: null,
-    images_error: null,
-    units_error: null,
-    taxes_error: null,
-    expiracy_error: null,
+  name: product.name ?? '',
+  expiracy_expires: product.expires ?? false,
+  expiracy_on_expiration: product.on_expiration === 'allow_sales' ? 'allow_sales' : 'prevent_sales',
+  groups_product_subitems: [],
+  identification_barcode: product.barcode ?? '',
+  identification_barcode_type: product.barcode_type ?? '',
+  identification_category_id: product.category_id ?? '',
+  identification_description: product.description ?? '',
+  identification_sku: product.sku ?? '',
+  identification_status: product.status ?? '',
+  identification_stock_management: product.stock_management === false || product.stock_management === 'disabled' ? 'disabled' : 'enabled',
+  identification_type: product.type ?? '',
+  images: [],
+  taxes_tax_group_id: product.tax_group_id ?? '',
+  taxes_tax_type: product.tax_type ?? '',
+  units_accurate_tracking: product.accurate_tracking ?? false,
+  units_auto_cogs: product.auto_cogs ?? false,
+  units_unit_group: product.unit_group ?? '',
+  units_selling_group: (product?.unit_quantities ?? []).map((unit: any) => ({
+    cogs: unit.cogs,
+    convert_unit_id: unit.convert_unit_id,
+    id: unit.id,
+    low_quantity: unit.low_quantity,
+    preview_url: unit.preview_url,
+    quantity: unit.quantity,
+    sale_price_edit: unit.sale_price_edit,
+    stock_alert_enabled: unit.stock_alert_enabled,
+    unit_id: unit.unit_id,
+    visible: unit.visible,
+    wholesale_price_edit: unit.wholesale_price_edit,
+  })),
+  identification_error: null,
+  groups_error: null,
+  images_error: null,
+  units_error: null,
+  taxes_error: null,
+  expiracy_error: null,
 });
 
 const buildTransform = (data: ProductFormData) => ({
-    name: data.name,
-    variations: [
-        {
-            identification: {
-                category_id: data.identification_category_id,
-                barcode: data.identification_barcode,
-                sku: data.identification_sku,
-                barcode_type: data.identification_barcode_type,
-                type: data.identification_type,
-                status: data.identification_status,
-                stock_management: data.identification_stock_management,
-                description: data.identification_description,
-            },
-            groups: { ...data.groups_product_subitems },
-            units: {
-                unit_group: data.units_unit_group,
-                accurate_tracking: data.units_accurate_tracking,
-                auto_cogs: data.units_auto_cogs,
-                selling_group: data.units_selling_group,
-            },
-            expiracy: {
-                expires: data.expiracy_expires,
-                on_expiration: data.expiracy_on_expiration,
-            },
-            taxes: {
-                tax_group_id: data.taxes_tax_group_id,
-                tax_type: data.taxes_tax_type,
-            },
-            images: { ...data.images },
-            $primary: true,
-        },
-    ],
+  name: data.name,
+  variations: [
+    {
+      identification: {
+        category_id: data.identification_category_id,
+        barcode: data.identification_barcode,
+        sku: data.identification_sku,
+        barcode_type: data.identification_barcode_type,
+        type: data.identification_type,
+        status: data.identification_status,
+        stock_management: data.identification_stock_management,
+        description: data.identification_description,
+      },
+      groups: { ...data.groups_product_subitems },
+      units: {
+        unit_group: data.units_unit_group,
+        accurate_tracking: data.units_accurate_tracking,
+        auto_cogs: data.units_auto_cogs,
+        selling_group: data.units_selling_group,
+      },
+      expiracy: {
+        expires: data.expiracy_expires,
+        on_expiration: data.expiracy_on_expiration,
+      },
+      taxes: {
+        tax_group_id: data.taxes_tax_group_id,
+        tax_type: data.taxes_tax_type,
+      },
+      images: { ...data.images },
+      $primary: true,
+    },
+  ],
 });
 
 export function useProductForm(mode: ProductFormMode, product?: any) {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
 
-    const form = useForm<ProductFormData>(
-        mode === 'edit' && product ? editDefaults(product) : { ...defaultFormData },
-    );
+  const form = useForm<ProductFormData>(mode === 'edit' && product ? editDefaults(product) : { ...defaultFormData });
 
-    const handleInputChange = (
-        name: keyof ProductFormData,
-        value: string | number | number[] | boolean,
-    ) => {
-        form.setData({ ...form.data, [name]: value });
-                if (form.errors[name]) form.clearErrors(name);
+  const handleInputChange = (name: keyof ProductFormData, value: string | number | number[] | boolean) => {
+    form.setData({ ...form.data, [name]: value });
+    if (form.errors[name]) form.clearErrors(name);
+  };
+
+  const validateForm = (): boolean => {
+    let isValid = true;
+    form.clearErrors();
+
+    if (!form.data.name.trim()) {
+      form.setError('name', t('Product name is required'));
+      isValid = false;
+    }
+    if (!form.data.identification_category_id) {
+      form.setError('identification_category_id', t('Category is required'));
+      form.setError('identification_error', t('This field is required'));
+      toast.error(t('Category is required'));
+      isValid = false;
+    }
+    if (!form.data.units_unit_group) {
+      form.setError('units_unit_group', t('Unit group is required'));
+      form.setError('units_error', t('This field is required'));
+      toast.error(t('Unit group is required'));
+      isValid = false;
+    }
+    if (form.data.units_selling_group.length === 0) {
+      form.setError('units_selling_group', t('At least one selling group is required'));
+      form.setError('units_error', t('This field is required'));
+      toast.error(t('At least one selling group is required'));
+      isValid = false;
+    } else {
+      const unitIds = form.data.units_selling_group.map((g) => g.unit_id).filter(Boolean);
+      if (unitIds.length !== new Set(unitIds).size) {
+        form.setError('units_selling_group', t('Each unit can only be used once'));
+        form.setError('units_error', t('Each unit can only be used once'));
+        toast.error(t('Each unit can only be used once'));
+        isValid = false;
+      }
+      form.data.units_selling_group.forEach((group, index) => {
+        if (!group.unit_id) {
+          form.setError(`units_selling_group.${index}.unit_id` as any, t('Unit is required'));
+          form.setError('units_error', t('This field is required'));
+          isValid = false;
+        }
+        if (group.unit_id && group.convert_unit_id && group.unit_id === group.convert_unit_id) {
+          form.setError(`units_selling_group.${index}.convert_unit_id` as any, t('Unit cannot be same as convert unit'));
+          form.setError('units_error', t('This field is required'));
+          toast.error(t('Unit cannot be same as convert unit'));
+          isValid = false;
+        }
+        if (group.quantity && isNaN(Number(group.quantity))) {
+          form.setError(`units_selling_group.${index}.quantity` as any, t('Quantity must be a number'));
+          form.setError('units_error', t('This field is required'));
+          isValid = false;
+        }
+        if (group.low_quantity && isNaN(Number(group.low_quantity))) {
+          form.setError(`units_selling_group.${index}.low_quantity` as any, t('Low quantity must be a number'));
+          form.setError('units_error', t('This field is required'));
+          isValid = false;
+        }
+      });
+    }
+    return isValid;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!validateForm()) return;
+
+    form.transform(() => buildTransform(form.data));
+
+    const onError = (errors: Record<string, string>) => {
+      console.error('Validation errors:', errors);
+      toast.error(t('The form is not valid. Please check it and try again'));
     };
 
-    const validateForm = (): boolean => {
-        let isValid = true;
-        form.clearErrors();
+    if (mode === 'edit' && product) {
+      form.put(`/api/products/${product.id}`, {
+        preserveScroll: true,
+        onError,
+        onSuccess: () => toast.success(t('The entry has been successfully updated.')),
+      });
+    } else {
+      form.post('/api/products', {
+        preserveScroll: true,
+        onError,
+        onSuccess: () => toast.success(t('A new entry has been successfully created.')),
+      });
+    }
+  };
 
-        if (!form.data.name.trim()) {
-            form.setError('name', t('Product name is required'));
-            isValid = false;
-        }
-        if (!form.data.identification_category_id) {
-            form.setError('identification_category_id', t('Category is required'));
-            form.setError('identification_error', t('This field is required'));
-            toast.error(t('Category is required'));
-            isValid = false;
-        }
-        if (!form.data.units_unit_group) {
-            form.setError('units_unit_group', t('Unit group is required'));
-            form.setError('units_error', t('This field is required'));
-            toast.error(t('Unit group is required'));
-            isValid = false;
-        }
-        if (form.data.units_selling_group.length === 0) {
-            form.setError('units_selling_group', t('At least one selling group is required'));
-            form.setError('units_error', t('This field is required'));
-            toast.error(t('At least one selling group is required'));
-            isValid = false;
-        } else {
-            const unitIds = form.data.units_selling_group.map((g) => g.unit_id).filter(Boolean);
-            if (unitIds.length !== new Set(unitIds).size) {
-                form.setError('units_selling_group', t('Each unit can only be used once'));
-                form.setError('units_error', t('Each unit can only be used once'));
-                toast.error(t('Each unit can only be used once'));
-                isValid = false;
-            }
-            form.data.units_selling_group.forEach((group, index) => {
-                if (!group.unit_id) {
-                    form.setError(`units_selling_group.${index}.unit_id` as any, t('Unit is required'));
-                    form.setError('units_error', t('This field is required'));
-                    isValid = false;
-                }
-                if (group.unit_id && group.convert_unit_id && group.unit_id === group.convert_unit_id) {
-                    form.setError(`units_selling_group.${index}.convert_unit_id` as any, t('Unit cannot be same as convert unit'));
-                    form.setError('units_error', t('This field is required'));
-                    toast.error(t('Unit cannot be same as convert unit'));
-                    isValid = false;
-                }
-                if (group.quantity && isNaN(Number(group.quantity))) {
-                    form.setError(`units_selling_group.${index}.quantity` as any, t('Quantity must be a number'));
-                    form.setError('units_error', t('This field is required'));
-                    isValid = false;
-                }
-                if (group.low_quantity && isNaN(Number(group.low_quantity))) {
-                    form.setError(`units_selling_group.${index}.low_quantity` as any, t('Low quantity must be a number'));
-                    form.setError('units_error', t('This field is required'));
-                    isValid = false;
-                }
-            });
-        }
-        return isValid;
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (!validateForm()) return;
-
-        form.transform(() => buildTransform(form.data));
-
-        const onError = (errors: Record<string, string>) => {
-            console.error('Validation errors:', errors);
-            toast.error(t('The form is not valid. Please check it and try again'));
-        };
-
-        if (mode === 'edit' && product) {
-            form.put(`/api/products/${product.id}`, {
-                preserveScroll: true,
-                onError,
-                onSuccess: () => toast.success(t('The entry has been successfully updated.')),
-            });
-        } else {
-            form.post('/api/products', {
-                preserveScroll: true,
-                onError,
-                onSuccess: () => toast.success(t('A new entry has been successfully created.')),
-            });
-        }
-    };
-
-    return { form, handleSubmit, handleInputChange };
+  return { form, handleSubmit, handleInputChange };
 }
