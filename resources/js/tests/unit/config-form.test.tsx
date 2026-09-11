@@ -160,10 +160,10 @@ describe('FieldRenderer type mapping', () => {
     expect(screen.queryByText('Field')).toBeNull();
   });
 
-  it('renders ckeditor as the documented Textarea downgrade', () => {
+  it('renders ckeditor as the rich text editor', () => {
     renderField({ type: 'ckeditor', value: '<p>hi</p>' });
-    const textarea = screen.getByRole('textbox');
-    expect((textarea as HTMLTextAreaElement).value).toBe('<p>hi</p>');
+    const editor = screen.getByRole('textbox');
+    expect(editor.innerHTML).toBe('<p>hi</p>');
   });
 
   it('renders datetimepicker as datetime-local input', () => {
