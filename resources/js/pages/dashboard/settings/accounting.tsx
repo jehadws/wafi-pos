@@ -59,21 +59,19 @@ export default function AccountingSettingsPage() {
             {t('Reset Default')}
           </Button>
         }
-        customSections={
-          <ConfirmationDialog
-            isOpen={isOpen}
-            onClose={() => setIsOpen(false)}
-            onConfirm={() => void handleReset()}
-            title={t('Confirm Your Action')}
-            description={t(
-              'This will clear all records and accounts. It is ideal if you want to start from scratch. Are you sure you want to reset default settings for accounting?',
-            )}
-            confirmText={t('Yes')}
-            cancelText={t('No')}
-            variant="destructive"
-            loading={isPending}
-          />
-        }
+      />
+      <ConfirmationDialog
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        onConfirm={() => void handleReset()}
+        title={t('Confirm Your Action')}
+        description={t(
+          'This will clear all records and accounts. It is ideal if you want to start from scratch. Are you sure you want to reset default settings for accounting?',
+        )}
+        confirmText={t('Yes')}
+        cancelText={t('No')}
+        variant="destructive"
+        loading={isPending}
       />
     </>
   );

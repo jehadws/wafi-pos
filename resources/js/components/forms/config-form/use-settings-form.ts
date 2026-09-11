@@ -124,16 +124,7 @@ export function useSettingsForm({
   // Field change — null values are preserved (backend deletes the key).
   // ------------------------------------------------------------------
   const setFieldValue = useCallback((key: string, value: unknown) => {
-    setPayload((current) => {
-      const next = { ...current, [key]: value };
-      if (key.includes('.')) {
-        const [tab, field] = key.split('.');
-        const parent = (next[tab] as Record<string, unknown>) ?? {};
-        next[tab] = { ...parent, [field]: value };
-        next[field] = value;
-      }
-      return next;
-    });
+    setPayload((current) => ({ ...current, [key]: value }));
   }, []);
 
   // ------------------------------------------------------------------
@@ -153,7 +144,21 @@ export function useSettingsForm({
           const tabObj: Record<string, unknown> = {};
           for (const field of tab.fields ?? []) {
             if (field.name) {
-              const val = payload[field.name] !== undefined ? payload[field.name] : (payload[`${tab.identifier}.${field.name}`] ?? null);
+              // Resolve field value in priority order:
+              //  1. Flat key set by setFieldValue after user interaction.
+              //  2. Dot-keyed fallback (legacy, defensive).
+              //  3. Nested tab-object — the shape PHP getPayload() returns for
+              //     multi-tab settings pages (e.g. GeneralSettings).
+              //  4. null — signals the backend to delete the option row.
+              const flatVal = payload[field.name];
+              const dotKey = `${tab.identifier}.${field.name}`;
+              const dotVal = payload[dotKey];
+              const tabData = payload[tab.identifier];
+              const nestedVal =
+                tabData !== null && tabData !== undefined && typeof tabData === 'object' && !Array.isArray(tabData)
+                  ? (tabData as Record<string, unknown>)[field.name]
+                  : undefined;
+              const val = flatVal !== undefined ? flatVal : dotVal !== undefined ? dotVal : nestedVal !== undefined ? nestedVal : null;
               tabObj[field.name] = val;
             }
           }
