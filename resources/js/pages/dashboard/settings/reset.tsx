@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
-import { usePage } from '@inertiajs/react';
+import type { BreadcrumbItem } from '@/types';
+import { Head, usePage } from '@inertiajs/react';
 import { AlertTriangle, Loader2, RotateCcw } from 'lucide-react';
 
 export default function ResetSettingsPage() {
@@ -21,8 +22,15 @@ export default function ResetSettingsPage() {
   const { t } = useTranslation();
   const { form, isPending, isConfirmOpen, openConfirmation, closeConfirmation, handleReset } = useResetSettings(payload);
 
+  const breadcrumbs: BreadcrumbItem[] = [
+    { title: t('Dashboard'), href: '/dashboard' },
+    { title: t('Settings'), href: '/dashboard/settings/general' },
+    { title: t('Reset Database'), href: '/dashboard/settings/reset' },
+  ];
+
   return (
-    <AppLayout>
+    <AppLayout breadcrumbs={breadcrumbs}>
+      <Head title={t(title)} />
       <div className="p-6">
         <div className="max-w-5xl space-y-6">
           {/* Header */}
