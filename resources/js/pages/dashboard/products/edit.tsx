@@ -3,11 +3,11 @@ import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { Head, usePage } from '@inertiajs/react';
 import { ProductFormFields } from './product-form-fields';
-import { useProductForm } from './use-product-form';
+import { type EditProductData, useProductForm } from './use-product-form';
 
 export default function EditProductPage() {
   const { t } = useTranslation();
-  const { product } = usePage<{ product: any }>().props;
+  const { product } = usePage<{ product: EditProductData }>().props;
   const breadcrumbs = [
     { title: t('Dashboard'), href: '/dashboard' },
     { title: t('Products'), href: '/dashboard/products' },
