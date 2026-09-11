@@ -54,3 +54,5 @@ export function getCustomComponent(name?: string): CustomFieldComponent | null {
 export function clearCustomComponents(): void {
   components.clear();
 }
+
+export { CodeGeneratorField } from './code-generator-field';

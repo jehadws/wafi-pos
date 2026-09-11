@@ -145,22 +145,9 @@ function AudioSelectField({
       <div className="flex-1">
         <SelectField field={field} value={value} onChange={onChange} disabled={disabled} id={id} hasError={hasError} />
       </div>
-      <Button
-        type="button"
-        variant="outline"
-        size="icon"
-        aria-label={t('Preview audio')}
-        disabled={disabled || !src}
-        onClick={handlePlay}
-      >
+      <Button type="button" variant="outline" size="icon" aria-label={t('Preview audio')} disabled={disabled || !src} onClick={handlePlay}>
         {/* Simple play triangle via SVG — no icon library dependency */}
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className="size-4"
-          aria-hidden="true"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4" aria-hidden="true">
           <path d="M8 5v14l11-7z" />
         </svg>
       </Button>
@@ -186,7 +173,10 @@ export function FieldRenderer({ field, value, onChange, error, disabled, id }: F
   };
 
   // Custom components win over the type mapping (search-select + sbCrudForm, custom, …).
-  const customName = field.component ?? (type === 'custom' ? String(field.name ?? '') : undefined);
+  const customName =
+    field.component ??
+    (field.name && getCustomComponent(field.name) ? field.name : undefined) ??
+    (type === 'custom' ? String(field.name ?? '') : undefined);
   if (customName) {
     const Custom = getCustomComponent(customName);
     if (Custom) {
@@ -238,13 +228,7 @@ export function FieldRenderer({ field, value, onChange, error, disabled, id }: F
       // contenteditable RichTextEditor (no external dep; HTML string interface).
       return (
         <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
-          <RichTextEditor
-            id={id}
-            value={stringValue}
-            onChange={onChange}
-            disabled={isDisabled}
-            aria-invalid={Boolean(shownError)}
-          />
+          <RichTextEditor id={id} value={stringValue} onChange={onChange} disabled={isDisabled} aria-invalid={Boolean(shownError)} />
         </FormField>
       );
 

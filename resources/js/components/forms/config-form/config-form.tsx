@@ -4,6 +4,7 @@ import { useTranslation } from '@/lib/i18n';
 import type { CrudFormConfig, FormTabDef } from '@/types/forms';
 import type React from 'react';
 import { useMemo, useState } from 'react';
+import './code-generator-field';
 import { FieldRenderer } from './field-renderer';
 import { validateFieldValue } from './parse-validation';
 import './sb-crud-form';
