@@ -57,6 +57,14 @@ class PaymentTypeCrud extends CrudService
   protected $model = PaymentType::class;
 
   /**
+   * Define option attributes for search-select
+   */
+  protected $optionAttributes = [
+    'label' => 'label',
+    'value' => 'id',
+  ];
+
+  /**
    * Define permissions
    *
    * @param  array

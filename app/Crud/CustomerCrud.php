@@ -67,6 +67,14 @@ class CustomerCrud extends CrudService
   protected $model = Customer::class;
 
   /**
+   * Define option attributes for search-select
+   */
+  protected $optionAttributes = [
+    'label' => 'first_name',
+    'value' => 'id',
+  ];
+
+  /**
    * Determine if the options column should display
    * before the crud columns
    */

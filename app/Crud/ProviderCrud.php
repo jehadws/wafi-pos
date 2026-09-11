@@ -44,6 +44,14 @@ class ProviderCrud extends CrudService
   protected $model = Provider::class;
 
   /**
+   * Define option attributes for search-select
+   */
+  protected $optionAttributes = [
+    'label' => 'first_name',
+    'value' => 'id',
+  ];
+
+  /**
    * Adding relation
    */
   public $relations = [
