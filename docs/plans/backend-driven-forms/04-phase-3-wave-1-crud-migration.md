@@ -1,6 +1,6 @@
 # Plan B — 04: Phase 3 Wave 1 CRUD Migration
 
-*Directory: `docs/plans/plan-b/`*  
+*Directory: `docs/plans/backend-driven-forms/`*  
 *Sequence: Step 4 of 7*
 
 ---
