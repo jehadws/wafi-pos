@@ -6,7 +6,6 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { extractValidationErrors } from '@/utils/api-errors';
 import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -44,9 +43,7 @@ export default function CreateProductPage() {
       });
       toast.success(t('Role created successfully'));
       if (res?.redirect) router.visit(res.redirect);
-    } catch (err) {
-      const errors = extractValidationErrors(err);
-      console.error('Validation errors:', errors);
+    } catch {
       toast.error(t('Please fix the validation errors'));
     } finally {
       setIsSubmitting(false);

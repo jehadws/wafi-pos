@@ -1,6 +1,5 @@
 import { taxesApi } from '@/api';
 import { useTranslation } from '@/lib/i18n';
-import { extractValidationErrors } from '@/utils/api-errors';
 import { router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -74,8 +73,7 @@ export function useTaxForm(mode: TaxFormMode, tax?: any) {
     },
   });
 
-  const onError = (errors: Record<string, string>) => {
-    console.error('Validation errors:', errors);
+  const onError = () => {
     toast.error(t('Please fix the validation errors'));
   };
 
@@ -96,8 +94,8 @@ export function useTaxForm(mode: TaxFormMode, tax?: any) {
         toast.success(t('Tax created successfully'));
         if (res?.redirect) router.visit(res.redirect);
       }
-    } catch (err) {
-      onError(extractValidationErrors(err));
+    } catch {
+      onError();
     } finally {
       setIsSubmitting(false);
     }

@@ -582,6 +582,16 @@ type Order = {
   instalments?: OrderInstalment[];
   products?: Product[];
   payments?: { label?: string; identifier?: string; value: number }[];
+  refunded_products?: OrderRefundedProduct[];
+};
+
+type OrderRefundedProduct = {
+  product?: { name?: string };
+  quantity: number;
+  unit?: { name?: string };
+  condition?: string;
+  total_price: number;
+  created_at: string;
 };
 
 interface CustomPaginationData<T> {

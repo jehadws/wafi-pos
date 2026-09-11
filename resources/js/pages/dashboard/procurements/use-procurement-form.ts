@@ -234,7 +234,6 @@ export function useProcurementForm(initialData?: ProcurementInitialData) {
             }
           }
           toast.error(t('Please fix the validation errors'));
-          console.error('Validation errors:', errors);
         },
         onSuccess: () => {
           toast.success(t('Procurement updated successfully'));
@@ -252,7 +251,6 @@ export function useProcurementForm(initialData?: ProcurementInitialData) {
             }
           }
           toast.error(t('Please fix the validation errors'));
-          console.error('Validation errors:', errors);
         },
         onSuccess: () => {
           toast.success(t('Procurement created successfully'));

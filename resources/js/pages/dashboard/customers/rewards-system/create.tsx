@@ -10,7 +10,6 @@ import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import type { FormFieldDef } from '@/types/forms';
-import { extractValidationErrors } from '@/utils/api-errors';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { Plus, X } from 'lucide-react';
 import React, { useState } from 'react';
@@ -133,9 +132,7 @@ export default function CreateRewardSystemPage() {
       });
       toast.success(t('Reward System created successfully'));
       if (res?.redirect) router.visit(res.redirect);
-    } catch (err) {
-      const errors = extractValidationErrors(err);
-      console.error('Validation errors:', errors);
+    } catch {
       toast.error(t('Please fix the validation errors'));
     } finally {
       setIsSubmitting(false);

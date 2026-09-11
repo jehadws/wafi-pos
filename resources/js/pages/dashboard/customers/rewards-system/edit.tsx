@@ -13,7 +13,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import type { FormFieldDef } from '@/types/forms';
-import { extractValidationErrors } from '@/utils/api-errors';
 import { useForm } from '@inertiajs/react';
 import { Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -129,9 +128,7 @@ export default function EditRewardSystemPage() {
       });
       toast.success(t('Reward System updated successfully'));
       if (res?.redirect) router.visit(res.redirect);
-    } catch (err) {
-      const errors = extractValidationErrors(err);
-      console.error('Validation errors:', errors);
+    } catch {
       toast.error(t('Please fix the validation errors'));
     } finally {
       setIsSubmitting(false);

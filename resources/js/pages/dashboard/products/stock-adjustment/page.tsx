@@ -196,15 +196,6 @@ export default function Page() {
     } else {
       return toast(t("This product doesn't have any stock to adjust."));
     }
-
-    if (suggestion.accurate_tracking) {
-      // suggestion.procurement_history      =   result[1].map( product => {
-      //     return {
-      //         label: `${product.procurement.name} (${product.available_quantity})`,
-      //         value: product.id
-      //     }
-      // })
-    }
   };
 
   const removeProduct = async (product: StockAdjustmentProduct) => {

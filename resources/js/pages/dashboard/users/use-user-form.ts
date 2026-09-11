@@ -250,7 +250,6 @@ export function useUserForm(mode: UserFormMode, user?: any) {
       }
     }
     toast.error(t('Please fix the validation errors'));
-    console.error('Validation errors:', errors);
   };
 
   // ── Submit handlers ──────────────────────────────────────────────────────

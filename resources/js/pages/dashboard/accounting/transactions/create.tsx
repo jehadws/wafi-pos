@@ -82,7 +82,6 @@ export default function CreateProductPage({ infoMessage }: { infoMessage?: strin
         }
       }
       toast.error(t('Please fix the validation errors'));
-      console.error('Validation errors:', errors);
     } finally {
       setIsSubmitting(false);
     }

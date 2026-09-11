@@ -6,7 +6,6 @@
 
 import { customersApi } from '@/api';
 import { useTranslation } from '@/lib/i18n';
-import { extractValidationErrors } from '@/utils/api-errors';
 import { router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -188,8 +187,7 @@ export function useCustomerForm(mode: CustomerFormMode, customer?: any) {
 
     if (!validateForm() || isSubmitting) return;
 
-    const onError = (errors: Record<string, string>) => {
-      console.error('Validation errors:', errors);
+    const onError = () => {
       toast.error(t('The form is not valid. Please check it and try again'));
     };
 
@@ -204,8 +202,8 @@ export function useCustomerForm(mode: CustomerFormMode, customer?: any) {
         toast.success(t('The customer has been created.'));
         if (res?.redirect) router.visit(res.redirect);
       }
-    } catch (err) {
-      onError(extractValidationErrors(err));
+    } catch {
+      onError();
     } finally {
       setIsSubmitting(false);
     }

@@ -62,7 +62,6 @@ export default function EditCashRegister() {
       if (res?.redirect) router.visit(res.redirect);
     } catch (err) {
       const errors = extractValidationErrors(err);
-      console.error('Validation errors:', errors);
       if (errors.error) {
         toast.error(errors.error);
       }

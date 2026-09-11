@@ -111,14 +111,14 @@ export default function OrderDetailsTab({ order }: Props) {
                 </span>
               </div>
               <div className="space-y-3">
-                {(order as any)?.refunded_products?.slice(0, 3).map((product: any, index: number) => (
+                {order?.refunded_products?.slice(0, 3).map((product, index) => (
                   <div key={index} className="bg-muted flex items-center justify-between rounded p-3">
                     <div className="space-y-1">
                       <div className="font-medium">
                         {product?.product?.name} (x{product?.quantity})
                       </div>
                       <div className="text-sm">
-                        {product.unit.name} | <Badge variant="success">{product?.condition}</Badge>{' '}
+                        {product.unit?.name} | <Badge variant="success">{product?.condition}</Badge>{' '}
                       </div>
                     </div>
                     <span className="font-semibold">{formatCurrency(product.total_price)}</span>
@@ -136,10 +136,10 @@ export default function OrderDetailsTab({ order }: Props) {
             <DialogTitle>{t('All Refunds')}</DialogTitle>
           </DialogHeader>
           <div className="flex max-h-96 flex-col gap-3 overflow-y-auto">
-            {!(order as any)?.refunded_products?.length ? (
+            {!order?.refunded_products?.length ? (
               <div className="py-8 text-center text-sm">{t('Nothing to display')}</div>
             ) : (
-              (order as any).refunded_products.map((product: any, index: number) => (
+              order.refunded_products.map((product, index) => (
                 <div key={index} className="bg-muted flex items-center justify-between rounded border p-3">
                   <div className="space-y-1">
                     <div className="font-medium">

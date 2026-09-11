@@ -1,7 +1,6 @@
 import { providersApi } from '@/api';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
-import { extractValidationErrors } from '@/utils/api-errors';
 import { Head, router, usePage } from '@inertiajs/react';
 
 import FormField from '@/components/forms/shared/form-field';
@@ -61,9 +60,7 @@ export default function CreateProductPage() {
       });
       toast.success(t('Provider updated successfully'));
       if (res?.redirect) router.visit(res.redirect);
-    } catch (err) {
-      const errors = extractValidationErrors(err);
-      console.error('Validation errors:', errors);
+    } catch {
       toast.error(t('Please fix the validation errors'));
     } finally {
       setIsSubmitting(false);

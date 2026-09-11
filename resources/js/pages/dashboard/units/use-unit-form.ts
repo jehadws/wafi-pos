@@ -75,8 +75,7 @@ export function useUnitForm(mode: UnitFormMode, unit?: any) {
   });
 
   const onError = (errors: Record<string, string>) => {
-    console.error('Validation errors:', errors);
-    if (errors.error) alert(errors.error);
+    if (errors.error) toast.error(errors.error);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

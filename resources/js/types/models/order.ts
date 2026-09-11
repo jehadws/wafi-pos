@@ -5,6 +5,15 @@ import { OrderType } from './order-type';
 import { Payment } from './payment';
 import { TaxGroup, TaxItem } from './tax';
 
+export interface OrderRefundedProduct {
+  product?: { name?: string };
+  quantity: number;
+  unit?: { name?: string };
+  condition?: string;
+  total_price: number;
+  created_at: string;
+}
+
 export interface Order {
   id?: number;
   code?: string;
@@ -77,5 +86,5 @@ export interface Order {
   shipping_type: 'flat' | 'percentage' | undefined;
   subtotal: number;
   title: string;
-  refunded_products?: any[];
+  refunded_products?: OrderRefundedProduct[];
 }
