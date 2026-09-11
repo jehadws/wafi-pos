@@ -2,6 +2,19 @@
 
 *Status: **active execution guide** — companion to `docs/plans/form-sync-plan-b-backend-driven.md`. Breaks the full backend-driven form system into atomic, independently verifiable micro-steps for autonomous agents.*
 
+### Ordered Plan Files (`docs/plans/plan-b/`)
+
+| # | Ordered File | Contents |
+|---|---|---|
+| **00** | [00-agent-protocol-and-rules.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/plan-b/00-agent-protocol-and-rules.md) | Agent Operating Rules, Commands, Verification Protocol |
+| **01** | [01-phase-0-backend-contract-tests.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/plan-b/01-phase-0-backend-contract-tests.md) | Phase 0: Steps B0.1 – B0.4 (Pest Contract Tests) |
+| **02** | [02-phase-1-engine-primitives.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/plan-b/02-phase-1-engine-primitives.md) | Phase 1: Steps B1.1 – B1.5 (Types, OptionLoader, Groups, Audio, CKEditor) |
+| **03** | [03-phase-2-hooks-and-page-shells.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/plan-b/03-phase-2-hooks-and-page-shells.md) | Phase 2: Steps B2.1 – B2.4 (useCrudForm, useSettingsForm, Shells, Flags) |
+| **04** | [04-phase-3-wave-1-crud-migration.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/plan-b/04-phase-3-wave-1-crud-migration.md) | Phase 3: Steps B3.1 – B3.10 (11 CRUD Pages Migration) |
+| **05** | [05-phase-4-wave-2-settings-migration.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/plan-b/05-phase-4-wave-2-settings-migration.md) | Phase 4: Steps B4.1 – B4.7 (7 Settings Pages Migration) |
+| **06** | [06-phase-5-wave-3-product-spike.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/plan-b/06-phase-5-wave-3-product-spike.md) | Phase 5: Steps B5.1 – B5.2 (Product Form Spike & Decision) |
+| **07** | [07-phase-6-cleanup-and-verification.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/plan-b/07-phase-6-cleanup-and-verification.md) | Phase 6: Steps B6.1 – B6.2 (Dead Code Sweep & Verification Loop) |
+
 ---
 
 ## 1. Operating Rules for Executing Agents
