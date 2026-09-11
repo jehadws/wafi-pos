@@ -1,5 +1,4 @@
 import FormField from '@/components/forms/shared/form-field';
-import { FilePicker } from '@/components/settings/general/file-picker';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
@@ -12,6 +11,7 @@ import { useTranslation } from '@/lib/i18n';
 import type { FormFieldDef, FormOption, GroupFieldDef } from '@/types/forms';
 import type React from 'react';
 import { useRef } from 'react';
+import { FilePicker } from './file-picker';
 import { GroupRenderer } from './group-renderer';
 import { parseValidation } from './parse-validation';
 import { getCustomComponent } from './registry';

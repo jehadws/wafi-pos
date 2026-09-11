@@ -76,3 +76,5 @@ export function FilePicker({ value, onChange, placeholder }: FilePickerProps) {
     </div>
   );
 }
+
+export default FilePicker;
