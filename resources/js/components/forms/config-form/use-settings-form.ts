@@ -12,7 +12,10 @@ import { toast } from 'sonner';
 function getTabsList(tabsDef?: Record<string, FormTabDef> | FormTabDef[]): FormTabDef[] {
   if (!tabsDef) return [];
   if (Array.isArray(tabsDef)) return tabsDef;
-  return Object.values(tabsDef);
+  return Object.entries(tabsDef).map(([key, tab]) => ({
+    ...tab,
+    identifier: tab.identifier ?? key,
+  }));
 }
 
 // ---------------------------------------------------------------------------

@@ -84,7 +84,7 @@ export function RichTextEditor({ id, value, onChange, disabled = false, 'aria-in
                 e.preventDefault();
                 handleToolbarAction(command);
               }}
-              className="rounded px-1.5 py-0.5 text-sm font-medium hover:bg-muted"
+              className="hover:bg-muted rounded px-1.5 py-0.5 text-sm font-medium"
             >
               {icon}
             </button>
@@ -102,10 +102,7 @@ export function RichTextEditor({ id, value, onChange, disabled = false, 'aria-in
         contentEditable={!disabled}
         suppressContentEditableWarning
         onInput={handleInput}
-        className={cn(
-          'min-h-[120px] px-3 py-2 text-sm outline-none',
-          disabled && 'cursor-not-allowed opacity-50',
-        )}
+        className={cn('min-h-[120px] px-3 py-2 text-sm outline-none', disabled && 'cursor-not-allowed opacity-50')}
       />
     </div>
   );

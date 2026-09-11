@@ -54,10 +54,7 @@ async function fetchOptions(url: string, data?: Record<string, unknown>): Promis
  *                    set; the callee extracts the watched sibling value and
  *                    appends it to the request).
  */
-export async function loadFieldOptions(
-  field: FormFieldDef,
-  formValues: Record<string, unknown>,
-): Promise<FormOption[]> {
+export async function loadFieldOptions(field: FormFieldDef, formValues: Record<string, unknown>): Promise<FormOption[]> {
   // 1. Static options.
   if (Array.isArray(field.options) && field.options.length > 0) {
     return field.options;

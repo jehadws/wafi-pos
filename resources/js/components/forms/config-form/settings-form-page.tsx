@@ -34,7 +34,13 @@ import { useSettingsForm } from './use-settings-form';
 function getTabsList(tabsDef?: Record<string, FormTabDef> | FormTabDef[]): FormTabDef[] {
   if (!tabsDef) return [];
   if (Array.isArray(tabsDef)) return tabsDef;
-  return Object.values(tabsDef);
+  // Object.entries preserves the PHP array key so we can inject it as `identifier`
+  // when the tab definition doesn't already carry one (e.g. POS settings uses raw
+  // associative arrays without a CrudForm::tab() wrapper).
+  return Object.entries(tabsDef).map(([key, tab]) => ({
+    ...tab,
+    identifier: tab.identifier ?? key,
+  }));
 }
 
 // ---------------------------------------------------------------------------

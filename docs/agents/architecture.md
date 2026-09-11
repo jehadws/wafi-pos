@@ -64,6 +64,17 @@ Precision 0 is a valid setting — resolve it with `resolveCurrencyPrecision`, a
 - Form & settings payload contract: Forms submit tab-grouped dictionaries `{[main]: v, [tabId]: {field: v}}`. Server-side (`SbForms::getFlatForm`), empty strings `''` and `null` values are dropped while `0` and `'0'` are preserved.
 - Conditional fields: Defined server-side (e.g. `pos/registers.php`, `pos/vat.php`); the frontend receives the evaluated field list.
 
+## Backend-driven forms engine (Plan B)
+
+- **Architecture**: Dashboard CRUD and Settings forms are powered by the backend-driven engine (`resources/js/components/forms/config-form/`):
+  - `CrudFormPage`: Generic page shell for CRUD create/edit flows (`useCrudForm`).
+  - `SettingsFormPage`: Generic page shell for settings tabs (`useSettingsForm`).
+  - `ConfigForm` + `FieldRenderer`: Controlled component translating backend field definitions (`CrudForm` / `SettingForm`) to UI primitives.
+  - `SbCrudForm`: Dynamic inline modal for nested foreign entity creation.
+- **Source of truth**: The PHP backend defines all fields, types, options, and validations. Adding or modifying a field in `app/Crud/*` or `app/Settings/*` immediately renders in the dashboard without editing React components.
+- **Payload contract**: Flattened submissions mirror `SbForms::getFlatForm`. Empty strings `''` and `null` trigger deletions/nullifications, while `0` and `'0'` are preserved. Validation errors return 422 with `tabId.fieldName` or `fieldName` keys surfaced inline.
+- **Product exception**: `resources/js/pages/dashboard/products/` is retained as a sanctioned bespoke exception (Plan B §B3.b) due to `ProductCrud`'s multi-level variations tree (`{main, variations: [{tabs, selling_group, groups: {product_subitems}}]}`).
+
 ## Types rules (invariant)
 
 - Import entities by path from `types/models/`.

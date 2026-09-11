@@ -12,8 +12,7 @@
 
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n';
-import type { FormFieldDef } from '@/types/forms';
-import type { GroupFieldDef } from '@/types/forms';
+import type { FormFieldDef, GroupFieldDef } from '@/types/forms';
 import { FieldRenderer } from './field-renderer';
 
 export interface GroupRendererProps {
@@ -57,11 +56,7 @@ export function GroupRenderer({ field, value, onChange, errors = {}, disabled = 
   return (
     <div className="space-y-4">
       {rows.map((row, rowIndex) => (
-        <div
-          key={rowIndex}
-          className="rounded-md border p-4"
-          data-testid={`group-row-${rowIndex}`}
-        >
+        <div key={rowIndex} className="rounded-md border p-4" data-testid={`group-row-${rowIndex}`}>
           {/* Per-row fields */}
           <div className="space-y-3">
             {field.fields.map((childField, fieldIndex) => {
@@ -87,13 +82,7 @@ export function GroupRenderer({ field, value, onChange, errors = {}, disabled = 
           {/* Row remove button */}
           {closable && !disabled && (
             <div className="mt-3 flex justify-end">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                aria-label={t('Remove row')}
-                onClick={() => handleRemoveRow(rowIndex)}
-              >
+              <Button type="button" variant="ghost" size="sm" aria-label={t('Remove row')} onClick={() => handleRemoveRow(rowIndex)}>
                 {t('Remove')}
               </Button>
             </div>
