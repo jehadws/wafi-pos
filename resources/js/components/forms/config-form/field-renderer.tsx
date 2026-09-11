@@ -9,9 +9,10 @@ import { MultiSelector } from '@/components/ui/multi-selector';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/lib/i18n';
-import type { FormFieldDef, FormOption } from '@/types/forms';
+import type { FormFieldDef, FormOption, GroupFieldDef } from '@/types/forms';
 import type React from 'react';
 import { useRef } from 'react';
+import { GroupRenderer } from './group-renderer';
 import { parseValidation } from './parse-validation';
 import { getCustomComponent } from './registry';
 
@@ -351,7 +352,21 @@ export function FieldRenderer({ field, value, onChange, error, disabled, id }: F
       );
     }
 
-    case 'group':
+    case 'group': {
+      const groupField = field as GroupFieldDef;
+      const groupRows = Array.isArray(value) ? (value as Array<Record<string, unknown>>) : (groupField.groups ?? []);
+      return (
+        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError}>
+          <GroupRenderer
+            field={groupField}
+            value={groupRows}
+            onChange={onChange as (rows: Array<Record<string, unknown>>) => void}
+            disabled={isDisabled}
+          />
+        </FormField>
+      );
+    }
+
     case 'custom':
     default:
       if (import.meta.env.DEV) {
