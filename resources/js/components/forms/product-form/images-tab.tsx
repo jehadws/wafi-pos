@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { mediasApi } from '@/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/lib/i18n';
-import { mediasApi } from '@/api';
 import { Loader2, Upload, X } from 'lucide-react';
+import { useState } from 'react';
 import FormField from '../shared/form-field';
 import { ImagesTabProps } from './types';
 
@@ -85,7 +85,7 @@ export default function ImagesTab({ form }: ImagesTabProps) {
                     <Input
                         id="preview_url"
                         name="preview_url"
-                        // value={form.data.images[0] || ''}
+                        value={form.data.images[0] || ''}
                         onChange={(e) => {
                             const newImages = [...form.data.images];
                             if (newImages.length === 0) {
@@ -109,9 +109,7 @@ export default function ImagesTab({ form }: ImagesTabProps) {
                         ) : (
                             <Upload className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
                         )}
-                        <p className="text-muted-foreground mb-2">
-                            {uploading ? t('Uploading…') : t('Click Here Or Drop Your File To Upload')}
-                        </p>
+                        <p className="text-muted-foreground mb-2">{uploading ? t('Uploading…') : t('Click Here Or Drop Your File To Upload')}</p>
                         <input
                             type="file"
                             id="file-upload"
@@ -142,7 +140,7 @@ export default function ImagesTab({ form }: ImagesTabProps) {
                                         type="button"
                                         variant="destructive"
                                         size="sm"
-                                        className="absolute -top-2 -end-2 h-6 w-6 rounded-full p-0"
+                                        className="absolute -end-2 -top-2 h-6 w-6 rounded-full p-0"
                                         onClick={() => removeImage(index)}
                                     >
                                         <X className="h-4 w-4" />
@@ -152,7 +150,7 @@ export default function ImagesTab({ form }: ImagesTabProps) {
                             {pendingUploads.map(({ file, previewUrl }) => (
                                 <div key={previewUrl} className="relative opacity-60">
                                     <img src={previewUrl} alt={file.name} className="h-24 w-24 rounded-md object-cover" />
-                                    <Loader2 className="absolute top-1/2 start-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 animate-spin" />
+                                    <Loader2 className="absolute start-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 animate-spin" />
                                 </div>
                             ))}
                         </div>

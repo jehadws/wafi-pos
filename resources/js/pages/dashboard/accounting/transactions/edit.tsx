@@ -4,6 +4,7 @@ import FormField from '@/components/forms/shared/form-field';
 import FormHeader from '@/components/forms/shared/form-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
@@ -13,6 +14,9 @@ import { extractValidationErrors } from '@/utils/api-errors';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+
+/** DB datetimes (`Y-m-d H:i:s`) → `datetime-local` input value (`Y-m-dTH:i`). */
+const toDatetimeLocal = (value: string | null | undefined): string => (value ? value.replace(' ', 'T').slice(0, 16) : '');
 
 interface Transaction {
     id: number;
@@ -25,6 +29,8 @@ interface Transaction {
     recurring: boolean;
     occurrence: string;
     occurrence_value: number;
+    group_id: null | number | string;
+    scheduled_date: null | string;
 }
 
 interface EditTransactionProps {
@@ -34,7 +40,9 @@ interface EditTransactionProps {
 
 export default function EditTransactionPage() {
     const { t } = useTranslation();
-    const { transaction, infoMessage } = usePage<Record<string, unknown> & EditTransactionProps>().props;
+    const { transaction, infoMessage, roles } = usePage<
+        Record<string, unknown> & EditTransactionProps & { roles: { label: string; value: number }[] }
+    >().props;
 
     const breadcrumbs = [
         { title: t('Dashboard'), href: '/dashboard' },
@@ -47,6 +55,7 @@ export default function EditTransactionPage() {
         name: transaction.name ?? '',
         general: {
             active: transaction.active ?? 0,
+            group_id: transaction.group_id?.toString() ?? '',
             account_id: transaction.account_id?.toString() ?? '',
             value: transaction.value?.toString() ?? '',
             description: transaction.description ?? '',
@@ -54,6 +63,7 @@ export default function EditTransactionPage() {
             type: transaction.type ?? '',
             occurrence: transaction.occurrence ?? '',
             occurrence_value: transaction.occurrence_value ?? 0,
+            scheduled_date: toDatetimeLocal(transaction.scheduled_date),
         },
     });
 
@@ -175,6 +185,47 @@ export default function EditTransactionPage() {
                                     onChange={(value) => form.setData('general.account_id', value as string)}
                                     error={form.errors?.['general.account_id']}
                                     id="general_account_id"
+                                />
+                            </FormField>
+
+                            <FormField
+                                label={t('Users Group')}
+                                htmlFor="general_group_id"
+                                description={t(
+                                    'Assign transaction to users group. the Transaction will therefore be multiplied by the number of entity.',
+                                )}
+                                error={form.errors?.['general.group_id']}
+                            >
+                                <Select
+                                    value={form.data.general.group_id === '' ? '0' : form.data.general.group_id}
+                                    onValueChange={(value) => form.setData('general.group_id', value)}
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder={t('Select an option')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="0">{t('None')}</SelectItem>
+                                        {(roles ?? []).map((role) => (
+                                            <SelectItem key={role.value} value={String(role.value)}>
+                                                {role.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </FormField>
+
+                            <FormField
+                                label={t('Scheduled')}
+                                htmlFor="general_scheduled_date"
+                                description={t('Set the scheduled date.')}
+                                error={form.errors?.['general.scheduled_date']}
+                            >
+                                <Input
+                                    id="general_scheduled_date"
+                                    name="general_scheduled_date"
+                                    value={form.data.general.scheduled_date}
+                                    onChange={(e) => form.setData('general.scheduled_date', e.target.value)}
+                                    type="datetime-local"
                                 />
                             </FormField>
 

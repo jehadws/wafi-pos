@@ -5,19 +5,21 @@ import FormHeader from '@/components/forms/shared/form-header';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import type { FormFieldDef } from '@/types/forms';
 import { extractValidationErrors } from '@/utils/api-errors';
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function CreateProductPage({ infoMessage }: { infoMessage?: string }) {
     const { t } = useTranslation();
+    const { roles } = usePage<{ roles: { label: string; value: number }[] }>().props;
 
     const breadcrumbs = [
         { title: t('Dashboard'), href: '/dashboard' },
@@ -29,6 +31,7 @@ export default function CreateProductPage({ infoMessage }: { infoMessage?: strin
         name: '',
         general: {
             active: 0,
+            group_id: '',
             account_id: '',
             value: '',
             description: '',
@@ -36,6 +39,7 @@ export default function CreateProductPage({ infoMessage }: { infoMessage?: strin
             type: '',
             occurrence: '',
             occurrence_value: 0,
+            scheduled_date: '',
         },
     });
 
@@ -184,6 +188,47 @@ export default function CreateProductPage({ infoMessage }: { infoMessage?: strin
                                     onChange={(value) => form.setData('general.account_id', value as string)}
                                     error={form.errors?.['general.account_id']}
                                     id="general_account_id"
+                                />
+                            </FormField>
+
+                            <FormField
+                                label={t('Users Group')}
+                                htmlFor="general_group_id"
+                                description={t(
+                                    'Assign transaction to users group. the Transaction will therefore be multiplied by the number of entity.',
+                                )}
+                                error={form.errors?.['general.group_id']}
+                            >
+                                <Select
+                                    value={form.data.general.group_id === '' ? '0' : form.data.general.group_id}
+                                    onValueChange={(value) => form.setData('general.group_id', value)}
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder={t('Select an option')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="0">{t('None')}</SelectItem>
+                                        {(roles ?? []).map((role) => (
+                                            <SelectItem key={role.value} value={String(role.value)}>
+                                                {role.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </FormField>
+
+                            <FormField
+                                label={t('Scheduled')}
+                                htmlFor="general_scheduled_date"
+                                description={t('Set the scheduled date.')}
+                                error={form.errors?.['general.scheduled_date']}
+                            >
+                                <Input
+                                    id="general_scheduled_date"
+                                    name="general_scheduled_date"
+                                    value={form.data.general.scheduled_date}
+                                    onChange={(e) => form.setData('general.scheduled_date', e.target.value)}
+                                    type="datetime-local"
                                 />
                             </FormField>
 

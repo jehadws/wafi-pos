@@ -11,10 +11,12 @@ namespace App\Http\Controllers\Dashboard;
 use App\Crud\TransactionCrud;
 use App\Crud\TransactionsHistoryCrud;
 use App\Http\Controllers\DashboardController;
+use App\Models\Role;
 use App\Models\Transaction;
 use App\Models\TransactionAccount;
 use App\Models\TransactionHistory;
 use App\Services\DateService;
+use App\Services\Helper;
 use App\Services\Options;
 use App\Services\TransactionService;
 use Illuminate\Http\Request;
@@ -80,6 +82,7 @@ class TransactionController extends DashboardController
         'title' => __('Create New Transaction'),
         'description' => __('Set direct, scheduled transactions.'),
         'infoMessage' => $infoMessage,
+        'roles' => Helper::toJsOptions(Role::get(), ['id', 'name']),
       ]
     );
   }
@@ -97,6 +100,7 @@ class TransactionController extends DashboardController
       'description' => __('Set direct, scheduled transactions.'),
       'transaction' => $transaction->load('account'),
       'infoMessage' => $infoMessage,
+      'roles' => Helper::toJsOptions(Role::get(), ['id', 'name']),
     ]);
   }
 
