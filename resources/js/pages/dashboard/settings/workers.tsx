@@ -71,11 +71,7 @@ export default function SettingsGeneral() {
                   description={t('Enable background services for Subul. Refresh to check whether the option has turned to "Yes".')}
                 >
                   <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant={(form.data.general.sb_workers_enabled ?? 'no') === 'yes' ? 'default' : 'outline'}
-                      onClick={() => form.setData('general.sb_workers_enabled', 'await_confirm')}
-                    >
+                    <Button type="button" disabled variant={(form.data.general.sb_workers_enabled ?? 'no') === 'yes' ? 'default' : 'outline'}>
                       {t('Yes')}
                     </Button>
                     <Button

@@ -28,9 +28,11 @@ class AccountingSettings extends SettingsPage
           identifier: 'general',
           label: __('General'),
           fields: include(dirname(__FILE__) . '/accounting/general.php'),
-          // footer: SettingForm::tabFooter(
-          //   extraComponents: ['sbDefaultAccounting'] // components defined on "resources/ts/components"
-          // )
+        ),
+        SettingForm::tab(
+          identifier: 'orders',
+          label: __('Orders'),
+          fields: include(dirname(__FILE__) . '/accounting/orders.php'),
         ),
       ),
     ];
@@ -41,6 +43,10 @@ class AccountingSettings extends SettingsPage
     return [
       'sb_accounting_expenses_accounts' => sb()->option->get('sb_accounting_expenses_accounts'),
       'sb_accounting_default_paid_expense_offset_account' => sb()->option->get('sb_accounting_default_paid_expense_offset_account'),
+      'sb_accounting_orders_revenues_account' => sb()->option->get('sb_accounting_orders_revenues_account'),
+      'sb_accounting_orders_cash_account' => sb()->option->get('sb_accounting_orders_cash_account'),
+      'sb_accounting_orders_unpaid_account' => sb()->option->get('sb_accounting_orders_unpaid_account'),
+      'sb_accounting_orders_cogs_account' => sb()->option->get('sb_accounting_orders_cogs_account'),
     ];
   }
 
@@ -53,7 +59,11 @@ class AccountingSettings extends SettingsPage
 
     return [
       'sb_accounting_expenses_accounts' => $accounts['expenses'],
-      'sb_accounting_default_paid_expense_offset_account' =>  $accounts['assets'],
+      'sb_accounting_default_paid_expense_offset_account' => $accounts['assets'],
+      'sb_accounting_orders_revenues_account' => $accounts['revenues'],
+      'sb_accounting_orders_cash_account' => $accounts['assets'],
+      'sb_accounting_orders_unpaid_account' => $accounts['assets'],
+      'sb_accounting_orders_cogs_account' => $accounts['expenses'],
     ];
   }
 }

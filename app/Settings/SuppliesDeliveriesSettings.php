@@ -8,7 +8,7 @@ class SuppliesDeliveriesSettings extends SettingsPage
 {
     const IDENTIFIER = 'supplies-deliveries';
 
-    const AUTOLOAD = true;
+    const AUTOLOAD = false;
 
     public function __construct()
     {

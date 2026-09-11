@@ -1,5 +1,6 @@
 import { settingsApi, transactionsApi } from '@/api';
 import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
+import { SbCrudForm } from '@/components/forms/config-form/sb-crud-form';
 import FormField from '@/components/forms/shared/form-field';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -8,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import type { FormFieldDef } from '@/types/forms';
 import { useForm, usePage } from '@inertiajs/react';
 import { Check, ChevronsUpDown, Loader2, Save } from 'lucide-react';
 import { useState, useTransition } from 'react';
@@ -18,9 +20,19 @@ type General = {
   sb_accounting_expenses_accounts: number[] | null;
 };
 
+type Orders = {
+  sb_accounting_orders_revenues_account: string | null;
+  sb_accounting_orders_cash_account: string | null;
+  sb_accounting_orders_unpaid_account: string | null;
+  sb_accounting_orders_cogs_account: string | null;
+};
+
 type Payload = {
   general: General;
+  orders: Orders;
 };
+
+type AccountingPayload = General & Partial<Orders>;
 
 type Option = {
   label: string;
@@ -30,18 +42,69 @@ type Option = {
 type Options = {
   sb_accounting_default_paid_expense_offset_account: Option[];
   sb_accounting_expenses_accounts: Option[];
+  sb_accounting_orders_revenues_account?: Option[];
+  sb_accounting_orders_cash_account?: Option[];
+  sb_accounting_orders_unpaid_account?: Option[];
+  sb_accounting_orders_cogs_account?: Option[];
 };
 
 export default function SettingsGeneral() {
-  const { options, payload } = usePage<{ options: Options; payload: General }>().props;
+  const { options, payload } = usePage<{ options: Options; payload: AccountingPayload }>().props;
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [open] = useState(false);
   const [isPending, startTransition] = useTransition();
 
+  const revenuesAccountField: FormFieldDef = {
+    name: 'sb_accounting_orders_revenues_account',
+    label: t('Sales Revenues Account'),
+    type: 'search-select',
+    component: 'sbCrudForm',
+    namespace: 'sb.transactions-accounts',
+    options: (options.sb_accounting_orders_revenues_account || []).map((o) => ({ label: o.label, value: o.value })),
+    description: t('Every order cash payment will be reflected on this account'),
+  };
+
+  const cashAccountField: FormFieldDef = {
+    name: 'sb_accounting_orders_cash_account',
+    label: t('Order Cash Account'),
+    type: 'search-select',
+    component: 'sbCrudForm',
+    namespace: 'sb.transactions-accounts',
+    options: (options.sb_accounting_orders_cash_account || []).map((o) => ({ label: o.label, value: o.value })),
+    description: t('Every order cash payment will be reflected on this account'),
+  };
+
+  const unpaidAccountField: FormFieldDef = {
+    name: 'sb_accounting_orders_unpaid_account',
+    label: t('Receivable Account'),
+    type: 'search-select',
+    component: 'sbCrudForm',
+    namespace: 'sb.transactions-accounts',
+    options: (options.sb_accounting_orders_unpaid_account || []).map((o) => ({ label: o.label, value: o.value })),
+    description: t('Every unpaid orders will be recorded on this account.'),
+  };
+
+  const cogsAccountField: FormFieldDef = {
+    name: 'sb_accounting_orders_cogs_account',
+    label: t('COGS Account'),
+    type: 'search-select',
+    component: 'sbCrudForm',
+    namespace: 'sb.transactions-accounts',
+    options: (options.sb_accounting_orders_cogs_account || []).map((o) => ({ label: o.label, value: o.value })),
+    description: t('Cost of goods sold account'),
+  };
+
   const form = useForm<Payload>({
     general: {
-      ...payload,
+      sb_accounting_default_paid_expense_offset_account: payload.sb_accounting_default_paid_expense_offset_account ?? null,
+      sb_accounting_expenses_accounts: payload.sb_accounting_expenses_accounts ?? null,
+    },
+    orders: {
+      sb_accounting_orders_revenues_account: payload.sb_accounting_orders_revenues_account ?? null,
+      sb_accounting_orders_cash_account: payload.sb_accounting_orders_cash_account ?? null,
+      sb_accounting_orders_unpaid_account: payload.sb_accounting_orders_unpaid_account ?? null,
+      sb_accounting_orders_cogs_account: payload.sb_accounting_orders_cogs_account ?? null,
     },
   });
 
@@ -143,6 +206,41 @@ export default function SettingsGeneral() {
                     </PopoverContent>
                   </Popover>
                 </FormField>
+              </div>
+
+              <div className="mt-8 border-t pt-6">
+                <h2 className="text-xl font-semibold">{t('Orders Accounting')}</h2>
+                <p className="text-muted-foreground text-sm">{t('Define the accounts associated with orders transactions.')}</p>
+                <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-2">
+                  <FormField label={t('Sales Revenues Account')} description={t('Every order cash payment will be reflected on this account')}>
+                    <SbCrudForm
+                      field={revenuesAccountField}
+                      value={form.data.orders.sb_accounting_orders_revenues_account ?? ''}
+                      onChange={(value) => form.setData('orders.sb_accounting_orders_revenues_account', value ? value.toString() : '')}
+                    />
+                  </FormField>
+                  <FormField label={t('Order Cash Account')} description={t('Every order cash payment will be reflected on this account')}>
+                    <SbCrudForm
+                      field={cashAccountField}
+                      value={form.data.orders.sb_accounting_orders_cash_account ?? ''}
+                      onChange={(value) => form.setData('orders.sb_accounting_orders_cash_account', value ? value.toString() : '')}
+                    />
+                  </FormField>
+                  <FormField label={t('Receivable Account')} description={t('Every unpaid orders will be recorded on this account.')}>
+                    <SbCrudForm
+                      field={unpaidAccountField}
+                      value={form.data.orders.sb_accounting_orders_unpaid_account ?? ''}
+                      onChange={(value) => form.setData('orders.sb_accounting_orders_unpaid_account', value ? value.toString() : '')}
+                    />
+                  </FormField>
+                  <FormField label={t('COGS Account')} description={t('Cost of goods sold account')}>
+                    <SbCrudForm
+                      field={cogsAccountField}
+                      value={form.data.orders.sb_accounting_orders_cogs_account ?? ''}
+                      onChange={(value) => form.setData('orders.sb_accounting_orders_cogs_account', value ? value.toString() : '')}
+                    />
+                  </FormField>
+                </div>
               </div>
             </div>
             <div className="mt-6 flex items-center justify-between rounded-b-xl border-t p-3">

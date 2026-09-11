@@ -13,6 +13,9 @@ export type Printing = {
 
 export type Registers = {
   sb_subul_registers_enabled: string | null;
+  sb_subul_idle_counter?: string | null;
+  sb_subul_disbursement?: string | null;
+  sb_subul_registers_default_change_payment_type?: number | string | null;
 };
 
 export type Vat = {
@@ -69,7 +72,8 @@ export type ShortcutOption = {
 };
 
 export type PaymentTypeOption = {
-  id: number;
+  id?: number;
+  value?: string | number;
   label: string;
 };
 

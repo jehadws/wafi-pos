@@ -61,6 +61,8 @@ Precision 0 is a valid setting — resolve it with `resolveCurrencyPrecision`, a
 - Backend: settings pages are `SettingsPage` subclasses (`app/Settings/PosSettings.php`), with tab definitions in `app/Settings/pos/*.php`. `getPayload()` whitelists which `sb_*` keys reach the frontend; `Helper::kvToJsOptions` shapes their choices.
 - Frontend: every key read in TS belongs in `POS_OPTION_KEYS` (the registry covers all backend POS keys). ESLint bans raw `'sb_…'` literals outside `constants/pos-options.ts`, `components/settings/**`, `pages/dashboard/settings/**`, `types/**`, and `tests/**` — a typo in runtime code is a lint error now.
 - `lib/settings.ts` is a process-wide singleton. `Settings.get()` throws before initialization, and the format utils fall back silently to `$` / UTC defaults — an initialization-order bug shows up as wrong currency, never as an error. Hydrate (`Settings.set` / `sync()`) before first render, and preserve that order when touching the bootstrap.
+- Form & settings payload contract: Forms submit tab-grouped dictionaries `{[main]: v, [tabId]: {field: v}}`. Server-side (`SbForms::getFlatForm`), empty strings `''` and `null` values are dropped while `0` and `'0'` are preserved.
+- Conditional fields: Defined server-side (e.g. `pos/registers.php`, `pos/vat.php`); the frontend receives the evaluated field list.
 
 ## Types rules (invariant)
 
@@ -88,3 +90,5 @@ Precision 0 is a valid setting — resolve it with `resolveCurrencyPrecision`, a
 2. `Transaction` and `TransactionHistory` in `module.d.ts` are identical twins — merge candidate when the accounting pages move to `types/models/`.
 3. Format utils still fall back to `$` / UTC defaults in production when settings are missing (by design: a crash is worse); development builds emit a one-time warning.
 4. `POSOptions` (`types/cart-engine.ts`) keeps its `[key: string]: any` index signature so the engine accepts the raw options record — the registry accessors are the guard, so read options through them.
+5. `app/Forms/*` (`ProcurementForm`, `UserProfileForm`, `POSAddressesForm`) inherit from `SettingsPage` but are registered exclusively via `App\Providers\FormsProvider` on the `sb.forms` Hook filter rather than `app/Settings/` autoloading.
+6. The `app/Fields/*` classes and `/api/fields/*` routes are an unconsumed extension surface in the Inertia SPA; retained for module/custom compatibility, with no active SPA consumers.

@@ -41,6 +41,12 @@ export function usePosSettings(initialPayload: PosSettingsPayload) {
             ...form.data.registers,
             sb_subul_registers_enabled:
               form.data.registers.sb_subul_registers_enabled === 'null' ? null : form.data.registers.sb_subul_registers_enabled,
+            sb_subul_idle_counter: form.data.registers.sb_subul_idle_counter === 'null' ? null : form.data.registers.sb_subul_idle_counter,
+            sb_subul_disbursement: form.data.registers.sb_subul_disbursement === 'null' ? null : form.data.registers.sb_subul_disbursement,
+            sb_subul_registers_default_change_payment_type:
+              form.data.registers.sb_subul_registers_default_change_payment_type === 'null'
+                ? null
+                : form.data.registers.sb_subul_registers_default_change_payment_type,
           },
           vat: {
             ...form.data.vat,

@@ -1,15 +1,14 @@
 import { settingsApi } from '@/api';
+import { SbCrudForm } from '@/components/forms/config-form/sb-crud-form';
 import FormField from '@/components/forms/shared/form-field';
 import { Button } from '@/components/ui/button';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
-import { cn } from '@/lib/utils';
+import type { FormFieldDef } from '@/types/forms';
 import { useForm, usePage } from '@inertiajs/react';
-import { Check, ChevronsUpDown, Loader2, Save } from 'lucide-react';
-import { useState, useTransition } from 'react';
+import { Loader2, Save } from 'lucide-react';
+import { useTransition } from 'react';
 import { toast } from 'sonner';
 
 type General = {
@@ -43,7 +42,22 @@ export default function SettingsGeneral() {
   const { options, payload } = usePage<{ options: Options; payload: General }>().props;
   const { t } = useTranslation();
   const [isPending, startTransition] = useTransition();
-  const [open] = useState(false);
+
+  const defaultCustomerField: FormFieldDef = {
+    name: 'sb_customers_default',
+    label: t('Default Customer Account'),
+    type: 'search-select',
+    component: 'sbCrudForm',
+    namespace: 'sb.customers',
+    options: [
+      { label: t('None'), value: 'no' },
+      ...options.sb_customers_default.map((c) => ({
+        label: c.label,
+        value: c.value,
+      })),
+    ],
+    description: t("You must create a customer to which each sales are attributed when the walking customer doesn't register."),
+  };
 
   const form = useForm<Payload>({
     general: {
@@ -131,60 +145,11 @@ export default function SettingsGeneral() {
                   label={t('Default Customer Account')}
                   description={t("You must create a customer to which each sales are attributed when the walking customer doesn't register.")}
                 >
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
-                        {form.data.general.sb_customers_default && form.data.general.sb_customers_default !== 'no'
-                          ? (options.sb_customers_default.find((tz) => tz.value.toString() === form.data.general.sb_customers_default?.toString())
-                              ?.label ?? t('Select default...'))
-                          : t('None')}
-                        <ChevronsUpDown className="opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0">
-                      <Command>
-                        <CommandInput placeholder={t('Search') + '...'} className="h-9" />
-                        <CommandList>
-                          <CommandEmpty>{t('No framework found.')}</CommandEmpty>
-                          <CommandGroup>
-                            <CommandItem
-                              value="no"
-                              onSelect={() => {
-                                form.setData('general.sb_customers_default', 'no');
-                              }}
-                            >
-                              {t('None')}
-                              <Check
-                                className={cn(
-                                  'ms-auto',
-                                  form.data.general.sb_customers_default === 'no' || !form.data.general.sb_customers_default
-                                    ? 'opacity-100'
-                                    : 'opacity-0',
-                                )}
-                              />
-                            </CommandItem>
-                            {options.sb_customers_default.map((tz) => (
-                              <CommandItem
-                                key={tz.value}
-                                value={tz.value.toString()}
-                                onSelect={(currentValue) => {
-                                  form.setData('general.sb_customers_default', currentValue);
-                                }}
-                              >
-                                {tz.label}
-                                <Check
-                                  className={cn(
-                                    'ms-auto',
-                                    form.data.general.sb_customers_default?.toString() === tz.value.toString() ? 'opacity-100' : 'opacity-0',
-                                  )}
-                                />
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                  <SbCrudForm
+                    field={defaultCustomerField}
+                    value={form.data.general.sb_customers_default ?? 'no'}
+                    onChange={(value) => form.setData('general.sb_customers_default', value?.toString() ?? 'no')}
+                  />
                 </FormField>
                 <FormField label={t('Default Customer Group')} description={t('Select to which group each new created customers are assigned to.')}>
                   <Select
