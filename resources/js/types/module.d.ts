@@ -334,10 +334,10 @@ type RewardSystem = {
 };
 
 interface RewardSystemRule {
-  id: string;
-  from: number;
-  to: number;
-  reward: number;
+  id: number;
+  from: number | string;
+  to: number | string;
+  reward: number | string;
 }
 
 type CustomerGroup = {

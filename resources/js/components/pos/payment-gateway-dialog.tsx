@@ -8,6 +8,7 @@ import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { submitAndFinalizeOrder } from '@/services/order-finalize';
 import { Order } from '@/types/models/order';
+import { Payment } from '@/types/models/payment';
 import { PaymentType } from '@/types/models/payment-type';
 import { formatCurrency } from '@/utils/format';
 import { Trash2 } from 'lucide-react';
@@ -137,7 +138,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
     setScreenValue(amount.toFixed(2));
   };
 
-  const buildPayment = (method: PaymentType, value: number) => ({
+  const buildPayment = (method: PaymentType, value: number): Payment => ({
     identifier: method.identifier,
     value,
     label: method.label,
@@ -152,7 +153,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
 
   const recordPayment = (amount: number) => {
     if (!selectedMethod) return;
-    addPayment(buildPayment(selectedMethod, amount) as any);
+    addPayment(buildPayment(selectedMethod, amount));
     resetScreen();
   };
 

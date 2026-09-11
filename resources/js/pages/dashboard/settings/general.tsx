@@ -14,7 +14,7 @@ import { useState } from 'react';
 
 export default function GeneralSettingsPage() {
   const { options, settings } = usePage<{ options: GeneralSettingsOptions; settings: GeneralSettingsPayload }>().props;
-  const [tab, setTab] = useState<'identification' | 'currency' | 'date' | 'registration'>('identification');
+  const [tab, setTab] = useState<string>('identification');
   const { t } = useTranslation();
   const { form, isPending, handleSave } = useGeneralSettings(settings);
 
@@ -28,7 +28,7 @@ export default function GeneralSettingsPage() {
               <p className="text-muted-foreground text-sm">{t('Configure the general settings.')}</p>
 
               <div className="mt-4">
-                <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+                <Tabs value={tab} onValueChange={(v) => setTab(v)}>
                   <TabsList className="flex w-full max-w-xl justify-start">
                     <TabsTrigger value="identification">{t('Identification')}</TabsTrigger>
                     <TabsTrigger value="currency">{t('Currency')}</TabsTrigger>
@@ -38,7 +38,7 @@ export default function GeneralSettingsPage() {
                 </Tabs>
               </div>
 
-              <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+              <Tabs value={tab} onValueChange={(v) => setTab(v)}>
                 <TabsContent value="identification" className="mt-6">
                   <IdentificationTab form={form} options={options} />
                 </TabsContent>

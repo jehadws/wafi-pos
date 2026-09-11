@@ -53,12 +53,12 @@ export function useProfileForm({ attributes = {}, currentShipping = {}, currentB
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     form.setData({ ...form.data, [name]: value });
-    if ((form.errors as any)[name]) form.clearErrors(name as any);
+    if (form.errors[name as keyof typeof form.data]) form.clearErrors(name as keyof typeof form.data);
   };
 
   const handleSelectChange = (name: keyof UserProfileFormData, value: string | number) => {
     form.setData({ ...form.data, [name]: value });
-    if ((form.errors as any)[name]) form.clearErrors(name as any);
+    if (form.errors[name]) form.clearErrors(name);
   };
 
   const getTokens = () => {

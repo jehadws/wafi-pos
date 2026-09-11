@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslation } from '@/lib/i18n';
 import type { FormFieldDef } from '@/types/forms';
+import type { AppFormDataKeys } from '@/types/inertia-form';
 import { InertiaFormProps } from '@inertiajs/react';
 import { Trash, Upload, X } from 'lucide-react';
 import type { ProductFormData } from './types';
@@ -46,7 +47,8 @@ export default function SellingGroupCard({ form, units, index, onRemove }: Selli
     });
 
     // Clear errors
-    if ((form.errors as any)[`units_selling_group.${index}.${name}`]) form.clearErrors(`units_selling_group.${index}.${name}` as any);
+    if (form.errors[`units_selling_group.${index}.${name}` as AppFormDataKeys<ProductFormData>])
+      form.clearErrors(`units_selling_group.${index}.${name}` as AppFormDataKeys<ProductFormData>);
   };
 
   // Create a handler for select changes in this group
@@ -63,7 +65,8 @@ export default function SellingGroupCard({ form, units, index, onRemove }: Selli
     });
 
     // Clear errors
-    if ((form.errors as any)[`units_selling_group.${index}.${name}`]) form.clearErrors(`units_selling_group.${index}.${name}` as any);
+    if (form.errors[`units_selling_group.${index}.${name}` as AppFormDataKeys<ProductFormData>])
+      form.clearErrors(`units_selling_group.${index}.${name}` as AppFormDataKeys<ProductFormData>);
   };
 
   const handleClearField = (name: string) => {
@@ -96,21 +99,21 @@ export default function SellingGroupCard({ form, units, index, onRemove }: Selli
           <FormField
             label={t('Assigned Unit')}
             required
-            error={(form.errors as any)?.['units_selling_group.' + index + '.unit_id']}
+            error={form.errors?.[`units_selling_group.${index}.unit_id` as AppFormDataKeys<ProductFormData>]}
             description={t('The assigned unit for sale')}
           >
             <SbCrudForm
               field={unitField}
               value={form.data.units_selling_group[index].unit_id}
               onChange={(value) => handleGroupSelectChange('unit_id', value as number)}
-              error={(form.errors as any)?.['units_selling_group.' + index + '.unit_id']}
+              error={form.errors?.[`units_selling_group.${index}.unit_id` as AppFormDataKeys<ProductFormData>]}
             />
           </FormField>
 
           <FormField
             label={t('Convert Unit')}
             description={t('The unit that is selected for convertion by default.')}
-            error={(form.errors as any)?.['units_selling_group.' + index + '.convert_unit_id']}
+            error={form.errors?.[`units_selling_group.${index}.convert_unit_id` as AppFormDataKeys<ProductFormData>]}
           >
             <Select
               value={form.data.units_selling_group[index].convert_unit_id?.toString()}

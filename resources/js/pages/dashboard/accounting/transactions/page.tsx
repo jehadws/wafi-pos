@@ -50,7 +50,7 @@ export default function Dashboard() {
   const [deleteDialog, setDeleteDialog] = useState<{
     isOpen: boolean;
     loading: boolean;
-    item: TransactionAccount | null;
+    item: Transaction | null;
   }>({
     isOpen: false,
     loading: false,
@@ -77,7 +77,7 @@ export default function Dashboard() {
     }
   };
 
-  const columns: ColumnDef<TransactionAccount>[] = [
+  const columns: ColumnDef<Transaction>[] = [
     {
       id: 'select',
       header: ({ table }) => (
@@ -200,7 +200,7 @@ export default function Dashboard() {
   const bulkActions = [
     {
       label: t('Delete Selected'),
-      action: async (selectedRows: TransactionAccount[]) => {
+      action: async (selectedRows: Transaction[]) => {
         const entries = selectedRows.map((row) => row.id);
 
         try {
@@ -259,7 +259,7 @@ export default function Dashboard() {
         <div className="grid w-full">
           <DataTable
             columns={columns}
-            data={transaction as unknown as any[]}
+            data={transaction.data}
             title={t('Transactions List')}
             description={t('Display all transactions.')}
             searchKey="name"

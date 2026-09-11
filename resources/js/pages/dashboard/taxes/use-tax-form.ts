@@ -36,12 +36,12 @@ export function useTaxForm(mode: TaxFormMode, tax?: any) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     form.setData({ ...form.data, [name]: value });
-    if ((form.errors as any)[name]) form.clearErrors(name as any);
+    if (form.errors[name as keyof typeof form.data]) form.clearErrors(name as keyof typeof form.data);
   };
 
   const handleSelectChange = (name: keyof TaxFormData, value: string | number) => {
     form.setData({ ...form.data, [name]: value });
-    if ((form.errors as any)[name]) form.clearErrors(name as any);
+    if (form.errors[name as keyof typeof form.data]) form.clearErrors(name as keyof typeof form.data);
   };
 
   const validateForm = (): boolean => {

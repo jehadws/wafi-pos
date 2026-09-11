@@ -57,7 +57,7 @@ const clampMonotonic = (current: number, next: number) => Math.min(100, Math.max
 
 export default function MediaManager() {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<'upload' | 'gallery'>('upload');
+  const [tab, setTab] = useState<string>('upload');
 
   const [items, setItems] = useState<UploadItem[]>([]);
   const [dragActive, setDragActive] = useState(false);
@@ -108,7 +108,7 @@ export default function MediaManager() {
       form.append('file', file, file.name);
 
       const res = await mediasApi.upload(form, {
-        signal: controller.signal as any,
+        signal: controller.signal,
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (evt) => {
           if (!evt.total) return;
@@ -511,7 +511,7 @@ export default function MediaManager() {
             <div className="">
               <p className="text-xl leading-none font-semibold">{t('Medias Manager')}</p>
             </div>
-            <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="w-full py-3">
+            <Tabs value={tab} onValueChange={(v) => setTab(v)} className="w-full py-3">
               <TabsList className="w-full">
                 <TabsTrigger value="upload">{t('Upload')}</TabsTrigger>
                 <TabsTrigger value="gallery">{t('Gallery')}</TabsTrigger>

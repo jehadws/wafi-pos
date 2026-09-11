@@ -10,7 +10,7 @@ import type { ExpiryTabProps, ProductFormData } from './types';
 
 export default function ExpiryTab({ form, handleInputChange }: ExpiryTabProps) {
   const { t } = useTranslation();
-  const handleChange = (name: keyof ProductFormData, value: string | number | number[]) => {
+  const handleChange = (name: keyof ProductFormData, value: string | number | number[] | boolean) => {
     handleInputChange(name, value);
 
     if (form.errors[name]) form.clearErrors(name);
@@ -27,7 +27,7 @@ export default function ExpiryTab({ form, handleInputChange }: ExpiryTabProps) {
         <div className="flex items-center gap-2">
           <Switch
             checked={form.data.expiracy_expires}
-            onCheckedChange={(checked) => handleChange('expiracy_expires', checked as any)}
+            onCheckedChange={(checked) => handleChange('expiracy_expires', checked)}
             id="expiracy_expires"
           />
           <Label htmlFor="expiracy_expires">{t('Product Expires')}</Label>

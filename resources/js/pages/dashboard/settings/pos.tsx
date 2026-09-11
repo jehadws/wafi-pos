@@ -16,7 +16,7 @@ import { useState } from 'react';
 
 export default function PosSettingsPage() {
   const { options, payload } = usePage<{ options: PosSettingsOptions; payload: PosSettingsPayload }>().props;
-  const [tab, setTab] = useState<'layout' | 'printing' | 'registers' | 'vat' | 'shortcuts' | 'features'>('layout');
+  const [tab, setTab] = useState<string>('layout');
   const { t } = useTranslation();
   const { form, isPending, handleSave } = usePosSettings(payload);
 
@@ -30,7 +30,7 @@ export default function PosSettingsPage() {
               <p className="text-muted-foreground text-sm">{t('Configure the pos settings.')}</p>
 
               <div className="mt-4">
-                <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+                <Tabs value={tab} onValueChange={(v) => setTab(v)}>
                   <TabsList className="flex w-full justify-start">
                     <TabsTrigger value="layout">{t('Layout')}</TabsTrigger>
                     <TabsTrigger value="printing">{t('Printing')}</TabsTrigger>
@@ -42,7 +42,7 @@ export default function PosSettingsPage() {
                 </Tabs>
               </div>
 
-              <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+              <Tabs value={tab} onValueChange={(v) => setTab(v)}>
                 <TabsContent value="layout" className="mt-6">
                   <LayoutTab form={form} options={options} />
                 </TabsContent>

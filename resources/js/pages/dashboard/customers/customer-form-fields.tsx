@@ -22,7 +22,7 @@ interface CustomerFormFieldsProps {
   };
   groups: { id: number; name: string }[];
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  handleSelectChange: (name: string, value: string | number) => void;
+  handleSelectChange: (name: string, value: string | number | Date | undefined) => void;
 }
 
 function AddressFields({
@@ -151,7 +151,10 @@ export function CustomerFormFields({ form, groups, handleInputChange, handleSele
             description={t('Displays the customer birth date.')}
             error={form.errors?.general_birth_date}
           >
-            <DatePicker onDateChange={(value) => handleSelectChange('general_birth_date', value as any)} date={form.data.general_birth_date as any} />
+            <DatePicker
+              onDateChange={(value) => handleSelectChange('general_birth_date', value)}
+              date={form.data.general_birth_date ? new Date(form.data.general_birth_date) : undefined}
+            />
           </FormField>
 
           <FormField label={t('Email')} htmlFor="general_email" description={t('Provide the customer email.')} error={form.errors?.general_email}>

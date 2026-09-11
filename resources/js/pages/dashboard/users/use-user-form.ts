@@ -157,14 +157,12 @@ export function useUserForm(mode: UserFormMode, user?: any) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     form.setData({ ...form.data, [name]: value } as UserFormData);
-    // @ts-expect-error Inertia form type
-    if (form.errors[name]) form.clearErrors(name as any);
+    if (form.errors[name as keyof typeof form.data]) form.clearErrors(name as keyof typeof form.data);
   };
 
   const handleSelectChange = (name: string, value: string | number | number[]) => {
     form.setData({ ...form.data, [name]: value } as UserFormData);
-    // @ts-expect-error Inertia form type
-    if (form.errors[name]) form.clearErrors(name as any);
+    if (form.errors[name as keyof typeof form.data]) form.clearErrors(name as keyof typeof form.data);
   };
 
   // ── Validation ──────────────────────────────────────────────────────────

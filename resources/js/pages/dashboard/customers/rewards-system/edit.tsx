@@ -57,50 +57,33 @@ export default function EditRewardSystemPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     form.setData({ ...form.data, [name]: value });
-    // @ts-expect-error Inertia form type
-    if (form.errors[name]) form.clearErrors(name);
+    if (form.errors[name as keyof typeof form.data]) form.clearErrors(name as keyof typeof form.data);
   };
 
   const handleSelectChange = (name: string, value: string | number | number[]) => {
     form.setData({ ...form.data, [name]: value });
-    // @ts-expect-error Inertia form type
-    if (form.errors[name]) form.clearErrors(name);
+    if (form.errors[name as keyof typeof form.data]) form.clearErrors(name as keyof typeof form.data);
   };
 
   const addRule = () => {
-    const id = Date.now().toString();
+    const id = Date.now();
     const newRule = {
       id: id,
-      from: '' as any,
-      to: '' as any,
-      reward: '' as any,
+      from: '',
+      to: '',
+      reward: '',
     } as RewardSystemRule;
     form.setData({ ...form.data, rules: [...form.data.rules, newRule] });
-    // @ts-expect-error Inertia form type
-    if (form.errors[`rules.${id}.from`]) form.clearErrors(`rules.${id}.from`);
-    // @ts-expect-error Inertia form type
-    if (form.errors[`rules.${id}.to`]) form.clearErrors(`rules.${id}.to`);
-    // @ts-expect-error Inertia form type
-    if (form.errors[`rules.${id}.reward`]) form.clearErrors(`rules.${id}.reward`);
   };
 
-  const removeRule = (id: string) => {
+  const removeRule = (id: number) => {
     form.setData({ ...form.data, rules: form.data.rules.filter((rule) => rule.id !== id) });
 
     // clear errors
-    // @ts-expect-error Inertia form type
-    if (form.errors[`rules.${id}.from`]) form.clearErrors(`rules.${id}.from`);
-    // @ts-expect-error Inertia form type
-    if (form.errors[`rules.${id}.to`]) form.clearErrors(`rules.${id}.to`);
-    // @ts-expect-error Inertia form type
-    if (form.errors[`rules.${id}.reward`]) form.clearErrors(`rules.${id}.reward`);
   };
 
-  const updateRule = (id: string, field: keyof RewardSystemRule, value: string) => {
+  const updateRule = (id: number, field: keyof RewardSystemRule, value: string) => {
     form.setData({ ...form.data, rules: form.data.rules.map((rule) => (rule.id === id ? { ...rule, [field]: value } : rule)) });
-
-    // @ts-expect-error Inertia form type
-    if (form.errors[`rules.${id}.${field}`]) form.clearErrors(`rules.${id}.${field}`);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -162,17 +145,17 @@ export default function EditRewardSystemPage() {
       } else {
         form.data.rules.forEach((rule) => {
           if (!rule.from) {
-            (form as any).setError(`rules.${rule.id}.from`, t('From value is required.'));
+            form.setError(`rules.${rule.id}.from`, t('From value is required.'));
             isValid = false;
           }
 
           if (!rule.to) {
-            (form as any).setError(`rules.${rule.id}.to`, t('To value is required.'));
+            form.setError(`rules.${rule.id}.to`, t('To value is required.'));
             isValid = false;
           }
 
           if (!rule.reward) {
-            (form as any).setError(`rules.${rule.id}.reward`, t('Points value is required.'));
+            form.setError(`rules.${rule.id}.reward`, t('Points value is required.'));
             isValid = false;
           }
         });
@@ -280,15 +263,11 @@ export default function EditRewardSystemPage() {
                       </Button>
 
                       <div className="flex flex-col gap-4">
-                        <FormField
-                          label={t('From')}
-                          description={t('The interval start here.')}
-                          error={(form.errors as any)[`rules.${rule.id}.from`]}
-                        >
+                        <FormField label={t('From')} description={t('The interval start here.')} error={form.errors[`rules.${rule.id}.from`]}>
                           <Input
                             id="from"
                             name="from"
-                            className={cn((form.errors as any)[`rules.${rule.id}.from`] && 'border-destructive')}
+                            className={cn(form.errors[`rules.${rule.id}.from`] && 'border-destructive')}
                             type="number"
                             placeholder={t('e.g., 200')}
                             value={rule.from}
@@ -296,22 +275,22 @@ export default function EditRewardSystemPage() {
                           />
                         </FormField>
 
-                        <FormField label={t('To')} description={t('The interval ends here.')} error={(form.errors as any)[`rules.${rule.id}.to`]}>
+                        <FormField label={t('To')} description={t('The interval ends here.')} error={form.errors[`rules.${rule.id}.to`]}>
                           <Input
                             id="to"
                             name="to"
-                            className={cn((form.errors as any)[`rules.${rule.id}.to`] && 'border-destructive')}
+                            className={cn(form.errors[`rules.${rule.id}.to`] && 'border-destructive')}
                             type="number"
                             placeholder={t('e.g., 400')}
                             value={rule.to}
                             onChange={(e) => updateRule(rule.id, 'to', e.target.value)}
                           />
                         </FormField>
-                        <FormField label={t('Points')} description={t('Points earned.')} error={(form.errors as any)[`rules.${rule.id}.reward`]}>
+                        <FormField label={t('Points')} description={t('Points earned.')} error={form.errors[`rules.${rule.id}.reward`]}>
                           <Input
                             id="reward"
                             name="reward"
-                            className={cn((form.errors as any)[`rules.${rule.id}.reward`] && 'border-destructive')}
+                            className={cn(form.errors[`rules.${rule.id}.reward`] && 'border-destructive')}
                             placeholder={t('e.g., 200')}
                             value={rule.reward}
                             type="number"

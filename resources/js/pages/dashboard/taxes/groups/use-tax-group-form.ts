@@ -30,8 +30,7 @@ export function useTaxGroupForm(mode: TaxGroupFormMode, group?: any) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     form.setData({ ...form.data, [name]: value });
-    // @ts-expect-error Inertia form type
-    if (form.errors[name]) form.clearErrors(name);
+    if (form.errors[name as keyof typeof form.data]) form.clearErrors(name as keyof typeof form.data);
   };
 
   const validateForm = (): boolean => {

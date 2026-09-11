@@ -29,6 +29,17 @@ interface StockAdjustmentProduct extends Product {
   }[];
 }
 
+/**
+ * Row returned by `searchProcurementProduct` for the "from procurements"
+ * branch — a procured product already attached to a procurement.
+ */
+type ProcurementProductRow = Product & {
+  product_id: number;
+  unit_quantity: UnitQuantity;
+  procurement: { name: string };
+  available_quantity: number;
+};
+
 export default function Page() {
   const { actions } = usePage<{ actions: { value: string; label: string }[] }>().props;
   const [searchQuery, setSearchQuery] = useState('');
@@ -118,7 +129,7 @@ export default function Page() {
     }
   };
 
-  const addProductToList = (product: Product) => {
+  const addProductToList = (product: ProcurementProductRow) => {
     const exists = products.filter((__product) => __product.procurement_product_id === product.id);
 
     if (exists.length > 0) {
@@ -132,15 +143,11 @@ export default function Page() {
     const finalProduct: StockAdjustmentProduct = {
       ...product,
       selected: false,
-      // @ts-expect-error Inertia form type
+      // Use the full UnitQuantity object (not the bare Unit) so the
+      // unit-selector dialog compares UnitQuantity ids consistently.
       id: product.product_id,
-      // @ts-expect-error Inertia form type - use the full UnitQuantity object (not the bare Unit)
-      // so the unit-selector dialog compares UnitQuantity ids consistently.
       unit_quantities: [product.unit_quantity],
-      // @ts-expect-error Inertia form type
       adjust_unit: product.unit_quantity,
-      // @ts-expect-error Inertia form type
-      quantities: [product.unit_quantity],
       adjust_quantity: 1,
       adjust_action: defaultAction.value,
       adjust_reason: '',
@@ -149,7 +156,6 @@ export default function Page() {
       procurement_product_id: product.id,
       procurement_history: [
         {
-          // @ts-expect-error Inertia form type
           label: `${product.procurement.name} (${product.available_quantity})`,
           value: product.id,
         },

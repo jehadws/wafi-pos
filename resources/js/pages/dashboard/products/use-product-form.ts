@@ -8,6 +8,7 @@
 
 import { defaultFormData, ProductFormData } from '@/components/forms/product-form/types';
 import { useTranslation } from '@/lib/i18n';
+import type { AppFormDataKeys } from '@/types/inertia-form';
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 
@@ -26,9 +27,7 @@ const editDefaults = (product: any): ProductFormData => ({
     sale_price: subItem.sale_price,
     total_price: subItem.total_price,
     name: subItem.product?.name ?? '',
-    product: subItem.product
-      ? { name: subItem.product.name, unit_quantities: subItem.product.unit_quantities ?? [] }
-      : { unit_quantities: [] },
+    product: subItem.product ? { name: subItem.product.name, unit_quantities: subItem.product.unit_quantities ?? [] } : { unit_quantities: [] },
   })),
   identification_barcode: product.barcode ?? '',
   identification_barcode_type: product.barcode_type ?? '',
@@ -172,23 +171,23 @@ export function useProductForm(mode: ProductFormMode, product?: any) {
       }
       form.data.units_selling_group.forEach((group, index) => {
         if (!group.unit_id) {
-          form.setError(`units_selling_group.${index}.unit_id` as any, t('Unit is required'));
+          form.setError(`units_selling_group.${index}.unit_id` as AppFormDataKeys<ProductFormData>, t('Unit is required'));
           form.setError('units_error', t('This field is required'));
           isValid = false;
         }
         if (group.unit_id && group.convert_unit_id && group.unit_id === group.convert_unit_id) {
-          form.setError(`units_selling_group.${index}.convert_unit_id` as any, t('Unit cannot be same as convert unit'));
+          form.setError(`units_selling_group.${index}.convert_unit_id` as AppFormDataKeys<ProductFormData>, t('Unit cannot be same as convert unit'));
           form.setError('units_error', t('This field is required'));
           toast.error(t('Unit cannot be same as convert unit'));
           isValid = false;
         }
         if (group.quantity && isNaN(Number(group.quantity))) {
-          form.setError(`units_selling_group.${index}.quantity` as any, t('Quantity must be a number'));
+          form.setError(`units_selling_group.${index}.quantity` as AppFormDataKeys<ProductFormData>, t('Quantity must be a number'));
           form.setError('units_error', t('This field is required'));
           isValid = false;
         }
         if (group.low_quantity && isNaN(Number(group.low_quantity))) {
-          form.setError(`units_selling_group.${index}.low_quantity` as any, t('Low quantity must be a number'));
+          form.setError(`units_selling_group.${index}.low_quantity` as AppFormDataKeys<ProductFormData>, t('Low quantity must be a number'));
           form.setError('units_error', t('This field is required'));
           isValid = false;
         }

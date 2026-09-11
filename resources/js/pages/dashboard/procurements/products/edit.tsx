@@ -30,14 +30,12 @@ export default function CreateProductPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     form.setData({ ...form.data, [name]: value });
-    // @ts-expect-error Inertia form type
-    if (form.errors[name]) form.clearErrors(name);
+    if (form.errors[name as keyof typeof form.data]) form.clearErrors(name as keyof typeof form.data);
   };
 
   const handleSelectChange = (name: string, value: string | number | number[]) => {
     form.setData({ ...form.data, [name]: value });
-    // @ts-expect-error Inertia form type
-    if (form.errors[name]) form.clearErrors(name);
+    if (form.errors[name as keyof typeof form.data]) form.clearErrors(name as keyof typeof form.data);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,8 +103,7 @@ export default function CreateProductPage() {
               <FormField label={t('Expiration Date')} description={t('Define when that specific product should expire.')}>
                 <DatePicker
                   onDateChange={(value: Date | undefined) => handleSelectChange('expiration_date', value ? value.toISOString() : '')}
-                  // @ts-expect-error Inertia form type
-                  date={form.data.expiration_date}
+                  date={form.data.expiration_date ? new Date(form.data.expiration_date) : undefined}
                 />
               </FormField>
             </div>

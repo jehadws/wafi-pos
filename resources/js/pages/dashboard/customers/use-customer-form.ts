@@ -155,14 +155,12 @@ export function useCustomerForm(mode: CustomerFormMode, customer?: any) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     form.setData({ ...form.data, [name]: value } as CustomerFormData);
-    // @ts-expect-error Inertia form type
-    if (form.errors[name]) form.clearErrors(name as any);
+    if (form.errors[name as keyof typeof form.data]) form.clearErrors(name as keyof typeof form.data);
   };
 
-  const handleSelectChange = (name: string, value: string | number) => {
+  const handleSelectChange = (name: string, value: string | number | Date | undefined) => {
     form.setData({ ...form.data, [name]: value } as CustomerFormData);
-    // @ts-expect-error Inertia form type
-    if (form.errors[name]) form.clearErrors(name as any);
+    if (form.errors[name as keyof typeof form.data]) form.clearErrors(name as keyof typeof form.data);
   };
 
   const validateForm = (): boolean => {
