@@ -129,3 +129,39 @@ export interface CrudSubmitResponse {
   /** Created/updated model attributes (added for inline-create flows). */
   entry?: Record<string, unknown>;
 }
+
+/**
+ * Represents a repeatable sub-form group (`type: 'group'`).
+ * Each entry in `groups` is one existing/pre-filled row of values.
+ */
+export interface GroupFieldDef extends FormFieldDef {
+  type: 'group';
+  /** Child field definitions that each row renders. */
+  fields: FormFieldDef[];
+  /** Whether individual rows can be removed; defaults to `true`. */
+  closable?: boolean;
+  /** Pre-filled row data from the backend. */
+  groups?: Array<Record<string, unknown>>;
+}
+
+/**
+ * Inertia page props for a backend-driven CRUD form page.
+ * Extends the raw `CrudFormConfig` with the `id` of the record being edited
+ * (`undefined` on create).
+ */
+export interface CrudFormPageProps {
+  config: CrudFormConfig;
+  id?: string | number;
+}
+
+/**
+ * Inertia page props for a backend-driven Settings form page.
+ * Settings use a flat `fields` array (no tabs) and a `namespace` key that
+ * maps to the Laravel Settings store.
+ */
+export interface SettingsFormPageProps {
+  fields: FormFieldDef[];
+  namespace: string;
+  title?: string;
+  description?: string;
+}
