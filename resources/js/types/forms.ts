@@ -88,6 +88,7 @@ export interface FormTabDef {
   identifier: string;
   label: string;
   fields: FormFieldDef[];
+  description?: string;
   notices?: Array<Record<string, unknown>>;
   /** Custom whole-tab component (`sbProductGroup`). */
   component?: string;
@@ -155,13 +156,25 @@ export interface CrudFormPageProps {
 }
 
 /**
- * Inertia page props for a backend-driven Settings form page.
- * Settings use a flat `fields` array (no tabs) and a `namespace` key that
- * maps to the Laravel Settings store.
+ * Settings form definition structure as returned by SettingsPage::getForm().
  */
-export interface SettingsFormPageProps {
-  fields: FormFieldDef[];
-  namespace: string;
+export interface SettingsFormDef {
   title?: string;
   description?: string;
+  tabs?: Record<string, FormTabDef> | FormTabDef[];
+  [key: string]: unknown;
+}
+
+/**
+ * Inertia page props for a backend-driven Settings form page.
+ */
+export interface SettingsFormPageProps {
+  fields?: FormFieldDef[];
+  namespace?: string;
+  identifier?: string;
+  title?: string;
+  description?: string;
+  form?: SettingsFormDef;
+  payload?: Record<string, unknown>;
+  options?: Record<string, unknown>;
 }

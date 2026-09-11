@@ -1,21 +1,19 @@
-/**
- * use-settings-form.ts
- *
- * Lifecycle hook for backend-driven Settings form pages (Plan B §B2.2).
- *
- * Responsibilities:
- *  - Accept the initial payload from Inertia props or an API response.
- *  - Expose `payload`, `setFieldValue(key, value)`, `save()`, `saving`.
- *  - Preserve `null` values in the payload so the backend deletes the option.
- *  - Post to `POST /api/settings/{identifier}` via `settingsApi.update`.
- *  - Dispatch success / error toasts via `sonner`.
- */
-
 import { settingsApi } from '@/api';
 import { useTranslation } from '@/lib/i18n';
+import type { FormTabDef, SettingsFormDef } from '@/types/forms';
 import { getApiErrorMessage } from '@/utils/api-errors';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function getTabsList(tabsDef?: Record<string, FormTabDef> | FormTabDef[]): FormTabDef[] {
+  if (!tabsDef) return [];
+  if (Array.isArray(tabsDef)) return tabsDef;
+  return Object.values(tabsDef);
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -37,6 +35,14 @@ export interface UseSettingsFormParams {
    * Stored as-is; consumers can read it from the return value.
    */
   initialOptions?: Record<string, unknown>;
+  /**
+   * Pre-loaded form definition containing tabs and fields from backend.
+   */
+  form?: SettingsFormDef;
+  /**
+   * Callback invoked after successful save with submitted data.
+   */
+  onSaved?: (data: Record<string, unknown>) => void;
 }
 
 export interface UseSettingsFormReturn {
@@ -44,6 +50,12 @@ export interface UseSettingsFormReturn {
   payload: Record<string, unknown>;
   /** Available options passed from the backend (read-only). */
   options: Record<string, unknown>;
+  /** Active form definition if loaded. */
+  form: SettingsFormDef | null;
+  /** Whether the form config is being loaded asynchronously. */
+  loadingForm: boolean;
+  /** Error message if form loading failed. */
+  formError: string | null;
   /** Update one key in the payload. Pass `null` to mark for deletion. */
   setFieldValue: (key: string, value: unknown) => void;
   /** Persist the current payload to the backend. */
@@ -58,22 +70,70 @@ export interface UseSettingsFormReturn {
 // Hook
 // ---------------------------------------------------------------------------
 
-export function useSettingsForm({ identifier, initialPayload = {}, initialOptions = {} }: UseSettingsFormParams): UseSettingsFormReturn {
+export function useSettingsForm({
+  identifier,
+  initialPayload = {},
+  initialOptions = {},
+  form: initialForm,
+  onSaved,
+}: UseSettingsFormParams): UseSettingsFormReturn {
   const { t } = useTranslation();
 
-  // Keep an immutable reference snapshot to compute isDirty.
-  // Must be state (not ref) so that updating it after save triggers a re-render.
-  const [savedSnapshot, setSavedSnapshot] = useState<string>(JSON.stringify(initialPayload));
+  const [form, setForm] = useState<SettingsFormDef | null>(initialForm ?? null);
+  const [loadingForm, setLoadingForm] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
+  // Keep an immutable reference snapshot to compute isDirty.
+  const [savedSnapshot, setSavedSnapshot] = useState<string>(JSON.stringify(initialPayload));
   const [payload, setPayload] = useState<Record<string, unknown>>(initialPayload);
   const [options] = useState<Record<string, unknown>>(initialOptions);
   const [saving, setSaving] = useState(false);
+
+  // Fetch form if not provided initially and identifier is set
+  useEffect(() => {
+    if (initialForm) {
+      setForm(initialForm);
+      return;
+    }
+    if (typeof settingsApi?.getForm !== 'function') {
+      return;
+    }
+    let cancelled = false;
+    setLoadingForm(true);
+    settingsApi
+      .getForm<SettingsFormDef>(identifier)
+      .then((data) => {
+        if (!cancelled && data) {
+          setForm(data);
+          setLoadingForm(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setFormError(getApiErrorMessage(err, t('Failed to load settings configuration.')));
+          setLoadingForm(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [identifier, initialForm, t]);
 
   // ------------------------------------------------------------------
   // Field change — null values are preserved (backend deletes the key).
   // ------------------------------------------------------------------
   const setFieldValue = useCallback((key: string, value: unknown) => {
-    setPayload((current) => ({ ...current, [key]: value }));
+    setPayload((current) => {
+      const next = { ...current, [key]: value };
+      if (key.includes('.')) {
+        const [tab, field] = key.split('.');
+        const parent = (next[tab] as Record<string, unknown>) ?? {};
+        next[tab] = { ...parent, [field]: value };
+        next[field] = value;
+      }
+      return next;
+    });
   }, []);
 
   // ------------------------------------------------------------------
@@ -84,11 +144,36 @@ export function useSettingsForm({ identifier, initialPayload = {}, initialOption
     setSaving(true);
 
     try {
-      // settingsApi.update expects SettingsSection — cast to `any` here
-      // because settings-form pages can target arbitrary section strings
-      // beyond the typed union; the backend routes them correctly.
-      await settingsApi.update(identifier as Parameters<typeof settingsApi.update>[0], payload);
+      const tabs = getTabsList(form?.tabs);
+      let dataToSend: Record<string, unknown> = payload;
+
+      if (tabs.length > 0) {
+        const nested: Record<string, unknown> = {};
+        for (const tab of tabs) {
+          const tabObj: Record<string, unknown> = {};
+          for (const field of tab.fields ?? []) {
+            if (field.name) {
+              const val = payload[field.name] !== undefined ? payload[field.name] : (payload[`${tab.identifier}.${field.name}`] ?? null);
+              tabObj[field.name] = val;
+            }
+          }
+          nested[tab.identifier] = tabObj;
+        }
+
+        // Also carry forward any root-level keys that aren't tab fields
+        for (const [k, v] of Object.entries(payload)) {
+          const isTabName = tabs.some((tabItem) => tabItem.identifier === k);
+          const isTabField = tabs.some((tabItem) => tabItem.fields?.some((f) => f.name === k));
+          if (!isTabName && !isTabField && !k.includes('.')) {
+            nested[k] = v;
+          }
+        }
+        dataToSend = nested;
+      }
+
+      await settingsApi.update(identifier, dataToSend);
       setSavedSnapshot(JSON.stringify(payload));
+      onSaved?.(dataToSend);
       toast.success(t('Settings saved'), {
         description: t('The settings were saved successfully.'),
       });
@@ -99,11 +184,11 @@ export function useSettingsForm({ identifier, initialPayload = {}, initialOption
     } finally {
       setSaving(false);
     }
-  }, [saving, identifier, payload, t]);
+  }, [saving, identifier, form?.tabs, payload, onSaved, t]);
 
   const isDirty = JSON.stringify(payload) !== savedSnapshot;
 
-  return { payload, options, setFieldValue, save, saving, isDirty };
+  return { payload, options, form, loadingForm, formError, setFieldValue, save, saving, isDirty };
 }
 
 export default useSettingsForm;
