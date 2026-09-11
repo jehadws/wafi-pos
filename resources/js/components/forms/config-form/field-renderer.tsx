@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/lib/i18n';
 import type { FormFieldDef, FormOption } from '@/types/forms';
 import type React from 'react';
+import { useRef } from 'react';
 import { parseValidation } from './parse-validation';
 import { getCustomComponent } from './registry';
 
@@ -110,6 +111,61 @@ function SelectField({
   );
 }
 
+/**
+ * `select-audio` — a select dropdown paired with a play button that previews
+ * the currently-selected audio file (URL stored as the option value).
+ */
+function AudioSelectField({
+  field,
+  value,
+  onChange,
+  disabled,
+  id,
+  hasError,
+}: Pick<FieldRendererProps, 'field' | 'value' | 'onChange' | 'disabled' | 'id'> & { hasError?: boolean }) {
+  const { t } = useTranslation();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const src = typeof value === 'string' && value ? value : null;
+
+  function handlePlay() {
+    if (!src) return;
+    if (!audioRef.current) {
+      audioRef.current = new Audio(src);
+    } else {
+      audioRef.current.src = src;
+    }
+    void audioRef.current.play();
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex-1">
+        <SelectField field={field} value={value} onChange={onChange} disabled={disabled} id={id} hasError={hasError} />
+      </div>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        aria-label={t('Preview audio')}
+        disabled={disabled || !src}
+        onClick={handlePlay}
+      >
+        {/* Simple play triangle via SVG — no icon library dependency */}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="size-4"
+          aria-hidden="true"
+        >
+          <path d="M8 5v14l11-7z" />
+        </svg>
+      </Button>
+    </div>
+  );
+}
+
 export function FieldRenderer({ field, value, onChange, error, disabled, id }: FieldRendererProps) {
   const { t } = useTranslation();
 
@@ -193,10 +249,16 @@ export function FieldRenderer({ field, value, onChange, error, disabled, id }: F
 
     case 'select':
     case 'search-select':
-    case 'select-audio':
       return (
         <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
           <SelectField field={field} value={value} onChange={onChange} disabled={isDisabled} id={id} hasError={Boolean(shownError)} />
+        </FormField>
+      );
+
+    case 'select-audio':
+      return (
+        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
+          <AudioSelectField field={field} value={value} onChange={onChange} disabled={isDisabled} id={id} hasError={Boolean(shownError)} />
         </FormField>
       );
 
