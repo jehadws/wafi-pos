@@ -115,21 +115,7 @@ export function CrudFormPage({
 
             <div className="flex items-center gap-2">
               {actionButtons}
-              <Button
-                type="button"
-                disabled={submitting || loading || !config}
-                onClick={() => {
-                  if (config) {
-                    void submit(
-                      // ConfigForm builds the payload; we trigger submit by
-                      // dispatching a submit event on the inner form.
-                      // The form fires onSubmit → calls our `submit` fn.
-                      {},
-                    );
-                  }
-                  document.getElementById('crud-form-page-inner')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-                }}
-              >
+              <Button type="submit" form="crud-form-page-inner" disabled={submitting || loading || !config}>
                 {submitting ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : null}
                 {submitLabel ?? t('Save')}
               </Button>
