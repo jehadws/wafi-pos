@@ -242,19 +242,7 @@ class CustomerCrud extends CrudService
               label: __('Email'),
               name: 'email',
               value: $entry->email ?? '',
-              validation: collect([
-                function ($attribute, $value, $fail) {
-                  if (strlen($value) > 0) {
-                    /**
-                     * let's check if $value is a
-                     * valid email using preg_match
-                     */
-                    if (preg_match('/^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,4}$/', $value) === 0) {
-                      return $fail(__("The \"$attribute\" provided is not valid."));
-                    }
-                  }
-                },
-              ])->filter()->toArray(),
+              validation: 'nullable|email',
               description: __('Provide the customer email.'),
             ),
             FormInput::text(
