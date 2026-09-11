@@ -275,7 +275,7 @@ export default function PosSystem() {
     }
 
     const taxes = product.product.tax_group?.taxes ?? [];
-    const rate = taxes.reduce((acc: number, tax) => acc + +(tax as any).rate, 0);
+    const rate = taxes.reduce((acc: number, tax) => acc + +tax.rate, 0);
 
     addToCart({
       order_id: null,
@@ -297,7 +297,7 @@ export default function PosSystem() {
       quantities: selectedUnit,
       source: {
         id: product.product.id,
-        category_id: (product.product as any).category_id,
+        category_id: product.product.category_id,
         tax_type: product.product.tax_type,
         tax_group: product.product.tax_group ?? null,
       },
@@ -379,7 +379,7 @@ export default function PosSystem() {
             discount={order.discount || 0}
             totalCoupons={order.total_coupons || 0}
             total={order.total || 0}
-            customer={order.customer as any}
+            customer={order.customer}
             orderType={order.type}
             shipping={order.shipping || 0}
             onOpenDiscountDialog={() => dialogs.discountKeypad.openKeypad()}
@@ -496,7 +496,7 @@ export default function PosSystem() {
           <CustomerDetailsDialog
             open={checkout.showSelectedCustomerDetailsDialog}
             onOpenChange={checkout.setShowSelectedCustomerDetailsDialog}
-            customer={order.customer as any}
+            customer={order.customer}
           />
         )}
 

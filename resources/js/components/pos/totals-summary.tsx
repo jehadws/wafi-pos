@@ -1,5 +1,6 @@
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import type { Customer } from '@/types/models/customer';
 import { formatCurrency } from '@/utils/format';
 import { ChevronRight, Percent, Tag, Truck, User } from 'lucide-react';
 

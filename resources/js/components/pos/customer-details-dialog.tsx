@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import type { Customer } from '@/types/models/customer';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -69,19 +70,19 @@ export function CustomerDetailsDialog({ open, onOpenChange, customer }: Customer
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                   <div className="bg-primary text-primary-foreground rounded-lg p-3 text-center">
                     <div className="text-sm font-medium">{t('Total Purchases')}</div>
-                    <div className="text-lg font-bold tabular-nums">{formatCurrency(+customer.purchases_amount)}</div>
+                    <div className="text-lg font-bold tabular-nums">{formatCurrency(+(customer.purchases_amount || 0))}</div>
                   </div>
                   <div className="bg-destructive text-destructive-foreground rounded-lg p-3 text-center">
                     <div className="text-sm font-medium">{t('Owed Amount')}</div>
-                    <div className="text-lg font-bold tabular-nums">{formatCurrency(+customer.owed_amount)}</div>
+                    <div className="text-lg font-bold tabular-nums">{formatCurrency(+(customer.owed_amount || 0))}</div>
                   </div>
                   <div className="bg-secondary text-secondary-foreground rounded-lg p-3 text-center">
                     <div className="text-sm font-medium">{t('Account Credit')}</div>
-                    <div className="text-lg font-bold tabular-nums">{formatCurrency(+customer.account_amount)}</div>
+                    <div className="text-lg font-bold tabular-nums">{formatCurrency(+(customer.account_amount || 0))}</div>
                   </div>
                   <div className="bg-primary/80 text-primary-foreground rounded-lg p-3 text-center">
                     <div className="text-sm font-medium">{t('Limit')}</div>
-                    <div className="text-lg font-bold tabular-nums">{formatCurrency(customer.credit_limit_amount)}</div>
+                    <div className="text-lg font-bold tabular-nums">{formatCurrency(+(customer.credit_limit_amount || 0))}</div>
                   </div>
                 </div>
               </div>
