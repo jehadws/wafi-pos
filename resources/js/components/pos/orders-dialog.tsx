@@ -1,16 +1,16 @@
+import { crudApi } from '@/api';
+import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { crudApi } from '@/api';
 import { Loader2, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import OrderCard from './order-card';
 
 interface Props {
@@ -132,27 +132,18 @@ export function OrdersDialog({ open, onOpenChange }: Props) {
                   <Pagination>
                     <PaginationContent>
                       <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => getOnHoldOrders(searchQuery, Math.max(onHoldOrders.page - 1, 1))}
-                        />
+                        <PaginationPrevious onClick={() => getOnHoldOrders(searchQuery, Math.max(onHoldOrders.page - 1, 1))} />
                       </PaginationItem>
                       {Array.from({ length: onHoldOrders.lastPage }, (_, i) => i + 1).map((num) => (
                         <PaginationItem key={num}>
-                          <PaginationLink
-                            onClick={() => setOnHoldOrders((prev) => ({ ...prev, page: num }))}
-                            isActive={num === onHoldOrders.page}
-                          >
+                          <PaginationLink onClick={() => setOnHoldOrders((prev) => ({ ...prev, page: num }))} isActive={num === onHoldOrders.page}>
                             {num}
                           </PaginationLink>
                         </PaginationItem>
                       ))}
 
                       <PaginationItem>
-                        <PaginationNext
-                          onClick={() =>
-                            getOnHoldOrders(searchQuery, Math.min(onHoldOrders.page + 1, onHoldOrders.lastPage))
-                          }
-                        />
+                        <PaginationNext onClick={() => getOnHoldOrders(searchQuery, Math.min(onHoldOrders.page + 1, onHoldOrders.lastPage))} />
                       </PaginationItem>
                     </PaginationContent>
                   </Pagination>
@@ -190,27 +181,18 @@ export function OrdersDialog({ open, onOpenChange }: Props) {
                   <Pagination>
                     <PaginationContent>
                       <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => getUnpaidOrders(searchQuery, Math.max(unpaidOrders.page - 1, 1))}
-                        />
+                        <PaginationPrevious onClick={() => getUnpaidOrders(searchQuery, Math.max(unpaidOrders.page - 1, 1))} />
                       </PaginationItem>
                       {Array.from({ length: unpaidOrders.lastPage }, (_, i) => i + 1).map((num) => (
                         <PaginationItem key={num}>
-                          <PaginationLink
-                            onClick={() => setUnpaidOrders((prev) => ({ ...prev, page: num }))}
-                            isActive={num === unpaidOrders.page}
-                          >
+                          <PaginationLink onClick={() => setUnpaidOrders((prev) => ({ ...prev, page: num }))} isActive={num === unpaidOrders.page}>
                             {num}
                           </PaginationLink>
                         </PaginationItem>
                       ))}
 
                       <PaginationItem>
-                        <PaginationNext
-                          onClick={() =>
-                            getUnpaidOrders(searchQuery, Math.min(unpaidOrders.page + 1, unpaidOrders.lastPage))
-                          }
-                        />
+                        <PaginationNext onClick={() => getUnpaidOrders(searchQuery, Math.min(unpaidOrders.page + 1, unpaidOrders.lastPage))} />
                       </PaginationItem>
                     </PaginationContent>
                   </Pagination>
@@ -248,9 +230,7 @@ export function OrdersDialog({ open, onOpenChange }: Props) {
                   <Pagination>
                     <PaginationContent>
                       <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => getPartiallyPaidOrders(searchQuery, Math.max(partiallyPaidOrders.page - 1, 1))}
-                        />
+                        <PaginationPrevious onClick={() => getPartiallyPaidOrders(searchQuery, Math.max(partiallyPaidOrders.page - 1, 1))} />
                       </PaginationItem>
                       {Array.from({ length: partiallyPaidOrders.lastPage }, (_, i) => i + 1).map((num) => (
                         <PaginationItem key={num}>
@@ -265,12 +245,7 @@ export function OrdersDialog({ open, onOpenChange }: Props) {
 
                       <PaginationItem>
                         <PaginationNext
-                          onClick={() =>
-                            getPartiallyPaidOrders(
-                              searchQuery,
-                              Math.min(partiallyPaidOrders.page + 1, partiallyPaidOrders.lastPage),
-                            )
-                          }
+                          onClick={() => getPartiallyPaidOrders(searchQuery, Math.min(partiallyPaidOrders.page + 1, partiallyPaidOrders.lastPage))}
                         />
                       </PaginationItem>
                     </PaginationContent>

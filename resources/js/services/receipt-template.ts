@@ -11,28 +11,28 @@ import { formatCurrency, formatDate } from '@/utils/format';
 
 // Local type aliases (kept minimal — the real types live in interfaces/)
 interface TOrder {
-    code: string;
-    created_at: string;
-    type?: string;
-    customer_first_name?: string;
-    customer_last_name?: string;
-    user_username?: string;
-    subtotal: number;
-    discount: number;
-    tax_value: number;
-    total: number;
-    tendered: number;
-    change: number;
+  code: string;
+  created_at: string;
+  type?: string;
+  customer_first_name?: string;
+  customer_last_name?: string;
+  user_username?: string;
+  subtotal: number;
+  discount: number;
+  tax_value: number;
+  total: number;
+  tendered: number;
+  change: number;
 }
 
 interface TOrderProduct {
-    name: string;
-    price_with_tax: number;
-    price_without_tax?: number;
-    unit_name?: string;
-    quantity: number;
-    total_price_with_tax: number;
-    total_price_without_tax?: number;
+  name: string;
+  price_with_tax: number;
+  price_without_tax?: number;
+  unit_name?: string;
+  quantity: number;
+  total_price_with_tax: number;
+  total_price_without_tax?: number;
 }
 
 /**
@@ -43,12 +43,8 @@ interface TOrderProduct {
  *                      lines match what was displayed in the cart. Defaults
  *                      to true (the historical behavior).
  */
-export function generateReceiptHtml(
-    order: TOrder,
-    orderProducts: TOrderProduct[],
-    priceWithTax: boolean = true,
-): string {
-    return `
+export function generateReceiptHtml(order: TOrder, orderProducts: TOrderProduct[], priceWithTax: boolean = true): string {
+  return `
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -136,16 +132,24 @@ export function generateReceiptHtml(
         <span class="info-label">Type:</span>
         <span>${order.type ? order.type.toUpperCase() : 'SALE'}</span>
       </div>
-      ${order.customer_first_name ? `
+      ${
+        order.customer_first_name
+          ? `
       <div class="info-row">
         <span class="info-label">Customer:</span>
         <span>${order.customer_first_name} ${order.customer_last_name || ''}</span>
-      </div>` : ''}
-      ${order.user_username ? `
+      </div>`
+          : ''
+      }
+      ${
+        order.user_username
+          ? `
       <div class="info-row">
         <span class="info-label">Cashier:</span>
         <span>${order.user_username}</span>
-      </div>` : ''}
+      </div>`
+          : ''
+      }
 
       <hr class="divider">
 
@@ -159,14 +163,11 @@ export function generateReceiptHtml(
           </tr>
         </thead>
         <tbody>
-          ${orderProducts.map((item) => {
-            const unitPrice = priceWithTax
-                ? item.price_with_tax
-                : (item.price_without_tax ?? item.price_with_tax);
-            const lineTotal = priceWithTax
-                ? item.total_price_with_tax
-                : (item.total_price_without_tax ?? item.total_price_with_tax);
-            return `
+          ${orderProducts
+            .map((item) => {
+              const unitPrice = priceWithTax ? item.price_with_tax : (item.price_without_tax ?? item.price_with_tax);
+              const lineTotal = priceWithTax ? item.total_price_with_tax : (item.total_price_without_tax ?? item.total_price_with_tax);
+              return `
           <tr>
             <td class="col-product">
               <div class="item-name">${item.name}</div>
@@ -175,7 +176,8 @@ export function generateReceiptHtml(
             <td class="col-qty">${item.quantity}</td>
             <td class="col-total">${formatCurrency(lineTotal)}</td>
           </tr>`;
-          }).join('')}
+            })
+            .join('')}
         </tbody>
       </table>
 
@@ -187,16 +189,24 @@ export function generateReceiptHtml(
           <span>Subtotal</span>
           <span>${formatCurrency(order.subtotal)}</span>
         </div>
-        ${order.discount > 0 ? `
+        ${
+          order.discount > 0
+            ? `
         <div class="summary-row discount">
           <span>Discount</span>
           <span>-${formatCurrency(order.discount)}</span>
-        </div>` : ''}
-        ${order.tax_value > 0 ? `
+        </div>`
+            : ''
+        }
+        ${
+          order.tax_value > 0
+            ? `
         <div class="summary-row">
           <span>Tax</span>
           <span>${formatCurrency(order.tax_value)}</span>
-        </div>` : ''}
+        </div>`
+            : ''
+        }
       </div>
 
       <hr class="divider-double">

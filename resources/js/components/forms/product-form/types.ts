@@ -1,6 +1,6 @@
-import { InertiaFormProps } from "@inertiajs/react"
+import { InertiaFormProps } from '@inertiajs/react';
 
-export type Tab = "identification" | "groups" | "images" | "units" | "taxes" | "expiracy"
+export type Tab = 'identification' | 'groups' | 'images' | 'units' | 'taxes' | 'expiracy';
 export type ProductFormData = {
   // name: string
   // expiracy: {
@@ -44,46 +44,46 @@ export type ProductFormData = {
   //   }[]
   // }
 
-  name: string,
-  expiracy_expires: boolean,
-  expiracy_on_expiration: 'allow_sales' | 'prevent_sales',
-  groups_product_subitems: [],
-  identification_barcode: string,
-  identification_barcode_type: string,
-  identification_category_id: number | null,
-  identification_description: string | null,
-  identification_sku: string,
-  identification_status: 'available' | 'unavailable',
-  identification_stock_management: 'enabled' | 'disabled',
-  identification_type: 'materialized' | 'dematerialized' | 'grouped',
-  images: string[],
-  taxes_tax_group_id: number | null,
-  taxes_tax_type: 'inclusive' | 'exclusive',
-  units_accurate_tracking: boolean,
-  units_auto_cogs: boolean,
-  units_unit_group: number,
+  name: string;
+  expiracy_expires: boolean;
+  expiracy_on_expiration: 'allow_sales' | 'prevent_sales';
+  groups_product_subitems: [];
+  identification_barcode: string;
+  identification_barcode_type: string;
+  identification_category_id: number | null;
+  identification_description: string | null;
+  identification_sku: string;
+  identification_status: 'available' | 'unavailable';
+  identification_stock_management: 'enabled' | 'disabled';
+  identification_type: 'materialized' | 'dematerialized' | 'grouped';
+  images: string[];
+  taxes_tax_group_id: number | null;
+  taxes_tax_type: 'inclusive' | 'exclusive';
+  units_accurate_tracking: boolean;
+  units_auto_cogs: boolean;
+  units_unit_group: number;
   units_selling_group: {
-    cogs: number
-    convert_unit_id: string
-    id?: number
-    low_quantity: number
-    preview_url: string
-    quantity: number
-    sale_price_edit: string
-    stock_alert_enabled: boolean
-    unit_id: string
-    visible: boolean
-    wholesale_price_edit: string
-  }[],
+    cogs: number;
+    convert_unit_id: string;
+    id?: number;
+    low_quantity: number;
+    preview_url: string;
+    quantity: number;
+    sale_price_edit: string;
+    stock_alert_enabled: boolean;
+    unit_id: string;
+    visible: boolean;
+    wholesale_price_edit: string;
+  }[];
 
   // tabs errors
-  identification_error: string | null,
-  groups_error: string | null,
-  images_error: string | null,
-  units_error: string | null,
-  taxes_error: string | null,
-  expiracy_error: string | null
-}
+  identification_error: string | null;
+  groups_error: string | null;
+  images_error: string | null;
+  units_error: string | null;
+  taxes_error: string | null;
+  expiracy_error: string | null;
+};
 
 export const defaultFormData: ProductFormData = {
   name: '',
@@ -112,7 +112,7 @@ export const defaultFormData: ProductFormData = {
   images_error: null,
   units_error: null,
   taxes_error: null,
-  expiracy_error: null
+  expiracy_error: null,
 };
 
 export interface IdentificationTabProps {
@@ -140,4 +140,3 @@ export interface ImagesTabProps {
   handleInputChange: (name: keyof ProductFormData, value: string | number | number[] | boolean) => void;
   handleFileChange?: (files: File[]) => void;
 }
-

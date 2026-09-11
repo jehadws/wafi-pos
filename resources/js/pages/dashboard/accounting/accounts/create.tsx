@@ -16,199 +16,191 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 export default function CreateProductPage() {
-    const { t } = useTranslation();
-    const { category_identifiers } = usePage<{ category_identifiers: { label: string; value: string }[] }>().props;
-    const [subCategories, setSubCategories] = useState<{ label: string; value: number }[]>([]);
+  const { t } = useTranslation();
+  const { category_identifiers } = usePage<{ category_identifiers: { label: string; value: string }[] }>().props;
+  const [subCategories, setSubCategories] = useState<{ label: string; value: number }[]>([]);
 
-    const breadcrumbs = [
-        { title: t('Dashboard'), href: '/dashboard' },
-        { title: t('Accounting'), href: '/dashboard/accounting' },
-        { title: t('Accounts'), href: '/dashboard/accounting/accounts' },
-        { title: t('Create Account'), href: '/dashboard/accounting/accounts/create' },
-    ];
-    const form = useForm({
-        name: '',
-        general: {
-            account: '',
-            category_identifier: '',
-            description: '',
-            sub_category_id: '',
-        },
-    });
-    const [isSubmitting, setIsSubmitting] = useState(false);
+  const breadcrumbs = [
+    { title: t('Dashboard'), href: '/dashboard' },
+    { title: t('Accounting'), href: '/dashboard/accounting' },
+    { title: t('Accounts'), href: '/dashboard/accounting/accounts' },
+    { title: t('Create Account'), href: '/dashboard/accounting/accounts/create' },
+  ];
+  const form = useForm({
+    name: '',
+    general: {
+      account: '',
+      category_identifier: '',
+      description: '',
+      sub_category_id: '',
+    },
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const subCategoryField: FormFieldDef = {
-        name: 'sub_category_id',
-        label: t('Sub Account'),
-        type: 'search-select',
-        component: 'sbCrudForm',
-        namespace: 'sb.transactions-accounts',
-        options: subCategories,
-        description: t('Assign to a sub category.'),
-    };
+  const subCategoryField: FormFieldDef = {
+    name: 'sub_category_id',
+    label: t('Sub Account'),
+    type: 'search-select',
+    component: 'sbCrudForm',
+    namespace: 'sb.transactions-accounts',
+    options: subCategories,
+    description: t('Assign to a sub category.'),
+  };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-        if (!validateForm() || isSubmitting) {
-            return;
+    if (!validateForm() || isSubmitting) {
+      return;
+    }
+    setIsSubmitting(true);
+
+    try {
+      const res = await transactionsApi.createAccount({ ...form.data });
+      toast.success(t('Successfully saved'));
+      if (res?.redirect) router.visit(res.redirect);
+    } catch (err) {
+      const errors = extractValidationErrors(err);
+      form.clearErrors();
+      for (const key in errors) {
+        const flatKey = key.replace(/\./g, '_') as keyof typeof form.data;
+        if (flatKey in form.data) {
+          form.setError(flatKey, errors[key]);
         }
-        setIsSubmitting(true);
+      }
+      toast.error(t('Please fix the validation errors'));
+      console.error('Validation errors:', errors);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-        try {
-            const res = await transactionsApi.createAccount({ ...form.data });
-            toast.success(t('Successfully saved'));
-            if (res?.redirect) router.visit(res.redirect);
-        } catch (err) {
-            const errors = extractValidationErrors(err);
-            form.clearErrors();
-            for (const key in errors) {
-                const flatKey = key.replace(/\./g, '_') as keyof typeof form.data;
-                if (flatKey in form.data) {
-                    form.setError(flatKey, errors[key]);
-                }
-            }
-            toast.error(t('Please fix the validation errors'));
-            console.error('Validation errors:', errors);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+  const validateForm = () => {
+    let isValid = true;
+    form.clearErrors();
 
-    const validateForm = () => {
-        let isValid = true;
-        form.clearErrors();
+    if (!form.data.name.trim()) {
+      form.setError('name', t('First name is required'));
+      isValid = false;
+    }
 
-        if (!form.data.name.trim()) {
-            form.setError('name', t('First name is required'));
-            isValid = false;
-        }
+    return isValid;
+  };
 
-        return isValid;
-    };
+  const getSubAccounts = async (identifier: string) => {
+    setSubCategories([]);
+    form.setData('general.sub_category_id', '');
+    try {
+      const data = await transactionsApi.getCategoryIdentifier(identifier);
+      setSubCategories(data);
+    } catch (error) {
+      console.error('Error fetching sub accounts:', error);
+    }
+  };
 
-    const getSubAccounts = async (identifier: string) => {
-        setSubCategories([]);
-        form.setData('general.sub_category_id', '');
-        try {
-            const data = await transactionsApi.getCategoryIdentifier(identifier);
-            setSubCategories(data);
-        } catch (error) {
-            console.error('Error fetching sub accounts:', error);
-        }
-    };
+  return (
+    <AppLayout breadcrumbs={breadcrumbs}>
+      <Head title={`${t('Create a new Account')}`} />
 
-    return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`${t('Create a new Account')}`} />
+      <form onSubmit={handleSubmit}>
+        <div className="bg-background flex h-full min-h-screen flex-1 flex-col gap-4 p-4">
+          <FormHeader
+            title={t('Create a new Account')}
+            description={t('Register a new Account and save it.')}
+            onCancel={() => window.history.back()}
+            onSave={() => {}}
+            form={{ ...form, processing: isSubmitting || form.processing }}
+          />
 
-            <form onSubmit={handleSubmit}>
-                <div className="bg-background flex h-full min-h-screen flex-1 flex-col gap-4 p-4">
-                    <FormHeader
-                        title={t('Create a new Account')}
-                        description={t('Register a new Account and save it.')}
-                        onCancel={() => window.history.back()}
-                        onSave={() => {}}
-                        form={{ ...form, processing: isSubmitting || form.processing }}
-                    />
+          {/* Product Name */}
+          <FormField label={t('Name')} error={form.errors.name} description={t('Provide a name to the resource.')} className="mb-2" required>
+            <Input
+              id="name"
+              name="name"
+              onChange={(e) => form.setData('name', e.target.value)}
+              className={cn(form.errors.name && 'border-destructive')}
+            />
+          </FormField>
 
-                    {/* Product Name */}
-                    <FormField
-                        label={t('Name')}
-                        error={form.errors.name}
-                        description={t('Provide a name to the resource.')}
-                        className="mb-2"
-                        required
-                    >
-                        <Input
-                            id="name"
-                            name="name"
-                            onChange={(e) => form.setData('name', e.target.value)}
-                            className={cn(form.errors.name && 'border-destructive')}
-                        />
-                    </FormField>
+          {/* Tabs */}
+          <Tabs defaultValue="general" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="general">{t('General')}</TabsTrigger>
+            </TabsList>
 
-                    {/* Tabs */}
-                    <Tabs defaultValue="general" className="w-full">
-                        <TabsList className="grid w-full grid-cols-3">
-                            <TabsTrigger value="general">{t('General')}</TabsTrigger>
-                        </TabsList>
+            <TabsContent value="general" className="mt-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <FormField
+                  label={t('Main Account')}
+                  htmlFor="general_category_identifier"
+                  description={t('Select the category of this account.')}
+                  error={form.errors?.['general.category_identifier']}
+                  required
+                >
+                  <Select
+                    value={form.data.general.category_identifier}
+                    onValueChange={(value) => {
+                      form.setData('general.category_identifier', value);
+                      getSubAccounts(value);
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={t('Select an option')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="null">{t('Select an option')}</SelectItem>
+                      {category_identifiers?.map((category) => (
+                        <SelectItem key={category.value} value={category.value}>
+                          {category.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
 
-                        <TabsContent value="general" className="mt-6">
-                            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                                <FormField
-                                    label={t('Main Account')}
-                                    htmlFor="general_category_identifier"
-                                    description={t('Select the category of this account.')}
-                                    error={form.errors?.['general.category_identifier']}
-                                    required
-                                >
-                                    <Select
-                                        value={form.data.general.category_identifier}
-                                        onValueChange={(value) => {
-                                            form.setData('general.category_identifier', value);
-                                            getSubAccounts(value);
-                                        }}
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder={t('Select an option')} />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="null">{t('Select an option')}</SelectItem>
-                                            {category_identifiers?.map((category) => (
-                                                <SelectItem key={category.value} value={category.value}>
-                                                    {category.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </FormField>
-
-                                <FormField
-                                    label={t('Sub Account')}
-                                    htmlFor="general_sub_category_id"
-                                    description={t('Assign to a sub category.')}
-                                    error={form.errors?.['general.sub_category_id']}
-                                >
-                                    <SbCrudForm
-                                        field={subCategoryField}
-                                        value={form.data.general.sub_category_id}
-                                        onChange={(value) => form.setData('general.sub_category_id', value != null ? String(value) : '')}
-                                        error={form.errors?.['general.sub_category_id']}
-                                        id="general_sub_category_id"
-                                    />
-                                </FormField>
-                                <FormField
-                                    label={t('Account')}
-                                    htmlFor="general_last_name"
-                                    description={t(
-                                        'Provide the accounting number for this category. If left empty, it will be generated automatically.',
-                                    )}
-                                    error={form.errors?.['general.account']}
-                                >
-                                    <Input
-                                        id="general_account"
-                                        name="general_account"
-                                        value={form.data.general.account}
-                                        onChange={(e) => form.setData('general.account', e.target.value)}
-                                        className={form.errors?.['general.account'] ? 'border-red-500' : ''}
-                                    />
-                                </FormField>
-                                <FormField label={t('Description')} htmlFor="general_description" error={form.errors?.['general.description'] || ''}>
-                                    <Textarea
-                                        id="general_description"
-                                        name="general_description"
-                                        value={form.data.general.description}
-                                        onChange={(e) => form.setData('general.description', e.target.value)}
-                                        className={form.errors?.['general.description'] ? 'border-red-500' : ''}
-                                    />
-                                </FormField>
-                            </div>
-                        </TabsContent>
-                    </Tabs>
-                </div>
-            </form>
-        </AppLayout>
-    );
+                <FormField
+                  label={t('Sub Account')}
+                  htmlFor="general_sub_category_id"
+                  description={t('Assign to a sub category.')}
+                  error={form.errors?.['general.sub_category_id']}
+                >
+                  <SbCrudForm
+                    field={subCategoryField}
+                    value={form.data.general.sub_category_id}
+                    onChange={(value) => form.setData('general.sub_category_id', value != null ? String(value) : '')}
+                    error={form.errors?.['general.sub_category_id']}
+                    id="general_sub_category_id"
+                  />
+                </FormField>
+                <FormField
+                  label={t('Account')}
+                  htmlFor="general_last_name"
+                  description={t('Provide the accounting number for this category. If left empty, it will be generated automatically.')}
+                  error={form.errors?.['general.account']}
+                >
+                  <Input
+                    id="general_account"
+                    name="general_account"
+                    value={form.data.general.account}
+                    onChange={(e) => form.setData('general.account', e.target.value)}
+                    className={form.errors?.['general.account'] ? 'border-red-500' : ''}
+                  />
+                </FormField>
+                <FormField label={t('Description')} htmlFor="general_description" error={form.errors?.['general.description'] || ''}>
+                  <Textarea
+                    id="general_description"
+                    name="general_description"
+                    value={form.data.general.description}
+                    onChange={(e) => form.setData('general.description', e.target.value)}
+                    className={form.errors?.['general.description'] ? 'border-red-500' : ''}
+                  />
+                </FormField>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </form>
+    </AppLayout>
+  );
 }

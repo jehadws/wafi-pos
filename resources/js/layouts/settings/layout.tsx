@@ -1,5 +1,5 @@
-import Heading from '@/components/ui/heading';
 import { Button } from '@/components/ui/button';
+import Heading from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -8,63 +8,63 @@ import { Link } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
 
-    const sidebarNavItems: NavItem[] = [
-        {
-            title: t('Profile'),
-            href: '/settings/profile',
-            icon: null,
-        },
-        {
-            title: t('Password'),
-            href: '/settings/password',
-            icon: null,
-        },
-        {
-            title: t('Appearance'),
-            href: '/settings/appearance',
-            icon: null,
-        },
-    ];
-    // When server-side rendering, we only render the layout on the client...
-    if (typeof window === 'undefined') {
-        return null;
-    }
+  const sidebarNavItems: NavItem[] = [
+    {
+      title: t('Profile'),
+      href: '/settings/profile',
+      icon: null,
+    },
+    {
+      title: t('Password'),
+      href: '/settings/password',
+      icon: null,
+    },
+    {
+      title: t('Appearance'),
+      href: '/settings/appearance',
+      icon: null,
+    },
+  ];
+  // When server-side rendering, we only render the layout on the client...
+  if (typeof window === 'undefined') {
+    return null;
+  }
 
-    const currentPath = window.location.pathname;
+  const currentPath = window.location.pathname;
 
-    return (
-        <div className="px-4 py-6">
-            <Heading title={t('Settings')} description={t('Manage your profile and account settings')} />
+  return (
+    <div className="px-4 py-6">
+      <Heading title={t('Settings')} description={t('Manage your profile and account settings')} />
 
-            <div className="flex flex-col gap-y-8 lg:flex-row lg:gap-x-12">
-                <aside className="w-full max-w-xl lg:w-48">
-                    <nav className="flex flex-col gap-y-1">
-                        {sidebarNavItems.map((item, index) => (
-                            <Button
-                                key={`${item.href}-${index}`}
-                                size="sm"
-                                variant="ghost"
-                                asChild
-                                className={cn('w-full justify-start', {
-                                    'bg-muted': currentPath === item.href,
-                                })}
-                            >
-                                <Link href={item.href} prefetch>
-                                    {item.title}
-                                </Link>
-                            </Button>
-                        ))}
-                    </nav>
-                </aside>
+      <div className="flex flex-col gap-y-8 lg:flex-row lg:gap-x-12">
+        <aside className="w-full max-w-xl lg:w-48">
+          <nav className="flex flex-col gap-y-1">
+            {sidebarNavItems.map((item, index) => (
+              <Button
+                key={`${item.href}-${index}`}
+                size="sm"
+                variant="ghost"
+                asChild
+                className={cn('w-full justify-start', {
+                  'bg-muted': currentPath === item.href,
+                })}
+              >
+                <Link href={item.href} prefetch>
+                  {item.title}
+                </Link>
+              </Button>
+            ))}
+          </nav>
+        </aside>
 
-                <Separator className="my-6 md:hidden" />
+        <Separator className="my-6 md:hidden" />
 
-                <div className="flex-1 md:max-w-2xl">
-                    <section className="max-w-xl space-y-12">{children}</section>
-                </div>
-            </div>
+        <div className="flex-1 md:max-w-2xl">
+          <section className="max-w-xl space-y-12">{children}</section>
         </div>
-    );
+      </div>
+    </div>
+  );
 }

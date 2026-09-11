@@ -1,21 +1,21 @@
 export interface Product {
-    id?: number;
-    name?: string;
-    stock_management?: 'enabled' | 'disabled';
-    unit_id?: number;
-    product_id?: number;
-    discount_type?: string;
-    discount?: number;
-    discount_percentage?: number;
-    total_price?: number;
-    mode?: 'normal' | 'wholesale' | 'custom';
-    unit_quantity_id?: number;
-    unit_quantities?: Array<{
-        quantity: number;
-        sale_price: number;
-        unit?: {
-            name: string;
-        };
-    }>;
-    preview_url?: string;
+  id?: number;
+  name?: string;
+  stock_management?: 'enabled' | 'disabled';
+  unit_id?: number;
+  product_id?: number;
+  discount_type?: string;
+  discount?: number;
+  discount_percentage?: number;
+  total_price?: number;
+  mode?: 'normal' | 'wholesale' | 'custom';
+  unit_quantity_id?: number;
+  unit_quantities?: Array<{
+    quantity: number;
+    sale_price: number;
+    unit?: {
+      name: string;
+    };
+  }>;
+  preview_url?: string;
 }

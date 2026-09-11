@@ -1,17 +1,17 @@
+import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { POS_OPTION_KEYS, isPriceWithTax } from '@/constants/pos-options';
 import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import { submitAndFinalizeOrder } from '@/services/order-finalize';
 import { Order } from '@/types/models/order';
 import { PaymentType } from '@/types/models/payment-type';
 import { formatCurrency } from '@/utils/format';
 import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { submitAndFinalizeOrder } from '@/services/order-finalize';
-import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
 import { NumberPad } from './number-pad';
 
 interface PaymentGatewayProps {
@@ -28,12 +28,7 @@ interface PaymentGatewayProps {
  */
 function StatCard({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div
-      className={cn(
-        'rounded-lg border p-3',
-        highlight ? 'border-primary/30 bg-primary/10' : 'border-border bg-muted/40',
-      )}
-    >
+    <div className={cn('rounded-lg border p-3', highlight ? 'border-primary/30 bg-primary/10' : 'border-border bg-muted/40')}>
       <span className="text-muted-foreground block text-xs font-medium">{label}</span>
       <span className="text-foreground mt-1 block text-lg leading-none font-bold tabular-nums">{value}</span>
     </div>
@@ -49,17 +44,7 @@ function StatCard({ label, value, highlight = false }: { label: string; value: s
  * exclusive tabs, which hid every added payment until the user switched tabs.
  */
 export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, useBillingAddress, resetCart }: PaymentGatewayProps) {
-  const {
-    order,
-    products,
-    submitOrder,
-    addPayment,
-    removePayment,
-    options,
-    paymentsType,
-    selectedPaymentType,
-    setPaymentActive,
-  } = usePOS();
+  const { order, products, submitOrder, addPayment, removePayment, options, paymentsType, selectedPaymentType, setPaymentActive } = usePOS();
   const { t } = useTranslation();
   const [screenValue, setScreenValue] = useState('0.00');
   const [rawValue, setRawValue] = useState(0);
@@ -82,7 +67,10 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
     const raw = options[POS_OPTION_KEYS.amountShortcut];
     if (!raw) return [];
     const str = typeof raw === 'string' ? raw : String(raw);
-    return str.split(',').map((s: string) => parseFloat(s.trim())).filter((n: number) => !isNaN(n) && n > 0);
+    return str
+      .split(',')
+      .map((s: string) => parseFloat(s.trim()))
+      .filter((n: number) => !isNaN(n) && n > 0);
   })();
 
   // Quick amounts derived from the outstanding balance — exact due first,
@@ -129,8 +117,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
 
   // The chip flagged active in the store, with fallbacks so the keypad works
   // the moment the sheet opens (types load async; the first is pre-selected).
-  const selectedMethod: PaymentType | null =
-    paymentsType.find((p) => p.selected) ?? selectedPaymentType ?? paymentsType[0] ?? null;
+  const selectedMethod: PaymentType | null = paymentsType.find((p) => p.selected) ?? selectedPaymentType ?? paymentsType[0] ?? null;
 
   const handleNumberInput = (digit: string) => {
     if (!/^\d$/.test(digit)) return;
@@ -242,7 +229,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
         side="right"
         className={cn(
           'bg-card flex h-full flex-col gap-0 overflow-hidden p-0',
-          'rounded-ss-2xl rounded-es-2xl shadow-2xl border-s border-border/80',
+          'border-border/80 rounded-ss-2xl rounded-es-2xl border-s shadow-2xl',
           'w-full sm:w-[85%] sm:max-w-none lg:w-[42%] lg:min-w-[420px]',
         )}
       >
@@ -269,17 +256,13 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
             <div className="border-border bg-muted/40 rounded-xl border p-4">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground font-medium">{t('Amount')} :</span>
-                <span className="text-foreground text-3xl font-bold tabular-nums">
-                  {formatCurrency(Number.parseFloat(screenValue) || 0)}
-                </span>
+                <span className="text-foreground text-3xl font-bold tabular-nums">{formatCurrency(Number.parseFloat(screenValue) || 0)}</span>
               </div>
             </div>
 
             {quickAmounts.length > 0 && (
               <div className="space-y-1.5">
-                <span className="text-muted-foreground block text-xs font-semibold tracking-wide uppercase">
-                  {t('Quick Amounts')}
-                </span>
+                <span className="text-muted-foreground block text-xs font-semibold tracking-wide uppercase">{t('Quick Amounts')}</span>
                 <div className="flex flex-wrap gap-2">
                   {quickAmounts.map(({ value, isExact }) => (
                     <Button
@@ -287,18 +270,14 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
                       variant="outline"
                       size="sm"
                       className={cn(
-                        'bg-card min-h-11 rounded-full font-semibold shadow-2xs active:scale-95 transition-all',
+                        'bg-card min-h-11 rounded-full font-semibold shadow-2xs transition-all active:scale-95',
                         isExact
                           ? 'border-primary/50 bg-primary/10 text-primary hover:bg-primary/20 hover:border-primary'
                           : 'border-border text-foreground hover:border-primary/40 hover:bg-muted/60',
                       )}
                       onClick={() => handleAmountShortcut(value)}
                     >
-                      {isExact && (
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-primary me-1">
-                          {t('Exact')}
-                        </span>
-                      )}
+                      {isExact && <span className="text-primary me-1 text-[11px] font-bold tracking-wider uppercase">{t('Exact')}</span>}
                       <span>{formatCurrency(value)}</span>
                     </Button>
                   ))}
@@ -308,9 +287,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
 
             {/* Method chips — the typed amount is added under this method */}
             <div className="space-y-2">
-              <span className="text-muted-foreground block text-xs font-semibold tracking-wide uppercase">
-                {t('Payment Method')}
-              </span>
+              <span className="text-muted-foreground block text-xs font-semibold tracking-wide uppercase">{t('Payment Method')}</span>
               <div className="flex flex-wrap gap-2">
                 {paymentsType.map((method: PaymentType) => {
                   const active = selectedMethod?.identifier === method.identifier;
@@ -320,7 +297,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
                       type="button"
                       onClick={() => setPaymentActive(method)}
                       className={cn(
-                        'active:scale-95 inline-flex min-h-[48px] h-12 items-center justify-center rounded-xl border px-5 py-2 text-sm font-semibold transition-all',
+                        'inline-flex h-12 min-h-[48px] items-center justify-center rounded-xl border px-5 py-2 text-sm font-semibold transition-all active:scale-95',
                         active
                           ? 'border-primary bg-primary text-primary-foreground shadow-sm'
                           : 'bg-card border-border text-foreground hover:border-primary/40 hover:bg-muted/60',
@@ -333,11 +310,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
               </div>
             </div>
 
-            <NumberPad
-              onNumberClick={handleNumberInput}
-              onBackspace={handleBackspace}
-              onConfirm={handleConfirmPayment}
-            />
+            <NumberPad onNumberClick={handleNumberInput} onBackspace={handleBackspace} onConfirm={handleConfirmPayment} />
 
             {/* Added payments — always visible, no tab switching */}
             <div className="space-y-2">
@@ -375,7 +348,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-destructive/70 hover:bg-destructive/10 hover:text-destructive active:scale-95 h-8 w-8 shrink-0"
+                          className="text-destructive/70 hover:bg-destructive/10 hover:text-destructive h-8 w-8 shrink-0 active:scale-95"
                           disabled={attached}
                           title={attached ? t('Unable to delete a payment attached to the order.') : undefined}
                           aria-label={`${t('Remove')} ${payment.label}`}
@@ -396,7 +369,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
             left with an empty bar. Policy limits (allowPartial/allowUnpaid)
             are enforced by the submission pipeline with a descriptive toast
             instead of silently hiding the button. */}
-        <div className="border-border bg-card/95 backdrop-blur-xs flex shrink-0 items-center justify-end gap-3 border-t p-4">
+        <div className="border-border bg-card/95 flex shrink-0 items-center justify-end gap-3 border-t p-4 backdrop-blur-xs">
           {due > 0 && (
             <span className="text-muted-foreground me-auto text-sm tabular-nums">
               {t('Remaining')}: <span className="text-foreground font-semibold">{formatCurrency(due)}</span>
@@ -404,11 +377,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
           )}
 
           {paid === 0 && unpaidAllowed && (
-            <Button
-              variant="outline"
-              onClick={handleSaveAsUnpaid}
-              className="h-12 px-6 text-sm font-semibold"
-            >
+            <Button variant="outline" onClick={handleSaveAsUnpaid} className="h-12 px-6 text-sm font-semibold">
               {t('Unpaid')}
             </Button>
           )}

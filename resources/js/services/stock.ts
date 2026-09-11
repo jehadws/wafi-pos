@@ -5,9 +5,9 @@
  */
 
 export interface StockValidationResult {
-    allowed: boolean;
-    available: number;
-    reason?: string;
+  allowed: boolean;
+  available: number;
+  reason?: string;
 }
 
 /**
@@ -18,34 +18,34 @@ export interface StockValidationResult {
  * @param currentCartQuantity - Quantity already present in cart (for new additions).
  */
 export function validateStockAvailability(
-    availableQuantity: number | null | undefined,
-    requestedQuantity: number,
-    currentCartQuantity = 0,
+  availableQuantity: number | null | undefined,
+  requestedQuantity: number,
+  currentCartQuantity = 0,
 ): StockValidationResult {
-    if (requestedQuantity <= 0) {
-        return { allowed: false, available: 0, reason: 'Quantity must be greater than zero.' };
-    }
+  if (requestedQuantity <= 0) {
+    return { allowed: false, available: 0, reason: 'Quantity must be greater than zero.' };
+  }
 
-    // Unlimited stock if availableQuantity is explicitly null/undefined (e.g. non-stock tracked service)
-    if (availableQuantity === null || availableQuantity === undefined) {
-        return { allowed: true, available: Infinity };
-    }
+  // Unlimited stock if availableQuantity is explicitly null/undefined (e.g. non-stock tracked service)
+  if (availableQuantity === null || availableQuantity === undefined) {
+    return { allowed: true, available: Infinity };
+  }
 
-    const available = Number(availableQuantity);
+  const available = Number(availableQuantity);
 
-    if (available <= 0) {
-        return { allowed: false, available: 0, reason: 'Product is out of stock.' };
-    }
+  if (available <= 0) {
+    return { allowed: false, available: 0, reason: 'Product is out of stock.' };
+  }
 
-    const totalNeeded = currentCartQuantity + requestedQuantity;
-    if (totalNeeded > available) {
-        const remaining = Math.max(0, available - currentCartQuantity);
-        return {
-            allowed: false,
-            available,
-            reason: `Not enough stock. Available: ${remaining} (in cart: ${currentCartQuantity}, total stock: ${available})`,
-        };
-    }
+  const totalNeeded = currentCartQuantity + requestedQuantity;
+  if (totalNeeded > available) {
+    const remaining = Math.max(0, available - currentCartQuantity);
+    return {
+      allowed: false,
+      available,
+      reason: `Not enough stock. Available: ${remaining} (in cart: ${currentCartQuantity}, total stock: ${available})`,
+    };
+  }
 
-    return { allowed: true, available };
+  return { allowed: true, available };
 }

@@ -6,5 +6,5 @@
  * files (global types) — they must NOT be re-exported here.
  */
 
+export type { Auth, BreadcrumbItem, Media, MenuItem, Menus, NavGroup, NavItem, SharedData, SubMenuItem, User } from './index.d';
 export * from './models';
-export type { Auth, BreadcrumbItem, NavGroup, NavItem, SubMenuItem, MenuItem, Menus, SharedData, User, Media } from './index.d';

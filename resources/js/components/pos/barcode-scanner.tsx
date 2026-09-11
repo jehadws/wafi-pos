@@ -1,10 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { useTranslation } from '@/lib/i18n';
 import { Barcode, Camera, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { useTranslation } from '@/lib/i18n';
 
 interface BarcodeScannerProps {
   isOpen: boolean;
@@ -81,9 +81,9 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
               </div>
 
               {/* Scanning animation */}
-              <div className="bg-primary absolute end-0 start-0 h-0.5 animate-[scan_2s_ease-in-out_infinite]" />
+              <div className="bg-primary absolute start-0 end-0 h-0.5 animate-[scan_2s_ease-in-out_infinite]" />
 
-              <Button variant="secondary" size="sm" className="absolute top-2 end-2" onClick={stopScanning}>
+              <Button variant="secondary" size="sm" className="absolute end-2 top-2" onClick={stopScanning}>
                 <X className="me-1 h-4 w-4" />
                 {t('Cancel')}
               </Button>
@@ -91,14 +91,9 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
           ) : (
             <>
               <div className="flex items-center gap-2">
-                <Input
-                  placeholder={t('Enter barcode manually')}
-                  value={barcode}
-                  onChange={(e) => setBarcode(e.target.value)}
-                  className="flex-1"
-                />
+                <Input placeholder={t('Enter barcode manually')} value={barcode} onChange={(e) => setBarcode(e.target.value)} className="flex-1" />
                 <Button onClick={handleManualEntry} disabled={!barcode.trim()}>
-                  {t("Add")}
+                  {t('Add')}
                 </Button>
               </div>
 

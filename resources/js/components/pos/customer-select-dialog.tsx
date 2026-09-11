@@ -1,18 +1,18 @@
 'use client';
 
+import { customersApi } from '@/api';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Customer } from '@/types/models/customer';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { Customer } from '@/types/models/customer';
 import { formatCurrency } from '@/utils/format';
-import { customersApi } from '@/api';
 import { Eye, Loader2, Plus, Search, UserPlus } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useTranslation } from '../../lib/i18n';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useTranslation } from '../../lib/i18n';
 
 interface SelectCustomerDialogProps {
   open: boolean;
@@ -134,9 +134,7 @@ export function SelectCustomerDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn('flex h-[90vh] max-h-[90vh] w-[50vw] max-w-[50vw] flex-col sm:max-w-[50vw]')}>
         <DialogHeader>
-          <DialogTitle className="text-center text-lg font-semibold">
-            {createMode ? t('Create Customer') : t('Select Customer')}
-          </DialogTitle>
+          <DialogTitle className="text-center text-lg font-semibold">{createMode ? t('Create Customer') : t('Select Customer')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -147,12 +145,7 @@ export function SelectCustomerDialog({
                 <span className="text-sm">
                   {selectedCustomer.first_name} {selectedCustomer.last_name || ''}
                 </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 rounded-full border p-0"
-                  onClick={() => onViewCustomer(selectedCustomer)}
-                >
+                <Button variant="ghost" size="sm" className="h-6 w-6 rounded-full border p-0" onClick={() => onViewCustomer(selectedCustomer)}>
                   <Eye className="h-3 w-3" />
                 </Button>
               </div>
@@ -225,10 +218,20 @@ export function SelectCustomerDialog({
             <>
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
-                  <Search className="absolute top-1/2 start-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
+                  <Search className="text-muted-foreground absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
                   <Input placeholder={t('Search')} value={searchQuery} onChange={(e) => handleSearch(e.target.value)} className="ps-10" />
                 </div>
-                <Button variant="outline" size="icon" className="shrink-0" onClick={() => { setCreateMode(true); fetchGroups(); }} type="button" title={t('Create Customer')}>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0"
+                  onClick={() => {
+                    setCreateMode(true);
+                    fetchGroups();
+                  }}
+                  type="button"
+                  title={t('Create Customer')}
+                >
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
@@ -240,13 +243,9 @@ export function SelectCustomerDialog({
                     <span className="text-muted-foreground ms-2 text-sm">{t('Loading...')}</span>
                   </div>
                 ) : customers.length > 0 ? (
-                  <div className='space-y-2'>
+                  <div className="space-y-2">
                     {customers.map((customer) => (
-                      <div
-                        key={customer.id}
-                        className="hover:bg-muted rounded-md border p-3"
-                        onClick={() => handleSelectCustomer(customer)}
-                      >
+                      <div key={customer.id} className="hover:bg-muted rounded-md border p-3" onClick={() => handleSelectCustomer(customer)}>
                         <div className="flex items-center justify-between">
                           <div>
                             <div className="font-medium">
@@ -256,12 +255,7 @@ export function SelectCustomerDialog({
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{formatCurrency(+(customer.purchases_amount ?? 0))}</span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="rounded-full border p-0"
-                              onClick={() => onViewCustomer(customer)}
-                            >
+                            <Button variant="ghost" size="sm" className="rounded-full border p-0" onClick={() => onViewCustomer(customer)}>
                               <Eye className="h-4 w-4" />
                             </Button>
                           </div>
@@ -270,9 +264,7 @@ export function SelectCustomerDialog({
                     ))}
                   </div>
                 ) : (
-                  <div className="p-4 text-center">
-                    {searchQuery ? t('No customer match your query...') : t('No customers has been registered')}
-                  </div>
+                  <div className="p-4 text-center">{searchQuery ? t('No customer match your query...') : t('No customers has been registered')}</div>
                 )}
               </ScrollArea>
             </>

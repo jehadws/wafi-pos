@@ -36,13 +36,13 @@ export function OrderTypeDialog({ open, onOpenChange, orderType, onSelectOrderTy
           <DialogTitle className="text-center text-lg font-semibold">{t('Define The Order Type')}</DialogTitle>
         </DialogHeader>
 
-        <div className={cn("grid gap-0 overflow-hidden rounded-lg border", (showTakeaway && showDelivery) ? "grid-cols-2" : "grid-cols-1")}>
+        <div className={cn('grid gap-0 overflow-hidden rounded-lg border', showTakeaway && showDelivery ? 'grid-cols-2' : 'grid-cols-1')}>
           {/* Take Away Option */}
           {showTakeaway && (
             <button
               onClick={() => handleSelectType('takeaway')}
               className={cn(
-                'group hover:bg-primary/80 relative flex flex-col items-center justify-center p-8 transition-colors focus:ring-primary focus:outline-none',
+                'group hover:bg-primary/80 focus:ring-primary relative flex flex-col items-center justify-center p-8 transition-colors focus:outline-none',
                 orderType?.identifier === 'takeaway' ? 'bg-primary text-primary-foreground' : '',
               )}
             >
@@ -51,10 +51,10 @@ export function OrderTypeDialog({ open, onOpenChange, orderType, onSelectOrderTy
                 <div className="relative">
                   <ShoppingBasket className="h-16 w-16 text-white" />
                   {/* Decorative food items */}
-                  <div className="absolute -top-2 -end-2 h-6 w-6 rounded-full bg-orange-400"></div>
-                  <div className="absolute -top-1 start-2 h-6 w-4 rounded-t-full bg-green-400"></div>
-                  <div className="absolute top-1 end-1 h-3 w-3 rounded-full bg-red-400"></div>
-                  <div className="absolute top-2 -start-1 h-4 w-5 rounded bg-yellow-300"></div>
+                  <div className="absolute -end-2 -top-2 h-6 w-6 rounded-full bg-orange-400"></div>
+                  <div className="absolute start-2 -top-1 h-6 w-4 rounded-t-full bg-green-400"></div>
+                  <div className="absolute end-1 top-1 h-3 w-3 rounded-full bg-red-400"></div>
+                  <div className="absolute -start-1 top-2 h-4 w-5 rounded bg-yellow-300"></div>
                 </div>
               </div>
               <span className="text-lg font-medium">{t('Take Away')}</span>
@@ -66,7 +66,7 @@ export function OrderTypeDialog({ open, onOpenChange, orderType, onSelectOrderTy
             <button
               onClick={() => handleSelectType('delivery')}
               className={cn(
-                'group hover:bg-primary/80 relative flex flex-col items-center justify-center p-8 transition-colors focus:ring-primary focus:outline-none',
+                'group hover:bg-primary/80 focus:ring-primary relative flex flex-col items-center justify-center p-8 transition-colors focus:outline-none',
                 orderType?.identifier === 'delivery' ? 'bg-primary text-primary-foreground' : '',
               )}
             >
@@ -75,10 +75,10 @@ export function OrderTypeDialog({ open, onOpenChange, orderType, onSelectOrderTy
                 <div className="relative">
                   <Bike className="h-16 w-16 text-inherit" />
                   {/* Delivery person */}
-                  <div className="absolute -top-4 -start-2 h-6 w-6 rounded-full bg-red-400"></div>
-                  <div className="absolute -top-2 -start-1 h-4 w-4 rounded-full bg-pink-300"></div>
+                  <div className="absolute -start-2 -top-4 h-6 w-6 rounded-full bg-red-400"></div>
+                  <div className="absolute -start-1 -top-2 h-4 w-4 rounded-full bg-pink-300"></div>
                   {/* Delivery box */}
-                  <div className="absolute -top-1 -end-3 h-3 w-4 rounded bg-red-500"></div>
+                  <div className="absolute -end-3 -top-1 h-3 w-4 rounded bg-red-500"></div>
                 </div>
               </div>
               <span className="text-lg font-medium">{t('Delivery')}</span>

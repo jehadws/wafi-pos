@@ -25,11 +25,7 @@ import { productsApi } from '@/api';
  * A missing/null flag counts as visible — older payloads predate the column.
  */
 export function isUnitQuantityVisible(unitQuantity: UnitQuantity): boolean {
-    return (
-        unitQuantity.visible === undefined ||
-        unitQuantity.visible === null ||
-        Boolean(unitQuantity.visible)
-    );
+  return unitQuantity.visible === undefined || unitQuantity.visible === null || Boolean(unitQuantity.visible);
 }
 
 /**
@@ -37,10 +33,10 @@ export function isUnitQuantityVisible(unitQuantity: UnitQuantity): boolean {
  * payload loaded with the category content over a network round-trip.
  */
 export async function resolveProductUnitQuantities(product: Product): Promise<UnitQuantity[]> {
-    if (Array.isArray(product.unit_quantities)) {
-        return product.unit_quantities.filter(isUnitQuantityVisible);
-    }
-    return productsApi.getUnitQuantities(product.id);
+  if (Array.isArray(product.unit_quantities)) {
+    return product.unit_quantities.filter(isUnitQuantityVisible);
+  }
+  return productsApi.getUnitQuantities(product.id);
 }
 
 /**
@@ -50,13 +46,13 @@ export async function resolveProductUnitQuantities(product: Product): Promise<Un
  * choice is ambiguous and the cashier must pick a unit.
  */
 export function pickExpressUnit(units: UnitQuantity[], defaultUnitId: unknown): UnitQuantity | null {
-    if (units.length === 0) return null;
-    if (units.length === 1) return units[0];
+  if (units.length === 0) return null;
+  if (units.length === 1) return units[0];
 
-    const id = Number(defaultUnitId);
-    if (Number.isFinite(id) && id > 0) {
-        return units.find((q) => q.unit?.id === id || q.unit_id === id) ?? null;
-    }
+  const id = Number(defaultUnitId);
+  if (Number.isFinite(id) && id > 0) {
+    return units.find((q) => q.unit?.id === id || q.unit_id === id) ?? null;
+  }
 
-    return null;
+  return null;
 }

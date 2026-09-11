@@ -1,12 +1,12 @@
+import { customersApi } from '@/api';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatCurrency, formatDate } from '@/utils/format';
-import { customersApi } from '@/api';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from '../../lib/i18n';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface CustomerDetailsDialogProps {
   open: boolean;
@@ -38,7 +38,7 @@ export function CustomerDetailsDialog({ open, onOpenChange, customer }: Customer
     if (open && customer && activeTab === 'customer-account' && activeSubTab === 'orders') {
       fetchCustomerOrders();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, activeTab, activeSubTab, customer]);
 
   if (!customer) {
@@ -53,25 +53,25 @@ export function CustomerDetailsDialog({ open, onOpenChange, customer }: Customer
           <DialogDescription className="sr-only">{t('Details')}</DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-1 flex-col overflow-hidden min-h-0 pt-4">
-          <Tabs defaultValue="customer-account" className="flex flex-1 flex-col min-h-0" onValueChange={setActiveTab} value={activeTab}>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-4">
+          <Tabs defaultValue="customer-account" className="flex min-h-0 flex-1 flex-col" onValueChange={setActiveTab} value={activeTab}>
             <TabsList className="grid w-full shrink-0 grid-cols-2">
               <TabsTrigger value="new-customer">{t('Create Customer')}</TabsTrigger>
               <TabsTrigger value="customer-account">{t('Customer Account')}</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="customer-account" className="data-[state=active]:flex flex-col flex-1 min-h-0 space-y-4 mt-4">
-              <div className="rounded-lg p-4 shrink-0 bg-muted/30">
+            <TabsContent value="customer-account" className="mt-4 min-h-0 flex-1 flex-col space-y-4 data-[state=active]:flex">
+              <div className="bg-muted/30 shrink-0 rounded-lg p-4">
                 <h3 className="mb-4 font-medium">
                   {t('Summary For')} : {customer.first_name} {customer.last_name || ''}
                 </h3>
 
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                  <div className="bg-primary rounded-lg p-3 text-center text-primary-foreground">
+                  <div className="bg-primary text-primary-foreground rounded-lg p-3 text-center">
                     <div className="text-sm font-medium">{t('Total Purchases')}</div>
                     <div className="text-lg font-bold tabular-nums">{formatCurrency(+customer.purchases_amount)}</div>
                   </div>
-                  <div className="bg-destructive rounded-lg p-3 text-center text-destructive-foreground">
+                  <div className="bg-destructive text-destructive-foreground rounded-lg p-3 text-center">
                     <div className="text-sm font-medium">{t('Owed Amount')}</div>
                     <div className="text-lg font-bold tabular-nums">{formatCurrency(+customer.owed_amount)}</div>
                   </div>
@@ -86,7 +86,7 @@ export function CustomerDetailsDialog({ open, onOpenChange, customer }: Customer
                 </div>
               </div>
 
-              <Tabs defaultValue="orders" className="flex flex-col flex-1 min-h-0" onValueChange={setActiveSubTab} value={activeSubTab}>
+              <Tabs defaultValue="orders" className="flex min-h-0 flex-1 flex-col" onValueChange={setActiveSubTab} value={activeSubTab}>
                 <TabsList className="grid w-full shrink-0 grid-cols-4">
                   <TabsTrigger value="orders">{t('Orders')}</TabsTrigger>
                   <TabsTrigger value="wallet-history">{t('Account Credit')}</TabsTrigger>
@@ -94,8 +94,8 @@ export function CustomerDetailsDialog({ open, onOpenChange, customer }: Customer
                   <TabsTrigger value="rewards">{t('Rewards')}</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="orders" className="data-[state=active]:flex flex-col flex-1 min-h-0 space-y-4 mt-4">
-                  <h4 className="px-2 font-medium shrink-0">{t('Last Purchases')}</h4>
+                <TabsContent value="orders" className="mt-4 min-h-0 flex-1 flex-col space-y-4 data-[state=active]:flex">
+                  <h4 className="shrink-0 px-2 font-medium">{t('Last Purchases')}</h4>
 
                   {loadingOrders ? (
                     <div className="flex flex-1 items-center justify-center p-8">
@@ -103,17 +103,16 @@ export function CustomerDetailsDialog({ open, onOpenChange, customer }: Customer
                       <span className="ms-2">{t('Loading...')}</span>
                     </div>
                   ) : (
-                    <div className="flex flex-col flex-1 min-h-0 rounded-lg border">
-                      <div className="grid grid-cols-2 bg-muted/50 p-3 text-center font-medium shrink-0">
+                    <div className="flex min-h-0 flex-1 flex-col rounded-lg border">
+                      <div className="bg-muted/50 grid shrink-0 grid-cols-2 p-3 text-center font-medium">
                         <div>{t('Order')}</div>
                         <div>{t('Options')}</div>
                       </div>
 
                       <ScrollArea className="flex-1">
-
                         {orders.length > 0 ? (
                           orders.map((order) => (
-                            <div key={order.id} className="grid grid-cols-2 items-center p-3 border-b last:border-b-0">
+                            <div key={order.id} className="grid grid-cols-2 items-center border-b p-3 last:border-b-0">
                               <div className="space-y-1">
                                 <div className="font-medium">Code: {order.code}</div>
                                 <div className="text-sm">

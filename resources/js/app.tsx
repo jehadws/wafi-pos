@@ -1,17 +1,17 @@
 import '../css/app.css';
 
+import { DirectionProvider } from '@/components/ui/direction';
 import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { useState, useEffect } from 'react';
 import { ConfirmDialogProvider } from './components/providers/confirm-dialog-provider';
 import { initializeTheme } from './hooks/use-appearance';
 import { RTLProvider } from './hooks/use-rtl';
-import { isRTLLocale } from './lib/i18n/direction';
 import { TranslationProvider } from './lib/i18n';
-import { DirectionProvider } from "@/components/ui/direction"
-import Settings from './lib/settings';
+import { isRTLLocale } from './lib/i18n/direction';
 import type { AppSettings } from './lib/settings';
+import Settings from './lib/settings';
 
 // API calls go through the shared client in `@/api/http`, which owns the
 // base URL, the X-Requested-With header, and the global error interceptor

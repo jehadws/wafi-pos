@@ -22,16 +22,16 @@ import { isPosOptionEnabled, POS_OPTION_KEYS } from '@/constants/pos-options';
  * @returns an enabled identifier, or null when no types are enabled
  */
 export function pickDefaultOrderType(enabledTypes: unknown): string | null {
-    if (!Array.isArray(enabledTypes) || enabledTypes.length === 0) return null;
+  if (!Array.isArray(enabledTypes) || enabledTypes.length === 0) return null;
 
-    if (enabledTypes.length === 1) {
-        return enabledTypes[0] as string;
-    }
-
-    // Retail-first preference when the shop enables both types.
-    if (enabledTypes.includes('takeaway')) return 'takeaway';
-
+  if (enabledTypes.length === 1) {
     return enabledTypes[0] as string;
+  }
+
+  // Retail-first preference when the shop enables both types.
+  if (enabledTypes.includes('takeaway')) return 'takeaway';
+
+  return enabledTypes[0] as string;
 }
 
 /**
@@ -40,9 +40,9 @@ export function pickDefaultOrderType(enabledTypes: unknown): string | null {
  * unset or invalid — in that case explicit customer selection stays required.
  */
 export function resolveDefaultCustomerId(options: Record<string, any>): number | null {
-    const raw = options?.[POS_OPTION_KEYS.defaultCustomer];
-    const id = Number(raw);
-    return Number.isFinite(id) && id > 0 ? id : null;
+  const raw = options?.[POS_OPTION_KEYS.defaultCustomer];
+  const id = Number(raw);
+  return Number.isFinite(id) && id > 0 ? id : null;
 }
 
 /**
@@ -52,6 +52,6 @@ export function resolveDefaultCustomerId(options: Record<string, any>): number |
  * barcode lookup resolved which unit quantity to use.
  */
 export function canAddBarcodeSilently(options: Record<string, any>, product: any): boolean {
-    if (isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) return false;
-    return Boolean(product?.product?.selectedUnitQuantity);
+  if (isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) return false;
+  return Boolean(product?.product?.selectedUnitQuantity);
 }

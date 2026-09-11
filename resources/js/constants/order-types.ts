@@ -10,6 +10,6 @@
  */
 
 export const ORDER_TYPE_MAP: Record<string, Omit<OrderTypeObj, 'selected'>> = {
-    takeaway: { identifier: 'takeaway', label: 'Take Away', icon: '/images/groceries.png' },
-    delivery: { identifier: 'delivery', label: 'Delivery', icon: '/images/delivery.png' },
+  takeaway: { identifier: 'takeaway', label: 'Take Away', icon: '/images/groceries.png' },
+  delivery: { identifier: 'delivery', label: 'Delivery', icon: '/images/delivery.png' },
 };

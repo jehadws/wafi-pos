@@ -10,25 +10,25 @@ import type { AxiosError } from 'axios';
  * existing `onError` handlers keep working unchanged.
  */
 export function extractValidationErrors(error: unknown): Record<string, string> {
-    const flat: Record<string, string> = {};
+  const flat: Record<string, string> = {};
 
-    const axiosError = error as AxiosError<{ errors?: Record<string, string | string[]>; error?: string } | undefined>;
-    const rawErrors = axiosError?.response?.data?.errors;
+  const axiosError = error as AxiosError<{ errors?: Record<string, string | string[]>; error?: string } | undefined>;
+  const rawErrors = axiosError?.response?.data?.errors;
 
-    if (rawErrors && typeof rawErrors === 'object') {
-        for (const key in rawErrors) {
-            const value = rawErrors[key];
-            flat[key] = Array.isArray(value) ? String(value[0]) : String(value);
-        }
+  if (rawErrors && typeof rawErrors === 'object') {
+    for (const key in rawErrors) {
+      const value = rawErrors[key];
+      flat[key] = Array.isArray(value) ? String(value[0]) : String(value);
     }
+  }
 
-    // General (non-field) errors — some handlers check `errors.error`.
-    const generalError = axiosError?.response?.data?.error;
-    if (typeof generalError === 'string' && generalError) {
-        flat.error = generalError;
-    }
+  // General (non-field) errors — some handlers check `errors.error`.
+  const generalError = axiosError?.response?.data?.error;
+  if (typeof generalError === 'string' && generalError) {
+    flat.error = generalError;
+  }
 
-    return flat;
+  return flat;
 }
 
 /**
@@ -40,12 +40,12 @@ export function extractValidationErrors(error: unknown): Record<string, string> 
  * failures or unexpected shapes.
  */
 export function getApiErrorMessage(error: unknown, fallback = 'Something went wrong'): string {
-    const axiosError = error as AxiosError<{ message?: string } | undefined>;
-    const message = axiosError?.response?.data?.message;
+  const axiosError = error as AxiosError<{ message?: string } | undefined>;
+  const message = axiosError?.response?.data?.message;
 
-    if (typeof message === 'string' && message) {
-        return message;
-    }
+  if (typeof message === 'string' && message) {
+    return message;
+  }
 
-    return fallback;
+  return fallback;
 }

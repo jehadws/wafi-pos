@@ -1,144 +1,144 @@
+import { crudApi } from '@/api';
 import { DataTable } from '@/components/ui/data-table/data-table';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import { formatDate } from '@/utils/format';
 import { Head } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
-import { crudApi } from '@/api';
 import { useEffect, useState } from 'react';
 
 export default function Dashboard() {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
 
-    const breadcrumbs = [
-        { title: t('Dashboard'), href: '/dashboard' },
-        { title: t('Accounting'), href: '/dashboard/accounting' },
-        { title: t('Transactions'), href: '/dashboard/accounting/transactions' },
-        { title: t('History'), href: '/dashboard/accounting/transactions/history' },
-    ];
+  const breadcrumbs = [
+    { title: t('Dashboard'), href: '/dashboard' },
+    { title: t('Accounting'), href: '/dashboard/accounting' },
+    { title: t('Transactions'), href: '/dashboard/accounting/transactions' },
+    { title: t('History'), href: '/dashboard/accounting/transactions/history' },
+  ];
 
-    const [transaction, setTransaction] = useState<CustomPaginationData<GlobalProductHistory>>({
-        data: [],
-        last_page: 1,
-        current_page: 1,
-        next_page_url: null,
-        path: 'http://127.0.0.1:8000/api/crud/sb.global-products-history',
-        per_page: 20,
-        prev_page_url: null,
-        to: 0,
-        total: 0,
-        from: 0,
-        last_page_url: '',
-        first_page_url: '',
-    });
+  const [transaction, setTransaction] = useState<CustomPaginationData<GlobalProductHistory>>({
+    data: [],
+    last_page: 1,
+    current_page: 1,
+    next_page_url: null,
+    path: 'http://127.0.0.1:8000/api/crud/sb.global-products-history',
+    per_page: 20,
+    prev_page_url: null,
+    to: 0,
+    total: 0,
+    from: 0,
+    last_page_url: '',
+    first_page_url: '',
+  });
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(20);
-    const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [searchTerm, setSearchTerm] = useState('');
 
-    const columns: ColumnDef<GlobalProductHistory>[] = [
-        {
-            accessorKey: 'product_name',
-            header: t('product'),
-        },
-        {
-            accessorKey: 'procurement_name',
-            header: t('procurement'),
-        },
-        {
-            accessorKey: 'order_code',
-            header: t('order'),
-        },
-        {
-            accessorKey: 'operation_type',
-            header: t('Operation Type'),
-        },
-        {
-            accessorKey: 'unit_name',
-            header: t('unit'),
-        },
-        {
-            accessorKey: 'before_quantity',
-            header: t('Initial Quantity'),
-        },
-        {
-            accessorKey: 'quantity',
-            header: t('quantity'),
-        },
-        {
-            accessorKey: 'after_quantity',
-            header: t('New Quantity'),
-        },
-        {
-            accessorKey: 'total_price',
-            header: t('Total Price'),
-        },
-        {
-            accessorKey: 'user_username',
-            header: t('author'),
-        },
-        {
-            accessorKey: 'created_at',
-            header: t('Created At'),
-            cell: ({ row }) => {
-                return formatDate(row.original.created_at);
-            },
-        },
-    ];
+  const columns: ColumnDef<GlobalProductHistory>[] = [
+    {
+      accessorKey: 'product_name',
+      header: t('product'),
+    },
+    {
+      accessorKey: 'procurement_name',
+      header: t('procurement'),
+    },
+    {
+      accessorKey: 'order_code',
+      header: t('order'),
+    },
+    {
+      accessorKey: 'operation_type',
+      header: t('Operation Type'),
+    },
+    {
+      accessorKey: 'unit_name',
+      header: t('unit'),
+    },
+    {
+      accessorKey: 'before_quantity',
+      header: t('Initial Quantity'),
+    },
+    {
+      accessorKey: 'quantity',
+      header: t('quantity'),
+    },
+    {
+      accessorKey: 'after_quantity',
+      header: t('New Quantity'),
+    },
+    {
+      accessorKey: 'total_price',
+      header: t('Total Price'),
+    },
+    {
+      accessorKey: 'user_username',
+      header: t('author'),
+    },
+    {
+      accessorKey: 'created_at',
+      header: t('Created At'),
+      cell: ({ row }) => {
+        return formatDate(row.original.created_at);
+      },
+    },
+  ];
 
-    const handleRefresh = () => {
-        getOrders(currentPage, pageSize);
-    };
+  const handleRefresh = () => {
+    getOrders(currentPage, pageSize);
+  };
 
-    const getOrders = async (page: number, pageSize: number) => {
-        try {
-            const history = await crudApi.list('sb.global-products-history', { page, per_page: pageSize, search: searchTerm });
-            setTransaction(history);
-        } catch (error) {
-            console.error('Error fetching Orders:', error);
-        }
-    };
+  const getOrders = async (page: number, pageSize: number) => {
+    try {
+      const history = await crudApi.list('sb.global-products-history', { page, per_page: pageSize, search: searchTerm });
+      setTransaction(history);
+    } catch (error) {
+      console.error('Error fetching Orders:', error);
+    }
+  };
 
-    const handleSearch = (search: string) => {
-        setSearchTerm(search);
-        setCurrentPage(1); // Reset to first page when searching
-    };
+  const handleSearch = (search: string) => {
+    setSearchTerm(search);
+    setCurrentPage(1); // Reset to first page when searching
+  };
 
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page);
-    };
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
-    const handlePageSizeChange = (size: number) => {
-        setPageSize(size);
-        setCurrentPage(1); // Reset to first page when changing page size
-    };
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
 
-    useEffect(() => {
-        getOrders(currentPage, pageSize);
+  useEffect(() => {
+    getOrders(currentPage, pageSize);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentPage, pageSize, searchTerm]);
+  }, [currentPage, pageSize, searchTerm]);
 
-    return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={t('Product Histories')} />
-            <div className="flex h-full flex-1 flex-col gap-4 p-4">
-                <div className="grid w-full">
-                    <DataTable
-                        columns={columns}
-                        data={transaction as unknown as GlobalProductHistory[]}
-                        title={t('Product Histories')}
-                        description={t('Display All Product Stock Flow')}
-                        searchKey="name"
-                        onRefresh={handleRefresh}
-                        useCustomPagination
-                        onPageChange={handlePageChange}
-                        onPageSizeChange={handlePageSizeChange}
-                        useServerSideSearch={true}
-                        onSearch={handleSearch}
-                        searchValue={searchTerm}
-                    />
-                </div>
-            </div>
-        </AppLayout>
-    );
+  return (
+    <AppLayout breadcrumbs={breadcrumbs}>
+      <Head title={t('Product Histories')} />
+      <div className="flex h-full flex-1 flex-col gap-4 p-4">
+        <div className="grid w-full">
+          <DataTable
+            columns={columns}
+            data={transaction as unknown as GlobalProductHistory[]}
+            title={t('Product Histories')}
+            description={t('Display All Product Stock Flow')}
+            searchKey="name"
+            onRefresh={handleRefresh}
+            useCustomPagination
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            useServerSideSearch={true}
+            onSearch={handleSearch}
+            searchValue={searchTerm}
+          />
+        </div>
+      </div>
+    </AppLayout>
+  );
 }

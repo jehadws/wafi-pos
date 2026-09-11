@@ -20,12 +20,15 @@ export function matchesShortcut(e: KeyboardEvent, shortcut: string[] | string | 
   if (!shortcut || (Array.isArray(shortcut) && shortcut.length === 0)) return false;
   const keys = Array.isArray(shortcut) ? shortcut : [shortcut];
   return keys.some((combo) => {
-    const parts = combo.toLowerCase().split('+').map((p) => p.trim());
+    const parts = combo
+      .toLowerCase()
+      .split('+')
+      .map((p) => p.trim());
     const requireCtrl = parts.includes('ctrl');
     const requireAlt = parts.includes('alt');
     const requireShift = parts.includes('shift');
     const mainKey = parts.find((p) => !['ctrl', 'alt', 'shift'].includes(p)) ?? '';
-    
+
     // Normalize numpad vs standard key
     const eventKey = e.key.toLowerCase();
     const eventCode = e.code ? e.code.toLowerCase() : '';
@@ -35,12 +38,7 @@ export function matchesShortcut(e: KeyboardEvent, shortcut: string[] | string | 
       (mainKey === 'enter' && eventCode === 'numpadenter') ||
       (mainKey === 'numpadenter' && (eventKey === 'enter' || eventCode === 'numpadenter'));
 
-    return (
-      e.ctrlKey === requireCtrl &&
-      e.altKey === requireAlt &&
-      e.shiftKey === requireShift &&
-      isMainMatch
-    );
+    return e.ctrlKey === requireCtrl && e.altKey === requireAlt && e.shiftKey === requireShift && isMainMatch;
   });
 }
 
@@ -66,16 +64,15 @@ export function isEditableTarget(target: EventTarget | null): boolean {
 export function isTypingGuardedEvent(e: KeyboardEvent, combo: string): boolean {
   if (!isEditableTarget(e.target)) return false;
   if (/^f\d{1,2}$/i.test(e.key)) return false;
-  const parts = combo.toLowerCase().split('+').map((p) => p.trim());
+  const parts = combo
+    .toLowerCase()
+    .split('+')
+    .map((p) => p.trim());
   return !(parts.includes('ctrl') || parts.includes('alt'));
 }
 
 /** matchesShortcut with the typing guard applied per configured combo. */
-function matchesUnguarded(
-  e: KeyboardEvent,
-  shortcut: string[] | string | null | undefined,
-  typingGuard: boolean,
-): boolean {
+function matchesUnguarded(e: KeyboardEvent, shortcut: string[] | string | null | undefined, typingGuard: boolean): boolean {
   if (!matchesShortcut(e, shortcut)) return false;
   if (!typingGuard) return true;
   if (typeof shortcut === 'string') return !isTypingGuardedEvent(e, shortcut);
@@ -101,10 +98,7 @@ export function usePOSShortcuts({
       const typingGuard = isEditableTarget(e.target);
 
       // Payment (configured or F4 / Ctrl+Enter)
-      if (
-        matchesUnguarded(e, o[POS_OPTION_KEYS.keyboardPayment], typingGuard) ||
-        (e.key === 'F4' && !e.ctrlKey && !e.altKey)
-      ) {
+      if (matchesUnguarded(e, o[POS_OPTION_KEYS.keyboardPayment], typingGuard) || (e.key === 'F4' && !e.ctrlKey && !e.altKey)) {
         e.preventDefault();
         onPayment();
       } else if (matchesUnguarded(e, o[POS_OPTION_KEYS.keyboardCancelOrder], typingGuard)) {
@@ -131,10 +125,7 @@ export function usePOSShortcuts({
       } else if (matchesUnguarded(e, o[POS_OPTION_KEYS.keyboardCreateCustomer], typingGuard)) {
         e.preventDefault();
         onCreateCustomer();
-      } else if (
-        matchesUnguarded(e, o[POS_OPTION_KEYS.keyboardFullscreen], typingGuard) ||
-        e.key === 'F11'
-      ) {
+      } else if (matchesUnguarded(e, o[POS_OPTION_KEYS.keyboardFullscreen], typingGuard) || e.key === 'F11') {
         e.preventDefault();
         if (document.fullscreenElement) {
           document.exitFullscreen();

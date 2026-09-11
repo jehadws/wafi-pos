@@ -8,16 +8,16 @@ export { createPosDialogsSlice } from './use-pos-dialogs';
 export type { PosDialogsSlice } from './use-pos-dialogs';
 
 export { createCartSlice } from './use-cart-store';
-export type { CartSlice, CartSliceState, CartSliceActions } from './use-cart-store';
+export type { CartSlice, CartSliceActions, CartSliceState } from './use-cart-store';
 
 export { createPaymentsSlice } from './use-payments-store';
-export type { PaymentsSlice, PaymentsSliceState, PaymentsSliceActions } from './use-payments-store';
+export type { PaymentsSlice, PaymentsSliceActions, PaymentsSliceState } from './use-payments-store';
 
 export { createCustomerSlice } from './use-customer-store';
 export type { CustomerSlice, CustomerSliceActions } from './use-customer-store';
 
 export { createSessionSlice } from './use-pos-session';
-export type { SessionSlice, SessionSliceState, SessionSliceActions } from './use-pos-session';
+export type { SessionSlice, SessionSliceActions, SessionSliceState } from './use-pos-session';
 
 export { useRegisterStore } from './use-register-store';
 export type { RegisterStore } from './use-register-store';

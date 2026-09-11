@@ -100,19 +100,11 @@ export function NavMain() {
                     <SidebarMenuItem key={key}>
                       {hasChildren ? (
                         <>
-                          <SidebarMenuButton
-                            onClick={() => toggleMenu(key)}
-                            isActive={item.toggled}
-                            tooltip={{ children: item.label || '' }}
-                          >
+                          <SidebarMenuButton onClick={() => toggleMenu(key)} isActive={item.toggled} tooltip={{ children: item.label || '' }}>
                             <MenuIcon iconName={item.icon} />
                             <span>{item.label || ''}</span>
                             <span className="ms-auto">
-                              {isExpanded ? (
-                                <ChevronDown className="h-4 w-4" />
-                              ) : (
-                                <ChevronRight className="rtl:rotate-180 h-4 w-4" />
-                              )}
+                              {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4 rtl:rotate-180" />}
                             </span>
                           </SidebarMenuButton>
 
@@ -138,9 +130,7 @@ export function NavMain() {
                             <MenuIcon iconName={item.icon} />
                             <span>{item.label || ''}</span>
                             {item.notification && item.notification > 0 && (
-                              <span className="ms-auto rounded-full bg-red-500 px-2 py-1 text-xs text-white">
-                                {item.notification}
-                              </span>
+                              <span className="ms-auto rounded-full bg-red-500 px-2 py-1 text-xs text-white">{item.notification}</span>
                             )}
                           </Link>
                         </SidebarMenuButton>

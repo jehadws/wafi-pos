@@ -1,66 +1,41 @@
+import PrimaryNavigation from '@/components/common/primary-navigation';
+import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
 import CartTable from '@/components/pos/cart-table';
 import PaymentActions from '@/components/pos/payment-actions';
-import TotalsSummary from '@/components/pos/totals-summary';
-import PrimaryNavigation from '@/components/common/primary-navigation';
 import SecondaryNavigation from '@/components/pos/secondary-navigation';
-import { isPosOptionEnabled, POS_OPTION_KEYS, isPriceWithTax } from '@/constants/pos-options';
-import { useRegisterStore } from '@/hooks/pos/use-register-store';
-import { usePOSShortcuts } from '@/hooks/use-pos-shortcuts';
-import { useRTL } from '@/hooks/use-rtl';
-import { useShallow } from 'zustand/react/shallow';
-import { usePOS } from '@/hooks/usePOS';
-import { OrderProduct } from '@/types/models/order-product';
-import { useTranslation } from '@/lib/i18n';
-import { cn } from '@/lib/utils';
-import { Barcode, Search, Shrink } from 'lucide-react';
-import { toast } from 'sonner';
-import { lazy, Suspense, useRef, useState } from 'react';
-import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
+import TotalsSummary from '@/components/pos/totals-summary';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
-import SelectUnitQuantityDialog from './select-unit-quantity-dialog';
-import { pickExpressUnit, resolveProductUnitQuantities } from '@/services/product-units';
-import {
-    calculateTotalsForDiscountPercentageUpdate,
-    calculateTotalsForPriceUpdate,
-    calculateTotalsForQuantityUpdate,
-} from '@/services/cart-engine';
-import ProductsCategoriesPanel from './products-categories-panel';
-import {
-  useBarcodeSearch,
-  useCartSelection,
-  usePosCheckout,
-  usePosDialogCoordinator,
-} from '@/hooks/pos';
+import { isPosOptionEnabled, isPriceWithTax, POS_OPTION_KEYS } from '@/constants/pos-options';
+import { useBarcodeSearch, useCartSelection, usePosCheckout, usePosDialogCoordinator } from '@/hooks/pos';
+import { useRegisterStore } from '@/hooks/pos/use-register-store';
+import { usePOSShortcuts } from '@/hooks/use-pos-shortcuts';
+import { useRTL } from '@/hooks/use-rtl';
+import { usePOS } from '@/hooks/usePOS';
+import { useTranslation } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
+import { calculateTotalsForDiscountPercentageUpdate, calculateTotalsForPriceUpdate, calculateTotalsForQuantityUpdate } from '@/services/cart-engine';
 import { canAddBarcodeSilently } from '@/services/pos-defaults';
+import { pickExpressUnit, resolveProductUnitQuantities } from '@/services/product-units';
 import { validateStockAvailability } from '@/services/stock';
+import { OrderProduct } from '@/types/models/order-product';
+import { Barcode, Search, Shrink } from 'lucide-react';
+import { lazy, Suspense, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { useShallow } from 'zustand/react/shallow';
+import ProductsCategoriesPanel from './products-categories-panel';
+import SelectUnitQuantityDialog from './select-unit-quantity-dialog';
 
 // Lazy-loaded dialogs for performance & smaller initial bundle
-const CustomerDetailsDialog = lazy(() =>
-  import('./customer-details-dialog').then((m) => ({ default: m.CustomerDetailsDialog })),
-);
-const SelectCustomerDialog = lazy(() =>
-  import('./customer-select-dialog').then((m) => ({ default: m.SelectCustomerDialog })),
-);
-const OrderTypeDialog = lazy(() =>
-  import('./order-type-dialog').then((m) => ({ default: m.OrderTypeDialog })),
-);
-const OrdersDialog = lazy(() =>
-  import('./orders-dialog').then((m) => ({ default: m.OrdersDialog })),
-);
-const PaymentGatewayDialog = lazy(() =>
-  import('./payment-gateway-dialog').then((m) => ({ default: m.PaymentGatewayDialog })),
-);
-const SearchProductsDialog = lazy(() =>
-  import('./search-products-dialog').then((m) => ({ default: m.SearchProductsDialog })),
-);
-const ShippingDialog = lazy(() =>
-  import('./shipping-dialog').then((m) => ({ default: m.ShippingDialog })),
-);
-const QuickProductPopup = lazy(() =>
-  import('./quick-product-popup').then((m) => ({ default: m.QuickProductPopup })),
-);
+const CustomerDetailsDialog = lazy(() => import('./customer-details-dialog').then((m) => ({ default: m.CustomerDetailsDialog })));
+const SelectCustomerDialog = lazy(() => import('./customer-select-dialog').then((m) => ({ default: m.SelectCustomerDialog })));
+const OrderTypeDialog = lazy(() => import('./order-type-dialog').then((m) => ({ default: m.OrderTypeDialog })));
+const OrdersDialog = lazy(() => import('./orders-dialog').then((m) => ({ default: m.OrdersDialog })));
+const PaymentGatewayDialog = lazy(() => import('./payment-gateway-dialog').then((m) => ({ default: m.PaymentGatewayDialog })));
+const SearchProductsDialog = lazy(() => import('./search-products-dialog').then((m) => ({ default: m.SearchProductsDialog })));
+const ShippingDialog = lazy(() => import('./shipping-dialog').then((m) => ({ default: m.ShippingDialog })));
+const QuickProductPopup = lazy(() => import('./quick-product-popup').then((m) => ({ default: m.QuickProductPopup })));
 
 export default function PosSystem() {
   const {
@@ -257,31 +232,19 @@ export default function PosSystem() {
     }
 
     const isPriceWithTaxMode = isPriceWithTax(options);
-    const updatedValues = calculateTotalsForQuantityUpdate(
-      product,
-      quantity,
-      isPriceWithTaxMode,
-    );
+    const updatedValues = calculateTotalsForQuantityUpdate(product, quantity, isPriceWithTaxMode);
     updateProduct(product, updatedValues);
   };
 
   const updateProductPrice = (product: OrderProduct, price: number) => {
     const isPriceWithTaxMode = isPriceWithTax(options);
-    const updatedValues = calculateTotalsForPriceUpdate(
-      product,
-      price,
-      isPriceWithTaxMode,
-    );
+    const updatedValues = calculateTotalsForPriceUpdate(product, price, isPriceWithTaxMode);
     updateProduct(product, updatedValues);
   };
 
   const updateProductDiscountPercentage = (product: OrderProduct, discount: number) => {
     const isPriceWithTaxMode = isPriceWithTax(options);
-    const updatedValues = calculateTotalsForDiscountPercentageUpdate(
-      product,
-      discount,
-      isPriceWithTaxMode,
-    );
+    const updatedValues = calculateTotalsForDiscountPercentageUpdate(product, discount, isPriceWithTaxMode);
     updateProduct(product, updatedValues);
   };
 
@@ -303,10 +266,7 @@ export default function PosSystem() {
     const selectedUnit = unitOverride ?? product?.product?.selectedUnitQuantity;
     if (!selectedUnit) return;
 
-    const currentInCart = products.reduce(
-      (acc, p) => (p.product_id === product.product.id ? acc + p.quantity : acc),
-      0,
-    );
+    const currentInCart = products.reduce((acc, p) => (p.product_id === product.product.id ? acc + p.quantity : acc), 0);
 
     const stockCheck = validateStockAvailability(selectedUnit.quantity, qty, currentInCart);
     if (!stockCheck.allowed) {
@@ -346,9 +306,7 @@ export default function PosSystem() {
       price_with_tax: selectedUnit.sale_price_with_tax,
       price_without_tax: selectedUnit.sale_price_without_tax,
       unit_name: selectedUnit.unit.name,
-      total_price: isPriceWithTax(options)
-        ? selectedUnit.sale_price_with_tax * qty
-        : selectedUnit.sale_price_without_tax * qty,
+      total_price: isPriceWithTax(options) ? selectedUnit.sale_price_with_tax * qty : selectedUnit.sale_price_without_tax * qty,
       total_price_without_tax: selectedUnit.sale_price_without_tax * qty,
       total_price_with_tax: selectedUnit.sale_price_with_tax * qty,
       mode: 'normal',
@@ -374,15 +332,13 @@ export default function PosSystem() {
   };
 
   return (
-    <div className="touch-manipulation flex h-screen w-full select-none flex-col">
+    <div className="flex h-screen w-full touch-manipulation flex-col select-none">
       <PrimaryNavigation
         resetCart={() => dialogs.setIsResetCartOpen(true)}
         handleOpenSelectCustomerDialog={checkout.setShowSelectCustomerDialog}
         handleOpenOrderTypeDialog={checkout.setShowOrderTypeDialog}
         handleOpenOrderDialog={dialogs.setShowOrderDialog}
-        handleOpenRegisterSession={
-          registersEnabled ? () => useRegisterStore.getState().openSessionDialog() : undefined
-        }
+        handleOpenRegisterSession={registersEnabled ? () => useRegisterStore.getState().openSessionDialog() : undefined}
       />
 
       {/* Main Content */}
@@ -450,7 +406,7 @@ export default function PosSystem() {
           <div className="border-b p-2">
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
-                <Barcode className="text-muted-foreground absolute top-3 start-2.5 h-4 w-4" />
+                <Barcode className="text-muted-foreground absolute start-2.5 top-3 h-4 w-4" />
                 <Input
                   ref={barcodeSearch.inputRef}
                   type="search"
@@ -466,19 +422,15 @@ export default function PosSystem() {
                 variant={barcodeSearch.isAutoFocusOpen ? 'default' : 'outline'}
                 size="icon"
                 className={cn(
-                  'active:scale-95 relative h-11 w-11 transition-all',
+                  'relative h-11 w-11 transition-all active:scale-95',
                   barcodeSearch.isAutoFocusOpen && 'bg-primary text-primary-foreground shadow-sm',
                 )}
                 onClick={barcodeSearch.toggleAutoFocus}
-                title={
-                  barcodeSearch.isAutoFocusOpen
-                    ? t('Barcode Autofocus (Active)')
-                    : t('Barcode Autofocus (Inactive)')
-                }
+                title={barcodeSearch.isAutoFocusOpen ? t('Barcode Autofocus (Active)') : t('Barcode Autofocus (Inactive)')}
               >
                 <Barcode className="h-5 w-5" />
                 {barcodeSearch.isAutoFocusOpen && (
-                  <span className="absolute -top-1 -end-1 flex h-3 w-3">
+                  <span className="absolute -end-1 -top-1 flex h-3 w-3">
                     <span className="bg-primary/60 absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"></span>
                     <span className="bg-primary relative inline-flex h-3 w-3 rounded-full"></span>
                   </span>
@@ -487,23 +439,16 @@ export default function PosSystem() {
               <Button
                 variant={autoMerge ? 'default' : 'outline'}
                 size="icon"
-                className={cn(
-                  'active:scale-95 relative h-11 w-11 transition-all',
-                  autoMerge && 'bg-primary/90 text-primary-foreground',
-                )}
+                className={cn('relative h-11 w-11 transition-all active:scale-95', autoMerge && 'bg-primary/90 text-primary-foreground')}
                 onClick={() => setAutoMerge(!autoMerge)}
-                title={
-                  autoMerge
-                    ? t('Auto Merge Items (Enabled)')
-                    : t('Auto Merge Items (Disabled)')
-                }
+                title={autoMerge ? t('Auto Merge Items (Enabled)') : t('Auto Merge Items (Disabled)')}
               >
                 <Shrink className="h-5 w-5" />
               </Button>
               <Button
                 variant="outline"
                 size="icon"
-                className="active:scale-95 h-11 w-11 text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground h-11 w-11 active:scale-95"
                 onClick={() => dialogs.setShowSearchProductsDialog(true)}
                 title={t('Quick Search Catalog')}
               >
@@ -565,12 +510,7 @@ export default function PosSystem() {
           />
         )}
 
-        {dialogs.showOrderDialog && (
-          <OrdersDialog
-            open={dialogs.showOrderDialog}
-            onOpenChange={dialogs.setShowOrderDialog}
-          />
-        )}
+        {dialogs.showOrderDialog && <OrdersDialog open={dialogs.showOrderDialog} onOpenChange={dialogs.setShowOrderDialog} />}
 
         {checkout.showShippingDialog && (
           <ShippingDialog
@@ -585,11 +525,7 @@ export default function PosSystem() {
         )}
 
         {dialogs.showQuickAddProduct && (
-          <QuickProductPopup
-            open={dialogs.showQuickAddProduct}
-            onOpenChange={dialogs.setShowQuickAddProduct}
-            defaultName={dialogs.pendingBarcode}
-          />
+          <QuickProductPopup open={dialogs.showQuickAddProduct} onOpenChange={dialogs.setShowQuickAddProduct} defaultName={dialogs.pendingBarcode} />
         )}
       </Suspense>
 

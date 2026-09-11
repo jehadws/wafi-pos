@@ -1,74 +1,74 @@
 type CartProduct = {
-  order_id: number | null
-  product_id: number
-  name: string
-  discount_type: "percentage" | "flat"
-  discount: number
-  discount_percentage: number
-  product_type: "product" | string,
-  rate: number
-  quantity: number
-  tax_group_id: number
-  tax_type: "inclusive" | "exclusive"
-  tax_value: number
-  unit_id: number
-  unit_price: number
-  price_with_tax: number
-  price_without_tax: number
-  unit_name: string
-  total_price: number
-  total_price_without_tax: number
-  total_price_with_tax: number
-  mode: "normal" | string
-  unit_quantity_id: number
-  total_tax_value: number
-  _uuid: string
-}
+  order_id: number | null;
+  product_id: number;
+  name: string;
+  discount_type: 'percentage' | 'flat';
+  discount: number;
+  discount_percentage: number;
+  product_type: 'product' | string;
+  rate: number;
+  quantity: number;
+  tax_group_id: number;
+  tax_type: 'inclusive' | 'exclusive';
+  tax_value: number;
+  unit_id: number;
+  unit_price: number;
+  price_with_tax: number;
+  price_without_tax: number;
+  unit_name: string;
+  total_price: number;
+  total_price_without_tax: number;
+  total_price_with_tax: number;
+  mode: 'normal' | string;
+  unit_quantity_id: number;
+  total_tax_value: number;
+  _uuid: string;
+};
 
 type DeliveryType = {
-  identifier: string
-  label: string
-  icon: string
-  selected: boolean
-}
+  identifier: string;
+  label: string;
+  icon: string;
+  selected: boolean;
+};
 
 type OrderFormValuesType = {
-  id: number | null,
-  code: string | null,
+  id: number | null;
+  code: string | null;
   addresses: {
-    billing: Address
-    shipping: Address
-  } | null
-  change: number
-  coupons: Coupon[]
-  customer: Customer | null
-  customer_id: number
-  discount: number
-  discount_percentage: number
-  discount_type: "flat" | "percentage",
-  instalments: [],
-  note: string | null
-  note_visibility: "hidden" | "visible"
-  payment_status: "paid" | "unpaid",
-  payments: TPaymentMethod[]
-  products: CartProduct[]
-  products_tax_value: number
-  shipping: number
-  shipping_rate: number
-  shipping_type: "flat"
-  subtotal: number
-  tax_group: Record<string, unknown>
-  tax_group_id: null | number
-  tax_type: boolean | string
-  tax_value: number
-  taxes: []
-  tendered: number
-  title: string | null
-  total: number
-  total_coupons: number
-  total_products: number
-  shipping_rate: number
-  type: OrderTypeObj | null
+    billing: Address;
+    shipping: Address;
+  } | null;
+  change: number;
+  coupons: Coupon[];
+  customer: Customer | null;
+  customer_id: number;
+  discount: number;
+  discount_percentage: number;
+  discount_type: 'flat' | 'percentage';
+  instalments: [];
+  note: string | null;
+  note_visibility: 'hidden' | 'visible';
+  payment_status: 'paid' | 'unpaid';
+  payments: TPaymentMethod[];
+  products: CartProduct[];
+  products_tax_value: number;
+  shipping: number;
+  shipping_rate: number;
+  shipping_type: 'flat';
+  subtotal: number;
+  tax_group: Record<string, unknown>;
+  tax_group_id: null | number;
+  tax_type: boolean | string;
+  tax_value: number;
+  taxes: [];
+  tendered: number;
+  title: string | null;
+  total: number;
+  total_coupons: number;
+  total_products: number;
+  shipping_rate: number;
+  type: OrderTypeObj | null;
   // "register_id": null | number,
   // "description": null,
   // "process_status": "not-available",
@@ -112,17 +112,17 @@ type OrderFormValuesType = {
   //     total_tax_value: Number
   //   }
   // ],
-}
+};
 
 type ProductSearchBarcode = {
-  type: string
+  type: string;
   product: ProductSearchResult & {
-    selectedUnitQuantity: UnitQuantity
+    selectedUnitQuantity: UnitQuantity;
     tax_group: TaxGroup & {
-      taxes: Tax[]
-    }
-  }
-}
+      taxes: Tax[];
+    };
+  };
+};
 
 interface SbPosOptions {
   sb_subul_printing_document: 'invoice' | 'receipt';
@@ -133,11 +133,7 @@ interface SbPosOptions {
   sb_subul_quick_product_default_unit: number; // Unit id
   sb_subul_price_with_tax: 'yes' | 'no';
   sb_subul_unit_price_ediable: 'yes' | 'no';
-  sb_subul_printing_enabled_for:
-  | 'disabled'
-  | 'all_orders'
-  | 'partially_paid_orders'
-  | 'only_paid_orders';
+  sb_subul_printing_enabled_for: 'disabled' | 'all_orders' | 'partially_paid_orders' | 'only_paid_orders';
   sb_subul_registers_enabled: 'yes' | 'no';
   sb_subul_idle_counter: 'disabled' | '5min' | '10min' | '15min' | '20min' | '30min' | number;
   sb_subul_disbursement: 'yes' | 'no';
@@ -169,7 +165,6 @@ interface SbPosOptions {
   sb_subul_keyboard_fullscreen?: string[];
 }
 
-
 interface ProductUnitQuantity {
   quantity: number;
   sale_price_tax: number;
@@ -190,7 +185,6 @@ interface ProductUnitQuantity {
   custom_price_without_tax: number;
   custom_price_with_tax: number;
 }
-
 
 interface Product {
   id?: number;

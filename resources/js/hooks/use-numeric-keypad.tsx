@@ -1,31 +1,25 @@
-"use client"
+'use client';
 
-import { useState } from "react"
+import { useState } from 'react';
 
 interface UseNumericKeypadProps {
-  onConfirm: (value: string) => void
-  initialValue?: string | number
-  title?: string
-  maxLength?: number
-  allowDecimal?: boolean
+  onConfirm: (value: string) => void;
+  initialValue?: string | number;
+  title?: string;
+  maxLength?: number;
+  allowDecimal?: boolean;
 }
 
-export function useNumericKeypad({
-  onConfirm,
-  initialValue = "",
-  title,
-  maxLength = 10,
-  allowDecimal = false,
-}: UseNumericKeypadProps) {
-  const [isOpen, setIsOpen] = useState(false)
+export function useNumericKeypad({ onConfirm, initialValue = '', title, maxLength = 10, allowDecimal = false }: UseNumericKeypadProps) {
+  const [isOpen, setIsOpen] = useState(false);
 
-  const openKeypad = () => setIsOpen(true)
-  const closeKeypad = () => setIsOpen(false)
+  const openKeypad = () => setIsOpen(true);
+  const closeKeypad = () => setIsOpen(false);
 
   const handleConfirm = (value: string) => {
-    onConfirm(value)
-    closeKeypad()
-  }
+    onConfirm(value);
+    closeKeypad();
+  };
 
   return {
     isOpen,
@@ -40,5 +34,5 @@ export function useNumericKeypad({
       maxLength,
       allowDecimal,
     },
-  }
+  };
 }

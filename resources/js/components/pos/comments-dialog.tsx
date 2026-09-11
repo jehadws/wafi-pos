@@ -31,7 +31,7 @@ export default function CommentsDialog({ isOpen, onClose, onSave, initialNote = 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t('Order Note')}</DialogTitle>
-          <DialogDescription className='sr-only'>{t('More details about this order')}</DialogDescription>
+          <DialogDescription className="sr-only">{t('More details about this order')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">

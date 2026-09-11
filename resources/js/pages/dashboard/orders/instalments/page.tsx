@@ -1,3 +1,4 @@
+import { crudApi } from '@/api';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table/data-table';
@@ -6,10 +7,8 @@ import { useTranslation } from '@/lib/i18n';
 import { formatDateTime } from '@/utils/format';
 import { Head, router } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
-import { crudApi } from '@/api';
 import { ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
-
 
 type InstalmentRow = {
   id: number;
@@ -76,13 +75,7 @@ export default function InstalmentsList() {
       cell: ({ row }) => (
         <div className="flex items-center gap-1">
           <span>{row.original.order_code}</span>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0"
-            onClick={() => router.get(`/dashboard/orders`)}
-            title={t('View Order')}
-          >
+          <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => router.get(`/dashboard/orders`)} title={t('View Order')}>
             <ExternalLink className="h-3 w-3" />
           </Button>
         </div>
@@ -119,15 +112,21 @@ export default function InstalmentsList() {
         <div className="grid w-full">
           <DataTable
             columns={columns}
-            data={(rows as unknown as InstalmentRow[])}
+            data={rows as unknown as InstalmentRow[]}
             title={t('Order Instalments')}
             description={t('List of all scheduled instalments across orders.')}
             searchKey="order_code"
             useCustomPagination
             onPageChange={setCurrentPage}
-            onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            }}
             useServerSideSearch
-            onSearch={(s) => { setSearchTerm(s); setCurrentPage(1); }}
+            onSearch={(s) => {
+              setSearchTerm(s);
+              setCurrentPage(1);
+            }}
             searchValue={searchTerm}
             onRefresh={() => fetchData(currentPage, pageSize, searchTerm)}
           />

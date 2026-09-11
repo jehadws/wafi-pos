@@ -15,5 +15,9 @@ export function AppShell({ children, variant = 'header' }: AppShellProps) {
     return <div className="flex min-h-screen w-full flex-col">{children}</div>;
   }
 
-  return <SidebarProvider defaultOpen={sidebarOpen} dir={isRTLLocale(String(locale)) ? 'rtl' : 'ltr'}>{children}</SidebarProvider>;
+  return (
+    <SidebarProvider defaultOpen={sidebarOpen} dir={isRTLLocale(String(locale)) ? 'rtl' : 'ltr'}>
+      {children}
+    </SidebarProvider>
+  );
 }

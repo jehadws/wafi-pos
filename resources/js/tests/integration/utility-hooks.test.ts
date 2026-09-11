@@ -1,47 +1,44 @@
-import { describe, expect, it, vi } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
 import { useDebouncedEffect } from '@/hooks/use-debounced-effect';
 import { usePosBeforeUnload } from '@/hooks/use-pos-before-unload';
+import { act, renderHook } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 describe('utility hooks', () => {
-    describe('useDebouncedEffect', () => {
-        it('delays callback execution until delay elapsed', () => {
-            vi.useFakeTimers();
-            const callback = vi.fn();
+  describe('useDebouncedEffect', () => {
+    it('delays callback execution until delay elapsed', () => {
+      vi.useFakeTimers();
+      const callback = vi.fn();
 
-            const count = 0;
-            renderHook(
-                ({ c }) => useDebouncedEffect(callback, [c], 300),
-                { initialProps: { c: count } },
-            );
+      const count = 0;
+      renderHook(({ c }) => useDebouncedEffect(callback, [c], 300), { initialProps: { c: count } });
 
-            expect(callback).not.toHaveBeenCalled();
+      expect(callback).not.toHaveBeenCalled();
 
-            act(() => {
-                vi.advanceTimersByTime(200);
-            });
-            expect(callback).not.toHaveBeenCalled();
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      expect(callback).not.toHaveBeenCalled();
 
-            act(() => {
-                vi.advanceTimersByTime(150);
-            });
-            expect(callback).toHaveBeenCalledTimes(1);
+      act(() => {
+        vi.advanceTimersByTime(150);
+      });
+      expect(callback).toHaveBeenCalledTimes(1);
 
-            vi.useRealTimers();
-        });
+      vi.useRealTimers();
     });
+  });
 
-    describe('usePosBeforeUnload', () => {
-        it('attaches and removes beforeunload listener', () => {
-            const addSpy = vi.spyOn(window, 'addEventListener');
-            const removeSpy = vi.spyOn(window, 'removeEventListener');
+  describe('usePosBeforeUnload', () => {
+    it('attaches and removes beforeunload listener', () => {
+      const addSpy = vi.spyOn(window, 'addEventListener');
+      const removeSpy = vi.spyOn(window, 'removeEventListener');
 
-            const { unmount } = renderHook(() => usePosBeforeUnload());
+      const { unmount } = renderHook(() => usePosBeforeUnload());
 
-            expect(addSpy).toHaveBeenCalledWith('beforeunload', expect.any(Function));
+      expect(addSpy).toHaveBeenCalledWith('beforeunload', expect.any(Function));
 
-            unmount();
-            expect(removeSpy).toHaveBeenCalledWith('beforeunload', expect.any(Function));
-        });
+      unmount();
+      expect(removeSpy).toHaveBeenCalledWith('beforeunload', expect.any(Function));
     });
+  });
 });

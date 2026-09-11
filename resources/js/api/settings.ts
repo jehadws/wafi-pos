@@ -7,9 +7,9 @@ export type SettingsSection = 'accounting' | 'customers' | 'general' | 'orders' 
  * Settings API — `/api/settings/*`
  */
 export const settingsApi = {
-    /** Persist a settings section. */
-    update: (section: SettingsSection, data: unknown) => post(`/settings/${section}`, data),
+  /** Persist a settings section. */
+  update: (section: SettingsSection, data: unknown) => post(`/settings/${section}`, data),
 
-    /** Fetch the current GeneralSettings payload (for re-syncing the frontend singleton). */
-    getCurrent: () => get('/settings/current'),
+  /** Fetch the current GeneralSettings payload (for re-syncing the frontend singleton). */
+  getCurrent: () => get('/settings/current'),
 };

@@ -19,18 +19,18 @@ import type { ComponentType } from 'react';
  * heterogeneous shapes (plain selects, row editors, whole-tab editors).
  */
 export interface CustomFieldComponentProps {
-    field: FormFieldDef;
-    value: unknown;
-    /**
-     * `createdEntry` is the raw created entry — `sbCrudForm` hands it to
-     * the parent so callers can keep richer state (e.g. the accounts page
-     * needs `name` + `id` for its manual list).
-     */
-    onChange: (value: unknown, createdEntry?: Record<string, unknown>) => void;
-    error?: string;
-    disabled?: boolean;
-    /** Stable id for label htmlFor wiring. */
-    id?: string;
+  field: FormFieldDef;
+  value: unknown;
+  /**
+   * `createdEntry` is the raw created entry — `sbCrudForm` hands it to
+   * the parent so callers can keep richer state (e.g. the accounts page
+   * needs `name` + `id` for its manual list).
+   */
+  onChange: (value: unknown, createdEntry?: Record<string, unknown>) => void;
+  error?: string;
+  disabled?: boolean;
+  /** Stable id for label htmlFor wiring. */
+  id?: string;
 }
 
 export type CustomFieldComponent = ComponentType<CustomFieldComponentProps>;
@@ -39,18 +39,18 @@ const components = new Map<string, CustomFieldComponent>();
 
 /** Register a component under its backend name (idempotent, last wins). */
 export function registerCustomComponent(name: string, component: CustomFieldComponent): void {
-    components.set(name, component);
+  components.set(name, component);
 }
 
 /** Resolve a backend component name; `null` when unregistered. */
 export function getCustomComponent(name?: string): CustomFieldComponent | null {
-    if (!name) {
-        return null;
-    }
-    return components.get(name) ?? null;
+  if (!name) {
+    return null;
+  }
+  return components.get(name) ?? null;
 }
 
 /** Test helper — drop every registration. */
 export function clearCustomComponents(): void {
-    components.clear();
+  components.clear();
 }

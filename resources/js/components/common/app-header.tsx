@@ -1,23 +1,21 @@
+import AppLogo from '@/components/common/app-logo';
+import AppLogoIcon from '@/components/common/app-logo-icon';
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
-import { Icon } from '@/components/ui/icon';
+import { NotificationBell } from '@/components/common/notification-bell';
+import { UserMenuContent } from '@/components/common/user-menu-content';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Icon } from '@/components/ui/icon';
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { UserMenuContent } from '@/components/common/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
-import AppLogo from '@/components/common/app-logo';
-import AppLogoIcon from '@/components/common/app-logo-icon';
-import { NotificationBell } from '@/components/common/notification-bell';
-
-
 
 const activeItemStyles = 'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
 
@@ -111,18 +109,12 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                   <NavigationMenuItem key={index} className="relative flex h-full items-center">
                     <Link
                       href={item.href}
-                      className={cn(
-                        navigationMenuTriggerStyle(),
-                        page.url === item.href && activeItemStyles,
-                        'h-9 cursor-pointer px-3',
-                      )}
+                      className={cn(navigationMenuTriggerStyle(), page.url === item.href && activeItemStyles, 'h-9 cursor-pointer px-3')}
                     >
                       {item.icon && <Icon iconNode={item.icon} className="me-2 h-4 w-4" />}
                       {item.title}
                     </Link>
-                    {page.url === item.href && (
-                      <div className="absolute bottom-0 start-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>
-                    )}
+                    {page.url === item.href && <div className="absolute start-0 bottom-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>}
                   </NavigationMenuItem>
                 ))}
               </NavigationMenuList>

@@ -1,7 +1,7 @@
-import Settings from "@/lib/settings";
-import { enUS } from 'date-fns/locale';
-import NumeralJS from "numeral";
+import Settings from '@/lib/settings';
 import { format, toZonedTime } from 'date-fns-tz';
+import { enUS } from 'date-fns/locale';
+import NumeralJS from 'numeral';
 
 /**
  * Dev-only warning for the silent-fallback path: format utils catch the
@@ -11,12 +11,12 @@ import { format, toZonedTime } from 'date-fns-tz';
  */
 let warnedUninitializedSettings = false;
 const warnUninitializedSettings = (context: string) => {
-    if (warnedUninitializedSettings || import.meta.env?.PROD) return;
-    warnedUninitializedSettings = true;
-    console.warn(
-        `[format] ${context}: app settings are not initialized yet — using default formatting. ` +
-            'Settings are hydrated in app.tsx; render the app only after that.',
-    );
+  if (warnedUninitializedSettings || import.meta.env?.PROD) return;
+  warnedUninitializedSettings = true;
+  console.warn(
+    `[format] ${context}: app settings are not initialized yet — using default formatting. ` +
+      'Settings are hydrated in app.tsx; render the app only after that.',
+  );
 };
 
 /**
@@ -28,8 +28,8 @@ const warnUninitializedSettings = (context: string) => {
  * of 0 is valid and falsy, so `||` silently rewrites it to 2.
  */
 export const resolveCurrencyPrecision = (value: number | string | null | undefined): number => {
-    const parsed = typeof value === 'number' ? value : parseInt(String(value ?? ''), 10);
-    return Number.isInteger(parsed) && parsed >= 0 && parsed <= 5 ? parsed : 2;
+  const parsed = typeof value === 'number' ? value : parseInt(String(value ?? ''), 10);
+  return Number.isInteger(parsed) && parsed >= 0 && parsed <= 5 ? parsed : 2;
 };
 
 export const formatCurrency = (amount: number) => {
@@ -53,19 +53,22 @@ export const formatCurrency = (amount: number) => {
   const { sb_currency_symbol, sb_currency_position, sb_currency_thousand_separator, sb_currency_decimal_separator, sb_currency_precision } = currency;
   const num = typeof amount === 'number' && !isNaN(amount) ? amount : 0;
   const precision = resolveCurrencyPrecision(sb_currency_precision);
-  const formattedAmount = num.toFixed(precision).replace('.', sb_currency_decimal_separator || '.').replace(/\B(?=(\d{3})+(?!\d))/g, sb_currency_thousand_separator || ',');
+  const formattedAmount = num
+    .toFixed(precision)
+    .replace('.', sb_currency_decimal_separator || '.')
+    .replace(/\B(?=(\d{3})+(?!\d))/g, sb_currency_thousand_separator || ',');
 
   if (sb_currency_position === 'before') {
     return `${sb_currency_symbol || '$'}${formattedAmount}`;
   }
 
   return `${formattedAmount}${sb_currency_symbol || '$'}`;
-}
+};
 
 export const rawCurrency = (value: any) => {
   const numeralFormat = `0.000000000`;
   return parseFloat(NumeralJS(value).format(numeralFormat));
-}
+};
 
 const phpToDateFnsFormat = (phpFormat: string): string => {
   const formatMap: { [key: string]: string } = {
@@ -106,12 +109,12 @@ export const formatDate = (dateString: string | null | undefined) => {
   }
 
   let parsedDate = new Date(dateString);
-  
+
   if (isNaN(parsedDate.getTime())) {
     // Fallback for "YYYY-MM-DD HH:mm:ss" format
     const cleanedDateString = dateString.replace(' ', 'T');
     parsedDate = new Date(cleanedDateString);
-    
+
     if (isNaN(parsedDate.getTime())) {
       return dateString;
     }
@@ -119,12 +122,12 @@ export const formatDate = (dateString: string | null | undefined) => {
 
   const zonedDate = toZonedTime(parsedDate, sb_datetime_timezone || 'UTC');
   const dateFnsFormat = phpToDateFnsFormat(sb_date_format || 'Y-m-d');
-  
+
   return format(zonedDate, dateFnsFormat, {
     locale: enUS,
-    timeZone: sb_datetime_timezone || 'UTC'
+    timeZone: sb_datetime_timezone || 'UTC',
   });
-}
+};
 
 export const formatDateTime = (dateString: string | null | undefined) => {
   let dateConfig: any = { sb_datetime_format: 'Y-m-d H:i', sb_datetime_timezone: 'UTC' };
@@ -144,16 +147,16 @@ export const formatDateTime = (dateString: string | null | undefined) => {
   }
 
   let parsedDate = new Date(dateString);
-  
+
   if (isNaN(parsedDate.getTime())) {
     // Fallback for some non-standard date strings
     const cleanedDateString = dateString
-      .replace(/\./g, '-')  // Replace dots with dashes
-      .replace(/,/g, '')    // Remove commas
-      .replace(' ', 'T');   // Handle "YYYY-MM-DD HH:mm:ss"
+      .replace(/\./g, '-') // Replace dots with dashes
+      .replace(/,/g, '') // Remove commas
+      .replace(' ', 'T'); // Handle "YYYY-MM-DD HH:mm:ss"
 
     parsedDate = new Date(cleanedDateString);
-    
+
     if (isNaN(parsedDate.getTime())) {
       return dateString; // Return original if all parsing fails
     }
@@ -167,6 +170,6 @@ export const formatDateTime = (dateString: string | null | undefined) => {
 
   return format(zonedDate, displayFormat, {
     locale: enUS,
-    timeZone: sb_datetime_timezone || 'UTC'
+    timeZone: sb_datetime_timezone || 'UTC',
   });
 };

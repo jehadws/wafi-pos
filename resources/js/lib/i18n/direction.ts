@@ -14,6 +14,6 @@ export const RTLLOCALES: ReadonlySet<string> = new Set(['ar', 'fa', 'ur', 'he', 
  * component and test it against the RTL set.
  */
 export function isRTLLocale(locale: string): boolean {
-    const primary = locale.toLowerCase().replace('_', '-').split('-')[0];
-    return RTLLOCALES.has(primary);
+  const primary = locale.toLowerCase().replace('_', '-').split('-')[0];
+  return RTLLOCALES.has(primary);
 }

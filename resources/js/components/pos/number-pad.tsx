@@ -19,7 +19,12 @@ interface NumberButtonProps {
 
 function NumberButton({ children, onClick }: NumberButtonProps) {
   return (
-    <Button variant="outline" size="lg" className="bg-card text-foreground h-14 rounded-xl text-xl font-semibold shadow-2xs lg:h-16" onClick={onClick}>
+    <Button
+      variant="outline"
+      size="lg"
+      className="bg-card text-foreground h-14 rounded-xl text-xl font-semibold shadow-2xs lg:h-16"
+      onClick={onClick}
+    >
       {children}
     </Button>
   );
@@ -77,11 +82,7 @@ export function NumberPad({ onNumberClick, onBackspace, onConfirm }: NumberPadPr
         <Delete className="h-6 w-6" />
       </NumberButton>
       <NumberButton onClick={() => onNumberClick('0')}>0</NumberButton>
-      <Button
-        variant="default"
-        className="text-primary-foreground h-14 rounded-xl text-xl font-semibold lg:h-16"
-        onClick={onConfirm}
-      >
+      <Button variant="default" className="text-primary-foreground h-14 rounded-xl text-xl font-semibold lg:h-16" onClick={onConfirm}>
         {t('Add')}
       </Button>
     </div>

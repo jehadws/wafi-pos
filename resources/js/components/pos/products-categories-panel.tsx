@@ -1,352 +1,356 @@
-import { useNumericKeypad } from '@/hooks/use-numeric-keypad';
-import { useSequentialTaskQueue } from '@/hooks/use-sequential-task-queue';
-import { usePOS } from '@/hooks/usePOS';
-import { isPosOptionEnabled, POS_OPTION_KEYS, resolveUnitDisplayPrice } from '@/constants/pos-options';
-import { useTranslation } from '@/lib/i18n';
-import { formatCurrency } from '@/utils/format';
 import { categoriesApi } from '@/api';
-import { ChevronRight } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import EmptyState from '@/components/feedback/empty-state';
 import { Button } from '@/components/ui/button';
 import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { isPosOptionEnabled, POS_OPTION_KEYS, resolveUnitDisplayPrice } from '@/constants/pos-options';
+import { useNumericKeypad } from '@/hooks/use-numeric-keypad';
+import { useSequentialTaskQueue } from '@/hooks/use-sequential-task-queue';
+import { usePOS } from '@/hooks/usePOS';
+import { useTranslation } from '@/lib/i18n';
+import { formatCurrency } from '@/utils/format';
+import { ChevronRight } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import SelectUnitQuantityDialog from './select-unit-quantity-dialog';
 
 import { pickExpressUnit, resolveProductUnitQuantities } from '@/services/product-units';
 import { validateStockAvailability } from '@/services/stock';
 
 export default function ProductsCategoriesPanel() {
-    const { t } = useTranslation();
-    const { addToCart: addProductToCart, openDialog, options } = usePOS();
-    // `clothing_shop` layout: products show a badge-style name + price below the image.
-    const isClothingLayout = options[POS_OPTION_KEYS.layout] === 'clothing_shop';
-    const [categories, setCategories] = useState<CategoryProduct[]>([]);
-    const [breadcrumb, setBreadcrumb] = useState<CategoryProduct[]>([]);
-    const [products, setProducts] = useState<Product[]>([]);
+  const { t } = useTranslation();
+  const { addToCart: addProductToCart, openDialog, options } = usePOS();
+  // `clothing_shop` layout: products show a badge-style name + price below the image.
+  const isClothingLayout = options[POS_OPTION_KEYS.layout] === 'clothing_shop';
+  const [categories, setCategories] = useState<CategoryProduct[]>([]);
+  const [breadcrumb, setBreadcrumb] = useState<CategoryProduct[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
 
-    const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-    const [selectProduct, setSelectProduct] = useState<Product>();
-    const [selectedUnitQuantity, setSelectedUnitQuantity] = useState<UnitQuantity>();
+  const [selectProduct, setSelectProduct] = useState<Product>();
+  const [selectedUnitQuantity, setSelectedUnitQuantity] = useState<UnitQuantity>();
 
-    /**
-     * Click orchestration — see use-sequential-task-queue.ts.
-     *
-     * Replaces the old `isSelectingUnit` React-state guard, which raced:
-     * rapid clicks landed while a handler was still awaiting the units API and
-     * were silently dropped (the product never reached the cart). Tasks drain
-     * strictly one at a time, so every click is honored in click order, and
-     * `isRunningRef` provides synchronous busy detection for dialog mode.
-     */
-    const clickQueue = useSequentialTaskQueue();
+  /**
+   * Click orchestration — see use-sequential-task-queue.ts.
+   *
+   * Replaces the old `isSelectingUnit` React-state guard, which raced:
+   * rapid clicks landed while a handler was still awaiting the units API and
+   * were silently dropped (the product never reached the cart). Tasks drain
+   * strictly one at a time, so every click is honored in click order, and
+   * `isRunningRef` provides synchronous busy detection for dialog mode.
+   */
+  const clickQueue = useSequentialTaskQueue();
 
-    const loadCategories = async (parent?: CategoryProduct) => {
-        setLoading(true);
-        try {
-            const content = await categoriesApi.getPosContent(parent?.id);
-            setCategories(content.categories);
-            setProducts(content.products);
-            updateBreadCrumb(content.currentCategory);
-        } catch (error) {
-            // Previously silent — now surfaces the failure to the user
-            toast.error(t('Failed to load categories. Please try again.'));
-            console.error('[POS] loadCategories error:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const loadCategories = async (parent?: CategoryProduct) => {
+    setLoading(true);
+    try {
+      const content = await categoriesApi.getPosContent(parent?.id);
+      setCategories(content.categories);
+      setProducts(content.products);
+      updateBreadCrumb(content.currentCategory);
+    } catch (error) {
+      // Previously silent — now surfaces the failure to the user
+      toast.error(t('Failed to load categories. Please try again.'));
+      console.error('[POS] loadCategories error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const updateBreadCrumb = (parent: CategoryProduct) => {
-        if (parent) {
-            const index = breadcrumb.filter((bread) => bread.id === parent.id);
+  const updateBreadCrumb = (parent: CategoryProduct) => {
+    if (parent) {
+      const index = breadcrumb.filter((bread) => bread.id === parent.id);
 
-            /**
-             * this means, we're trying to navigate
-             * through something that has already been
-             * added to the breadcrumb
-             */
-            if (index.length > 0) {
-                let allow = true;
-                const prior = breadcrumb.filter((bread) => {
-                    if (bread.id === index[0].id && allow) {
-                        allow = false;
-                        return true;
-                    }
+      /**
+       * this means, we're trying to navigate
+       * through something that has already been
+       * added to the breadcrumb
+       */
+      if (index.length > 0) {
+        let allow = true;
+        const prior = breadcrumb.filter((bread) => {
+          if (bread.id === index[0].id && allow) {
+            allow = false;
+            return true;
+          }
 
-                    return allow;
-                });
-                setBreadcrumb(prior);
-            } else {
-                setBreadcrumb([...breadcrumb, parent]);
-            }
-        } else {
-            setBreadcrumb([]);
-        }
-    };
-
-    const hasCategories = () => {
-        return categories.length > 0;
-    };
-    const hasProducts = () => {
-        return products.length > 0;
-    };
-
-    const addProductUnit = (product: Product, unit: UnitQuantity, qty: number): boolean => {
-        // Read the live store — a render-lagged prop snapshot undercounts the
-        // in-cart quantity during rapid adds and can allow overselling.
-        const quantityInCart = usePOS.getState().products.reduce((acc, item) => {
-            if (item.product_id === product.id && item.unit_quantity_id === unit.id) {
-                return acc + item.quantity;
-            }
-            return acc;
-        }, 0);
-
-        const stockCheck = validateStockAvailability(unit.quantity, qty, quantityInCart);
-        if (!stockCheck.allowed) {
-            toast.warning(t(stockCheck.reason || 'Not enough stock.'));
-            return false;
-        }
-
-        addProductToCart({
-            ...product,
-            unit_quantity_id: unit.id,
-            unit_name: unit.type,
-            quantities: unit,
-            quantity: qty,
+          return allow;
         });
-        return true;
-    };
+        setBreadcrumb(prior);
+      } else {
+        setBreadcrumb([...breadcrumb, parent]);
+      }
+    } else {
+      setBreadcrumb([]);
+    }
+  };
 
-    const handleQuantity = (quantity: string) => {
-        const qty = parseInt(quantity, 10);
-        if (isNaN(qty) || qty < 1) {
-            return toast.warning(t('Please provide a quantity'));
-        }
+  const hasCategories = () => {
+    return categories.length > 0;
+  };
+  const hasProducts = () => {
+    return products.length > 0;
+  };
 
-        if (selectedUnitQuantity && selectProduct) {
-            // The keypad always closes after confirm, so the selection must be
-            // cleared whether the stock check passes or fails — keeping it on
-            // failure would leak stale state into the next interaction.
-            addProductUnit(selectProduct, selectedUnitQuantity, qty);
-            setSelectProduct(undefined);
-            setSelectedUnitQuantity(undefined);
-        }
-    };
+  const addProductUnit = (product: Product, unit: UnitQuantity, qty: number): boolean => {
+    // Read the live store — a render-lagged prop snapshot undercounts the
+    // in-cart quantity during rapid adds and can allow overselling.
+    const quantityInCart = usePOS.getState().products.reduce((acc, item) => {
+      if (item.product_id === product.id && item.unit_quantity_id === unit.id) {
+        return acc + item.quantity;
+      }
+      return acc;
+    }, 0);
 
-    const quantityKeypad = useNumericKeypad({
-        onConfirm: handleQuantity,
-        initialValue: '',
-        title: t('Define Quantity'),
-        maxLength: 6,
-        allowDecimal: options[POS_OPTION_KEYS.allowDecimalQuantities] ?? true,
+    const stockCheck = validateStockAvailability(unit.quantity, qty, quantityInCart);
+    if (!stockCheck.allowed) {
+      toast.warning(t(stockCheck.reason || 'Not enough stock.'));
+      return false;
+    }
+
+    addProductToCart({
+      ...product,
+      unit_quantity_id: unit.id,
+      unit_name: unit.type,
+      quantities: unit,
+      quantity: qty,
     });
+    return true;
+  };
 
-    /**
-     * Processes a single product click. Resolves unit quantities from the
-     * preloaded category payload (no network) — the units API is only hit
-     * when the payload omitted them — and may await the unit-picker dialog.
-     * Exactly one of these runs at a time — enforced by the sequential queue
-     * in handleClickOnProduct below.
-     */
-    const processProductClick = async (product: Product) => {
-        // "Show Quantity" off → resolve the unit inline: a single unit or
-        // the configured default goes straight to the cart (no dialogs).
+  const handleQuantity = (quantity: string) => {
+    const qty = parseInt(quantity, 10);
+    if (isNaN(qty) || qty < 1) {
+      return toast.warning(t('Please provide a quantity'));
+    }
+
+    if (selectedUnitQuantity && selectProduct) {
+      // The keypad always closes after confirm, so the selection must be
+      // cleared whether the stock check passes or fails — keeping it on
+      // failure would leak stale state into the next interaction.
+      addProductUnit(selectProduct, selectedUnitQuantity, qty);
+      setSelectProduct(undefined);
+      setSelectedUnitQuantity(undefined);
+    }
+  };
+
+  const quantityKeypad = useNumericKeypad({
+    onConfirm: handleQuantity,
+    initialValue: '',
+    title: t('Define Quantity'),
+    maxLength: 6,
+    allowDecimal: options[POS_OPTION_KEYS.allowDecimalQuantities] ?? true,
+  });
+
+  /**
+   * Processes a single product click. Resolves unit quantities from the
+   * preloaded category payload (no network) — the units API is only hit
+   * when the payload omitted them — and may await the unit-picker dialog.
+   * Exactly one of these runs at a time — enforced by the sequential queue
+   * in handleClickOnProduct below.
+   */
+  const processProductClick = async (product: Product) => {
+    // "Show Quantity" off → resolve the unit inline: a single unit or
+    // the configured default goes straight to the cart (no dialogs).
+    if (!isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) {
+      // Payload-first: the category content already hydrated
+      // unit_quantities (with the unit relation) — no refetch needed.
+      const units = await resolveProductUnitQuantities(product);
+      if (units.length === 0) {
+        toast.error(t('Unable to proceed, no product were provided.'));
+        return;
+      }
+
+      const resolved = pickExpressUnit(units, options[POS_OPTION_KEYS.quickProductDefaultUnit]);
+
+      if (resolved) {
+        addProductUnit(product, resolved, 1);
+        return;
+      }
+      // Several units and no default → fall through to the picker.
+    }
+
+    setSelectProduct(product);
+    setSelectedUnitQuantity(undefined);
+
+    try {
+      const unitQuantity: UnitQuantity | null = await openDialog('selectQuantity');
+      if (unitQuantity) {
+        setSelectedUnitQuantity(unitQuantity);
+
+        // "Show Quantity" off → default quantity (1), no quantity pad.
         if (!isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) {
-            // Payload-first: the category content already hydrated
-            // unit_quantities (with the unit relation) — no refetch needed.
-            const units = await resolveProductUnitQuantities(product);
-            if (units.length === 0) {
-                toast.error(t('Unable to proceed, no product were provided.'));
-                return;
-            }
-
-            const resolved = pickExpressUnit(units, options[POS_OPTION_KEYS.quickProductDefaultUnit]);
-
-            if (resolved) {
-                addProductUnit(product, resolved, 1);
-                return;
-            }
-            // Several units and no default → fall through to the picker.
+          addProductUnit(product, unitQuantity, 1);
+          setSelectProduct(undefined);
+          setSelectedUnitQuantity(undefined);
+          return;
         }
 
-        setSelectProduct(product);
+        quantityKeypad.openKeypad();
+      } else {
+        setSelectProduct(undefined);
         setSelectedUnitQuantity(undefined);
+      }
+    } catch {
+      setSelectProduct(undefined);
+      setSelectedUnitQuantity(undefined);
+    }
+  };
 
-        try {
-            const unitQuantity: UnitQuantity | null = await openDialog('selectQuantity');
-            if (unitQuantity) {
-                setSelectedUnitQuantity(unitQuantity);
+  /**
+   * Entry point for product-tile clicks.
+   *
+   * - Quick-add mode ("Show Quantity" off): every click is buffered in the
+   *   FIFO queue and drained one at a time, so rapid clicks are all honored
+   *   in order instead of being silently dropped.
+   * - Dialog mode ("Show Quantity" on): the unit-picker modal is an
+   *   exclusive user interaction and blocks the grid while open, so clicks
+   *   arriving while it is pending are ignored — this also guarantees a
+   *   second openDialog('selectQuantity') can never clobber the pending
+   *   resolver.
+   */
+  const handleClickOnProduct = (product: Product) => {
+    if (!product.id) return;
 
-                // "Show Quantity" off → default quantity (1), no quantity pad.
-                if (!isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) {
-                    addProductUnit(product, unitQuantity, 1);
-                    setSelectProduct(undefined);
-                    setSelectedUnitQuantity(undefined);
-                    return;
-                }
+    if (isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) {
+      if (clickQueue.isRunningRef.current) return;
+    }
 
-                quantityKeypad.openKeypad();
-            } else {
-                setSelectProduct(undefined);
-                setSelectedUnitQuantity(undefined);
-            }
-        } catch {
-            setSelectProduct(undefined);
-            setSelectedUnitQuantity(undefined);
-        }
-    };
+    clickQueue.enqueue(() => processProductClick(product));
+  };
 
-    /**
-     * Entry point for product-tile clicks.
-     *
-     * - Quick-add mode ("Show Quantity" off): every click is buffered in the
-     *   FIFO queue and drained one at a time, so rapid clicks are all honored
-     *   in order instead of being silently dropped.
-     * - Dialog mode ("Show Quantity" on): the unit-picker modal is an
-     *   exclusive user interaction and blocks the grid while open, so clicks
-     *   arriving while it is pending are ignored — this also guarantees a
-     *   second openDialog('selectQuantity') can never clobber the pending
-     *   resolver.
-     */
-    const handleClickOnProduct = (product: Product) => {
-        if (!product.id) return;
-
-        if (isPosOptionEnabled(options, POS_OPTION_KEYS.showQuantity)) {
-            if (clickQueue.isRunningRef.current) return;
-        }
-
-        clickQueue.enqueue(() => processProductClick(product));
-    };
-
-    useEffect(() => {
-        loadCategories();
+  useEffect(() => {
+    loadCategories();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+  }, []);
 
-    return (
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            {/* Breadcrumb chips — horizontally scrollable on narrow screens */}
-            <div className="flex h-12 shrink-0 items-center gap-1 overflow-x-auto border-b px-2">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-card h-9 shrink-0 cursor-pointer rounded-full px-4 font-medium shadow-2xs"
-                    onClick={() => loadCategories()}
+  return (
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      {/* Breadcrumb chips — horizontally scrollable on narrow screens */}
+      <div className="flex h-12 shrink-0 items-center gap-1 overflow-x-auto border-b px-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="bg-card h-9 shrink-0 cursor-pointer rounded-full px-4 font-medium shadow-2xs"
+          onClick={() => loadCategories()}
+        >
+          {t('Home')}
+        </Button>
+        {breadcrumb.map((bread) => (
+          <div className="flex shrink-0 items-center" key={bread.id}>
+            <ChevronRight className="text-muted-foreground/60 mx-0.5 h-4 w-4 shrink-0" />
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-card h-9 shrink-0 cursor-pointer rounded-full px-4 font-medium shadow-2xs"
+              onClick={() => loadCategories(bread)}
+            >
+              {bread.name}
+            </Button>
+          </div>
+        ))}
+      </div>
+
+      {hasCategories() ? (
+        <ScrollArea className="min-h-0 w-full flex-1">
+          <div
+            className={
+              isClothingLayout
+                ? 'grid grid-cols-3 gap-2 p-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
+                : 'grid grid-cols-2 gap-3 p-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
+            }
+          >
+            {categories.map((category) => (
+              <div
+                key={category.id}
+                className={`bg-card flex cursor-pointer rounded-xl border shadow-xs transition-all hover:shadow-md active:scale-[0.98] ${
+                  isClothingLayout ? 'flex-col p-1 pb-0' : 'flex-col'
+                }`}
+                onClick={() => loadCategories(category)}
+              >
+                <div
+                  className={
+                    isClothingLayout
+                      ? 'relative aspect-square overflow-hidden rounded-lg'
+                      : 'bg-muted relative aspect-video overflow-hidden rounded-t-xl'
+                  }
                 >
-                    {t('Home')}
-                </Button>
-                {breadcrumb.map((bread) => (
-                    <div className="flex shrink-0 items-center" key={bread.id}>
-                        <ChevronRight className="text-muted-foreground/60 mx-0.5 h-4 w-4 shrink-0" />
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="bg-card h-9 shrink-0 cursor-pointer rounded-full px-4 font-medium shadow-2xs"
-                            onClick={() => loadCategories(bread)}
-                        >
-                            {bread.name}
-                        </Button>
-                    </div>
-                ))}
-            </div>
+                  <img src={category.preview_url || '/placeholder.svg'} alt={category.name} className="h-full w-full object-cover" />
+                </div>
+                <div className={isClothingLayout ? 'p-2 text-center' : 'p-3'}>
+                  <h1 className={`text-center leading-tight font-semibold ${isClothingLayout ? 'text-xs' : 'text-sm'}`}>{category.name}</h1>
+                </div>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+      ) : !hasCategories() && !hasProducts() && !loading ? (
+        <EmptyState onCreateCategories={() => {}} />
+      ) : (
+        <ScrollArea className="min-h-0 w-full flex-1">
+          <div
+            className={
+              isClothingLayout
+                ? 'grid grid-cols-3 gap-2 p-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
+                : 'grid grid-cols-2 gap-3 p-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
+            }
+          >
+            {products.map((product) => {
+              const unitQuantity = product.unit_quantities?.[0];
+              const available = unitQuantity?.quantity ?? 0;
+              // Same price resolution the cart charges by — never
+              // the backend `sale_price` alias (always with-tax).
+              const price = resolveUnitDisplayPrice(unitQuantity, options);
+              const isAvailable = available > 0;
 
-            {hasCategories() ? (
-                <ScrollArea className="min-h-0 w-full flex-1">
-                    <div className={isClothingLayout
-                        ? 'grid grid-cols-3 gap-2 p-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
-                        : 'grid grid-cols-2 gap-3 p-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'}>
-                        {categories.map((category) => (
-                            <div
-                                key={category.id}
-                                className={`bg-card hover:shadow-md active:scale-[0.98] flex cursor-pointer rounded-xl border shadow-xs transition-all ${
-                                    isClothingLayout
-                                        ? 'flex-col p-1 pb-0'
-                                        : 'flex-col'
-                                }`}
-                                onClick={() => loadCategories(category)}
-                            >
-                                <div className={isClothingLayout
-                                    ? 'relative aspect-square overflow-hidden rounded-lg'
-                                    : 'bg-muted relative aspect-video overflow-hidden rounded-t-xl'}>
-                                    <img
-                                        src={category.preview_url || '/placeholder.svg'}
-                                        alt={category.name}
-                                        className="h-full w-full object-cover"
-                                    />
-                                </div>
-                                <div className={isClothingLayout ? 'p-2 text-center' : 'p-3'}>
-                                    <h1 className={`text-center leading-tight font-semibold ${isClothingLayout ? 'text-xs' : 'text-sm'}`}>{category.name}</h1>
-                                </div>
-                            </div>
-                        ))}
+              return (
+                <div
+                  key={product.id}
+                  className={`bg-card flex rounded-xl border shadow-xs transition-all hover:shadow-md active:scale-[0.98] ${
+                    isAvailable ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                  } ${isClothingLayout ? 'flex-col p-1 pb-0' : 'flex-col'}`}
+                  onClick={() => isAvailable && handleClickOnProduct(product)}
+                >
+                  <div
+                    className={
+                      isClothingLayout
+                        ? 'relative aspect-square overflow-hidden rounded-lg'
+                        : 'bg-muted relative aspect-video overflow-hidden rounded-t-xl'
+                    }
+                  >
+                    <img
+                      src={product.galleries?.[0]?.url || product.images?.[0] || '/placeholder.svg'}
+                      alt={product.name}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  {isClothingLayout ? (
+                    <div className="flex flex-1 flex-col items-center p-2 text-center">
+                      <h1 className="text-xs leading-tight font-medium break-words">{product.name}</h1>
+                      <span className="text-primary mt-0.5 text-xs font-semibold tabular-nums">{formatCurrency(price)}</span>
+                      {!isAvailable && <span className="text-destructive mt-0.5 text-xs">{t('Out of stock')}</span>}
                     </div>
-                </ScrollArea>
-            ) : !hasCategories() && !hasProducts() && !loading ? (
-                <EmptyState onCreateCategories={() => {}} />
-            ) : (
-                <ScrollArea className="min-h-0 w-full flex-1">
-                    <div className={isClothingLayout
-                        ? 'grid grid-cols-3 gap-2 p-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
-                        : 'grid grid-cols-2 gap-3 p-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'}>
-                        {products.map((product) => {
-                            const unitQuantity = product.unit_quantities?.[0];
-                            const available = unitQuantity?.quantity ?? 0;
-                            // Same price resolution the cart charges by — never
-                            // the backend `sale_price` alias (always with-tax).
-                            const price = resolveUnitDisplayPrice(unitQuantity, options);
-                            const isAvailable = available > 0;
-
-                            return (
-                                <div
-                                    key={product.id}
-                                    className={`bg-card active:scale-[0.98] flex rounded-xl border shadow-xs transition-all hover:shadow-md ${
-                                        isAvailable ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
-                                    } ${
-                                        isClothingLayout
-                                            ? 'flex-col p-1 pb-0'
-                                            : 'flex-col'
-                                    }`}
-                                    onClick={() => isAvailable && handleClickOnProduct(product)}
-                                >
-                                    <div className={isClothingLayout
-                                        ? 'relative aspect-square overflow-hidden rounded-lg'
-                                        : 'bg-muted relative aspect-video overflow-hidden rounded-t-xl'}>
-                                        <img
-                                            src={product.galleries?.[0]?.url || product.images?.[0] || '/placeholder.svg'}
-                                            alt={product.name}
-                                            className="h-full w-full object-cover"
-                                        />
-                                    </div>
-                                    {isClothingLayout ? (
-                                        <div className="flex flex-1 flex-col items-center p-2 text-center">
-                                            <h1 className="text-xs leading-tight font-medium break-words">{product.name}</h1>
-                                            <span className="text-primary mt-0.5 text-xs font-semibold tabular-nums">{formatCurrency(price)}</span>
-                                            {!isAvailable && (
-                                                <span className="text-destructive mt-0.5 text-xs">{t('Out of stock')}</span>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-1 flex-col justify-between p-3">
-                                            <h1 className="text-center text-sm leading-tight font-semibold">{product.name}</h1>
-                                            <div className="mt-2 flex items-center justify-between text-xs">
-                                                <span className="text-primary font-semibold tabular-nums">{formatCurrency(price)}</span>
-                                                <span className={isAvailable ? 'text-muted-foreground' : 'text-destructive'}>
-                                                    {available} {t('available')}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
+                  ) : (
+                    <div className="flex flex-1 flex-col justify-between p-3">
+                      <h1 className="text-center text-sm leading-tight font-semibold">{product.name}</h1>
+                      <div className="mt-2 flex items-center justify-between text-xs">
+                        <span className="text-primary font-semibold tabular-nums">{formatCurrency(price)}</span>
+                        <span className={isAvailable ? 'text-muted-foreground' : 'text-destructive'}>
+                          {available} {t('available')}
+                        </span>
+                      </div>
                     </div>
-                </ScrollArea>
-            )}
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </ScrollArea>
+      )}
 
-            <SelectUnitQuantityDialog selectProduct={selectProduct} />
-            <NumericKeypadDialog {...quantityKeypad.keypadProps} />
-        </div>
-    );
+      <SelectUnitQuantityDialog selectProduct={selectProduct} />
+      <NumericKeypadDialog {...quantityKeypad.keypadProps} />
+    </div>
+  );
 }

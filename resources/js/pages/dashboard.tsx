@@ -4,29 +4,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
+import { SharedData } from '@/types';
 import { formatCurrency, formatDateTime } from '@/utils/format';
 import { Head, usePage } from '@inertiajs/react';
-import {
-  BarChart3,
-  DollarSign,
-  ShoppingCart,
-  TrendingDown,
-  TrendingUp,
-  Users,
-  Award,
-  Package,
-} from 'lucide-react';
+import { Award, BarChart3, DollarSign, Package, ShoppingCart, TrendingDown, TrendingUp, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-import { SharedData } from '@/types';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 // ─── Role namespaces ────────────────────────────────────────────────────────
 const ROLE_ADMIN = 'admin';
@@ -121,15 +104,15 @@ function paymentStatusMeta(status: string): { label: string; variant: 'default' 
 function buildChartData(weeks: WeekData | null) {
   if (!weeks) return [];
   const order = [1, 2, 3, 4, 5, 6, 0]; // Mon→Sun
-  return order.map((dayIdx) => {
-    const day = weeks.result[dayIdx];
-    if (!day) return null;
-    const current =
-      day.current?.entries?.reduce((s, e) => s + (e.total_sales_amount ?? 0), 0) ?? 0;
-    const previous =
-      day.previous?.entries?.reduce((s, e) => s + (e.total_sales_amount ?? 0), 0) ?? 0;
-    return { name: day.value, label: day.label, current, previous };
-  }).filter(Boolean) as { name: string; label: string; current: number; previous: number }[];
+  return order
+    .map((dayIdx) => {
+      const day = weeks.result[dayIdx];
+      if (!day) return null;
+      const current = day.current?.entries?.reduce((s, e) => s + (e.total_sales_amount ?? 0), 0) ?? 0;
+      const previous = day.previous?.entries?.reduce((s, e) => s + (e.total_sales_amount ?? 0), 0) ?? 0;
+      return { name: day.value, label: day.label, current, previous };
+    })
+    .filter(Boolean) as { name: string; label: string; current: number; previous: number }[];
 }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -169,11 +152,7 @@ function StatCard({
             <div className="text-muted-foreground mt-1 flex items-center gap-1 text-xs">
               {trend !== undefined && trend !== 0 && (
                 <span className={trend > 0 ? 'text-emerald-500' : 'text-rose-500'}>
-                  {trend > 0 ? (
-                    <TrendingUp className="inline h-3 w-3" />
-                  ) : (
-                    <TrendingDown className="inline h-3 w-3" />
-                  )}
+                  {trend > 0 ? <TrendingUp className="inline h-3 w-3" /> : <TrendingDown className="inline h-3 w-3" />}
                 </span>
               )}
               {sub}
@@ -186,21 +165,11 @@ function StatCard({
 }
 
 function AvatarBadge({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' }) {
-  const colors = [
-    'bg-violet-500',
-    'bg-sky-500',
-    'bg-emerald-500',
-    'bg-amber-500',
-    'bg-rose-500',
-    'bg-indigo-500',
-    'bg-teal-500',
-  ];
+  const colors = ['bg-violet-500', 'bg-sky-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-indigo-500', 'bg-teal-500'];
   const colorIdx = (name.charCodeAt(0) ?? 0) % colors.length;
   const sizeClass = size === 'sm' ? 'h-7 w-7 text-[10px]' : 'h-9 w-9 text-xs';
   return (
-    <div
-      className={`${colors[colorIdx]} ${sizeClass} flex flex-shrink-0 items-center justify-center rounded-full font-semibold text-white`}
-    >
+    <div className={`${colors[colorIdx]} ${sizeClass} flex flex-shrink-0 items-center justify-center rounded-full font-semibold text-white`}>
       {initials(name)}
     </div>
   );
@@ -258,8 +227,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  const isElevated =
-    roles.includes(ROLE_ADMIN) || roles.includes(ROLE_STORE_ADMIN) || Boolean(data?.isElevated);
+  const isElevated = roles.includes(ROLE_ADMIN) || roles.includes(ROLE_STORE_ADMIN) || Boolean(data?.isElevated);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -295,7 +263,6 @@ export default function Dashboard() {
       <Head title={t('Dashboard')} />
 
       <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
-
         {/* ── Error state ── */}
         {error && (
           <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border px-4 py-3 text-sm">
@@ -328,23 +295,11 @@ export default function Dashboard() {
 
           {/* Customers — admin/store-admin only */}
           {isElevated && (
-            <StatCard
-              title={t('Customers')}
-              value={cards?.total_customers ?? 0}
-              sub={t('Registered customers')}
-              icon={Users}
-              loading={loading}
-            />
+            <StatCard title={t('Customers')} value={cards?.total_customers ?? 0} sub={t('Registered customers')} icon={Users} loading={loading} />
           )}
 
           {/* Products */}
-          <StatCard
-            title={t('Products')}
-            value={cards?.total_products ?? 0}
-            sub={t('Total products')}
-            icon={BarChart3}
-            loading={loading}
-          />
+          <StatCard title={t('Products')} value={cards?.total_products ?? 0} sub={t('Total products')} icon={BarChart3} loading={loading} />
 
           {/* Expenses — admin/store-admin only */}
           {isElevated && (
@@ -363,9 +318,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader>
               <CardTitle>{t('Weekly Sales')}</CardTitle>
-              <CardDescription>
-                {t('Current week vs previous week — by day')}
-              </CardDescription>
+              <CardDescription>{t('Current week vs previous week — by day')}</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -376,13 +329,7 @@ export default function Dashboard() {
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={chartData} barGap={4} barCategoryGap="30%">
                     <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border" />
-                    <XAxis
-                      dataKey="name"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 12 }}
-                      className="fill-muted-foreground"
-                    />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} className="fill-muted-foreground" />
                     <YAxis
                       axisLine={false}
                       tickLine={false}
@@ -403,7 +350,6 @@ export default function Dashboard() {
 
         {/* ── Bottom grid: customers + orders + cashiers ── */}
         <div className={`grid gap-4 ${isElevated ? 'lg:grid-cols-3' : 'lg:grid-cols-1'}`}>
-
           {/* Best Customers — admin/store-admin only */}
           {isElevated && (
             <Card className="lg:col-span-1">
@@ -423,10 +369,7 @@ export default function Dashboard() {
                   ) : (
                     <div className="space-y-2">
                       {data.bestCustomers.map((c, idx) => (
-                        <div
-                          key={c.id}
-                          className="hover:bg-muted/50 flex items-center gap-3 rounded-lg border p-3 transition-colors"
-                        >
+                        <div key={c.id} className="hover:bg-muted/50 flex items-center gap-3 rounded-lg border p-3 transition-colors">
                           <div className="relative">
                             <AvatarBadge name={c.name ?? c.username} />
                             {idx < 3 && (
@@ -439,9 +382,7 @@ export default function Dashboard() {
                             <p className="truncate text-sm font-medium">{c.name ?? c.username}</p>
                             <p className="text-muted-foreground truncate text-xs">{c.email}</p>
                           </div>
-                          <div className="text-sm font-semibold whitespace-nowrap">
-                            {formatCurrency(c.purchases_amount)}
-                          </div>
+                          <div className="text-sm font-semibold whitespace-nowrap">{formatCurrency(c.purchases_amount)}</div>
                         </div>
                       ))}
                     </div>
@@ -458,9 +399,7 @@ export default function Dashboard() {
                 <ShoppingCart className="text-primary h-4 w-4" />
                 {t('Recent Orders')}
               </CardTitle>
-              <CardDescription>
-                {isElevated ? t('Latest orders across all cashiers') : t('Your latest orders')}
-              </CardDescription>
+              <CardDescription>{isElevated ? t('Latest orders across all cashiers') : t('Your latest orders')}</CardDescription>
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-[320px] pe-2">
@@ -473,10 +412,7 @@ export default function Dashboard() {
                     {data.recentOrders.map((order) => {
                       const { label, variant } = paymentStatusMeta(order.payment_status);
                       return (
-                        <div
-                          key={order.id}
-                          className="hover:bg-muted/50 flex items-center gap-3 rounded-lg border p-3 transition-colors"
-                        >
+                        <div key={order.id} className="hover:bg-muted/50 flex items-center gap-3 rounded-lg border p-3 transition-colors">
                           <div className="bg-primary/10 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full">
                             <ShoppingCart className="text-primary h-4 w-4" />
                           </div>
@@ -522,14 +458,11 @@ export default function Dashboard() {
                   ) : (
                     <div className="space-y-2">
                       {data.bestCashiers.map((cashier, idx) => (
-                        <div
-                          key={cashier.id}
-                          className="hover:bg-muted/50 flex items-center gap-3 rounded-lg border p-3 transition-colors"
-                        >
+                        <div key={cashier.id} className="hover:bg-muted/50 flex items-center gap-3 rounded-lg border p-3 transition-colors">
                           <div className="relative">
                             <AvatarBadge name={cashier.username} />
                             {idx < 3 && (
-                              <span className="bg-amber-500 text-white absolute -end-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold">
+                              <span className="absolute -end-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[9px] font-bold text-white">
                                 {idx + 1}
                               </span>
                             )}
@@ -540,9 +473,7 @@ export default function Dashboard() {
                               {cashier.total_sales_count ?? 0} {t('orders')}
                             </p>
                           </div>
-                          <div className="text-sm font-semibold whitespace-nowrap">
-                            {formatCurrency(cashier.total_sales)}
-                          </div>
+                          <div className="text-sm font-semibold whitespace-nowrap">{formatCurrency(cashier.total_sales)}</div>
                         </div>
                       ))}
                     </div>

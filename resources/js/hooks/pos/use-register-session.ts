@@ -12,102 +12,102 @@
  */
 
 import { POS_OPTION_KEYS } from '@/constants/pos-options';
-import { usePOS } from '@/hooks/usePOS';
 import { useRegisterStore } from '@/hooks/pos/use-register-store';
+import { usePOS } from '@/hooks/usePOS';
 import { useEffect, useRef } from 'react';
 
 /** Milliseconds each idle-counter unit represents (see registers.php settings). */
 const IDLE_UNIT_MS = 60_000;
 
 export interface RegisterSessionState {
-    /** True while waiting for the cashier to open a register. */
-    requiresOpenRegister: boolean;
-    /** True when the cash-movement UI should be available (disbursement setting). */
-    disbursementEnabled: boolean;
+  /** True while waiting for the cashier to open a register. */
+  requiresOpenRegister: boolean;
+  /** True when the cash-movement UI should be available (disbursement setting). */
+  disbursementEnabled: boolean;
 }
 
 const IDLE_MINUTES: Record<string, number> = {
-    '5min': 5,
-    '10min': 10,
-    '15min': 15,
-    '20min': 20,
-    '30min': 30,
+  '5min': 5,
+  '10min': 10,
+  '15min': 15,
+  '20min': 20,
+  '30min': 30,
 };
 
 function resolveIdleMs(idleCounter: unknown): number | null {
-    if (idleCounter === undefined || idleCounter === null || idleCounter === 0 || idleCounter === '0') {
-        return null;
-    }
-    if (typeof idleCounter === 'number') {
-        return idleCounter * IDLE_UNIT_MS;
-    }
-    const key = String(idleCounter);
-    const fromMap = IDLE_MINUTES[key];
-    if (fromMap) return fromMap * IDLE_UNIT_MS;
-    const parsed = parseInt(key, 10);
-    return isNaN(parsed) ? null : parsed * IDLE_UNIT_MS;
+  if (idleCounter === undefined || idleCounter === null || idleCounter === 0 || idleCounter === '0') {
+    return null;
+  }
+  if (typeof idleCounter === 'number') {
+    return idleCounter * IDLE_UNIT_MS;
+  }
+  const key = String(idleCounter);
+  const fromMap = IDLE_MINUTES[key];
+  if (fromMap) return fromMap * IDLE_UNIT_MS;
+  const parsed = parseInt(key, 10);
+  return isNaN(parsed) ? null : parsed * IDLE_UNIT_MS;
 }
 
 export function useRegisterSession(options: SbPosOptions): RegisterSessionState {
-    const registersEnabled = options[POS_OPTION_KEYS.registersEnabled] === 'yes';
-    const initialize = useRegisterStore((s) => s.initialize);
-    const currentRegister = useRegisterStore((s) => s.currentRegister);
+  const registersEnabled = options[POS_OPTION_KEYS.registersEnabled] === 'yes';
+  const initialize = useRegisterStore((s) => s.initialize);
+  const currentRegister = useRegisterStore((s) => s.currentRegister);
 
-    // ── Probe for an opened register once per POS mount ────────────────────
-    useEffect(() => {
-        initialize(registersEnabled);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [registersEnabled]);
+  // ── Probe for an opened register once per POS mount ────────────────────
+  useEffect(() => {
+    initialize(registersEnabled);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [registersEnabled]);
 
-    // ── Idle auto-lock ─────────────────────────────────────────────────────
-    const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // ── Idle auto-lock ─────────────────────────────────────────────────────
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    useEffect(() => {
-        const idleMs = resolveIdleMs(options[POS_OPTION_KEYS.idleCounter]);
-        if (!registersEnabled || !idleMs || !currentRegister) {
-            return;
+  useEffect(() => {
+    const idleMs = resolveIdleMs(options[POS_OPTION_KEYS.idleCounter]);
+    if (!registersEnabled || !idleMs || !currentRegister) {
+      return;
+    }
+
+    const resetTimer = () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = setTimeout(() => {
+        // Close the register so funds are reconciled even after a lock.
+        // The auto-close uses the last known balance as the counted amount.
+        const store = useRegisterStore.getState();
+        if (store.currentRegister) {
+          store
+            .closeRegister(store.currentRegister.id, store.currentRegister.balance ?? 0)
+            .catch((error) => console.error('[POS] Idle auto-close failed:', error))
+            .finally(() => window.location.reload());
+        } else {
+          window.location.reload();
         }
-
-        const resetTimer = () => {
-            if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-            idleTimerRef.current = setTimeout(() => {
-                // Close the register so funds are reconciled even after a lock.
-                // The auto-close uses the last known balance as the counted amount.
-                const store = useRegisterStore.getState();
-                if (store.currentRegister) {
-                    store
-                        .closeRegister(store.currentRegister.id, store.currentRegister.balance ?? 0)
-                        .catch((error) => console.error('[POS] Idle auto-close failed:', error))
-                        .finally(() => window.location.reload());
-                } else {
-                    window.location.reload();
-                }
-            }, idleMs);
-        };
-
-        const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
-        events.forEach((event) => window.addEventListener(event, resetTimer, { passive: true }));
-        resetTimer();
-
-        return () => {
-            if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-            events.forEach((event) => window.removeEventListener(event, resetTimer));
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [registersEnabled, currentRegister?.id, options[POS_OPTION_KEYS.idleCounter]]);
-
-    // ── Stamp orders with the active register ──────────────────────────────
-    // The backend records order payments/change against `orders.register_id`.
-    useEffect(() => {
-        const { order, buildOrder } = usePOS.getState();
-        if ((order.register_id ?? null) !== (currentRegister?.id ?? null)) {
-            buildOrder({ ...order, register_id: currentRegister?.id });
-        }
-    }, [currentRegister?.id]);
-
-    // ── Session dialog state lives in useRegisterStore.sessionDialogOpen ───
-    return {
-        requiresOpenRegister: registersEnabled && currentRegister === null,
-        disbursementEnabled: options[POS_OPTION_KEYS.disbursement] === 'yes',
+      }, idleMs);
     };
+
+    const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
+    events.forEach((event) => window.addEventListener(event, resetTimer, { passive: true }));
+    resetTimer();
+
+    return () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      events.forEach((event) => window.removeEventListener(event, resetTimer));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [registersEnabled, currentRegister?.id, options[POS_OPTION_KEYS.idleCounter]]);
+
+  // ── Stamp orders with the active register ──────────────────────────────
+  // The backend records order payments/change against `orders.register_id`.
+  useEffect(() => {
+    const { order, buildOrder } = usePOS.getState();
+    if ((order.register_id ?? null) !== (currentRegister?.id ?? null)) {
+      buildOrder({ ...order, register_id: currentRegister?.id });
+    }
+  }, [currentRegister?.id]);
+
+  // ── Session dialog state lives in useRegisterStore.sessionDialogOpen ───
+  return {
+    requiresOpenRegister: registersEnabled && currentRegister === null,
+    disbursementEnabled: options[POS_OPTION_KEYS.disbursement] === 'yes',
+  };
 }

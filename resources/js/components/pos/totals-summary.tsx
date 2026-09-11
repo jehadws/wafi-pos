@@ -1,6 +1,6 @@
 import { useTranslation } from '@/lib/i18n';
-import { formatCurrency } from '@/utils/format';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/utils/format';
 import { ChevronRight, Percent, Tag, Truck, User } from 'lucide-react';
 
 interface TotalsSummaryProps {
@@ -45,7 +45,7 @@ export default function TotalsSummary({
   return (
     <div className="bg-card/95 border-t shadow-sm">
       {/* Quick Context Strip: Customer & Order Type */}
-      <div className="bg-muted/30 grid grid-cols-2 divide-x divide-border border-b text-xs">
+      <div className="bg-muted/30 divide-border grid grid-cols-2 divide-x border-b text-xs">
         <button
           type="button"
           onClick={onOpenSelectCustomerDialog}
@@ -56,9 +56,7 @@ export default function TotalsSummary({
               <User className="h-3.5 w-3.5" />
             </div>
             <div className="min-w-0">
-              <p className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">
-                {t('Customer')}
-              </p>
+              <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">{t('Customer')}</p>
               <p className="text-foreground truncate text-xs font-semibold">{customerName}</p>
             </div>
           </div>
@@ -75,12 +73,8 @@ export default function TotalsSummary({
               <Truck className="h-3.5 w-3.5" />
             </div>
             <div className="min-w-0">
-              <p className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">
-                {t('Order Type')}
-              </p>
-              <p className="text-foreground truncate text-xs font-semibold">
-                {orderType ? t(orderType.label) : t('Select Type')}
-              </p>
+              <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">{t('Order Type')}</p>
+              <p className="text-foreground truncate text-xs font-semibold">{orderType ? t(orderType.label) : t('Select Type')}</p>
             </div>
           </div>
           <ChevronRight className="text-muted-foreground/60 h-3.5 w-3.5 shrink-0 transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" />
@@ -88,7 +82,7 @@ export default function TotalsSummary({
       </div>
 
       {/* Financial Line Items */}
-      <div className="divide-y divide-border/60 text-xs">
+      <div className="divide-border/60 divide-y text-xs">
         <div className="flex items-center justify-between px-3.5 py-1.5">
           <span className="text-muted-foreground font-medium">{t('Sub Total')}</span>
           <span className="text-foreground font-semibold">{formatCurrency(subtotal)}</span>
@@ -96,9 +90,7 @@ export default function TotalsSummary({
 
         {tax > 0 && (
           <div className="flex items-center justify-between px-3.5 py-1.5">
-            <span className="text-muted-foreground font-medium">
-              {priceWithTax ? t('Product Taxes (Included)') : t('Product Taxes')}
-            </span>
+            <span className="text-muted-foreground font-medium">{priceWithTax ? t('Product Taxes (Included)') : t('Product Taxes')}</span>
             <span className="text-foreground font-semibold">{formatCurrency(tax)}</span>
           </div>
         )}
@@ -107,24 +99,21 @@ export default function TotalsSummary({
           <button
             type="button"
             onClick={onOpenDiscountDialog}
-            className="text-muted-foreground hover:text-primary active:scale-95 flex items-center gap-1 font-medium underline decoration-dotted underline-offset-2 transition-colors"
+            className="text-muted-foreground hover:text-primary flex items-center gap-1 font-medium underline decoration-dotted underline-offset-2 transition-colors active:scale-95"
           >
-            <Percent className="h-3 w-3 text-muted-foreground" />
+            <Percent className="text-muted-foreground h-3 w-3" />
             <span>{t('Discount')}</span>
           </button>
           <span
             onClick={onOpenDiscountDialog}
-            className={cn(
-              'cursor-pointer font-semibold',
-              discount > 0 ? 'text-primary' : 'text-muted-foreground',
-            )}
+            className={cn('cursor-pointer font-semibold', discount > 0 ? 'text-primary' : 'text-muted-foreground')}
           >
             {discount > 0 ? `-${formatCurrency(discount)}` : formatCurrency(0)}
           </span>
         </div>
 
         {totalCoupons > 0 && (
-          <div className="flex items-center justify-between px-3.5 py-1.5 text-primary">
+          <div className="text-primary flex items-center justify-between px-3.5 py-1.5">
             <div className="flex items-center gap-1 font-medium">
               <Tag className="h-3 w-3" />
               <span>{t('Coupons')}</span>
@@ -138,15 +127,12 @@ export default function TotalsSummary({
             <button
               type="button"
               onClick={onOpenShippingDialog}
-              className="text-muted-foreground hover:text-primary active:scale-95 flex items-center gap-1 font-medium underline decoration-dotted underline-offset-2 transition-colors"
+              className="text-muted-foreground hover:text-primary flex items-center gap-1 font-medium underline decoration-dotted underline-offset-2 transition-colors active:scale-95"
             >
-              <Truck className="h-3 w-3 text-primary" />
+              <Truck className="text-primary h-3 w-3" />
               <span>{t('Shipping')}</span>
             </button>
-            <span
-              onClick={onOpenShippingDialog}
-              className="cursor-pointer font-semibold text-foreground"
-            >
+            <span onClick={onOpenShippingDialog} className="text-foreground cursor-pointer font-semibold">
               {formatCurrency(shipping)}
             </span>
           </div>
@@ -154,14 +140,12 @@ export default function TotalsSummary({
       </div>
 
       {/* Grand Total Bar */}
-      <div className="bg-primary/5 dark:bg-primary/10 border-t border-primary/20 flex items-center justify-between px-4 py-2.5">
+      <div className="bg-primary/5 dark:bg-primary/10 border-primary/20 flex items-center justify-between border-t px-4 py-2.5">
         <div className="flex flex-col">
           <span className="text-foreground text-sm font-bold tracking-tight">{t('Total Payable')}</span>
           <span className="text-muted-foreground text-[10px]">{t('Includes all applicable taxes & discounts')}</span>
         </div>
-        <div className="text-primary text-xl font-extrabold tracking-tight">
-          {formatCurrency(total)}
-        </div>
+        <div className="text-primary text-xl font-extrabold tracking-tight">{formatCurrency(total)}</div>
       </div>
     </div>
   );

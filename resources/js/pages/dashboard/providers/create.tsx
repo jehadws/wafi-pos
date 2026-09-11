@@ -1,6 +1,6 @@
+import { providersApi } from '@/api';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
-import { providersApi } from '@/api';
 import { extractValidationErrors } from '@/utils/api-errors';
 import { Head, router } from '@inertiajs/react';
 
@@ -91,16 +91,11 @@ export default function CreateProductPage() {
             title={t('Create a new provider')}
             description={t('Register a new provider and save it.')}
             onCancel={() => window.history.back()}
-            onSave={() => { }}
+            onSave={() => {}}
             form={{ ...form, processing: isSubmitting || form.processing }}
           />
 
-          <FormField
-            label={t('First Name')}
-            error={form.errors.first_name}
-            description={t('Provide a name to the resource.')}
-            className="mb-6"
-          >
+          <FormField label={t('First Name')} error={form.errors.first_name} description={t('Provide a name to the resource.')} className="mb-6">
             <Input
               id="first_name"
               name="first_name"
@@ -161,12 +156,7 @@ export default function CreateProductPage() {
                 />
               </FormField>
 
-              <FormField
-                label={t('First Address')}
-                htmlFor="address_1"
-                description={t('First address of the provider.')}
-                error={form.errors?.phone}
-              >
+              <FormField label={t('First Address')} htmlFor="address_1" description={t('First address of the provider.')} error={form.errors?.phone}>
                 <Input
                   id="address_1"
                   name="address_1"

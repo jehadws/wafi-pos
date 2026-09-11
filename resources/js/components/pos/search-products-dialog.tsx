@@ -1,20 +1,20 @@
 'use client';
 
+import { productsApi } from '@/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
+import { isPosOptionEnabled, POS_OPTION_KEYS, resolveNumpadVariant, resolveUnitDisplayPrice } from '@/constants/pos-options';
 import { useNumericKeypad } from '@/hooks/use-numeric-keypad';
-import { productsApi } from '@/api';
+import { usePOS } from '@/hooks/usePOS';
+import { pickExpressUnit, resolveProductUnitQuantities } from '@/services/product-units';
+import { validateStockAvailability } from '@/services/stock';
+import { usePage } from '@inertiajs/react';
 import { Loader2, Search } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from '../../lib/i18n';
 import { formatCurrency } from '../../utils/format';
-import { NumericKeypadDialog } from '@/components/ui/numeric-keypad-dialog';
-import { usePage } from '@inertiajs/react';
-import { isPosOptionEnabled, POS_OPTION_KEYS, resolveNumpadVariant, resolveUnitDisplayPrice } from '@/constants/pos-options';
-import { pickExpressUnit, resolveProductUnitQuantities } from '@/services/product-units';
-import { validateStockAvailability } from '@/services/stock';
-import { usePOS } from '@/hooks/usePOS';
 
 interface SearchProductsDialogProps {
   open: boolean;
@@ -215,14 +215,8 @@ export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: 
 
           <div className="space-y-4">
             <div className="relative">
-              <Search className="absolute top-1/2 start-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
-              <Input
-                autoFocus
-                placeholder={t('Search')}
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="ps-10"
-              />
+              <Search className="text-muted-foreground absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
+              <Input autoFocus placeholder={t('Search')} value={searchQuery} onChange={(e) => handleSearch(e.target.value)} className="ps-10" />
             </div>
 
             <div className="max-h-64 space-y-2 overflow-y-auto">
@@ -233,11 +227,7 @@ export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: 
                 </div>
               ) : products.length > 0 ? (
                 products.map((product) => (
-                  <div
-                    key={product.id}
-                    className="hover:bg-muted cursor-pointer rounded-md border p-3"
-                    onClick={() => handleClickOnProduct(product)}
-                  >
+                  <div key={product.id} className="hover:bg-muted cursor-pointer rounded-md border p-3" onClick={() => handleClickOnProduct(product)}>
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="font-medium">{product.name || ''}</div>
@@ -247,10 +237,8 @@ export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: 
                   </div>
                 ))
               ) : (
-                <div className="p-4 text-center text-sm text-muted-foreground">
-                  {searchQuery.length >= 2
-                    ? t('No products found.')
-                    : t('There is nothing to display. Have you started the search ?')}
+                <div className="text-muted-foreground p-4 text-center text-sm">
+                  {searchQuery.length >= 2 ? t('No products found.') : t('There is nothing to display. Have you started the search ?')}
                 </div>
               )}
             </div>
@@ -280,9 +268,7 @@ export function SearchProductsDialog({ open, onOpenChange, onProductSelected }: 
                   <div className="text-lg font-semibold">
                     {unit.unit.name} ({unit.quantity})
                   </div>
-                  <div className="text-sm font-medium">
-                    {formatCurrency(resolveUnitDisplayPrice(unit, options))}
-                  </div>
+                  <div className="text-sm font-medium">{formatCurrency(resolveUnitDisplayPrice(unit, options))}</div>
                 </div>
               </div>
             ))}

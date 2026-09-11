@@ -1,13 +1,13 @@
+import { ordersApi } from '@/api';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
-import { usePOS } from '@/hooks/usePOS';
 import { isPriceWithTax } from '@/constants/pos-options';
+import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import PrintAgentService from '@/services/print-agent-service';
 import { Order } from '@/types/models/order';
 import { formatCurrency } from '@/utils/format';
-import { ordersApi } from '@/api';
 import { Eye, Loader2, Printer, Unlock } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -17,8 +17,6 @@ type Props = {
   order: TOrder;
   onOpenChange: (open: boolean) => void;
 };
-
-
 
 export default function OrderCard({ order, onOpenChange }: Props) {
   const { t } = useTranslation();
@@ -51,12 +49,7 @@ export default function OrderCard({ order, onOpenChange }: Props) {
       // printer configuration live in PrintAgentService (Subul branding).
       // Items mirror the "Show Price With Tax" option like the cart does.
       const receiptOrder = { ...order, products: productsList } as unknown as Order;
-      const result = await PrintAgentService.printOrderReceipt(
-        receiptOrder,
-        'sale',
-        {},
-        isPriceWithTax(options),
-      );
+      const result = await PrintAgentService.printOrderReceipt(receiptOrder, 'sale', {}, isPriceWithTax(options));
 
       if (result.success) {
         toast.success(t('Receipt sent to thermal printer.'));

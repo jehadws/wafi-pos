@@ -24,279 +24,279 @@ import { getCustomComponent } from './registry';
  */
 
 export interface FieldRendererProps {
-    field: FormFieldDef;
-    value: unknown;
-    onChange: (value: unknown) => void;
-    error?: string;
-    disabled?: boolean;
-    id?: string;
+  field: FormFieldDef;
+  value: unknown;
+  onChange: (value: unknown) => void;
+  error?: string;
+  disabled?: boolean;
+  id?: string;
 }
 
 /** `switch` fields carry explicit `{label, value}` options — never booleans. */
 function SwitchButtons({ field, value, onChange, disabled }: Pick<FieldRendererProps, 'field' | 'value' | 'onChange' | 'disabled'>) {
-    const { t } = useTranslation();
-    const options: FormOption[] = Array.isArray(field.options) ? field.options : [];
+  const { t } = useTranslation();
+  const options: FormOption[] = Array.isArray(field.options) ? field.options : [];
 
-    return (
-        <div className="flex items-center gap-2">
-            {options.map((option) => (
-                <Button
-                    key={String(option.value)}
-                    type="button"
-                    variant={String(option.value) === String(value ?? '') ? 'default' : 'outline'}
-                    className="border"
-                    disabled={disabled || option.disabled}
-                    onClick={() => onChange(option.value)}
-                >
-                    {option.label}
-                </Button>
-            ))}
-            {options.length === 0 && <p className="text-muted-foreground text-sm">{t('No options available.')}</p>}
-        </div>
-    );
+  return (
+    <div className="flex items-center gap-2">
+      {options.map((option) => (
+        <Button
+          key={String(option.value)}
+          type="button"
+          variant={String(option.value) === String(value ?? '') ? 'default' : 'outline'}
+          className="border"
+          disabled={disabled || option.disabled}
+          onClick={() => onChange(option.value)}
+        >
+          {option.label}
+        </Button>
+      ))}
+      {options.length === 0 && <p className="text-muted-foreground text-sm">{t('No options available.')}</p>}
+    </div>
+  );
 }
 
 function errorOf(field: FormFieldDef, explicit?: string): string | undefined {
-    if (explicit) {
-        return explicit;
-    }
-    const seeded = field.errors;
-    if (Array.isArray(seeded) && seeded.length > 0 && typeof seeded[0] === 'string') {
-        return seeded[0];
-    }
-    if (typeof seeded === 'string' && seeded) {
-        return seeded;
-    }
-    return undefined;
+  if (explicit) {
+    return explicit;
+  }
+  const seeded = field.errors;
+  if (Array.isArray(seeded) && seeded.length > 0 && typeof seeded[0] === 'string') {
+    return seeded[0];
+  }
+  if (typeof seeded === 'string' && seeded) {
+    return seeded;
+  }
+  return undefined;
 }
 
 function SelectField({
-    field,
-    value,
-    onChange,
-    disabled,
-    id,
-    hasError,
+  field,
+  value,
+  onChange,
+  disabled,
+  id,
+  hasError,
 }: Pick<FieldRendererProps, 'field' | 'value' | 'onChange' | 'disabled' | 'id'> & { hasError?: boolean }) {
-    const { t } = useTranslation();
-    const options: FormOption[] = Array.isArray(field.options) ? field.options : [];
-    const selectValue = value === undefined || value === null ? '' : String(value);
+  const { t } = useTranslation();
+  const options: FormOption[] = Array.isArray(field.options) ? field.options : [];
+  const selectValue = value === undefined || value === null ? '' : String(value);
 
-    return (
-        <Select
-            value={selectValue === '' ? undefined : selectValue}
-            onValueChange={(next) => {
-                // Restore the original option value type (ids stay numbers).
-                const match = options.find((option) => String(option.value) === next);
-                onChange(match ? match.value : next);
-            }}
-            disabled={disabled}
-        >
-            <SelectTrigger id={id} className="w-full" aria-invalid={Boolean(hasError)}>
-                <SelectValue placeholder={t('Select an option')} />
-            </SelectTrigger>
-            <SelectContent>
-                {/* Radix Select cannot represent an empty-string item; empty
+  return (
+    <Select
+      value={selectValue === '' ? undefined : selectValue}
+      onValueChange={(next) => {
+        // Restore the original option value type (ids stay numbers).
+        const match = options.find((option) => String(option.value) === next);
+        onChange(match ? match.value : next);
+      }}
+      disabled={disabled}
+    >
+      <SelectTrigger id={id} className="w-full" aria-invalid={Boolean(hasError)}>
+        <SelectValue placeholder={t('Select an option')} />
+      </SelectTrigger>
+      <SelectContent>
+        {/* Radix Select cannot represent an empty-string item; empty
                     options are skipped and the placeholder stands in for them. */}
-                {options
-                    .filter((option) => String(option.value) !== '')
-                    .map((option) => (
-                        <SelectItem key={String(option.value)} value={String(option.value)} disabled={option.disabled}>
-                            {option.label}
-                        </SelectItem>
-                    ))}
-            </SelectContent>
-        </Select>
-    );
+        {options
+          .filter((option) => String(option.value) !== '')
+          .map((option) => (
+            <SelectItem key={String(option.value)} value={String(option.value)} disabled={option.disabled}>
+              {option.label}
+            </SelectItem>
+          ))}
+      </SelectContent>
+    </Select>
+  );
 }
 
 export function FieldRenderer({ field, value, onChange, error, disabled, id }: FieldRendererProps) {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
 
-    const type = field.type ?? 'text';
-    const shownError = errorOf(field, error);
-    const isDisabled = disabled || field.disabled === true;
-    const required = parseValidation(field.validation).required;
+  const type = field.type ?? 'text';
+  const shownError = errorOf(field, error);
+  const isDisabled = disabled || field.disabled === true;
+  const required = parseValidation(field.validation).required;
 
-    const stringValue = value === undefined || value === null ? '' : String(value);
-    const textProps = {
-        id,
-        value: stringValue,
-        disabled: isDisabled,
-        'aria-invalid': Boolean(shownError),
-        onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange(event.target.value),
-    };
+  const stringValue = value === undefined || value === null ? '' : String(value);
+  const textProps = {
+    id,
+    value: stringValue,
+    disabled: isDisabled,
+    'aria-invalid': Boolean(shownError),
+    onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange(event.target.value),
+  };
 
-    // Custom components win over the type mapping (search-select + sbCrudForm, custom, …).
-    const customName = field.component ?? (type === 'custom' ? String(field.name ?? '') : undefined);
-    if (customName) {
-        const Custom = getCustomComponent(customName);
-        if (Custom) {
-            return (
-                <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
-                    <Custom field={field} value={value} onChange={onChange} error={shownError} disabled={isDisabled} id={id} />
-                </FormField>
-            );
-        }
-        if (import.meta.env.DEV) {
-            console.warn(`[ConfigForm] No custom component registered for "${customName}" — field hidden.`);
-        }
-        return null;
+  // Custom components win over the type mapping (search-select + sbCrudForm, custom, …).
+  const customName = field.component ?? (type === 'custom' ? String(field.name ?? '') : undefined);
+  if (customName) {
+    const Custom = getCustomComponent(customName);
+    if (Custom) {
+      return (
+        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
+          <Custom field={field} value={value} onChange={onChange} error={shownError} disabled={isDisabled} id={id} />
+        </FormField>
+      );
+    }
+    if (import.meta.env.DEV) {
+      console.warn(`[ConfigForm] No custom component registered for "${customName}" — field hidden.`);
+    }
+    return null;
+  }
+
+  switch (type) {
+    case 'text':
+    case 'password':
+    case 'email':
+    case 'number':
+    case 'tel':
+    case 'date':
+      return (
+        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
+          <Input type={type} {...textProps} />
+        </FormField>
+      );
+
+    case 'datetimepicker':
+      return (
+        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
+          <Input type="datetime-local" {...textProps} />
+        </FormField>
+      );
+
+    case 'hidden':
+      // No visible chrome — the value still participates in the payload.
+      return <Input type="hidden" id={id} value={stringValue} onChange={(event) => onChange(event.target.value)} />;
+
+    case 'textarea':
+      return (
+        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
+          <Textarea {...textProps} />
+        </FormField>
+      );
+
+    case 'ckeditor':
+      // Documented downgrade (Plan A §4): a real rich-text editor needs
+      // a dependency decision (@tiptap/react) and is out of A's scope.
+      // The value stays HTML and round-trips unchanged.
+      return (
+        <FormField
+          label={field.label ?? ''}
+          description={field.description ?? t('Rich text editing is not available here; plain text is saved.')}
+          required={required}
+          error={shownError}
+          htmlFor={id}
+        >
+          <Textarea {...textProps} />
+        </FormField>
+      );
+
+    case 'select':
+    case 'search-select':
+    case 'select-audio':
+      return (
+        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
+          <SelectField field={field} value={value} onChange={onChange} disabled={isDisabled} id={id} hasError={Boolean(shownError)} />
+        </FormField>
+      );
+
+    case 'switch':
+      return (
+        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError}>
+          <SwitchButtons field={field} value={value} onChange={onChange} disabled={isDisabled} />
+        </FormField>
+      );
+
+    case 'multiselect': {
+      const options = (Array.isArray(field.options) ? field.options : []).map((option) => ({
+        id: option.value as string | number,
+        name: option.label,
+        disabled: option.disabled,
+      }));
+      const selected = Array.isArray(value) ? (value as Array<string | number>) : [];
+      return (
+        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError}>
+          <MultiSelector options={options} value={selected} onChange={onChange} disabled={isDisabled} />
+        </FormField>
+      );
     }
 
-    switch (type) {
-        case 'text':
-        case 'password':
-        case 'email':
-        case 'number':
-        case 'tel':
-        case 'date':
-            return (
-                <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
-                    <Input type={type} {...textProps} />
-                </FormField>
-            );
+    case 'inline-multiselect': {
+      const selected = Array.isArray(value) ? (value as string[]) : null;
+      return (
+        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError}>
+          <MultiKeySelector
+            options={(Array.isArray(field.options) ? field.options : []).map((option) => ({
+              label: option.label,
+              value: String(option.value),
+            }))}
+            value={selected}
+            onChange={(keys) => onChange(keys)}
+            disabled={isDisabled}
+          />
+        </FormField>
+      );
+    }
 
-        case 'datetimepicker':
-            return (
-                <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
-                    <Input type="datetime-local" {...textProps} />
-                </FormField>
-            );
+    case 'checkbox':
+      return (
+        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError}>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id={id}
+              disabled={isDisabled}
+              checked={value === '1' || value === 1 || value === true}
+              onCheckedChange={(checked) => onChange(checked ? '1' : '')}
+            />
+          </div>
+        </FormField>
+      );
 
-        case 'hidden':
-            // No visible chrome — the value still participates in the payload.
-            return <Input type="hidden" id={id} value={stringValue} onChange={(event) => onChange(event.target.value)} />;
+    case 'media':
+      return (
+        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError}>
+          <FilePicker
+            value={typeof value === 'string' && value ? value : null}
+            onChange={(next) => onChange(next ?? '')}
+            placeholder={field.label ?? t('Pick a file')}
+          />
+        </FormField>
+      );
 
-        case 'textarea':
-            return (
-                <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
-                    <Textarea {...textProps} />
-                </FormField>
-            );
-
-        case 'ckeditor':
-            // Documented downgrade (Plan A §4): a real rich-text editor needs
-            // a dependency decision (@tiptap/react) and is out of A's scope.
-            // The value stays HTML and round-trips unchanged.
-            return (
-                <FormField
-                    label={field.label ?? ''}
-                    description={field.description ?? t('Rich text editing is not available here; plain text is saved.')}
-                    required={required}
-                    error={shownError}
-                    htmlFor={id}
-                >
-                    <Textarea {...textProps} />
-                </FormField>
-            );
-
-        case 'select':
-        case 'search-select':
-        case 'select-audio':
-            return (
-                <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
-                    <SelectField field={field} value={value} onChange={onChange} disabled={isDisabled} id={id} hasError={Boolean(shownError)} />
-                </FormField>
-            );
-
-        case 'switch':
-            return (
-                <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError}>
-                    <SwitchButtons field={field} value={value} onChange={onChange} disabled={isDisabled} />
-                </FormField>
-            );
-
-        case 'multiselect': {
-            const options = (Array.isArray(field.options) ? field.options : []).map((option) => ({
-                id: option.value as string | number,
-                name: option.label,
-                disabled: option.disabled,
-            }));
-            const selected = Array.isArray(value) ? (value as Array<string | number>) : [];
-            return (
-                <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError}>
-                    <MultiSelector options={options} value={selected} onChange={onChange} disabled={isDisabled} />
-                </FormField>
-            );
-        }
-
-        case 'inline-multiselect': {
-            const selected = Array.isArray(value) ? (value as string[]) : null;
-            return (
-                <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError}>
-                    <MultiKeySelector
-                        options={(Array.isArray(field.options) ? field.options : []).map((option) => ({
-                            label: option.label,
-                            value: String(option.value),
-                        }))}
-                        value={selected}
-                        onChange={(keys) => onChange(keys)}
-                        disabled={isDisabled}
-                    />
-                </FormField>
-            );
-        }
-
-        case 'checkbox':
-            return (
-                <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError}>
-                    <div className="flex items-center gap-2">
-                        <Checkbox
-                            id={id}
-                            disabled={isDisabled}
-                            checked={value === '1' || value === 1 || value === true}
-                            onCheckedChange={(checked) => onChange(checked ? '1' : '')}
-                        />
-                    </div>
-                </FormField>
-            );
-
-        case 'media':
-            return (
-                <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError}>
-                    <FilePicker
-                        value={typeof value === 'string' && value ? value : null}
-                        onChange={(next) => onChange(next ?? '')}
-                        placeholder={field.label ?? t('Pick a file')}
-                    />
-                </FormField>
-            );
-
-        case 'daterangepicker': {
-            // No live consumer today (Plan A §4); the bridge serializes the
-            // range as `{from, to}` ISO date strings and parses the same back.
-            const raw = (typeof value === 'object' && value !== null ? value : {}) as {
-                from?: string;
-                to?: string;
-            };
-            return (
-                <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError}>
-                    <DateRangePicker
-                        dateRange={{
-                            from: raw.from ? new Date(raw.from) : undefined,
-                            to: raw.to ? new Date(raw.to) : undefined,
-                        }}
-                        onDateRangeChange={(next) =>
-                            onChange({
-                                from: next?.from ? next.from.toISOString() : '',
-                                to: next?.to ? next.to.toISOString() : '',
-                            })
-                        }
-                        disabled={isDisabled}
-                    />
-                </FormField>
-            );
-        }
-
-        case 'group':
-        case 'custom':
-        default:
-            if (import.meta.env.DEV) {
-                console.warn(`[ConfigForm] Unsupported field type "${type}" (name: ${field.name ?? 'n/a'}) — field hidden.`);
+    case 'daterangepicker': {
+      // No live consumer today (Plan A §4); the bridge serializes the
+      // range as `{from, to}` ISO date strings and parses the same back.
+      const raw = (typeof value === 'object' && value !== null ? value : {}) as {
+        from?: string;
+        to?: string;
+      };
+      return (
+        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError}>
+          <DateRangePicker
+            dateRange={{
+              from: raw.from ? new Date(raw.from) : undefined,
+              to: raw.to ? new Date(raw.to) : undefined,
+            }}
+            onDateRangeChange={(next) =>
+              onChange({
+                from: next?.from ? next.from.toISOString() : '',
+                to: next?.to ? next.to.toISOString() : '',
+              })
             }
-            return null;
+            disabled={isDisabled}
+          />
+        </FormField>
+      );
     }
+
+    case 'group':
+    case 'custom':
+    default:
+      if (import.meta.env.DEV) {
+        console.warn(`[ConfigForm] Unsupported field type "${type}" (name: ${field.name ?? 'n/a'}) — field hidden.`);
+      }
+      return null;
+  }
 }
 
 export default FieldRenderer;

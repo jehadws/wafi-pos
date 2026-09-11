@@ -7,65 +7,62 @@ import { del, get, post, put } from './http';
  * in types/module.d.ts.
  */
 export const customersApi = {
-    /** Fetch a single customer. */
-    get: (id: number | string) => get<Customer>(`/customers/${id}`),
+  /** Fetch a single customer. */
+  get: (id: number | string) => get<Customer>(`/customers/${id}`),
 
-    /** Fetch a customer's order history. */
-    getOrders: (id: number | string) => get<CustomerOrder[]>(`/customers/${id}/orders`),
+  /** Fetch a customer's order history. */
+  getOrders: (id: number | string) => get<CustomerOrder[]>(`/customers/${id}/orders`),
 
-    /** Fetch the coupons claimed by a customer (with the parent coupon). */
-    getCustomerCoupons: (id: number | string) => get<CustomerCouponRef[]>(`/customers/${id}/coupons`),
+  /** Fetch the coupons claimed by a customer (with the parent coupon). */
+  getCustomerCoupons: (id: number | string) => get<CustomerCouponRef[]>(`/customers/${id}/coupons`),
 
-    /** Fetch the paginated list of rewards earned by a customer. */
-    getCustomerRewards: (id: number | string, page = 1) =>
-        get<CustomPaginationData<CustomerReward>>(`/customers/${id}/rewards?page=${page}`),
+  /** Fetch the paginated list of rewards earned by a customer. */
+  getCustomerRewards: (id: number | string, page = 1) => get<CustomPaginationData<CustomerReward>>(`/customers/${id}/rewards?page=${page}`),
 
-    /** Fetch the paginated wallet / account history of a customer. */
-    getAccountHistory: (id: number | string, page = 1) =>
-        get<CustomPaginationData<CustomerAccountHistory>>(`/customers/${id}/account-history?page=${page}`),
+  /** Fetch the paginated wallet / account history of a customer. */
+  getAccountHistory: (id: number | string, page = 1) =>
+    get<CustomPaginationData<CustomerAccountHistory>>(`/customers/${id}/account-history?page=${page}`),
 
-    /** Fetch the group a customer belongs to. */
-    getGroup: (id: number | string) => get(`/customers/${id}/group`),
+  /** Fetch the group a customer belongs to. */
+  getGroup: (id: number | string) => get(`/customers/${id}/group`),
 
-    /** Fetch recently active customers (POS quick select). */
-    getRecentlyActive: () => get<Customer[]>('/customers/recently-active'),
+  /** Fetch recently active customers (POS quick select). */
+  getRecentlyActive: () => get<Customer[]>('/customers/recently-active'),
 
-    /** Search customers by name / phone / email. */
-    search: (query: string) => post<Customer[]>('/customers/search', { search: query }),
+  /** Search customers by name / phone / email. */
+  search: (query: string) => post<Customer[]>('/customers/search', { search: query }),
 
-    /** Fetch all customer groups. */
-    getGroups: () => get('/customers-groups'),
+  /** Fetch all customer groups. */
+  getGroups: () => get('/customers-groups'),
 
-    /** Load / apply a coupon code for a customer. */
-    applyCoupon: (couponCode: string, customerId: number) => post(`/customers/coupons/${couponCode}`, { customer_id: customerId }),
+  /** Load / apply a coupon code for a customer. */
+  applyCoupon: (couponCode: string, customerId: number) => post(`/customers/coupons/${couponCode}`, { customer_id: customerId }),
 
-    // ── CRUD — sb.customers ─────────────────────────────────────────────────
+  // ── CRUD — sb.customers ─────────────────────────────────────────────────
 
-    /** Create a new customer. */
-    create: (data: unknown) => post('/crud/sb.customers', data),
+  /** Create a new customer. */
+  create: (data: unknown) => post('/crud/sb.customers', data),
 
-    /** Update an existing customer. */
-    update: (id: number | string, data: unknown) => put(`/crud/sb.customers/${id}`, data),
+  /** Update an existing customer. */
+  update: (id: number | string, data: unknown) => put(`/crud/sb.customers/${id}`, data),
 
-    /** Delete a single customer. */
-    remove: (id: number | string) => del(`/crud/sb.customers/${id}`),
+  /** Delete a single customer. */
+  remove: (id: number | string) => del(`/crud/sb.customers/${id}`),
 
-    /** Bulk-delete customers by ID. */
-    bulkDelete: (ids: Array<number | string>) =>
-        post('/crud/sb.customers/bulk-actions', { action: 'delete_selected', entries: ids }),
+  /** Bulk-delete customers by ID. */
+  bulkDelete: (ids: Array<number | string>) => post('/crud/sb.customers/bulk-actions', { action: 'delete_selected', entries: ids }),
 
-    // ── CRUD — sb.customers-groups ──────────────────────────────────────────
+  // ── CRUD — sb.customers-groups ──────────────────────────────────────────
 
-    /** Create a new customer group. */
-    createGroup: (data: unknown) => post('/crud/sb.customers-groups', data),
+  /** Create a new customer group. */
+  createGroup: (data: unknown) => post('/crud/sb.customers-groups', data),
 
-    /** Update an existing customer group. */
-    updateGroup: (id: number | string, data: unknown) => put(`/crud/sb.customers-groups/${id}`, data),
+  /** Update an existing customer group. */
+  updateGroup: (id: number | string, data: unknown) => put(`/crud/sb.customers-groups/${id}`, data),
 
-    /** Delete a single customer group. */
-    removeGroup: (id: number | string) => del(`/crud/sb.customers-groups/${id}`),
+  /** Delete a single customer group. */
+  removeGroup: (id: number | string) => del(`/crud/sb.customers-groups/${id}`),
 
-    /** Bulk-delete customer groups by ID. */
-    bulkDeleteGroups: (ids: Array<number | string>) =>
-        post('/crud/sb.customers-groups/bulk-actions', { action: 'delete_selected', entries: ids }),
+  /** Bulk-delete customer groups by ID. */
+  bulkDeleteGroups: (ids: Array<number | string>) => post('/crud/sb.customers-groups/bulk-actions', { action: 'delete_selected', entries: ids }),
 };

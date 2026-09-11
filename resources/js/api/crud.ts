@@ -12,26 +12,26 @@ import { del, get, post, put } from './http';
  * (e.g. `HttpCrudResponse`) where a typed result is useful.
  */
 export const crudApi = {
-    /** List entries of a CRUD table with pagination and filters. */
-    list: <T = any>(table: string, params?: Record<string, unknown>) => get<T>(`/crud/${table}`, { params: { ...params } }),
+  /** List entries of a CRUD table with pagination and filters. */
+  list: <T = any>(table: string, params?: Record<string, unknown>) => get<T>(`/crud/${table}`, { params: { ...params } }),
 
-    /** Delete a single entry of a CRUD table. */
-    remove: (table: string, id: number | string) => del(`/crud/${table}/${id}`),
+  /** Delete a single entry of a CRUD table. */
+  remove: (table: string, id: number | string) => del(`/crud/${table}/${id}`),
 
-    /**
-     * Fetch the backend form definition of a CRUD resource
-     * (`CrudService::getFormConfig`). `id` switches the definition
-     * (and the submit method) to edit mode.
-     */
-    formConfig: <T = CrudFormConfig>(table: string, id?: number | string) => get<T>(`/crud/${table}/form-config${id !== undefined ? `/${id}` : ''}`),
+  /**
+   * Fetch the backend form definition of a CRUD resource
+   * (`CrudService::getFormConfig`). `id` switches the definition
+   * (and the submit method) to edit mode.
+   */
+  formConfig: <T = CrudFormConfig>(table: string, id?: number | string) => get<T>(`/crud/${table}/form-config${id !== undefined ? `/${id}` : ''}`),
 
-    /**
-     * Create an entry. The payload must follow `SbForms::getFlatForm`:
-     * `{ [mainFieldName]: value, [tabId]: { [fieldName]: value }, ... }` —
-     * the backend drops `''`/`null` values.
-     */
-    create: <T = CrudSubmitResponse>(table: string, payload: Record<string, unknown>) => post<T>(`/crud/${table}`, payload),
+  /**
+   * Create an entry. The payload must follow `SbForms::getFlatForm`:
+   * `{ [mainFieldName]: value, [tabId]: { [fieldName]: value }, ... }` —
+   * the backend drops `''`/`null` values.
+   */
+  create: <T = CrudSubmitResponse>(table: string, payload: Record<string, unknown>) => post<T>(`/crud/${table}`, payload),
 
-    /** Update an entry with the same payload contract as `create`. */
-    update: <T = CrudSubmitResponse>(table: string, id: number | string, payload: Record<string, unknown>) => put<T>(`/crud/${table}/${id}`, payload),
+  /** Update an entry with the same payload contract as `create`. */
+  update: <T = CrudSubmitResponse>(table: string, id: number | string, payload: Record<string, unknown>) => put<T>(`/crud/${table}/${id}`, payload),
 };

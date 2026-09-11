@@ -6,7 +6,6 @@ export interface Auth {
   roles: string[];
 }
 
-
 export interface BreadcrumbItem {
   title: string;
   href: string;
@@ -91,18 +90,17 @@ export interface User {
   [key: string]: unknown; // This allows for additional properties...
 }
 
-
 export type Media = {
-  id: number
-  name: string
-  extension: string
-  slug: string
-  user_id: number
-  created_at: string,
-  updated_at: string,
+  id: number;
+  name: string;
+  extension: string;
+  slug: string;
+  user_id: number;
+  created_at: string;
+  updated_at: string;
   sizes: {
-    original: string
-    thumb: string
-  },
-  user: User
-}
+    original: string;
+    thumb: string;
+  };
+  user: User;
+};

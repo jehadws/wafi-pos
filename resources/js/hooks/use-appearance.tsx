@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
 import Settings from '@/lib/settings';
+import { useCallback, useEffect, useState } from 'react';
 
 export type Appearance = 'light' | 'dark' | 'system';
 

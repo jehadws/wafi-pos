@@ -13,7 +13,7 @@ export const PAYMENT_STATUS = {
   PARTIALLY_REFUNDED: 'partially_refunded',
   DUE: 'due',
   PARTIALLY_DUE: 'partially_due',
-  "NOT-AVAILABLE": 'not-available',
+  'NOT-AVAILABLE': 'not-available',
 } as const;
 
 export const PROCESSING_STATUS = {
@@ -21,7 +21,7 @@ export const PROCESSING_STATUS = {
   ONGOING: 'ongoing',
   READY: 'ready',
   FAILED: 'error',
-  "NOT-AVAILABLE": 'not-available',
+  'NOT-AVAILABLE': 'not-available',
 } as const;
 
 export const DELIVERY_STATUS = {
@@ -30,40 +30,40 @@ export const DELIVERY_STATUS = {
   FAILED: 'error',
   COMPLETED: 'completed',
   DELIVERED: 'delivered',
-  "NOT-AVAILABLE": 'not-available',
+  'NOT-AVAILABLE': 'not-available',
 } as const;
 
 export const PaymentStatusLabels: Record<PaymentStatus, string> = {
-  paid: "Paid",
-  partially_paid: "Partially Paid",
-  unpaid: "Unpaid",
-  hold: "On Hold",
-  order_void: "Voided",
-  refunded: "Refunded",
-  partially_refunded: "Partially Refunded",
-  due: "Due",
-  partially_due: "Partially Due",
-  "not-available": "Not Available",
+  paid: 'Paid',
+  partially_paid: 'Partially Paid',
+  unpaid: 'Unpaid',
+  hold: 'On Hold',
+  order_void: 'Voided',
+  refunded: 'Refunded',
+  partially_refunded: 'Partially Refunded',
+  due: 'Due',
+  partially_due: 'Partially Due',
+  'not-available': 'Not Available',
 };
 
 export const DeliveryStatusLabels: Record<DeliveryStatus, string> = {
-  pending: "Pending",
-  ongoing: "Ongoing",
-  error: "Failed",
-  completed: "Completed",
-  delivered: "Delivered",
-  "not-available": "Not Available",
+  pending: 'Pending',
+  ongoing: 'Ongoing',
+  error: 'Failed',
+  completed: 'Completed',
+  delivered: 'Delivered',
+  'not-available': 'Not Available',
 };
 
 export const ProcessingStatusLabels: Record<ProcessingStatus, string> = {
-  pending: "Pending",
-  ongoing: "Ongoing",
-  ready: "Ready",
-  error: "Failed",
-  "not-available": "Not Available",
+  pending: 'Pending',
+  ongoing: 'Ongoing',
+  ready: 'Ready',
+  error: 'Failed',
+  'not-available': 'Not Available',
 };
 
 export const OrderTypeLabels: Record<OrderType, string> = {
-  delivery: "Delivery",
-  takeaway: "Takeaway",
+  delivery: 'Delivery',
+  takeaway: 'Takeaway',
 };

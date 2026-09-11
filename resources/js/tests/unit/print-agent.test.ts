@@ -1,179 +1,179 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import axios from 'axios';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('axios');
 
 vi.mock('@/api/http', () => {
-    const mockInstance = {
-        get: vi.fn(),
-        post: vi.fn(),
-        interceptors: {
-            request: { use: vi.fn() },
-            response: { use: vi.fn() },
-        },
-    };
-    return {
-        http: mockInstance,
-        refreshCsrfToken: vi.fn(),
-    };
+  const mockInstance = {
+    get: vi.fn(),
+    post: vi.fn(),
+    interceptors: {
+      request: { use: vi.fn() },
+      response: { use: vi.fn() },
+    },
+  };
+  return {
+    http: mockInstance,
+    refreshCsrfToken: vi.fn(),
+  };
 });
 
 import { PrintAgentService } from '@/services/print-agent-service';
 const mockedAxios = vi.mocked(axios, true);
 
 describe('PrintAgentService', () => {
-    let service: PrintAgentService;
+  let service: PrintAgentService;
 
-    beforeEach(() => {
-        vi.clearAllMocks();
-        localStorage.clear();
-        service = new PrintAgentService();
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+    service = new PrintAgentService();
+  });
+
+  describe('checkStatus', () => {
+    it('returns online status when agent responds', async () => {
+      mockedAxios.get.mockResolvedValueOnce({
+        data: { status: 'online', version: '1.0.0', service: 'Subul Windows Print Agent' },
+      });
+
+      const status = await service.checkStatus(true);
+      expect(status.status).toBe('online');
+      expect(status.version).toBe('1.0.0');
     });
 
-    describe('checkStatus', () => {
-        it('returns online status when agent responds', async () => {
-            mockedAxios.get.mockResolvedValueOnce({
-                data: { status: 'online', version: '1.0.0', service: 'Subul Windows Print Agent' },
-            });
+    it('gracefully returns offline status when agent is unreachable', async () => {
+      mockedAxios.get.mockRejectedValueOnce(new Error('Network Error'));
 
-            const status = await service.checkStatus(true);
-            expect(status.status).toBe('online');
-            expect(status.version).toBe('1.0.0');
-        });
-
-        it('gracefully returns offline status when agent is unreachable', async () => {
-            mockedAxios.get.mockRejectedValueOnce(new Error('Network Error'));
-
-            const status = await service.checkStatus(true);
-            expect(status.status).toBe('offline');
-        });
-
-        it('caches status to prevent hammering within TTL', async () => {
-            mockedAxios.get.mockResolvedValueOnce({
-                data: { status: 'online' },
-            });
-
-            await service.checkStatus(true);
-            await service.checkStatus(false);
-
-            // Second call should use cache
-            expect(mockedAxios.get).toHaveBeenCalledTimes(1);
-        });
+      const status = await service.checkStatus(true);
+      expect(status.status).toBe('offline');
     });
 
-    describe('printOrderReceipt price mapping', () => {
-        const makeOrder = (products: any[]) =>
-            ({
-                code: 'ORD-55',
-                created_at: new Date().toISOString(),
-                subtotal: 200,
-                discount: 0,
-                tax_value: 0,
-                total: 200,
-                products,
-            }) as any;
+    it('caches status to prevent hammering within TTL', async () => {
+      mockedAxios.get.mockResolvedValueOnce({
+        data: { status: 'online' },
+      });
 
-        const lineItem = {
-            name: 'Latte',
-            quantity: 2,
-            unit_price: 100,
-            price_with_tax: 115,
-            price_without_tax: 100,
-            total_price: 230,
-            total_price_with_tax: 230,
-            total_price_without_tax: 200,
-        };
+      await service.checkStatus(true);
+      await service.checkStatus(false);
 
-        it('maps with-tax item prices by default', async () => {
-            service.saveSettings({ receiptPrinter: 'XP-80C' });
-            mockedAxios.post.mockResolvedValueOnce({ data: { success: true } });
+      // Second call should use cache
+      expect(mockedAxios.get).toHaveBeenCalledTimes(1);
+    });
+  });
 
-            await service.printOrderReceipt(makeOrder([lineItem]));
+  describe('printOrderReceipt price mapping', () => {
+    const makeOrder = (products: any[]) =>
+      ({
+        code: 'ORD-55',
+        created_at: new Date().toISOString(),
+        subtotal: 200,
+        discount: 0,
+        tax_value: 0,
+        total: 200,
+        products,
+      }) as any;
 
-            const payload = mockedAxios.post.mock.calls[0][1] as any;
-            expect(payload.data.items[0].price).toContain('115.00');
-            expect(payload.data.items[0].total).toContain('230.00');
-        });
+    const lineItem = {
+      name: 'Latte',
+      quantity: 2,
+      unit_price: 100,
+      price_with_tax: 115,
+      price_without_tax: 100,
+      total_price: 230,
+      total_price_with_tax: 230,
+      total_price_without_tax: 200,
+    };
 
-        it('maps without-tax item prices when priceWithTax is false', async () => {
-            service.saveSettings({ receiptPrinter: 'XP-80C' });
-            mockedAxios.post.mockResolvedValueOnce({ data: { success: true } });
+    it('maps with-tax item prices by default', async () => {
+      service.saveSettings({ receiptPrinter: 'XP-80C' });
+      mockedAxios.post.mockResolvedValueOnce({ data: { success: true } });
 
-            await service.printOrderReceipt(makeOrder([lineItem]), 'sale', {}, false);
+      await service.printOrderReceipt(makeOrder([lineItem]));
 
-            const payload = mockedAxios.post.mock.calls[0][1] as any;
-            expect(payload.data.items[0].price).toContain('100.00');
-            expect(payload.data.items[0].total).toContain('200.00');
-        });
+      const payload = mockedAxios.post.mock.calls[0][1] as any;
+      expect(payload.data.items[0].price).toContain('115.00');
+      expect(payload.data.items[0].total).toContain('230.00');
     });
 
-    describe('printReceipt', () => {
-        it('returns success: false when no printer is configured', async () => {
-            service.saveSettings({ receiptPrinter: '' });
-            const result = await service.printReceipt({
-                orderCode: 'ORD-123',
-                total: '100.00',
-                items: [],
-            });
+    it('maps without-tax item prices when priceWithTax is false', async () => {
+      service.saveSettings({ receiptPrinter: 'XP-80C' });
+      mockedAxios.post.mockResolvedValueOnce({ data: { success: true } });
 
-            expect(result.success).toBe(false);
-            expect(result.error).toContain('No receipt printer selected');
-        });
+      await service.printOrderReceipt(makeOrder([lineItem]), 'sale', {}, false);
 
-        it('handles agent timeout gracefully without throwing', async () => {
-            service.saveSettings({ receiptPrinter: 'XP-80C' });
-            const timeoutError: any = new Error('timeout of 5000ms exceeded');
-            timeoutError.code = 'ECONNABORTED';
-            mockedAxios.post.mockRejectedValueOnce(timeoutError);
+      const payload = mockedAxios.post.mock.calls[0][1] as any;
+      expect(payload.data.items[0].price).toContain('100.00');
+      expect(payload.data.items[0].total).toContain('200.00');
+    });
+  });
 
-            const result = await service.printReceipt({
-                orderCode: 'ORD-999',
-                total: '50.00',
-                items: [],
-            });
+  describe('printReceipt', () => {
+    it('returns success: false when no printer is configured', async () => {
+      service.saveSettings({ receiptPrinter: '' });
+      const result = await service.printReceipt({
+        orderCode: 'ORD-123',
+        total: '100.00',
+        items: [],
+      });
 
-            expect(result.success).toBe(false);
-            expect(result.isOffline).toBe(true);
-            expect(result.error).toContain('timed out');
-        });
-
-        it('returns success: true when agent accepts print job', async () => {
-            service.saveSettings({ receiptPrinter: 'XP-80C' });
-            mockedAxios.post.mockResolvedValueOnce({
-                data: { success: true, jobId: 'rcpt_123' },
-            });
-
-            const result = await service.printReceipt({
-                orderCode: 'ORD-777',
-                total: '75.00',
-                items: [{ name: 'Item A', quantity: 1, total: '75.00' }],
-            });
-
-            expect(result.success).toBe(true);
-            expect(result.jobId).toBeDefined();
-        });
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('No receipt printer selected');
     });
 
-    describe('formatErrorMessage', () => {
-        it('formats agent offline error when no response is received', () => {
-            const err = new Error('Connection refused');
-            const formatted = service.formatErrorMessage(err);
-            expect(formatted).toContain('Print Agent is not running');
-        });
+    it('handles agent timeout gracefully without throwing', async () => {
+      service.saveSettings({ receiptPrinter: 'XP-80C' });
+      const timeoutError: any = new Error('timeout of 5000ms exceeded');
+      timeoutError.code = 'ECONNABORTED';
+      mockedAxios.post.mockRejectedValueOnce(timeoutError);
 
-        it('formats timeout error', () => {
-            const err: any = new Error('timeout');
-            err.code = 'ECONNABORTED';
-            const formatted = service.formatErrorMessage(err);
-            expect(formatted).toContain('timed out');
-        });
+      const result = await service.printReceipt({
+        orderCode: 'ORD-999',
+        total: '50.00',
+        items: [],
+      });
 
-        it('extracts custom server error message if present', () => {
-            const err: any = {
-                response: { data: { error: 'Paper out' } },
-            };
-            const formatted = service.formatErrorMessage(err);
-            expect(formatted).toBe('Paper out');
-        });
+      expect(result.success).toBe(false);
+      expect(result.isOffline).toBe(true);
+      expect(result.error).toContain('timed out');
     });
+
+    it('returns success: true when agent accepts print job', async () => {
+      service.saveSettings({ receiptPrinter: 'XP-80C' });
+      mockedAxios.post.mockResolvedValueOnce({
+        data: { success: true, jobId: 'rcpt_123' },
+      });
+
+      const result = await service.printReceipt({
+        orderCode: 'ORD-777',
+        total: '75.00',
+        items: [{ name: 'Item A', quantity: 1, total: '75.00' }],
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.jobId).toBeDefined();
+    });
+  });
+
+  describe('formatErrorMessage', () => {
+    it('formats agent offline error when no response is received', () => {
+      const err = new Error('Connection refused');
+      const formatted = service.formatErrorMessage(err);
+      expect(formatted).toContain('Print Agent is not running');
+    });
+
+    it('formats timeout error', () => {
+      const err: any = new Error('timeout');
+      err.code = 'ECONNABORTED';
+      const formatted = service.formatErrorMessage(err);
+      expect(formatted).toContain('timed out');
+    });
+
+    it('extracts custom server error message if present', () => {
+      const err: any = {
+        response: { data: { error: 'Paper out' } },
+      };
+      const formatted = service.formatErrorMessage(err);
+      expect(formatted).toBe('Paper out');
+    });
+  });
 });

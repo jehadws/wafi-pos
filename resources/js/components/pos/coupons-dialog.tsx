@@ -1,15 +1,15 @@
 'use client';
 
+import { customersApi } from '@/api';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from '@/lib/i18n';
-import { customersApi } from '@/api';
 import { AlertCircle, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface SelectCustomerDialogProps {
   isOpen: boolean;
@@ -17,7 +17,7 @@ interface SelectCustomerDialogProps {
   activeCoupons: any[];
   onApplyCoupon: (coupon: any) => void;
   onRemoveCoupon: (coupon: any) => void;
-  selectedCustomer: { id: number; first_name?: string; last_name?: string;[key: string]: any } | null;
+  selectedCustomer: { id: number; first_name?: string; last_name?: string; [key: string]: any } | null;
   setShowSelectCustomerDialog: (value: boolean) => void;
 }
 
@@ -84,12 +84,7 @@ export default function CouponsDialog({
 
             <TabsContent value="apply" className="space-y-4 py-4">
               <div className="flex gap-2">
-                <Input
-                  placeholder={t('Coupon Code')}
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value)}
-                  className="flex-1"
-                />
+                <Input placeholder={t('Coupon Code')} value={couponCode} onChange={(e) => setCouponCode(e.target.value)} className="flex-1" />
                 <Button type="button" disabled={loading} onClick={handleApplyCoupon}>
                   {t('Load')}
                 </Button>
@@ -111,7 +106,7 @@ export default function CouponsDialog({
               )}
 
               {selectedCustomer && (
-                <div className="bg-primary/15 rounded-lg border border-primary/20 p-4">
+                <div className="bg-primary/15 border-primary/20 rounded-lg border p-4">
                   <p className="text-center text-sm">
                     {t('Load coupon for')} {selectedCustomer.first_name} {selectedCustomer.last_name}
                   </p>
@@ -127,9 +122,7 @@ export default function CouponsDialog({
                       <div>
                         <p className="font-medium">{coupon.code}</p>
                         <p className="text-muted-foreground text-sm">
-                          {coupon.type === 'percentage_discount'
-                            ? `${coupon.discount_value}% off`
-                            : `$${coupon.discount_value.toFixed(2)} off`}
+                          {coupon.type === 'percentage_discount' ? `${coupon.discount_value}% off` : `$${coupon.discount_value.toFixed(2)} off`}
                         </p>
                       </div>
                       <Button variant="outline" size="sm" onClick={() => onRemoveCoupon(coupon)}>

@@ -1,27 +1,27 @@
-import { beforeEach, describe, expect, it } from 'vitest';
 import { usePOS } from '@/hooks/usePOS';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 describe('use-pos-dialogs (Zustand Dialog Slice)', () => {
-    beforeEach(() => {
-        usePOS.getState().reset();
+  beforeEach(() => {
+    usePOS.getState().reset();
+  });
+
+  it('opens dialog and resolves promise on close with returned payload', async () => {
+    const store = usePOS.getState();
+
+    let resolvedValue: any = undefined;
+    const promise = store.openDialog('selectQuantity' as any).then((val) => {
+      resolvedValue = val;
     });
 
-    it('opens dialog and resolves promise on close with returned payload', async () => {
-        const store = usePOS.getState();
+    expect((usePOS.getState().openDialogs as Record<string, boolean>)['selectQuantity']).toBe(true);
 
-        let resolvedValue: any = undefined;
-        const promise = store.openDialog('selectQuantity' as any).then((val) => {
-            resolvedValue = val;
-        });
+    const mockPayload = { id: 10, name: 'Box of 12' };
+    usePOS.getState().closeDialog('selectQuantity' as any, mockPayload as any);
 
-        expect((usePOS.getState().openDialogs as Record<string, boolean>)['selectQuantity']).toBe(true);
+    await promise;
 
-        const mockPayload = { id: 10, name: 'Box of 12' };
-        usePOS.getState().closeDialog('selectQuantity' as any, mockPayload as any);
-
-        await promise;
-
-        expect(resolvedValue).toEqual(mockPayload);
-        expect((usePOS.getState().openDialogs as Record<string, boolean>)['selectQuantity']).toBe(false);
-    });
+    expect(resolvedValue).toEqual(mockPayload);
+    expect((usePOS.getState().openDialogs as Record<string, boolean>)['selectQuantity']).toBe(false);
+  });
 });

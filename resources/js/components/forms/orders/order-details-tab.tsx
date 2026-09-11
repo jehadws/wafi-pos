@@ -78,9 +78,7 @@ export default function OrderDetailsTab({ order }: Props) {
               </div>
               <div className="bg-muted flex items-center justify-between rounded p-3">
                 <span className="font-medium">{t('Processing Status')}</span>
-                <span className="font-semibold">
-                  {order?.process_status === 'not-available' ? t('Not Available') : order?.process_status}
-                </span>
+                <span className="font-semibold">{order?.process_status === 'not-available' ? t('Not Available') : order?.process_status}</span>
               </div>
               <div className="bg-muted flex items-center justify-between rounded p-3">
                 <span className="font-medium">{t('Payment Status')}</span>
@@ -108,10 +106,7 @@ export default function OrderDetailsTab({ order }: Props) {
             <div className="mt-6">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-lg font-semibold">{t('Refund With Products')}</h3>
-                <span
-                  className="cursor-pointer text-sm font-medium underline hover:text-blue-600"
-                  onClick={() => setIsRefundsOpen(true)}
-                >
+                <span className="cursor-pointer text-sm font-medium underline hover:text-blue-600" onClick={() => setIsRefundsOpen(true)}>
                   {t('All Refunds')}
                 </span>
               </div>
@@ -141,7 +136,7 @@ export default function OrderDetailsTab({ order }: Props) {
             <DialogTitle>{t('All Refunds')}</DialogTitle>
           </DialogHeader>
           <div className="flex max-h-96 flex-col gap-3 overflow-y-auto">
-              {!(order as any)?.refunded_products?.length ? (
+            {!(order as any)?.refunded_products?.length ? (
               <div className="py-8 text-center text-sm">{t('Nothing to display')}</div>
             ) : (
               (order as any).refunded_products.map((product: any, index: number) => (

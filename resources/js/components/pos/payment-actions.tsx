@@ -1,14 +1,14 @@
+import { ordersApi } from '@/api';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { ordersApi } from '@/api';
+import { formatCurrency } from '@/utils/format';
 import { CreditCard, PauseCircle, Percent, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { formatCurrency } from '@/utils/format';
 
 type Props = {
   setShowPaymentGatewayDialog: (value: boolean) => void;
@@ -107,12 +107,12 @@ export default function PaymentActions({
 
   return (
     <>
-      <div className={cn('grid border-t grid-cols-4')}>
+      <div className={cn('grid grid-cols-4 border-t')}>
         <Button
           className={cn(
             'group relative flex h-16 flex-col items-center justify-center gap-0.5 rounded-none border-e font-semibold transition-all duration-150',
             'bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98]',
-            'shadow-sm col-span-1',
+            'col-span-1 shadow-sm',
           )}
           onClick={handleSubmit}
           type="button"
@@ -121,9 +121,7 @@ export default function PaymentActions({
             <CreditCard className="h-4 w-4 transition-transform group-hover:scale-110" />
             <span>{t('Pay')}</span>
           </div>
-          <span className="text-xs font-bold tracking-wide opacity-95">
-            {formatCurrency(order.total || 0)}
-          </span>
+          <span className="text-xs font-bold tracking-wide opacity-95">{formatCurrency(order.total || 0)}</span>
         </Button>
         <Button
           onClick={() => {
@@ -155,7 +153,7 @@ export default function PaymentActions({
           )}
           type="button"
         >
-          <div className="flex items-center gap-1.5 text-sm font-semibold leading-none">
+          <div className="flex items-center gap-1.5 text-sm leading-none font-semibold">
             <PauseCircle className="h-4 w-4 transition-transform group-hover:scale-110" />
             <span>{t('Hold')}</span>
           </div>
@@ -171,13 +169,11 @@ export default function PaymentActions({
           type="button"
           onClick={onOpenDiscountDialog}
         >
-          <div className="flex items-center gap-1.5 text-sm font-semibold leading-none">
-            <Percent className="h-4 w-4 text-muted-foreground transition-transform group-hover:scale-110" />
+          <div className="flex items-center gap-1.5 text-sm leading-none font-semibold">
+            <Percent className="text-muted-foreground h-4 w-4 transition-transform group-hover:scale-110" />
             <span>{t('Discount')}</span>
           </div>
-          <span className="text-[11px] text-muted-foreground">
-            {order.discount ? `-${formatCurrency(order.discount)}` : t('Add Promo')}
-          </span>
+          <span className="text-muted-foreground text-[11px]">{order.discount ? `-${formatCurrency(order.discount)}` : t('Add Promo')}</span>
         </Button>
         <Button
           className={cn(
@@ -196,7 +192,7 @@ export default function PaymentActions({
             setIsVoidOpen(true);
           }}
         >
-          <div className="flex items-center gap-1.5 text-sm font-semibold leading-none">
+          <div className="flex items-center gap-1.5 text-sm leading-none font-semibold">
             <XCircle className="h-4 w-4 transition-transform group-hover:scale-110" />
             <span>{t('Void')}</span>
           </div>
@@ -242,16 +238,14 @@ export default function PaymentActions({
         <DialogContent className={''}>
           <DialogHeader>
             <DialogTitle>{t('Void The Order')}</DialogTitle>
-            <DialogDescription className="sr-only">
-              {order?.id && order?.tendered > 0 ? t('Void The Order') : t('Order Deletion')}
-            </DialogDescription>
+            <DialogDescription className="sr-only">{order?.id && order?.tendered > 0 ? t('Void The Order') : t('Order Deletion')}</DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3">
             <div className="text-sm">
               {order?.id && order?.tendered > 0
                 ? t(
-                  "The current order will be void. This will cancel the transaction, but the order won't be deleted. Further details about the operation will be tracked on the report. Consider providing the reason of this operation.",
-                )
+                    "The current order will be void. This will cancel the transaction, but the order won't be deleted. Further details about the operation will be tracked on the report. Consider providing the reason of this operation.",
+                  )
                 : t('The current order will be deleted as no payment has been made so far.')}
             </div>
           </div>
