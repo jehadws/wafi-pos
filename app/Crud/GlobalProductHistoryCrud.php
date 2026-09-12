@@ -387,11 +387,11 @@ class GlobalProductHistoryCrud extends CrudService
         $entry->order_code = $entry->order_code ?: __( 'N/A' );
         $entry->total_price = sb()->currency->fresh( $entry->total_price )->format();
 
-        // you can make changes here
         $entry->action(
             label: __( 'Delete' ),
             identifier: 'delete',
             url: sb()->url( '/api/crud/sb.global-products-history/' . $entry->id ),
+            type: 'DELETE',
             confirm: [
                 'message' => __( 'Would you like to delete this ?' ),
             ]
