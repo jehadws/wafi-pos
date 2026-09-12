@@ -37,3 +37,49 @@ it('returns status 422 with tabId.fieldName error keys on invalid crud post', fu
         expect($key)->toMatch('/^[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+$/');
     }
 });
+
+it('preserves 0, "0", and false while omitting null and empty strings in getFlatForm', function () {
+    $service = new class extends \App\Services\CrudService {
+        public function getForm($entry = null)
+        {
+            return [
+                'main' => ['name' => 'name'],
+                'tabs' => [
+                    'general' => [
+                        'identifier' => 'general',
+                        'fields' => [
+                            ['name' => 'zero_num'],
+                            ['name' => 'zero_str'],
+                            ['name' => 'bool_false'],
+                            ['name' => 'empty_str'],
+                            ['name' => 'null_val'],
+                            ['name' => 'valid_text'],
+                        ],
+                    ],
+                ],
+            ];
+        }
+    };
+
+    $inputs = [
+        'name' => 'Test',
+        'general' => [
+            'zero_num' => 0,
+            'zero_str' => '0',
+            'bool_false' => false,
+            'empty_str' => '',
+            'null_val' => null,
+            'valid_text' => 'hello',
+        ],
+    ];
+
+    $flat = $service->getFlatForm($inputs);
+
+    expect($flat)->toHaveKey('name', 'Test');
+    expect($flat)->toHaveKey('zero_num', 0);
+    expect($flat)->toHaveKey('zero_str', '0');
+    expect($flat)->toHaveKey('bool_false', false);
+    expect($flat)->toHaveKey('valid_text', 'hello');
+    expect($flat)->not->toHaveKey('empty_str');
+    expect($flat)->not->toHaveKey('null_val');
+});

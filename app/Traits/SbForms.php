@@ -146,10 +146,10 @@ trait SbForms
                     $value = data_get( $fields, $tabKey . '.' . $field[ 'name' ] );
 
                     /**
-                     * if the field doesn't have any value
-                     * we'll omit it. To avoid filling wrong value
+                     * if the field doesn't have any value (null or empty string)
+                     * we'll omit it. To avoid filling wrong value while rescuing 0, '0', and false.
                      */
-                    if ( ! empty( $value ) || (int) $value === 0 ) {
+                    if ( $value !== null && $value !== '' ) {
                         $data[ $field[ 'name' ] ] = $value;
                     }
                 }
