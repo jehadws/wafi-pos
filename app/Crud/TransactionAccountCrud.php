@@ -387,6 +387,7 @@ class TransactionAccountCrud extends CrudService
       type: 'DELETE',
       url: sb()->url('/api/crud/sb.transactions-accounts/' . $entry->id),
       confirm: [
+        'title' => __('Confirm Your Action'),
         'message' => __('Would you like to delete this ?'),
       ]
     );

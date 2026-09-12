@@ -372,6 +372,7 @@ class TransactionsHistoryCrud extends CrudService
             url: sb()->url( 'api/crud/' . self::IDENTIFIER . '/' . $entry->id ),
             type: 'DELETE',
             confirm: [
+                'title' => __( 'Confirm Your Action' ),
                 'message' => __( 'Are you sure you want to delete this transaction history?' ),
             ]
         );

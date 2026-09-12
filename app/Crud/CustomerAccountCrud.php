@@ -526,7 +526,8 @@ class CustomerAccountCrud extends CrudService
             type: 'DELETE',
             url: sb()->url( '/api/crud/sb.customers-account-history/' . $entry->id ),
             confirm: [
-                'message' => __( 'Would you like to delete this?' ),
+                'title' => __( 'Confirm Your Action' ),
+                'message' => __( 'Would you like to delete this ?' ),
             ]
         );
 

@@ -738,8 +738,8 @@ class UserCrud extends CrudService
       type: 'DELETE',
       url: sb()->url('/api/crud/sb.users/' . $entry->id),
       confirm: [
+        'title' => __('Confirm Your Action'),
         'message' => __('Would you like to delete this ?'),
-        'title' => __('Delete a user'),
       ],
     );
 

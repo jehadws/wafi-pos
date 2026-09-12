@@ -360,6 +360,7 @@ class UnitCrud extends CrudService
       type: 'DELETE',
       url: sb()->url('/api/crud/sb.units/' . $entry->id),
       confirm: [
+        'title' => __('Confirm Your Action'),
         'message' => __('Would you like to delete this ?'),
       ]
     );

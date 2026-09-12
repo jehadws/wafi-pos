@@ -393,6 +393,7 @@ class GlobalProductHistoryCrud extends CrudService
             url: sb()->url( '/api/crud/sb.global-products-history/' . $entry->id ),
             type: 'DELETE',
             confirm: [
+                'title' => __( 'Confirm Your Action' ),
                 'message' => __( 'Would you like to delete this ?' ),
             ]
         );

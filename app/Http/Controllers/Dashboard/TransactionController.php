@@ -259,6 +259,8 @@ class TransactionController extends DashboardController
 
   public function triggerTransaction(Transaction $transaction)
   {
+    sb()->restrict(['subul.update.transactions']);
+
     return $this->transactionService->triggerTransaction($transaction);
   }
 
@@ -277,6 +279,8 @@ class TransactionController extends DashboardController
 
   public function createReflection(TransactionHistory $history)
   {
+    sb()->restrict(['subul.create.transactions']);
+
     return $this->transactionService->reflectTransactionFromRule($history, null);
   }
 }

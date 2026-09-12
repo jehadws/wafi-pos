@@ -155,4 +155,31 @@ The table *shape* is equally backend-defined and equally ignored:
 
 History/secondary CUD namespaces without confirmed SPA pages (Phase 5 inventory): `sb.coupons-orders-history`, `sb.customers-coupons-history`, `sb.customers-account-history`, `sb.customers-orders`, `sb.orders-instalments`, `sb.products-histories`, `sb.global-products-history`, `sb.products-units`, `sb.providers-procurements`, `sb.providers-products`, `sb.cash-registers-history`, `sb.hold-orders`.
 
+---
+
+## Phase 1 sweep (T1.6, 2026-09-12) — action normalization
+
+### GET-action route audit
+| Action | Endpoint | Enforcement |
+|---|---|---|
+| Procurement Set Paid | GET `procurements/{procurement}/set-as-paid` | `SbRestrictMiddleware('subul.update.procurements')` on route ✅ |
+| Procurement Refresh | GET `procurements/{id}/refresh` | `SbRestrictMiddleware('subul.update.procurements')` on route ✅ |
+| Role Clone | GET `users/roles/{role}/clone` | `sb()->restrict(['create.roles'])` in `cloneRole` ✅ |
+| Transaction Trigger | GET `transactions/trigger/{transaction?}` | **was unguarded** → added `sb()->restrict(['subul.update.transactions'])` in controller ✅ |
+| Create Reflection | GET `transactions/history/{history}/create-reflection` | **was unguarded** → added `sb()->restrict(['subul.create.transactions'])` in controller ✅ |
+
+No GOTO action points at an `api/` URL (the former "Create Reflection" GOTO already serializes as `GET` + confirm), so no GOTO→GET reclassification was needed.
+
+### POPUP action registry (component registry keys for Phase 2)
+| `namespace::identifier` | Source | Label | URL | Expected behavior |
+|---|---|---|---|---|
+| `sb.orders::sb.order-options` | OrderCrud | Options | `/dashboard/orders/edit/{id}` | Order options modal |
+| `sb.orders::sb.order-refunds` | OrderCrud (only when refunds exist) | Refund Receipt | `/dashboard/orders/refund-receipt/{id}` | Refund receipt print modal |
+| `sb.products::sb.quantities` | ProductCrud | Preview | `/dashboard/products/edit/{id}` | Product preview modal (identifier predates the Preview label) |
+| `sb.cash-registers-history::view-details` | RegisterHistoryCrud | Details | — (content-only) | Register history details modal |
+| `sb.hold-orders::sb.open` | HoldOrderCrud | Continue | — (POS-handled) | Restores the held order into the POS |
+
+### Confirm payload standardization
+All 29 `DELETE` actions now use `'title' => __('Confirm Your Action')` + `'message' => __('Would you like to delete this ?')`; resources with a semantic message keep it (rewards system, transactions history). Copy-paste titles removed (`Delete a licence` on coupons / customer groups / rewards system, `Delete a customers`, `Delete a user`). GET-action confirms (set-paid, refresh, clone, trigger, create-reflection) intentionally keep message-only payloads. No HTML-bearing labels remain in `app/Crud` (verified by grep and pinned by the T1.2 contract test).
+
 

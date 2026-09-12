@@ -430,6 +430,7 @@ class OrderCrud extends CrudService
       type: 'DELETE',
       url: sb()->url('/api/crud/sb.orders/' . $entry->id),
       confirm: [
+        'title' => __('Confirm Your Action'),
         'message' => __('Would you like to delete this ?'),
       ],
     );

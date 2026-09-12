@@ -341,7 +341,8 @@ class CouponOrderHistoryCrud extends CrudService
             url: sb()->url( '/api/crud/sb.coupons-orders-history/' . $entry->id ),
             type: 'DELETE',
             confirm: [
-                'message' => __( 'Would you like to delete this?' ),
+                'title' => __( 'Confirm Your Action' ),
+                'message' => __( 'Would you like to delete this ?' ),
             ]
         );
 

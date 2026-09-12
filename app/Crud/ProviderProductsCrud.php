@@ -380,6 +380,7 @@ class ProviderProductsCrud extends CrudService
             type: 'DELETE',
             url: sb()->url( '/api/crud/sb.providers-products/' . $entry->id ),
             confirm: [
+                'title' => __( 'Confirm Your Action' ),
                 'message' => __( 'Would you like to delete this ?' ),
             ]
         );

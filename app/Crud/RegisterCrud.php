@@ -396,6 +396,7 @@ class RegisterCrud extends CrudService
             type: 'DELETE',
             url: sb()->url( '/api/crud/' . self::IDENTIFIER . '/' . $entry->id ),
             confirm: [
+                'title' => __( 'Confirm Your Action' ),
                 'message' => __( 'Would you like to delete this ?' ),
             ]
         );

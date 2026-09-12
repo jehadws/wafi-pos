@@ -364,6 +364,7 @@ class CustomerRewardCrud extends CrudService
             type: 'DELETE',
             url: sb()->url( '/api/crud/sb.customers-rewards/' . $entry->id ),
             confirm: [
+                'title' => __( 'Confirm Your Action' ),
                 'message' => __( 'Would you like to delete this ?' ),
             ]
         );
