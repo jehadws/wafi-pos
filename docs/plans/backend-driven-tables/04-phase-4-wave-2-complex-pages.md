@@ -9,7 +9,7 @@
 
 Migrate the pages that exercise the engine's hard paths: conditional actions (`GET` with confirm), POPUP dialogs, row `$cssClass`, server pagination on the busiest tables, and GOTO targets that depend on Phase 5 pages. Order matters: each step lists its prerequisites.
 
-**Per-page parity gate**: same checklist as Phase 3, plus the per-step notes below.
+**Per-page parity gate**: same checklist as Phase 3, plus the per-step notes below. **Migration pattern**: same as Phase 3 — controller becomes `return XCrud::table();` and the hand-written `page.tsx` is deleted (single generic `crud/list` page, T2.8); the `page.tsx` paths listed below are the files to *delete*.
 
 ---
 

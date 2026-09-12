@@ -121,6 +121,11 @@ The table *shape* is equally backend-defined and equally ignored:
 | POPUP strategy | Component registry keyed `namespace::identifier` with navigate fallback |
 | Confirm texts | Standardized backend-side in the CRUD files; frontend renders `confirm` verbatim |
 | Missing action targets | Expose only after the target page/route exists (Phase 1 inventory → Phase 5 build-out) |
+| Render wrapper | **Revive `CrudService::table()`** (dead `View::make` at `CrudService.php:1149`) as the Inertia render wrapper over `getTableConfig()` — controllers become `return XCrud::table();` |
+| Generic page | **One single `pages/crud/list.tsx`** renders every migrated list; migrated hand-written `page.tsx` files are deleted wholesale, never converted to shells |
+| Actions channel | Row `$actions` only — no separate `getActionConfig()` endpoint (permission filtering is per-serialization in `CrudEntry::filterActions()`; actions are row-conditional) |
+| Column rendering | Ladder: default text (values pre-cast backend-side) → optional backend `type` key on the column → `namespace::identifier` renderer registry; never infer from identifier names |
+| Data loading | Server-side only — rows are never Inertia props; config travels once as `initialConfig` from `table()`; sub-list scoping via `queryParams` → `initialQuery` |
 
 ## List-page inventory (21 pages → namespaces)
 

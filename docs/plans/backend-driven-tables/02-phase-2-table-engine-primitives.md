@@ -120,18 +120,26 @@ Build the generic, backend-driven table engine under `resources/js/components/ta
 
 ---
 
-## Micro-Step T2.8: `CrudTablePage` shell
+## Micro-Step T2.8: `CrudTablePage` shell + `CrudService::table()` revival
 
 - **Files**:
   - `[NEW]` `resources/js/components/tables/crud-table/crud-table-page.tsx`
+  - `[NEW]` `resources/js/pages/crud/list.tsx`
+  - `[MODIFY]` `app/Services/CrudService.php` — revive the dead `table()` (currently `View::make('pages.dashboard.crud.table', …)` at `CrudService.php:1149`)
 - **Implementation Instructions**:
-  1. Props: `{ namespace, initialConfig?, title?, description?, breadcrumbs }` (mirrors `CrudFormPage`).
-  2. Compose: `AppLayout` + breadcrumbs + `Head` title → `DataTable` wired to `use-crud-table` (custom pagination + server search), `columns-builder` output, `row-actions-menu`, executor, bulk actions, `queryFilters` → `filterableColumns`.
-  3. Header: Add-New / Refresh from `config.links` (type `link`) — render as `router.visit(href)` buttons; never hardcode URLs.
-  4. Honor `showOptions` (hide the actions column), `showCheckboxes` (hide selection), `prependOptions` (column order).
-  5. Apply `row.original.$cssClass` to each `TableRow` (status colors).
-  6. States: loading skeleton, error banner with retry, empty state (`There is nothing to display...`).
-- **Test & Analyze**: `npm run types && npm run lint` + smoke vitest rendering with a fixture config.
+  1. **`crud-table-page.tsx`** (the engine, props `{ namespace, initialConfig?, title?, description?, breadcrumbs, queryParams? }`, mirrors `CrudFormPage`):
+     - Compose: `AppLayout` + breadcrumbs + `Head` title → `DataTable` wired to `use-crud-table` (custom pagination + server search), `columns-builder` output, `row-actions-menu`, executor, bulk actions, `queryFilters` → `filterableColumns`.
+     - Header: Add-New / Refresh from `config.links` (type `link`) — render as `router.visit(href)` buttons; never hardcode URLs.
+     - Honor `showOptions` (hide the actions column), `showCheckboxes` (hide selection), `prependOptions` (column order).
+     - Apply `row.original.$cssClass` to each `TableRow` (status colors).
+     - States: loading skeleton, error banner with retry, empty state (`There is nothing to display...`).
+  2. **`pages/crud/list.tsx`** — the *single* route component: reads `{ namespace, initialConfig, title, description, breadcrumbs, queryParams }` from `usePage().props` and renders `CrudTablePage`. There is exactly one of these — pages do NOT get per-page shells.
+  3. **`CrudService::table()` revival** — same signature ergonomics as the dead method (`array $config = [], ?string $title, ?string $description, ?string $src, ?string $createUrl, ?array $queryParams`), but rendering Inertia instead of a Blade view:
+     - `allowedTo('read')` guard (existing), labels from `getLabels()` (existing), then `Inertia::render('crud/list', array_merge([namespace, initialConfig => getTableConfig(), title => labels.list_title, description => labels.list_description, breadcrumbs => …, queryParams => []], $config))`.
+     - Config is passed as the `initialConfig` prop by default (fixes the forms-phase "initialConfig is dead" audit note by construction); `use-crud-table` still supports fetching when the prop is absent.
+     - Sub-list scoping travels as `queryParams` → `initialQuery` (e.g. `['coupon_id' => …]`).
+  4. From Phase 3 on, a controller list method is `return UnitCrud::table();` — the commented-out `// return TransactionCrud::table();` calls in the controllers become live.
+- **Test & Analyze**: `npm run types && npm run lint` + smoke vitest rendering with a fixture config; `php artisan test --filter CrudTableConfigContractTest` (config contract must stay green).
 - **Commit**: `feat(tables): add CrudTablePage generic backend-driven list shell`
 
 ---
