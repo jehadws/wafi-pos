@@ -1,6 +1,6 @@
 # Plan B — 03: Phase 2 Engine Hooks & Page Shells
 
-*Directory: `docs/plans/plan-b/`*  
+*Directory: `docs/plans/backend-driven-forms/`*  
 *Sequence: Step 3 of 7*
 
 ---

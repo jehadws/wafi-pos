@@ -1,6 +1,6 @@
 # Plan B — 01: Phase 0 Backend Contract Tests
 
-*Directory: `docs/plans/plan-b/`*  
+*Directory: `docs/plans/backend-driven-forms/`*  
 *Sequence: Step 1 of 7*
 
 ---

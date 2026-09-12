@@ -1243,11 +1243,21 @@ class CrudService
 
     $labels = Hook::filter(get_class($instance) . '@getLabels', $instance->getLabels());
 
+    $form = Hook::filter(get_class($instance) . '@getForm', $instance->getForm($entry));
+    if (is_array($form) && isset($form['tabs']) && is_array($form['tabs'])) {
+      foreach ($form['tabs'] as $tabKey => &$tab) {
+        if (is_array($tab)) {
+          $tab['identifier'] = $tab['identifier'] ?? (string) $tabKey;
+        }
+      }
+      unset($tab);
+    }
+
     return array_merge([
       /**
        * We'll provide the form configuration
        */
-      'form' => Hook::filter(get_class($instance) . '@getForm', $instance->getForm($entry)),
+      'form' => $form,
 
       /**
        * We'll now provide the labels

@@ -1,6 +1,6 @@
 # Plan B — 02: Phase 1 Engine Core Primitives
 
-*Directory: `docs/plans/plan-b/`*  
+*Directory: `docs/plans/backend-driven-forms/`*  
 *Sequence: Step 2 of 7*
 
 ---

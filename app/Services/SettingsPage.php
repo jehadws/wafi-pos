@@ -108,6 +108,7 @@ class SettingsPage
       'identifier' => $settings->getIdentifier(),
       'payload' => $settings->getPayload(),
       'options' => $settings->getOptions(),
+      'form' => $form,
     ]);
   }
 

@@ -264,7 +264,8 @@ class TransactionController extends DashboardController
 
   public function getTransactionAccountFromCategory(Request $request)
   {
-    return $this->transactionService->getTransactionAccountFromCategory($request->input('identifier'), $request->input('exclude'));
+    $identifier = $request->input('identifier') ?? $request->input('category_identifier');
+    return $this->transactionService->getTransactionAccountFromCategory($identifier, $request->input('exclude'));
   }
 
   public function resetDefaultAccounts(Request $request)

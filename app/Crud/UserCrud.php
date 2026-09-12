@@ -63,6 +63,14 @@ class UserCrud extends CrudService
   protected $model = User::class;
 
   /**
+   * Define option attributes for search-select
+   */
+  protected $optionAttributes = [
+    'label' => 'username',
+    'value' => 'id',
+  ];
+
+  /**
    * Determine if the options column should display
    * before the crud columns
    */

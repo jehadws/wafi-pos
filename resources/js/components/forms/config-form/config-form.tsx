@@ -4,8 +4,11 @@ import { useTranslation } from '@/lib/i18n';
 import type { CrudFormConfig, FormTabDef } from '@/types/forms';
 import type React from 'react';
 import { useMemo, useState } from 'react';
+import './code-generator-field';
 import { FieldRenderer } from './field-renderer';
 import { validateFieldValue } from './parse-validation';
+import { getCustomComponent } from './registry';
+import './rules-editor-field';
 import './sb-crud-form';
 
 /**
@@ -64,6 +67,21 @@ export function buildCrudPayload(config: CrudFormConfig, values: Record<string, 
     payload[tabId] = tabValues;
   }
 
+  // Support root-level properties (e.g. `rules` in rewards system)
+  if (values['rules'] !== undefined) {
+    if (Array.isArray(values['rules'])) {
+      payload['rules'] = (values['rules'] as Array<Record<string, unknown>>).map((rule) => {
+        const { _clientId, ...cleanRule } = rule;
+        if (!cleanRule.id || String(cleanRule.id).startsWith('client_') || (typeof cleanRule.id === 'number' && cleanRule.id > 1000000000000)) {
+          delete cleanRule.id;
+        }
+        return cleanRule;
+      });
+    } else {
+      payload['rules'] = values['rules'];
+    }
+  }
+
   return payload;
 }
 
@@ -82,6 +100,28 @@ export function initialValuesFromConfig(config: CrudFormConfig): Record<string, 
         continue;
       }
       values[`${tabId}.${field.name}`] = field.value ?? '';
+    }
+  }
+
+  // Seed root-level properties (e.g. `rules` in rewards system)
+  const rawForm = config.form as Record<string, unknown>;
+  if (rawForm['rules'] !== undefined) {
+    const rawRules = rawForm['rules'];
+    if (Array.isArray(rawRules)) {
+      values['rules'] = rawRules.map((r, index) => {
+        if (Array.isArray(r)) {
+          const ruleObj: Record<string, unknown> = { id: index + 1 };
+          for (const item of r) {
+            if (item && typeof item === 'object' && 'name' in item) {
+              ruleObj[(item as { name: string; value?: unknown }).name] = (item as { value?: unknown }).value ?? '';
+            }
+          }
+          return ruleObj;
+        }
+        return r;
+      });
+    } else {
+      values['rules'] = [];
     }
   }
 
@@ -174,6 +214,7 @@ function TabFields({
               onChange={(value) => onFieldChange(key, value)}
               error={errors?.[key]}
               id={`${idPrefix}-${tab.identifier}-${field.name}-${index}`}
+              formValues={values}
             />
           );
         })}
@@ -201,7 +242,14 @@ export function ConfigForm({
 
   const mergedErrors = useMemo(() => ({ ...errors, ...localErrors }), [errors, localErrors]);
   const main = config.form.main;
-  const tabs = useMemo(() => Object.values(config.form.tabs ?? {}), [config.form.tabs]);
+  const tabs = useMemo(
+    () =>
+      Object.entries(config.form.tabs ?? {}).map(([key, tab]) => ({
+        ...tab,
+        identifier: tab.identifier ?? key,
+      })),
+    [config.form.tabs],
+  );
   const mainName = main?.name;
 
   const clearLocalError = (key: string) => {
@@ -274,6 +322,25 @@ export function ConfigForm({
           ))}
         </Tabs>
       )}
+
+      {/* Root-level custom section (e.g. rules editor in rewards system) */}
+      {(config.form as Record<string, unknown>)['rules'] !== undefined &&
+        (() => {
+          const RulesCustom = getCustomComponent('rules');
+          if (!RulesCustom) {
+            return null;
+          }
+          return (
+            <div className="mt-6 border-t pt-4">
+              <RulesCustom
+                field={{ name: 'rules', label: t('Rules'), type: 'custom' }}
+                value={values['rules'] ?? []}
+                onChange={(next) => onFieldChange('rules', next)}
+                error={mergedErrors['rules']}
+              />
+            </div>
+          );
+        })()}
 
       {showFooter && (
         <div className="flex justify-end gap-2 pt-2">

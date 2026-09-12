@@ -10,6 +10,7 @@ use App\Exceptions\NotAllowedException;
 use App\Models\TransactionAccount;
 use App\Services\CrudEntry;
 use App\Services\CrudService;
+use App\Services\TransactionService;
 use App\Services\UsersService;
 use Illuminate\Http\Request;
 use TorMorten\Eventy\Facades\Events as Hook;
@@ -157,6 +158,11 @@ class TransactionAccountCrud extends CrudService
       'value' => $key,
     ])->values();
 
+    $subOptions = [];
+    if ($entry && ! empty($entry->category_identifier)) {
+      $subOptions = (new TransactionService)->getTransactionAccountFromCategory($entry->category_identifier, $entry->id ?? 0);
+    }
+
     return CrudForm::form(
       main: FormInput::text(
         label: __('Name'),
@@ -182,7 +188,7 @@ class TransactionAccountCrud extends CrudService
               label: __('Sub Account'),
               name: 'sub_category_id',
               description: __('Assign to a sub category.'),
-              options: [],
+              options: $subOptions,
               value: $entry->sub_category_id ?? '',
               refresh: FormInput::refreshConfig(
                 url: sb()->route('sb.transactions-account.category-identifier'),

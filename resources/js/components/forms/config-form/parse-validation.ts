@@ -1,6 +1,7 @@
 /**
- * Client-side subset of the Laravel string rules emitted by the Crud form
- * definitions (`FormInput::validation`, e.g. `'required|min:3|max:255'`).
+ * Client-side subset of the Laravel rules emitted by the Crud form
+ * definitions (`FormInput::validation` — a rule string like
+ * `'required|min:3|max:255'` or an array like `['required', Rule::unique(...)]`).
  *
  * This is intentionally small: it only gates obviously invalid submits
  * before the request fires. The server (`CrudPostRequest`/`CrudPutRequest`
@@ -26,18 +27,36 @@ const EMPTY_PARSED: ParsedValidation = {
 };
 
 /**
- * Parse a rule string into the supported subset. Unknown or server-only
+ * Normalize the backend's `validation` shape: a rule string is used as-is;
+ * an array of rules (`['required', Rule::unique(...)]`, e.g. `CouponCrud`'s
+ * coupon code) has its string entries joined with `|` and non-string
+ * entries (rule objects serialize to `{}` over JSON) dropped. Unknown
+ * shapes are ignored — the server stays authoritative.
+ */
+function normalizeValidation(validation: unknown): string | null {
+  if (typeof validation === 'string') {
+    return validation;
+  }
+  if (Array.isArray(validation)) {
+    return validation.filter((rule): rule is string => typeof rule === 'string').join('|');
+  }
+  return null;
+}
+
+/**
+ * Parse the rules into the supported subset. Unknown or server-only
  * rules (`unique:table`, `exists:…`, `in:a,b`, `required_if:…`) are
  * skipped; `nullable`/`sometimes` do not make a field optional.
  */
-export function parseValidation(validation?: string): ParsedValidation {
-  if (!validation) {
+export function parseValidation(validation?: string | string[]): ParsedValidation {
+  const ruleString = normalizeValidation(validation);
+  if (!ruleString) {
     return { ...EMPTY_PARSED };
   }
 
   const parsed: ParsedValidation = { ...EMPTY_PARSED };
 
-  for (const rawRule of validation.split('|')) {
+  for (const rawRule of ruleString.split('|')) {
     const rule = rawRule.trim();
     if (!rule) {
       continue;
@@ -85,7 +104,7 @@ export function parseValidation(validation?: string): ParsedValidation {
 
 export interface ValidateValueParams {
   value: unknown;
-  validation?: string;
+  validation?: string | string[];
   /** Label used to compose messages (already translated by the caller). */
   label?: string;
   t: (key: string, params?: Record<string, string | number>) => string;

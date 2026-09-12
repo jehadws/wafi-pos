@@ -59,6 +59,14 @@ class OrderCrud extends CrudService
   protected $model = Order::class;
 
   /**
+   * Define option attributes for search-select
+   */
+  protected $optionAttributes = [
+    'label' => 'title',
+    'value' => 'id',
+  ];
+
+  /**
    * Adding relation
    */
   public $relations = [

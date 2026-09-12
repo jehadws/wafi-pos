@@ -1,5 +1,4 @@
 import FormField from '@/components/forms/shared/form-field';
-import { FilePicker } from '@/components/settings/general/file-picker';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
@@ -9,10 +8,33 @@ import { MultiSelector } from '@/components/ui/multi-selector';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/lib/i18n';
-import type { FormFieldDef, FormOption } from '@/types/forms';
+import type { FormFieldDef, FormOption, GroupFieldDef } from '@/types/forms';
 import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { FilePicker } from './file-picker';
+import { GroupRenderer } from './group-renderer';
+import { loadFieldOptions } from './option-loader';
 import { parseValidation } from './parse-validation';
 import { getCustomComponent } from './registry';
+import { RichTextEditor } from './rich-text-editor';
+
+/**
+ * Format date/datetime string from DB/API to HTML5 datetime-local compatible string (YYYY-MM-DDTHH:mm).
+ */
+export function formatDatetimeLocal(val: unknown): string {
+  if (val === undefined || val === null || val === '') return '';
+  const str = String(val).trim();
+  const match = str.match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})(?::\d{2})?/);
+  if (match) {
+    return `${match[1]}T${match[2]}`;
+  }
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  return '';
+}
 
 /**
  * Renders one backend form field, mapping `field.type` to a UI primitive
@@ -30,6 +52,7 @@ export interface FieldRendererProps {
   error?: string;
   disabled?: boolean;
   id?: string;
+  formValues?: Record<string, unknown>;
 }
 
 /** `switch` fields carry explicit `{label, value}` options — never booleans. */
@@ -77,9 +100,35 @@ function SelectField({
   disabled,
   id,
   hasError,
-}: Pick<FieldRendererProps, 'field' | 'value' | 'onChange' | 'disabled' | 'id'> & { hasError?: boolean }) {
+  formValues,
+}: Pick<FieldRendererProps, 'field' | 'value' | 'onChange' | 'disabled' | 'id' | 'formValues'> & { hasError?: boolean }) {
   const { t } = useTranslation();
-  const options: FormOption[] = Array.isArray(field.options) ? field.options : [];
+  const [options, setOptions] = useState<FormOption[]>(Array.isArray(field.options) ? field.options : []);
+
+  const formValuesRef = useRef(formValues);
+  formValuesRef.current = formValues;
+
+  const watchedValue = field.refresh?.watch
+    ? formValues?.[field.refresh.watch] ??
+      Object.entries(formValues ?? {}).find(([k]) => k.endsWith(`.${field.refresh!.watch}`))?.[1]
+    : undefined;
+
+  useEffect(() => {
+    if (field.refresh?.url) {
+      let active = true;
+      void loadFieldOptions(field, formValuesRef.current ?? {}).then((loaded) => {
+        if (active) {
+          setOptions(loaded);
+        }
+      });
+      return () => {
+        active = false;
+      };
+    } else {
+      setOptions(Array.isArray(field.options) ? field.options : []);
+    }
+  }, [field, watchedValue]);
+
   const selectValue = value === undefined || value === null ? '' : String(value);
 
   return (
@@ -110,7 +159,49 @@ function SelectField({
   );
 }
 
-export function FieldRenderer({ field, value, onChange, error, disabled, id }: FieldRendererProps) {
+/**
+ * `select-audio` — a select dropdown paired with a play button that previews
+ * the currently-selected audio file (URL stored as the option value).
+ */
+function AudioSelectField({
+  field,
+  value,
+  onChange,
+  disabled,
+  id,
+  hasError,
+}: Pick<FieldRendererProps, 'field' | 'value' | 'onChange' | 'disabled' | 'id'> & { hasError?: boolean }) {
+  const { t } = useTranslation();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const src = typeof value === 'string' && value ? value : null;
+
+  function handlePlay() {
+    if (!src) return;
+    if (!audioRef.current) {
+      audioRef.current = new Audio(src);
+    } else {
+      audioRef.current.src = src;
+    }
+    void audioRef.current.play();
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex-1">
+        <SelectField field={field} value={value} onChange={onChange} disabled={disabled} id={id} hasError={hasError} />
+      </div>
+      <Button type="button" variant="outline" size="icon" aria-label={t('Preview audio')} disabled={disabled || !src} onClick={handlePlay}>
+        {/* Simple play triangle via SVG — no icon library dependency */}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4" aria-hidden="true">
+          <path d="M8 5v14l11-7z" />
+        </svg>
+      </Button>
+    </div>
+  );
+}
+
+export function FieldRenderer({ field, value, onChange, error, disabled, id, formValues }: FieldRendererProps) {
   const { t } = useTranslation();
 
   const type = field.type ?? 'text';
@@ -128,7 +219,10 @@ export function FieldRenderer({ field, value, onChange, error, disabled, id }: F
   };
 
   // Custom components win over the type mapping (search-select + sbCrudForm, custom, …).
-  const customName = field.component ?? (type === 'custom' ? String(field.name ?? '') : undefined);
+  const customName =
+    field.component ??
+    (field.name && getCustomComponent(field.name) ? field.name : undefined) ??
+    (type === 'custom' ? String(field.name ?? '') : undefined);
   if (customName) {
     const Custom = getCustomComponent(customName);
     if (Custom) {
@@ -160,7 +254,12 @@ export function FieldRenderer({ field, value, onChange, error, disabled, id }: F
     case 'datetimepicker':
       return (
         <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
-          <Input type="datetime-local" {...textProps} />
+          <Input
+            type="datetime-local"
+            {...textProps}
+            value={formatDatetimeLocal(value)}
+            onChange={(event) => onChange(event.target.value)}
+          />
         </FormField>
       );
 
@@ -176,27 +275,34 @@ export function FieldRenderer({ field, value, onChange, error, disabled, id }: F
       );
 
     case 'ckeditor':
-      // Documented downgrade (Plan A §4): a real rich-text editor needs
-      // a dependency decision (@tiptap/react) and is out of A's scope.
-      // The value stays HTML and round-trips unchanged.
+      // B1.5: replaced the Plan A textarea downgrade with the lightweight
+      // contenteditable RichTextEditor (no external dep; HTML string interface).
       return (
-        <FormField
-          label={field.label ?? ''}
-          description={field.description ?? t('Rich text editing is not available here; plain text is saved.')}
-          required={required}
-          error={shownError}
-          htmlFor={id}
-        >
-          <Textarea {...textProps} />
+        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
+          <RichTextEditor id={id} value={stringValue} onChange={onChange} disabled={isDisabled} aria-invalid={Boolean(shownError)} />
         </FormField>
       );
 
     case 'select':
     case 'search-select':
+      return (
+        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
+          <SelectField
+            field={field}
+            value={value}
+            onChange={onChange}
+            disabled={isDisabled}
+            id={id}
+            hasError={Boolean(shownError)}
+            formValues={formValues}
+          />
+        </FormField>
+      );
+
     case 'select-audio':
       return (
         <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
-          <SelectField field={field} value={value} onChange={onChange} disabled={isDisabled} id={id} hasError={Boolean(shownError)} />
+          <AudioSelectField field={field} value={value} onChange={onChange} disabled={isDisabled} id={id} hasError={Boolean(shownError)} />
         </FormField>
       );
 
@@ -289,7 +395,21 @@ export function FieldRenderer({ field, value, onChange, error, disabled, id }: F
       );
     }
 
-    case 'group':
+    case 'group': {
+      const groupField = field as GroupFieldDef;
+      const groupRows = Array.isArray(value) ? (value as Array<Record<string, unknown>>) : (groupField.groups ?? []);
+      return (
+        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError}>
+          <GroupRenderer
+            field={groupField}
+            value={groupRows}
+            onChange={onChange as (rows: Array<Record<string, unknown>>) => void}
+            disabled={isDisabled}
+          />
+        </FormField>
+      );
+    }
+
     case 'custom':
     default:
       if (import.meta.env.DEV) {

@@ -1,6 +1,6 @@
 # Plan B — 07: Phase 6 Cleanup & Global Verification
 
-*Directory: `docs/plans/plan-b/`*  
+*Directory: `docs/plans/backend-driven-forms/`*  
 *Sequence: Step 7 of 7*
 
 ---

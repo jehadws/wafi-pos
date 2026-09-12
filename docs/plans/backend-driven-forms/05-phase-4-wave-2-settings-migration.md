@@ -1,6 +1,6 @@
 # Plan B — 05: Phase 4 Wave 2 Settings Migration
 
-*Directory: `docs/plans/plan-b/`*  
+*Directory: `docs/plans/backend-driven-forms/`*  
 *Sequence: Step 5 of 7*
 
 ---

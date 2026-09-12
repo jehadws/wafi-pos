@@ -64,6 +64,19 @@ Precision 0 is a valid setting — resolve it with `resolveCurrencyPrecision`, a
 - Form & settings payload contract: Forms submit tab-grouped dictionaries `{[main]: v, [tabId]: {field: v}}`. Server-side (`SbForms::getFlatForm`), empty strings `''` and `null` values are dropped while `0` and `'0'` are preserved.
 - Conditional fields: Defined server-side (e.g. `pos/registers.php`, `pos/vat.php`); the frontend receives the evaluated field list.
 
+## Backend-driven forms engine (Plan B)
+
+- **Architecture**: Dashboard CRUD and Settings forms are powered by the backend-driven engine (`resources/js/components/forms/config-form/`):
+  - `CrudFormPage`: Generic page shell for CRUD create/edit flows (`useCrudForm`).
+  - `SettingsFormPage`: Generic page shell for settings tabs (`useSettingsForm`).
+  - `ConfigForm` + `FieldRenderer`: Controlled component translating backend field definitions (`CrudForm` / `SettingForm`) to UI primitives. Dynamic dropdown options use `option-loader.ts` with support for `refresh.watch` sibling field watchers.
+  - `SbCrudForm`: Dynamic inline modal for nested foreign entity creation.
+- **Source of truth**: The PHP backend defines fields, types, options, and validations. `CrudService::getFormConfig()` normalizes tabs so every tab carries a string `identifier`.
+- **Form coverage & exceptions**:
+  - Migrated to engine: 11 CRUD resources (roles, units, taxes, tax groups, customer groups, providers, coupons, payment types, categories, transactions, transaction accounts, reward systems) and 8 settings resources.
+  - Hand-crafted pages retained: `products` (sanctioned bespoke exception due to multi-level variations tree), `units/groups`, `cash-registers`, `customers`, and `users` (note: `CustomerCrud` and `UserCrud` carry duplicate billing/shipping field names across tabs that preclude generic flattening without tab namespacing).
+- **Payload contract**: Flattened submissions mirror `SbForms::getFlatForm`. Empty strings `''` and `null` are omitted on submit, while `0`, `'0'`, and `false` are preserved. Validation errors return 422 with `tabId.fieldName` or `fieldName` keys surfaced inline in both CRUD and settings pages.
+
 ## Types rules (invariant)
 
 - Import entities by path from `types/models/`.
@@ -92,3 +105,4 @@ Precision 0 is a valid setting — resolve it with `resolveCurrencyPrecision`, a
 4. `POSOptions` (`types/cart-engine.ts`) keeps its `[key: string]: any` index signature so the engine accepts the raw options record — the registry accessors are the guard, so read options through them.
 5. `app/Forms/*` (`ProcurementForm`, `UserProfileForm`, `POSAddressesForm`) inherit from `SettingsPage` but are registered exclusively via `App\Providers\FormsProvider` on the `sb.forms` Hook filter rather than `app/Settings/` autoloading.
 6. The `app/Fields/*` classes and `/api/fields/*` routes are an unconsumed extension surface in the Inertia SPA; retained for module/custom compatibility, with no active SPA consumers.
+7. Products form (`resources/js/pages/dashboard/products/`): Retained as a sanctioned bespoke exception (Plan B §B3.b) due to `ProductCrud`'s multi-level variations tree (`{main, variations: [{tabs, selling_group, groups: {product_subitems}}]}`), dynamic unit conversions, and composite grouped subitems. Standard backend-driven `ConfigForm` covers all other CRUD and settings resources.

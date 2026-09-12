@@ -68,11 +68,17 @@ return Application::configure(basePath: dirname(__DIR__))
           default => 500,
         };
 
-        return response()->json([
+        $payload = [
           'success' => false,
           'data'    => null,
           'message' => $e->getMessage() ?: 'An unexpected error occurred.',
-        ], $status);
+        ];
+
+        if ($e instanceof \Illuminate\Validation\ValidationException) {
+          $payload['errors'] = $e->errors();
+        }
+
+        return response()->json($payload, $status);
       }
     });
   })->create();

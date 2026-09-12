@@ -1,71 +1,35 @@
-import { CurrencyTab } from '@/components/settings/general/currency-tab';
-import { DateTab } from '@/components/settings/general/date-tab';
-import { IdentificationTab } from '@/components/settings/general/identification-tab';
-import { RegistrationTab } from '@/components/settings/general/registration-tab';
-import type { GeneralSettingsOptions, GeneralSettingsPayload } from '@/components/settings/general/types';
-import { useGeneralSettings } from '@/components/settings/general/use-general-settings';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import AppLayout from '@/layouts/app-layout';
+import SettingsFormPage from '@/components/forms/config-form/settings-form-page';
 import { useTranslation } from '@/lib/i18n';
+import type { BreadcrumbItem } from '@/types';
+import type { SettingsFormDef } from '@/types/forms';
 import { usePage } from '@inertiajs/react';
-import { Loader2, Save } from 'lucide-react';
-import { useState } from 'react';
 
 export default function GeneralSettingsPage() {
-  const { options, settings } = usePage<{ options: GeneralSettingsOptions; settings: GeneralSettingsPayload }>().props;
-  const [tab, setTab] = useState<string>('identification');
+  const { options, payload, settings, form, title, description } = usePage<{
+    options?: Record<string, unknown>;
+    payload?: Record<string, unknown>;
+    settings?: Record<string, unknown>;
+    form?: SettingsFormDef;
+    title?: string;
+    description?: string;
+  }>().props;
   const { t } = useTranslation();
-  const { form, isPending, handleSave } = useGeneralSettings(settings);
+
+  const breadcrumbs: BreadcrumbItem[] = [
+    { title: t('Dashboard'), href: '/dashboard' },
+    { title: t('Settings'), href: '/dashboard/settings/general' },
+    { title: t('General Settings'), href: '/dashboard/settings/general' },
+  ];
 
   return (
-    <AppLayout>
-      <div className="p-6">
-        <div className="space-y-6">
-          <div className="relative overflow-hidden rounded-xl border">
-            <div className="relative p-6 md:p-8">
-              <h1 className="text-2xl font-semibold">{t('General Settings')}</h1>
-              <p className="text-muted-foreground text-sm">{t('Configure the general settings.')}</p>
-
-              <div className="mt-4">
-                <Tabs value={tab} onValueChange={(v) => setTab(v)}>
-                  <TabsList className="flex w-full max-w-xl justify-start">
-                    <TabsTrigger value="identification">{t('Identification')}</TabsTrigger>
-                    <TabsTrigger value="currency">{t('Currency')}</TabsTrigger>
-                    <TabsTrigger value="date">{t('Date & Time')}</TabsTrigger>
-                    <TabsTrigger value="registration">{t('Registration')}</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
-
-              <Tabs value={tab} onValueChange={(v) => setTab(v)}>
-                <TabsContent value="identification" className="mt-6">
-                  <IdentificationTab form={form} options={options} />
-                </TabsContent>
-
-                <TabsContent value="currency" className="mt-6">
-                  <CurrencyTab form={form} options={options} />
-                </TabsContent>
-
-                <TabsContent value="date" className="mt-6">
-                  <DateTab form={form} options={options} />
-                </TabsContent>
-
-                <TabsContent value="registration" className="mt-6">
-                  <RegistrationTab form={form} options={options} />
-                </TabsContent>
-              </Tabs>
-            </div>
-
-            <div className="mt-6 flex items-center justify-end rounded-b-xl border-t p-3">
-              <Button onClick={handleSave} disabled={isPending}>
-                {isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Save className="me-2 h-4 w-4" />}
-                {t('Save Settings')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </AppLayout>
+    <SettingsFormPage
+      identifier="general"
+      initialPayload={payload ?? settings}
+      initialOptions={options}
+      form={form}
+      title={title ?? t('General Settings')}
+      description={description ?? t('Configure the general settings.')}
+      breadcrumbs={breadcrumbs}
+    />
   );
 }

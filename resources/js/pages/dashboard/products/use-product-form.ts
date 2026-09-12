@@ -14,11 +14,59 @@ import { toast } from 'sonner';
 
 export type ProductFormMode = 'create' | 'edit';
 
-const editDefaults = (product: any): ProductFormData => ({
+export interface EditProductData {
+  id?: number;
+  name?: string;
+  expires?: boolean;
+  on_expiration?: string;
+  sub_items?: Array<{
+    id?: number;
+    product_id: number;
+    unit_id: number | string;
+    unit_quantity_id: number | string;
+    quantity: number;
+    sale_price: number;
+    total_price?: number;
+    name?: string;
+    product?: {
+      name?: string;
+      unit_quantities?: UnitQuantity[];
+    };
+  }>;
+  barcode?: string;
+  barcode_type?: string;
+  category_id?: number | null;
+  description?: string | null;
+  sku?: string;
+  status?: 'available' | 'unavailable';
+  stock_management?: 'enabled' | 'disabled' | boolean;
+  type?: 'materialized' | 'dematerialized' | 'grouped';
+  galleries?: Array<{ url: string }>;
+  tax_group_id?: number | null;
+  tax_type?: 'inclusive' | 'exclusive';
+  accurate_tracking?: boolean;
+  auto_cogs?: boolean;
+  unit_group?: number;
+  unit_quantities?: Array<{
+    cogs: number;
+    convert_unit_id: string;
+    id?: number;
+    low_quantity: number;
+    preview_url: string;
+    quantity: number;
+    sale_price_edit: string;
+    stock_alert_enabled: boolean;
+    unit_id: string;
+    visible: boolean;
+    wholesale_price_edit: string;
+  }>;
+}
+
+const editDefaults = (product: EditProductData): ProductFormData => ({
   name: product.name ?? '',
   expiracy_expires: product.expires ?? false,
   expiracy_on_expiration: product.on_expiration === 'allow_sales' ? 'allow_sales' : 'prevent_sales',
-  groups_product_subitems: (product.sub_items ?? []).map((subItem: any) => ({
+  groups_product_subitems: (product.sub_items ?? []).map((subItem) => ({
     id: subItem.id,
     product_id: subItem.product_id,
     unit_id: subItem.unit_id,
@@ -31,24 +79,24 @@ const editDefaults = (product: any): ProductFormData => ({
   })),
   identification_barcode: product.barcode ?? '',
   identification_barcode_type: product.barcode_type ?? '',
-  identification_category_id: product.category_id ?? '',
+  identification_category_id: product.category_id ?? null,
   identification_description: product.description ?? '',
   identification_sku: product.sku ?? '',
-  identification_status: product.status ?? '',
+  identification_status: product.status ?? 'available',
   identification_stock_management: product.stock_management === false || product.stock_management === 'disabled' ? 'disabled' : 'enabled',
-  identification_type: product.type ?? '',
+  identification_type: product.type ?? 'materialized',
   /**
    * Hydrate the gallery URLs from the loaded `galleries` relation.
    * `ProductService::saveGallery` deletes then re-creates all rows on
    * every save — submitting `[]` would silently drop the images.
    */
-  images: (product.galleries ?? []).map((gallery: any) => gallery.url),
-  taxes_tax_group_id: product.tax_group_id ?? '',
-  taxes_tax_type: product.tax_type ?? '',
+  images: (product.galleries ?? []).map((gallery) => gallery.url),
+  taxes_tax_group_id: product.tax_group_id ?? null,
+  taxes_tax_type: product.tax_type ?? 'inclusive',
   units_accurate_tracking: product.accurate_tracking ?? false,
   units_auto_cogs: product.auto_cogs ?? false,
-  units_unit_group: product.unit_group ?? '',
-  units_selling_group: (product?.unit_quantities ?? []).map((unit: any) => ({
+  units_unit_group: product.unit_group ?? 0,
+  units_selling_group: (product?.unit_quantities ?? []).map((unit) => ({
     cogs: unit.cogs,
     convert_unit_id: unit.convert_unit_id,
     id: unit.id,
@@ -114,7 +162,7 @@ const buildTransform = (data: ProductFormData) => ({
   ],
 });
 
-export function useProductForm(mode: ProductFormMode, product?: any) {
+export function useProductForm(mode: ProductFormMode, product?: EditProductData) {
   const { t } = useTranslation();
 
   const form = useForm<ProductFormData>(mode === 'edit' && product ? editDefaults(product) : { ...defaultFormData });

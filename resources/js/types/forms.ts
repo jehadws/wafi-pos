@@ -69,8 +69,12 @@ export interface FormFieldDef {
   type?: FormFieldType;
   value?: unknown;
   description?: string;
-  /** Laravel rule string, e.g. `'required|min:3'` or `'required|in:a,b'`. */
-  validation?: string;
+  /**
+   * Laravel rules — a string (`'required|min:3'`) or an array
+   * (`['required', Rule::unique(...)]`, e.g. `CouponCrud`'s `code` field;
+   * rule objects serialize to `{}` over JSON and are ignored client-side).
+   */
+  validation?: string | string[];
   disabled?: boolean;
   options?: FormOption[];
   /** Custom component name resolved through the registry (`sbCrudForm`, …). */
@@ -88,6 +92,7 @@ export interface FormTabDef {
   identifier: string;
   label: string;
   fields: FormFieldDef[];
+  description?: string;
   notices?: Array<Record<string, unknown>>;
   /** Custom whole-tab component (`sbProductGroup`). */
   component?: string;
@@ -128,4 +133,52 @@ export interface CrudSubmitResponse {
   redirect?: string;
   /** Created/updated model attributes (added for inline-create flows). */
   entry?: Record<string, unknown>;
+}
+
+/**
+ * Represents a repeatable sub-form group (`type: 'group'`).
+ * Each entry in `groups` is one existing/pre-filled row of values.
+ */
+export interface GroupFieldDef extends FormFieldDef {
+  type: 'group';
+  /** Child field definitions that each row renders. */
+  fields: FormFieldDef[];
+  /** Whether individual rows can be removed; defaults to `true`. */
+  closable?: boolean;
+  /** Pre-filled row data from the backend. */
+  groups?: Array<Record<string, unknown>>;
+}
+
+/**
+ * Inertia page props for a backend-driven CRUD form page.
+ * Extends the raw `CrudFormConfig` with the `id` of the record being edited
+ * (`undefined` on create).
+ */
+export interface CrudFormPageProps {
+  config: CrudFormConfig;
+  id?: string | number;
+}
+
+/**
+ * Settings form definition structure as returned by SettingsPage::getForm().
+ */
+export interface SettingsFormDef {
+  title?: string;
+  description?: string;
+  tabs?: Record<string, FormTabDef> | FormTabDef[];
+  [key: string]: unknown;
+}
+
+/**
+ * Inertia page props for a backend-driven Settings form page.
+ */
+export interface SettingsFormPageProps {
+  fields?: FormFieldDef[];
+  namespace?: string;
+  identifier?: string;
+  title?: string;
+  description?: string;
+  form?: SettingsFormDef;
+  payload?: Record<string, unknown>;
+  options?: Record<string, unknown>;
 }

@@ -1,6 +1,6 @@
 # Plan B — 00: Agent Operating Rules & Protocol
 
-*Directory: `docs/plans/plan-b/`*  
+*Directory: `docs/plans/backend-driven-forms/`*  
 *Sequence: Step 0 of 7*
 
 ---
@@ -72,11 +72,11 @@ Every micro-step in the subsequent files (`01` through `07`) must be executed fo
 
 ## 5. Master Plan Index
 
-- **[00-agent-protocol-and-rules.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/plan-b/00-agent-protocol-and-rules.md)** (This file)
-- **[01-phase-0-backend-contract-tests.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/plan-b/01-phase-0-backend-contract-tests.md)** — Steps B0.1 to B0.4
-- **[02-phase-1-engine-primitives.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/plan-b/02-phase-1-engine-primitives.md)** — Steps B1.1 to B1.5
-- **[03-phase-2-hooks-and-page-shells.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/plan-b/03-phase-2-hooks-and-page-shells.md)** — Steps B2.1 to B2.4
-- **[04-phase-3-wave-1-crud-migration.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/plan-b/04-phase-3-wave-1-crud-migration.md)** — Steps B3.1 to B3.10
-- **[05-phase-4-wave-2-settings-migration.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/plan-b/05-phase-4-wave-2-settings-migration.md)** — Steps B4.1 to B4.7
-- **[06-phase-5-wave-3-product-spike.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/plan-b/06-phase-5-wave-3-product-spike.md)** — Steps B5.1 to B5.2
-- **[07-phase-6-cleanup-and-verification.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/plan-b/07-phase-6-cleanup-and-verification.md)** — Steps B6.1 to B6.2
+- **[00-agent-protocol-and-rules.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/backend-driven-forms/00-agent-protocol-and-rules.md)** (This file)
+- **[01-phase-0-backend-contract-tests.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/backend-driven-forms/01-phase-0-backend-contract-tests.md)** — Steps B0.1 to B0.4
+- **[02-phase-1-engine-primitives.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/backend-driven-forms/02-phase-1-engine-primitives.md)** — Steps B1.1 to B1.5
+- **[03-phase-2-hooks-and-page-shells.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/backend-driven-forms/03-phase-2-hooks-and-page-shells.md)** — Steps B2.1 to B2.4
+- **[04-phase-3-wave-1-crud-migration.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/backend-driven-forms/04-phase-3-wave-1-crud-migration.md)** — Steps B3.1 to B3.10
+- **[05-phase-4-wave-2-settings-migration.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/backend-driven-forms/05-phase-4-wave-2-settings-migration.md)** — Steps B4.1 to B4.7
+- **[06-phase-5-wave-3-product-spike.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/backend-driven-forms/06-phase-5-wave-3-product-spike.md)** — Steps B5.1 to B5.2
+- **[07-phase-6-cleanup-and-verification.md](file:///c:/Users/jehad/Desktop/projects/pos/app/docs/plans/backend-driven-forms/07-phase-6-cleanup-and-verification.md)** — Steps B6.1 to B6.2

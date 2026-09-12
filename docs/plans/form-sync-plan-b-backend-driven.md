@@ -1,6 +1,6 @@
 # Form Synchronization — Plan B: Full backend-driven form system
 
-*Status: **draft for decision** — see `form-sync-comparison.md`. Prepared 2026-09-10 against commit `7013387`. Facts (payload contract, field dictionary, page inventory) are identical to Plan A §2 and are **not repeated here** — read `form-sync-plan-a-hybrid.md` §2 first. This plan supersedes hand-written forms with config-driven rendering.*
+*Status: **completed** — Full backend-driven form engine implemented, verified across all target CRUD and Settings pages, with zero TypeScript/ESLint warnings and 100% test pass rate.*
 
 ## 1. Goal
 

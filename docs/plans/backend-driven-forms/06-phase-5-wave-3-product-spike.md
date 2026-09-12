@@ -1,6 +1,6 @@
 # Plan B — 06: Phase 5 Wave 3 Product Spike & Decision
 
-*Directory: `docs/plans/plan-b/`*  
+*Directory: `docs/plans/backend-driven-forms/`*  
 *Sequence: Step 6 of 7*
 
 ---
