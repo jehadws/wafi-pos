@@ -36,7 +36,8 @@ export interface CrudRowAction {
   label: string;
   identifier: string;
   url: string;
-  confirm?: CrudActionConfirm;
+  /** `null` when the backend action carries no confirm payload. */
+  confirm?: CrudActionConfirm | null;
   type: CrudActionType;
   permissions: string[];
 }

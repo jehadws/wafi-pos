@@ -19,7 +19,10 @@
  */
 
 import { buildCrudColumns, crudCellValue, isDateishKey, nextSortDirection } from '@/components/tables/crud-table/columns-builder';
-import type { CrudEntryRow, CrudTableConfig } from '@/types/tables';
+import { RowActionsMenu } from '@/components/tables/crud-table/row-actions-menu';
+import type { CrudEntryRow, CrudRowAction, CrudTableConfig } from '@/types/tables';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
@@ -165,5 +168,86 @@ describe('columns-builder', () => {
 
     const cell = actionsColumn?.cell as (context: { row: { original: CrudEntryRow } }) => unknown;
     expect(cell({ row: { original: makeRow() } })).toBe('menu:7');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T2.4 — row-actions-menu
+// ---------------------------------------------------------------------------
+
+describe('row-actions-menu', () => {
+  const editAction: CrudRowAction = {
+    label: 'Edit',
+    identifier: 'edit',
+    url: 'http://localhost/dashboard/orders/edit/7',
+    confirm: null,
+    type: 'GOTO',
+    permissions: [],
+  };
+  const deleteAction: CrudRowAction = {
+    label: 'Delete',
+    identifier: 'delete',
+    url: 'http://localhost/api/crud/sb.orders/7',
+    confirm: { title: 'Confirm Your Action', message: 'Would you like to delete this ?' },
+    type: 'DELETE',
+    permissions: [],
+  };
+
+  const renderMenu = (overrides: Partial<CrudEntryRow> = {}, onRunAction = vi.fn()) => {
+    render(<RowActionsMenu row={makeRow(overrides)} onRunAction={onRunAction} />);
+    return onRunAction;
+  };
+
+  const openMenu = async () => {
+    await userEvent.click(screen.getByRole('button', { name: 'Open menu' }));
+  };
+
+  it('renders strictly the provided backend actions in insertion order', async () => {
+    renderMenu({ $actions: { edit: editAction, delete: deleteAction } });
+    await openMenu();
+
+    const items = screen.getAllByRole('menuitem');
+    // Backend actions first (insertion order), then the single built-in Copy ID.
+    expect(items.map((item) => item.textContent)).toEqual(['Edit', 'Delete', 'Copy ID']);
+    expect(screen.queryByText('Clone')).toBeNull();
+  });
+
+  it('renders exactly one built-in Copy ID item that copies row.$id', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    renderMenu();
+    await openMenu();
+
+    expect(screen.getAllByText('Copy ID')).toHaveLength(1);
+
+    await userEvent.click(screen.getByText('Copy ID'));
+    expect(writeText).toHaveBeenCalledWith('7');
+  });
+
+  it('styles DELETE actions as destructive and dispatches clicks to the executor', async () => {
+    const onRunAction = renderMenu({ $actions: { edit: editAction, delete: deleteAction } });
+    await openMenu();
+
+    const deleteItem = screen.getByText('Delete');
+    expect(deleteItem.className).toContain('text-destructive');
+
+    await userEvent.click(deleteItem);
+    expect(onRunAction).toHaveBeenCalledWith(expect.objectContaining({ $id: 7 }), expect.objectContaining({ identifier: 'delete', type: 'DELETE' }));
+  });
+
+  it('does not style non-destructive actions', async () => {
+    renderMenu({ $actions: { edit: editAction } });
+    await openMenu();
+
+    // The shadcn item base classes carry `data-[variant=destructive]:text-destructive`
+    // as a substring — match the exact class token instead.
+    const classes = screen.getByText('Edit').className.split(/\s+/);
+    expect(classes).not.toContain('text-destructive');
+  });
+
+  it('disables the trigger while an action is in-flight', () => {
+    render(<RowActionsMenu row={makeRow({ $actions: { edit: editAction } })} onRunAction={vi.fn()} disabled />);
+
+    expect((screen.getByRole('button', { name: 'Open menu' }) as HTMLButtonElement).disabled).toBe(true);
   });
 });
