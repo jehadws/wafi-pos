@@ -18,12 +18,17 @@
  * `tests/Feature/CrudEntryActionsContractTest.php`.
  */
 
+import { del, get } from '@/api/http';
+import { getActionPopup } from '@/components/tables/crud-table/action-popup-registry';
 import { buildCrudColumns, crudCellValue, isDateishKey, nextSortDirection } from '@/components/tables/crud-table/columns-builder';
 import { RowActionsMenu } from '@/components/tables/crud-table/row-actions-menu';
+import { useActionExecutor } from '@/components/tables/crud-table/use-action-executor';
 import type { CrudEntryRow, CrudRowAction, CrudTableConfig } from '@/types/tables';
-import { render, screen } from '@testing-library/react';
+import { router } from '@inertiajs/react';
+import { act, render, renderHook, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { toast } from 'sonner';
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Module mocks
@@ -36,6 +41,34 @@ vi.mock('@/lib/i18n', () => ({
 vi.mock('@/utils/format', () => ({
   formatDateTime: (value: string) => `DT(${value})`,
 }));
+
+vi.mock('@/api/http', () => ({
+  get: vi.fn(),
+  del: vi.fn(),
+  post: vi.fn(),
+  put: vi.fn(),
+}));
+
+vi.mock('@inertiajs/react', () => ({
+  router: { visit: vi.fn() },
+}));
+
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+  },
+}));
+
+// Real registry API, but `getActionPopup` is overridden per test.
+vi.mock('@/components/tables/crud-table/action-popup-registry', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/components/tables/crud-table/action-popup-registry')>();
+  return {
+    ...actual,
+    getActionPopup: vi.fn(),
+  };
+});
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -249,5 +282,280 @@ describe('row-actions-menu', () => {
     render(<RowActionsMenu row={makeRow({ $actions: { edit: editAction } })} onRunAction={vi.fn()} disabled />);
 
     expect((screen.getByRole('button', { name: 'Open menu' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T2.5 — use-action-executor
+// ---------------------------------------------------------------------------
+
+describe('use-action-executor', () => {
+  const gotoAction: CrudRowAction = {
+    label: 'Edit',
+    identifier: 'edit',
+    url: 'http://localhost/dashboard/orders/edit/7',
+    confirm: null,
+    type: 'GOTO',
+    permissions: [],
+  };
+  const plainGetAction: CrudRowAction = {
+    label: 'Set As Paid',
+    identifier: 'set-as-paid',
+    url: 'http://localhost/api/procurements/7/set-as-paid',
+    confirm: null,
+    type: 'GET',
+    permissions: [],
+  };
+  const confirmedGetAction: CrudRowAction = {
+    label: 'Set As Paid',
+    identifier: 'set-as-paid',
+    url: 'http://localhost/api/procurements/7/set-as-paid',
+    confirm: { message: 'Mark this procurement as paid ?' },
+    type: 'GET',
+    permissions: [],
+  };
+  const deleteAction: CrudRowAction = {
+    label: 'Delete',
+    identifier: 'delete',
+    url: 'http://localhost/api/crud/sb.orders/7',
+    confirm: null,
+    type: 'DELETE',
+    permissions: [],
+  };
+  const popupAction: CrudRowAction = {
+    label: 'Options',
+    identifier: 'sb.order-options',
+    url: 'http://localhost/dashboard/orders/edit/7',
+    confirm: null,
+    type: 'POPUP',
+    permissions: [],
+  };
+
+  const row = makeRow();
+
+  /** Flush pending promises so awaited runAction branches settle. */
+  const settle = async () => {
+    await act(async () => {
+      await Promise.resolve();
+    });
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  function setup() {
+    const refresh = vi.fn();
+    const { result } = renderHook(() => useActionExecutor({ namespace: 'sb.orders', refresh }));
+    return { result, refresh };
+  }
+
+  it('GOTO visits the normalized SPA path', async () => {
+    const { result } = setup();
+
+    await act(async () => {
+      await result.current.runAction(row, gotoAction);
+    });
+
+    expect(router.visit).toHaveBeenCalledWith('/dashboard/orders/edit/7');
+    expect(result.current.inFlight).toBe(false);
+  });
+
+  it('GET without confirm fetches, toasts only JSON messages and refreshes', async () => {
+    (get as Mock).mockResolvedValue({ status: 'success', message: 'The procurement has been marked as paid.' });
+    const { result, refresh } = setup();
+
+    await act(async () => {
+      await result.current.runAction(row, plainGetAction);
+    });
+
+    expect(get).toHaveBeenCalledWith('http://localhost/api/procurements/7/set-as-paid');
+    expect(toast.success).toHaveBeenCalledWith('The procurement has been marked as paid.');
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('GET does not toast on redirect()->back() HTML responses but still refreshes', async () => {
+    (get as Mock).mockResolvedValue('<!DOCTYPE html><html>redirect target</html>');
+    const { result, refresh } = setup();
+
+    await act(async () => {
+      await result.current.runAction(row, plainGetAction);
+    });
+
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('GET with confirm requires acceptance before the request', async () => {
+    (get as Mock).mockResolvedValue({ message: 'Paid.' });
+    const { result, refresh } = setup();
+
+    let running: Promise<void> = Promise.resolve();
+    act(() => {
+      running = result.current.runAction(row, confirmedGetAction);
+    });
+    await settle();
+
+    expect(result.current.confirmState).toEqual({
+      title: 'Confirm Your Action',
+      message: 'Mark this procurement as paid ?',
+      destructive: false,
+    });
+    expect(get).not.toHaveBeenCalled();
+
+    // Decline → nothing happens.
+    act(() => {
+      result.current.declineConfirm();
+    });
+    await act(async () => {
+      await running;
+    });
+    expect(get).not.toHaveBeenCalled();
+    expect(refresh).not.toHaveBeenCalled();
+    expect(result.current.confirmState).toBeNull();
+
+    // Accept → the request runs.
+    act(() => {
+      running = result.current.runAction(row, confirmedGetAction);
+    });
+    await settle();
+    act(() => {
+      result.current.acceptConfirm();
+    });
+    await act(async () => {
+      await running;
+    });
+
+    expect(get).toHaveBeenCalledWith('http://localhost/api/procurements/7/set-as-paid');
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('DELETE opens the destructive confirm with the standardized fallback title', async () => {
+    (del as Mock).mockResolvedValue({ status: 'success', message: 'The entry has been successfully deleted.' });
+    const { result } = setup();
+
+    let running: Promise<void> = Promise.resolve();
+    act(() => {
+      running = result.current.runAction(row, deleteAction);
+    });
+    await settle();
+
+    expect(result.current.confirmState).toEqual({
+      title: 'Confirm Your Action',
+      message: undefined,
+      destructive: true,
+    });
+
+    act(() => {
+      result.current.acceptConfirm();
+    });
+    await act(async () => {
+      await running;
+    });
+
+    expect(del).toHaveBeenCalledWith('http://localhost/api/crud/sb.orders/7');
+    expect(toast.success).toHaveBeenCalledWith('The entry has been successfully deleted.');
+  });
+
+  it('DELETE falls back to the generic success toast and refreshes', async () => {
+    (del as Mock).mockResolvedValue('<html>redirect</html>');
+    const { result, refresh } = setup();
+
+    let running: Promise<void> = Promise.resolve();
+    act(() => {
+      running = result.current.runAction(row, deleteAction);
+    });
+    await settle();
+    act(() => {
+      result.current.acceptConfirm();
+    });
+    await act(async () => {
+      await running;
+    });
+
+    expect(toast.success).toHaveBeenCalledWith('Successfully deleted selected item');
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('DELETE declined never calls del', async () => {
+    const { result } = setup();
+
+    let running: Promise<void> = Promise.resolve();
+    act(() => {
+      running = result.current.runAction(row, deleteAction);
+    });
+    await settle();
+    act(() => {
+      result.current.declineConfirm();
+    });
+    await act(async () => {
+      await running;
+    });
+
+    expect(del).not.toHaveBeenCalled();
+  });
+
+  it('surfaces API errors as error toasts', async () => {
+    (get as Mock).mockRejectedValue({ response: { data: { message: 'You do not have permission.' } } });
+    const { result } = setup();
+
+    await act(async () => {
+      await result.current.runAction(row, plainGetAction);
+    });
+
+    expect(toast.error).toHaveBeenCalledWith('You do not have permission.');
+    expect(result.current.inFlight).toBe(false);
+  });
+
+  it('guards against double-submits while in-flight', async () => {
+    let resolveGet: (value: unknown) => void = () => {};
+    (get as Mock).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveGet = resolve;
+        }),
+    );
+    const { result } = setup();
+
+    void result.current.runAction(row, plainGetAction);
+    await settle();
+    expect(result.current.inFlight).toBe(true);
+
+    await result.current.runAction(row, plainGetAction);
+    expect(get).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      resolveGet({ message: 'done' });
+      await Promise.resolve();
+    });
+    expect(result.current.inFlight).toBe(false);
+  });
+
+  it('POPUP hands the action to the registry component state', async () => {
+    (getActionPopup as Mock).mockReturnValue(() => null);
+    const { result } = setup();
+
+    await act(async () => {
+      await result.current.runAction(row, popupAction);
+    });
+
+    expect(router.visit).not.toHaveBeenCalled();
+    expect(result.current.popupState).toEqual({ action: popupAction, row });
+    expect(getActionPopup).toHaveBeenCalledWith('sb.orders', 'sb.order-options');
+  });
+
+  it('POPUP falls back to navigating the action URL when unregistered', async () => {
+    (getActionPopup as Mock).mockReturnValue(null);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { result } = setup();
+
+    await act(async () => {
+      await result.current.runAction(row, popupAction);
+    });
+
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('sb.orders::sb.order-options'));
+    expect(router.visit).toHaveBeenCalledWith('/dashboard/orders/edit/7');
+    expect(result.current.popupState).toBeNull();
+    warn.mockRestore();
   });
 });
