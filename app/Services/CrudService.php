@@ -1207,6 +1207,30 @@ class CrudService
   }
 
   /**
+   * Single source of truth for the table configuration consumed by
+   * GET /api/crud/{ns}/config (CrudController@getConfig) and by the
+   * Inertia list renderers. Mirrors getFormConfig() for the forms.
+   */
+  public function getTableConfig(string $namespace): array
+  {
+    return [
+      'columns' => Hook::filter(
+        get_class($this) . '@getColumns',
+        $this->getColumns()
+      ),
+      'queryFilters' => Hook::filter(get_class($this) . '@getQueryFilters', $this->getQueryFilters()),
+      'labels' => Hook::filter(get_class($this) . '@getLabels', $this->getLabels()),
+      'links' => Hook::filter(get_class($this) . '@getFilteredLinks', $this->getFilteredLinks() ?? []),
+      'bulkActions' => Hook::filter(get_class($this) . '@getBulkActions', $this->getBulkActions()),
+      'prependOptions' => Hook::filter(get_class($this) . '@getPrependOptions', $this->getPrependOptions()),
+      'showOptions' => Hook::filter(get_class($this) . '@getShowOptions', $this->getShowOptions()),
+      'showCheckboxes' => Hook::filter(get_class($this) . '@getShowCheckboxes', $this->getShowCheckboxes()),
+      'headerButtons' => Hook::filter(get_class($this) . '@getHeaderButtons', $this->getHeaderButtons()),
+      'namespace' => $namespace,
+    ];
+  }
+
+  /**
    * Will render a crud form using
    * the provided settings.
    */
