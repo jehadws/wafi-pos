@@ -1,7 +1,7 @@
 import { settingsApi } from '@/api';
 import { useTranslation } from '@/lib/i18n';
 import type { FormTabDef, SettingsFormDef } from '@/types/forms';
-import { getApiErrorMessage } from '@/utils/api-errors';
+import { extractValidationErrors, getApiErrorMessage } from '@/utils/api-errors';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -59,6 +59,8 @@ export interface UseSettingsFormReturn {
   loadingForm: boolean;
   /** Error message if form loading failed. */
   formError: string | null;
+  /** Validation errors per field, keyed by field name or dot-key. */
+  errors: Record<string, string>;
   /** Update one key in the payload. Pass `null` to mark for deletion. */
   setFieldValue: (key: string, value: unknown) => void;
   /** Persist the current payload to the backend. */
@@ -90,6 +92,7 @@ export function useSettingsForm({
   const [savedSnapshot, setSavedSnapshot] = useState<string>(JSON.stringify(initialPayload));
   const [payload, setPayload] = useState<Record<string, unknown>>(initialPayload);
   const [options] = useState<Record<string, unknown>>(initialOptions);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
   // Fetch form if not provided initially and identifier is set
@@ -128,6 +131,18 @@ export function useSettingsForm({
   // ------------------------------------------------------------------
   const setFieldValue = useCallback((key: string, value: unknown) => {
     setPayload((current) => ({ ...current, [key]: value }));
+    setErrors((current) => {
+      const matchKey = Object.keys(current).find((k) => k === key || k.endsWith(`.${key}`));
+      if (!matchKey) return current;
+      const next = { ...current };
+      delete next[key];
+      for (const k of Object.keys(next)) {
+        if (k.endsWith(`.${key}`)) {
+          delete next[k];
+        }
+      }
+      return next;
+    });
   }, []);
 
   // ------------------------------------------------------------------
@@ -138,6 +153,7 @@ export function useSettingsForm({
     setSaving(true);
 
     try {
+      setErrors({});
       const tabs = getTabsList(form?.tabs);
       let dataToSend: Record<string, unknown> = payload;
 
@@ -186,6 +202,10 @@ export function useSettingsForm({
         description: t('The settings were saved successfully.'),
       });
     } catch (err: unknown) {
+      const serverErrors = extractValidationErrors(err);
+      if (Object.keys(serverErrors).length > 0) {
+        setErrors(serverErrors);
+      }
       toast.error(t('Failed to save settings'), {
         description: getApiErrorMessage(err, t('An unexpected error occurred.')),
       });
@@ -196,7 +216,7 @@ export function useSettingsForm({
 
   const isDirty = JSON.stringify(payload) !== savedSnapshot;
 
-  return { payload, options, form, loadingForm, formError, setFieldValue, save, saving, isDirty };
+  return { payload, options, form, loadingForm, formError, errors, setFieldValue, save, saving, isDirty };
 }
 
 export default useSettingsForm;

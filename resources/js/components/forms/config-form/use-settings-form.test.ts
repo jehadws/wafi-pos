@@ -157,4 +157,53 @@ describe('useSettingsForm', () => {
 
     expect(result.current.isDirty).toBe(false);
   });
+
+  // -------------------------------------------------------------------------
+  // 8. 422 errors surface in errors map and clear on setFieldValue
+  // -------------------------------------------------------------------------
+  it('maps 422 validation errors and clears field error on setFieldValue', async () => {
+    const errorResponse = {
+      response: {
+        status: 422,
+        data: {
+          errors: {
+            app_name: ['The App Name field is required.'],
+            'general.email': ['The email must be valid.'],
+          },
+        },
+      },
+    };
+    (settingsApi.update as Mock).mockRejectedValue(errorResponse);
+
+    const { result } = renderHook(() =>
+      useSettingsForm({
+        identifier: 'general',
+        initialPayload: { app_name: '', email: '' },
+      }),
+    );
+
+    await act(async () => {
+      await result.current.save();
+    });
+
+    expect(result.current.errors).toEqual({
+      app_name: 'The App Name field is required.',
+      'general.email': 'The email must be valid.',
+    });
+
+    // Editing app_name clears its error
+    act(() => {
+      result.current.setFieldValue('app_name', 'My POS');
+    });
+
+    expect(result.current.errors.app_name).toBeUndefined();
+    expect(result.current.errors['general.email']).toBe('The email must be valid.');
+
+    // Editing email clears the matching dot-key error
+    act(() => {
+      result.current.setFieldValue('email', 'admin@example.com');
+    });
+
+    expect(result.current.errors['general.email']).toBeUndefined();
+  });
 });

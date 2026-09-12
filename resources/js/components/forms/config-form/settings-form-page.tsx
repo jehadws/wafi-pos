@@ -101,7 +101,7 @@ export function SettingsFormPage({
 }: SettingsFormPageProps) {
   const { t } = useTranslation();
 
-  const { payload, options, form, loadingForm, formError, setFieldValue, save, saving, isDirty } = useSettingsForm({
+  const { payload, options, form, loadingForm, formError, errors, setFieldValue, save, saving, isDirty } = useSettingsForm({
     identifier,
     initialPayload,
     initialOptions,
@@ -199,13 +199,17 @@ export function SettingsFormPage({
                           options: mergedOptions,
                         };
 
+                        const fieldError = errors[key] ?? errors[`${activeTabDef.identifier}.${key}`];
+
                         return (
                           <div key={key} className={isFullWidth ? 'md:col-span-2' : ''}>
                             <FieldRenderer
                               field={fieldMerged}
                               value={getFieldValue(key, activeTabDef.identifier)}
                               onChange={(value) => setFieldValue(key, value)}
+                              error={fieldError}
                               id={`settings-${identifier}-${activeTabDef.identifier}-${key}-${index}`}
+                              formValues={payload}
                             />
                           </div>
                         );
