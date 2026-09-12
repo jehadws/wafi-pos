@@ -1,4 +1,5 @@
 import type { CrudFormConfig, CrudSubmitResponse } from '@/types/forms';
+import type { CrudTableConfig } from '@/types/tables';
 import { del, get, post, put } from './http';
 
 /**
@@ -24,6 +25,13 @@ export const crudApi = {
    * (and the submit method) to edit mode.
    */
   formConfig: <T = CrudFormConfig>(table: string, id?: number | string) => get<T>(`/crud/${table}/form-config${id !== undefined ? `/${id}` : ''}`),
+
+  /**
+   * Fetch the backend table definition of a CRUD resource
+   * (`CrudService::getTableConfig`), the tables counterpart of
+   * `formConfig()`.
+   */
+  tableConfig: <T = CrudTableConfig>(table: string) => get<T>(`/crud/${table}/config`),
 
   /**
    * Create an entry. The payload must follow `SbForms::getFlatForm`:
