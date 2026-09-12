@@ -25,6 +25,7 @@ import { useTranslation } from '@/lib/i18n';
 import type { CrudEntryRow, CrudTableConfig } from '@/types/tables';
 import { getApiErrorMessage } from '@/utils/api-errors';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { CrudActiveSort } from './columns-builder';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -67,6 +68,8 @@ export interface UseCrudTableReturn {
   error: string | undefined;
   /** Error message from a config fetch failure. */
   configError: string | undefined;
+  /** The active server-side sort (drives the header indicators). */
+  activeSort: CrudActiveSort | null;
   /** Re-fetch the entries with the current query. */
   refresh: () => void;
   /** Re-run the config fetch (when not provided) and refresh the entries. */
@@ -278,6 +281,7 @@ export function useCrudTable({ namespace, initialConfig, initialQuery }: UseCrud
     configLoading,
     error,
     configError,
+    activeSort: query.sortKey && query.direction ? { key: query.sortKey, direction: query.direction } : null,
     refresh,
     retry,
     setPage,

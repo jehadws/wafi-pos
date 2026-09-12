@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Inertia\Response;
 use TorMorten\Eventy\Facades\Events as Hook;
 
 class CrudService
@@ -1146,7 +1147,7 @@ class CrudService
     return $this->tabsRelations;
   }
 
-  public static function table(array $config = [], ?string $title = null, ?string $description = null, ?string $src = null, ?string $createUrl = null, ?array $queryParams = null): ContractView
+  public static function table(array $config = [], ?string $title = null, ?string $description = null, ?string $src = null, ?string $createUrl = null, ?array $queryParams = null): Response
   {
     $className = get_called_class();
     $instance = new $className;
@@ -1169,7 +1170,25 @@ class CrudService
 
     $labels = Hook::filter($instance::method('getLabels'), $instance->getLabels());
 
-    return View::make('pages.dashboard.crud.table', array_merge([
+    /**
+     * The list page is the single generic Inertia shell
+     * (resources/js/pages/crud/list.tsx). The table config travels as
+     * `initialConfig` so the page renders without a config round-trip
+     * (use-crud-table still fetches when the prop is absent). Sub-list
+     * scoping travels as `queryParams` (e.g. ['coupon_id' => …]).
+     */
+    return Inertia::render('crud/list', array_merge([
+      /**
+       * the CRUD namespace, driving every entries/bulk request.
+       */
+      'namespace' => $instance->getNamespace(),
+
+      /**
+       * the backend-defined table configuration (columns, queryFilters,
+       * labels, links, bulkActions, options/checkboxes flags).
+       */
+      'initialConfig' => $instance->getTableConfig($instance->getNamespace()),
+
       /**
        * that displays the title on the page.
        * It fetches the value from the labels
@@ -1183,27 +1202,30 @@ class CrudService
       'description' => $labels['list_description'],
 
       /**
-       * This create the src URL using the "namespace".
+       * The default breadcrumb trail: Dashboard → list title. The list
+       * URL is reduced to its SPA path so Inertia renders client-side.
        */
-      'src' => sb()->url('/api/crud/' . $instance->namespace),
-
-      /**
-       * This pull the creation link. That link should takes the user
-       * to the creation form.
-       */
-      'createUrl' => Hook::filter($instance::method('getFilteredLinks'), $instance->getFilteredLinks())['create'] ?? false,
+      'breadcrumbs' => [
+        ['title' => $labels['list_title'], 'href' => static::toPath($instance->getLinks()['list'] ?? '')],
+      ],
 
       /**
        * to provide custom query params
        * to every outgoing request on the table
        */
       'queryParams' => [],
-
-      /**
-       * An instance of the current called crud component.
-       */
-      'instance' => $instance,
     ], $config));
+  }
+
+  /**
+   * Reduce an absolute backend URL (`sb()->url(...)`) to its SPA path for
+   * Inertia hrefs; falls back to the dashboard root.
+   */
+  protected static function toPath(?string $url): string
+  {
+    $path = empty($url) ? false : parse_url($url, PHP_URL_PATH);
+
+    return is_string($path) && $path !== '' ? $path : '/dashboard';
   }
 
   /**
