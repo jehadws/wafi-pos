@@ -488,7 +488,7 @@ class ProductHistoryCrud extends CrudService
         // you can make changes here
         $entry->action(
             identifier: 'sb.description',
-            label: '<i class="mr-2 las la-eye"></i> ' . __( 'Description' ),
+            label: __( 'Description' ),
             type: 'POPUP',
         );
 

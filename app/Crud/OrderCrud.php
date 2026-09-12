@@ -388,7 +388,7 @@ class OrderCrud extends CrudService
 
     $entry->action(
       identifier: 'sb.order-options',
-      label: '<i class="mr-2 las la-cogs"></i> ' . __('Options'),
+      label: __('Options'),
       type: 'POPUP',
       url: sb()->url('/dashboard/' . 'orders' . '/edit/' . $entry->id)
     );
@@ -406,7 +406,7 @@ class OrderCrud extends CrudService
     if ($hasRefunds) {
       $entry->action(
         identifier: 'sb.order-refunds',
-        label: '<i class="mr-2 las la-receipt"></i> ' . __('Refund Receipt'),
+        label: __('Refund Receipt'),
         type: 'POPUP',
         url: sb()->url('/dashboard/' . 'orders' . '/refund-receipt/' . $entry->id),
       );
@@ -414,19 +414,19 @@ class OrderCrud extends CrudService
 
     $entry->action(
       identifier: 'invoice',
-      label: '<i class="mr-2 las la-file-invoice-dollar"></i> ' . __('Invoice'),
+      label: __('Invoice'),
       url: sb()->url('/dashboard/' . 'orders' . '/invoice/' . $entry->id),
     );
 
     $entry->action(
       identifier: 'receipt',
-      label: '<i class="mr-2 las la-receipt"></i> ' . __('Receipt'),
+      label: __('Receipt'),
       url: sb()->url('/dashboard/' . 'orders' . '/receipt/' . $entry->id),
     );
 
     $entry->action(
       identifier: 'delete',
-      label: '<i class="mr-2 las la-trash"></i> ' . __('Delete'),
+      label: __('Delete'),
       type: 'DELETE',
       url: sb()->url('/api/crud/sb.orders/' . $entry->id),
       confirm: [

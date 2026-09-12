@@ -356,7 +356,7 @@ class TransactionsHistoryCrud extends CrudService
          */
         if ( ! $hasReflection && $hasTransaction && (bool) $entry->is_reflection === false ) {
             $entry->action(
-                label: '<i class="mr-2 las la-eye"></i> ' . __( 'Create Reflection' ),
+                label: __( 'Create Reflection' ),
                 url: sb()->url( 'api/transactions/history/' . $entry->id . '/create-reflection' ),
                 type: 'GET',
                 identifier: 'create_reflection',
@@ -367,7 +367,7 @@ class TransactionsHistoryCrud extends CrudService
         }
 
         $entry->action(
-            label: '<i class="mr-2 las la-trash"></i> ' . __( 'Delete' ),
+            label: __( 'Delete' ),
             identifier: 'delete',
             url: sb()->url( 'api/crud/' . self::IDENTIFIER . '/' . $entry->id ),
             type: 'DELETE',

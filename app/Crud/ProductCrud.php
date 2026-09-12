@@ -742,35 +742,35 @@ class ProductCrud extends CrudService
         // you can make changes here
         $entry->action(
             identifier: 'edit',
-            label: '<i class="mr-2 las la-edit"></i> ' . __( 'Edit' ),
+            label: __( 'Edit' ),
             type: 'GOTO',
             url: sb()->url( '/dashboard/' . 'products' . '/edit/' . $entry->id ),
         );
 
         $entry->action(
             identifier: 'sb.quantities',
-            label: '<i class="mr-2 las la-eye"></i> ' . __( 'Preview' ),
+            label: __( 'Preview' ),
             type: 'POPUP',
             url: sb()->url( '/dashboard/' . 'products' . '/edit/' . $entry->id ),
         );
 
         $entry->action(
             identifier: 'units',
-            label: '<i class="mr-2 las la-balance-scale-left"></i> ' . __( 'See Quantities' ),
+            label: __( 'See Quantities' ),
             type: 'GOTO',
             url: sb()->url( '/dashboard/' . 'products/' . $entry->id . '/units' ),
         );
 
         $entry->action(
             identifier: 'history',
-            label: '<i class="mr-2 las la-history"></i> ' . __( 'See History' ),
+            label: __( 'See History' ),
             type: 'GOTO',
             url: sb()->url( '/dashboard/' . 'products/' . $entry->id . '/history' ),
         );
 
         $entry->action(
             identifier: 'delete',
-            label: '<i class="mr-2 las la-trash"></i> ' . __( 'Delete' ),
+            label: __( 'Delete' ),
             type: 'DELETE',
             url: sb()->url( '/api/crud/sb.products/' . $entry->id ),
             confirm: [

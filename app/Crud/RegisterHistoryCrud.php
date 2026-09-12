@@ -460,7 +460,7 @@ class RegisterHistoryCrud extends CrudService
         );
 
         $entry->action = $this->registerService->getActionLabel( $entry->action );
-        $entry->created_at = sb()->date->getFormatted( $entry->created_at );
+        $entry->created_at = $entry->created_at !== null ? sb()->date->getFormatted( $entry->created_at ) : '';
         $entry->value = (string) sb()->currency->define( $entry->value );
         $entry->balance_before = (string) sb()->currency->define( $entry->balance_before );
         $entry->balance_after = (string) sb()->currency->define( $entry->balance_after );
