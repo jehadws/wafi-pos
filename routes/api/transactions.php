@@ -20,4 +20,4 @@ Route::put('transactions/{id}', [TransactionController::class, 'put'])->where('i
 Route::put('transactions-accounts/{account}', [TransactionController::class, 'putTransactionAccount'])->where('id', '[0-9]+');
 Route::delete('transactions/{transaction}', [TransactionController::class, 'delete'])->where('transaction', '[0-9]+');
 Route::delete('transactions-accounts/{account}', [TransactionController::class, 'deleteAccount'])->where('id', '[0-9]+');
-Route::post('transactions-accounts/category-identifier', [TransactionController::class, 'getTransactionAccountFromCategory'])->name(sb()->routeName('sb.transactions-account.category-identifier'));
+Route::match(['get', 'post'], 'transactions-accounts/category-identifier', [TransactionController::class, 'getTransactionAccountFromCategory'])->name(sb()->routeName('sb.transactions-account.category-identifier'));
