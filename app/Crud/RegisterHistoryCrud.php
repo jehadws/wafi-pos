@@ -338,7 +338,7 @@ class RegisterHistoryCrud extends CrudService
      */
     public function beforeDelete( $namespace, $id, $model )
     {
-        if ( $namespace == 'sb.registers-hitory' ) {
+        if ( $namespace == 'sb.cash-registers-history' ) {
             /**
              *  Perform an action before deleting an entry
              *  In case something wrong, this response can be returned
