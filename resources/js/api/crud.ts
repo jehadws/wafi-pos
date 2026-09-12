@@ -34,6 +34,13 @@ export const crudApi = {
   tableConfig: <T = CrudTableConfig>(table: string) => get<T>(`/crud/${table}/config`),
 
   /**
+   * Run a backend bulk action (`CrudController@crudBulkActions`) with
+   * `{ action: identifier, entries: selectedIds }`.
+   */
+  bulkActions: <T = unknown>(table: string, payload: { action: string; entries: Array<number | string> }) =>
+    post<T>(`/crud/${table}/bulk-actions`, payload),
+
+  /**
    * Create an entry. The payload must follow `SbForms::getFlatForm`:
    * `{ [mainFieldName]: value, [tabId]: { [fieldName]: value }, ... }` —
    * the backend drops `''`/`null` values.

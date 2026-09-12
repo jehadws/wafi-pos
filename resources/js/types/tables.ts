@@ -75,6 +75,8 @@ export interface CrudBulkAction {
   label: string;
   identifier: string;
   url?: string;
+  /** Optional confirm payload attached by the resource — honored when present. */
+  confirm?: { message: string; title?: string } | null;
 }
 
 /** Serialized header link (`CrudLink::jsonSerialize()`). */

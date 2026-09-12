@@ -18,8 +18,10 @@
  * `tests/Feature/CrudEntryActionsContractTest.php`.
  */
 
+import { crudApi } from '@/api/crud';
 import { del, get } from '@/api/http';
 import { clearActionPopups, getActionPopup, popupKey, registerActionPopup } from '@/components/tables/crud-table/action-popup-registry';
+import { useBulkActions } from '@/components/tables/crud-table/bulk-actions';
 import { buildCrudColumns, crudCellValue, isDateishKey, nextSortDirection } from '@/components/tables/crud-table/columns-builder';
 import { PopupDialog } from '@/components/tables/crud-table/popup-dialog';
 import { RowActionsMenu } from '@/components/tables/crud-table/row-actions-menu';
@@ -59,6 +61,12 @@ vi.mock('sonner', () => ({
     success: vi.fn(),
     error: vi.fn(),
     info: vi.fn(),
+  },
+}));
+
+vi.mock('@/api/crud', () => ({
+  crudApi: {
+    bulkActions: vi.fn(),
   },
 }));
 
@@ -620,5 +628,115 @@ describe('popup-dialog', () => {
     );
 
     expect(screen.queryByTestId('popup-body')).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T2.7 — useBulkActions
+// ---------------------------------------------------------------------------
+
+describe('useBulkActions', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  function setup(
+    overrides: Partial<CrudTableConfig> = {},
+    requestConfirm: (request: { title: string; message?: string; destructive: boolean }) => Promise<boolean> = async () => true,
+  ) {
+    const refresh = vi.fn();
+    const { result } = renderHook(() => useBulkActions({ config: makeTableConfig(overrides), requestConfirm, refresh }));
+    return { result, refresh };
+  }
+
+  it('maps backend bulk actions into the toolbar shape', () => {
+    const { result } = setup();
+
+    expect(result.current.bulkActions).toEqual([{ label: 'Delete Selected', action: expect.any(Function) }]);
+  });
+
+  it('posts { action, entries } and refreshes on success', async () => {
+    (crudApi.bulkActions as Mock).mockResolvedValue({ success: 1, error: 0 });
+    const { result, refresh } = setup();
+
+    await act(async () => {
+      await result.current.bulkActions[0].action([makeRow()]);
+    });
+
+    expect(crudApi.bulkActions).toHaveBeenCalledWith('sb.orders', { action: 'delete_selected', entries: [7] });
+    expect(toast.success).toHaveBeenCalledWith('Successfully processed selected items');
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('toasts the JSON message when the backend returns one', async () => {
+    (crudApi.bulkActions as Mock).mockResolvedValue({ message: 'Deleted 2 entries.' });
+    const { result } = setup();
+
+    await act(async () => {
+      await result.current.bulkActions[0].action([makeRow(), makeRow({ id: 8, $id: 8 })]);
+    });
+
+    expect(toast.success).toHaveBeenCalledWith('Deleted 2 entries.');
+  });
+
+  it('opens the shared confirm when the backend definition carries one', async () => {
+    (crudApi.bulkActions as Mock).mockResolvedValue({});
+    const requestConfirm = vi.fn(async () => true);
+    const { result } = setup(
+      {
+        bulkActions: [{ label: 'Delete Selected', identifier: 'delete_selected', confirm: { message: 'Delete the selected orders ?' } }],
+      },
+      requestConfirm,
+    );
+
+    await act(async () => {
+      await result.current.bulkActions[0].action([makeRow()]);
+    });
+
+    expect(requestConfirm).toHaveBeenCalledWith({
+      title: 'Confirm Your Action',
+      message: 'Delete the selected orders ?',
+      destructive: true,
+    });
+    expect(crudApi.bulkActions).toHaveBeenCalledWith('sb.orders', { action: 'delete_selected', entries: [7] });
+  });
+
+  it('skips the request when the confirm is declined', async () => {
+    const requestConfirm = vi.fn(async () => false);
+    const { result, refresh } = setup(
+      {
+        bulkActions: [{ label: 'Delete Selected', identifier: 'delete_selected', confirm: { message: 'Delete the selected orders ?' } }],
+      },
+      requestConfirm,
+    );
+
+    await act(async () => {
+      await result.current.bulkActions[0].action([makeRow()]);
+    });
+
+    expect(crudApi.bulkActions).not.toHaveBeenCalled();
+    expect(refresh).not.toHaveBeenCalled();
+  });
+
+  it('guards an empty selection with an info toast', async () => {
+    const { result } = setup();
+
+    await act(async () => {
+      await result.current.bulkActions[0].action([]);
+    });
+
+    expect(toast.info).toHaveBeenCalledWith('You need to select at least one item to delete');
+    expect(crudApi.bulkActions).not.toHaveBeenCalled();
+  });
+
+  it('surfaces errors as error toasts', async () => {
+    (crudApi.bulkActions as Mock).mockRejectedValue({ response: { data: { message: 'You are not allowed to do this operation' } } });
+    const { result } = setup();
+
+    await act(async () => {
+      await result.current.bulkActions[0].action([makeRow()]);
+    });
+
+    expect(toast.error).toHaveBeenCalledWith('You are not allowed to do this operation');
   });
 });

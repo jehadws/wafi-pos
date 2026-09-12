@@ -61,6 +61,11 @@ export interface UseActionExecutorReturn {
   /** True while a GET/DELETE network operation is running. */
   inFlight: boolean;
   confirmState: ExecutorConfirmState | null;
+  /**
+   * Open THE confirm dialog (shared with bulk actions). Resolves `true`
+   * when accepted, `false` when declined.
+   */
+  requestConfirm: (request: ExecutorConfirmState) => Promise<boolean>;
   acceptConfirm: () => void;
   declineConfirm: () => void;
   popupState: ExecutorPopupState | null;
@@ -222,6 +227,7 @@ export function useActionExecutor({ namespace, refresh }: UseActionExecutorParam
     runAction,
     inFlight,
     confirmState,
+    requestConfirm,
     acceptConfirm,
     declineConfirm,
     popupState,
