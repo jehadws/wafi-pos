@@ -23,12 +23,18 @@ import { del, get } from '@/api/http';
 import { clearActionPopups, getActionPopup, popupKey, registerActionPopup } from '@/components/tables/crud-table/action-popup-registry';
 import { useBulkActions } from '@/components/tables/crud-table/bulk-actions';
 import { buildCrudColumns, crudCellValue, isDateishKey, nextSortDirection } from '@/components/tables/crud-table/columns-builder';
+import CrudTablePage, {
+  buildFilterableColumns,
+  filterStateToQueryFilters,
+  getCreateLink,
+  wireQueryFilterColumns,
+} from '@/components/tables/crud-table/crud-table-page';
 import { PopupDialog } from '@/components/tables/crud-table/popup-dialog';
 import { RowActionsMenu } from '@/components/tables/crud-table/row-actions-menu';
 import { useActionExecutor } from '@/components/tables/crud-table/use-action-executor';
 import type { CrudEntryRow, CrudRowAction, CrudTableConfig } from '@/types/tables';
 import { router } from '@inertiajs/react';
-import { act, render, renderHook, screen } from '@testing-library/react';
+import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { toast } from 'sonner';
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
@@ -54,6 +60,7 @@ vi.mock('@/api/http', () => ({
 
 vi.mock('@inertiajs/react', () => ({
   router: { visit: vi.fn() },
+  Head: ({ title }: { title?: string }) => <head data-testid="head">{title && <title>{title}</title>}</head>,
 }));
 
 vi.mock('sonner', () => ({
@@ -66,8 +73,14 @@ vi.mock('sonner', () => ({
 
 vi.mock('@/api/crud', () => ({
   crudApi: {
+    list: vi.fn(),
+    tableConfig: vi.fn(),
     bulkActions: vi.fn(),
   },
+}));
+
+vi.mock('@/layouts/app-layout', () => ({
+  default: ({ children }: { children?: import('react').ReactNode }) => <div data-testid="app-layout">{children}</div>,
 }));
 
 // Real registry API, but `getActionPopup` is a delegating spy (overridden per test).
@@ -116,6 +129,23 @@ export function makeRow(overrides: Partial<CrudEntryRow> = {}): CrudEntryRow {
     created_at: '2026-09-12 10:30:00',
     $actions: {},
     ...overrides,
+  };
+}
+
+export function makePaginator(rows: CrudEntryRow[] = [makeRow()]): CustomPaginationData<CrudEntryRow> {
+  return {
+    current_page: 1,
+    data: rows,
+    next_page_url: null,
+    path: '',
+    prev_page_url: null,
+    first_page_url: '',
+    last_page_url: '',
+    last_page: 1,
+    per_page: 20,
+    from: 1,
+    to: rows.length,
+    total: rows.length,
   };
 }
 
@@ -738,5 +768,105 @@ describe('useBulkActions', () => {
     });
 
     expect(toast.error).toHaveBeenCalledWith('You are not allowed to do this operation');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T2.8 — crud-table-page helpers
+// ---------------------------------------------------------------------------
+
+describe('crud-table-page helpers', () => {
+  it('builds faceted columns from select-type queryFilters only', () => {
+    const config = makeTableConfig({
+      queryFilters: [
+        { name: 'payment_status', label: 'Payment Status', type: 'select', options: [{ label: 'Paid', value: 'paid' }] },
+        { name: 'subul_orders.created_at', label: 'Created Between', type: 'daterangepicker' },
+      ],
+    });
+
+    expect(buildFilterableColumns(config, t)).toEqual([
+      { id: 'payment_status', title: 'Payment Status', options: [{ label: 'Paid', value: 'paid' }] },
+    ]);
+  });
+
+  it('narrows resolved filter state to the scalar the backend contract expects', () => {
+    const config = makeTableConfig({
+      queryFilters: [{ name: 'payment_status', label: 'Payment Status', type: 'select', options: [] }],
+    });
+
+    expect(
+      filterStateToQueryFilters(
+        [
+          { id: 'payment_status', value: ['paid', 'hold'] },
+          { id: 'subul_orders.created_at', value: [{ startDate: '2026-01-01', endDate: '2026-02-01' }] },
+        ],
+        config,
+      ),
+    ).toEqual({ payment_status: 'paid' });
+  });
+
+  it('resolves the Add-New link from config.links (never hardcoded)', () => {
+    const config = makeTableConfig();
+    const link = getCreateLink(config);
+
+    expect(link?.href).toBe('http://localhost/dashboard/orders/create');
+    expect(getCreateLink(makeTableConfig({ links: [] }))).toBeUndefined();
+  });
+
+  it('wires no-op filterFns and adds hidden filter-only columns', () => {
+    const config = makeTableConfig({
+      queryFilters: [
+        { name: 'total', label: 'Total', type: 'select', options: [] },
+        { name: 'subul_orders.author', label: 'Author', type: 'select', options: [] },
+      ],
+    });
+
+    const { columns, visibility } = wireQueryFilterColumns(buildCrudColumns({ config: makeTableConfig(), t }), config);
+
+    const total = columns.find((column) => column.id === 'total');
+    expect(total && 'filterFn' in total).toBe(true);
+
+    const author = columns.find((column) => column.id === 'subul_orders.author');
+    expect(author).toBeTruthy();
+    expect(visibility['subul_orders.author']).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T2.8 — CrudTablePage smoke
+// ---------------------------------------------------------------------------
+
+describe('crud-table-page (smoke)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (crudApi.list as Mock).mockResolvedValue(makePaginator());
+  });
+
+  it('renders the fixture config with rows, $cssClass and a sortable header', async () => {
+    (crudApi.list as Mock).mockResolvedValue({ ...makePaginator(), data: [makeRow({ $cssClass: 'success border text-sm' })] });
+
+    render(<CrudTablePage namespace="sb.orders" initialConfig={makeTableConfig()} />);
+
+    await waitFor(() => expect(screen.getByText('ORD-0007')).toBeTruthy());
+
+    expect(screen.getAllByText('Orders List').length).toBeGreaterThan(0);
+    expect((crudApi.list as Mock).mock.calls[0][0]).toBe('sb.orders');
+    expect((crudApi.list as Mock).mock.calls[0][1]).toMatchObject({ page: 1, per_page: 20 });
+
+    // `$cssClass` lands on the row (status colors).
+    const row = screen.getByText('ORD-0007').closest('tr');
+    expect(row?.className).toContain('success border text-sm');
+
+    // Server-side sortable headers come from the backend $sort flags.
+    expect(screen.getByRole('button', { name: 'Code' })).toBeTruthy();
+  });
+
+  it('renders the retry banner when the entries fetch fails', async () => {
+    (crudApi.list as Mock).mockRejectedValue({ response: { data: { message: 'Not allowed.' } } });
+
+    render(<CrudTablePage namespace="sb.orders" initialConfig={makeTableConfig()} />);
+
+    await waitFor(() => expect(screen.getByText('Not allowed.')).toBeTruthy());
+    expect(screen.getByText('Try again')).toBeTruthy();
   });
 });
