@@ -47,9 +47,13 @@ it('serializes getFormConfig to clean JSON across all registered CRUD resources'
         // 3. Verify no Closure instances are present in array tree
         assertNoClosuresInArray($config, $className);
 
-        // 4. Verify fields in tabs have string name and type
+        // 4. Verify tabs have valid string identifier and fields have string name and type
         if (isset($config['form']['tabs']) && is_array($config['form']['tabs'])) {
             foreach ($config['form']['tabs'] as $tabKey => $tab) {
+                expect(isset($tab['identifier']))->toBeTrue("Tab missing identifier in {$className} tab {$tabKey}");
+                expect($tab['identifier'])->toBeString("Tab identifier must be string in {$className} tab {$tabKey}");
+                expect($tab['identifier'])->not->toBeEmpty("Tab identifier must not be empty in {$className} tab {$tabKey}");
+
                 if (isset($tab['fields']) && is_array($tab['fields'])) {
                     foreach ($tab['fields'] as $field) {
                         if (is_array($field)) {
