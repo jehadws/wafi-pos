@@ -285,7 +285,7 @@ class CouponOrderHistoryCrud extends CrudService
      */
     public function beforeDelete( $namespace, $id, $model )
     {
-        if ( $namespace == 'sb.coupons-orders-hitory' ) {
+        if ( $namespace == 'sb.coupons-orders-history' ) {
             /**
              *  Perform an action before deleting an entry
              *  In case something wrong, this response can be returned
@@ -338,7 +338,7 @@ class CouponOrderHistoryCrud extends CrudService
         $entry->action(
             label: __( 'Delete' ),
             identifier: 'delete',
-            url: sb()->url( '/api/crud/sb.coupons-orders-hitory/' . $entry->id ),
+            url: sb()->url( '/api/crud/sb.coupons-orders-history/' . $entry->id ),
             type: 'DELETE',
             confirm: [
                 'message' => __( 'Would you like to delete this?' ),
