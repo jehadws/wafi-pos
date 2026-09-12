@@ -15,7 +15,22 @@ class CrudTable
 
     public static function column( $label, $identifier, $sort = true, $attributes = [], $width = 'auto', $minWidth = 'auto', $maxWidth = 'auto', $direction = '' )
     {
-        return compact( 'identifier', 'label', 'sort', 'attributes', 'width', 'direction', 'maxWidth', 'minWidth' );
+        /**
+         * The "$" prefix is part of the table contract (CrudColumnDef):
+         * "$sort" must be boolean-coercible and "$direction" carries the
+         * default sorting direction. The sorting guard on getEntries
+         * (CrudService) reads the "$sort" key as well.
+         */
+        return [
+            'identifier'  =>  $identifier,
+            'label'       =>  $label,
+            '$sort'       =>  (bool) $sort,
+            'attributes'  =>  $attributes,
+            'width'       =>  $width,
+            '$direction'  =>  $direction,
+            'maxWidth'    =>  $maxWidth,
+            'minWidth'    =>  $minWidth,
+        ];
     }
 
     public static function attribute( $label, $column )

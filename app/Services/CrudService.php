@@ -477,7 +477,19 @@ class CrudService
    */
   public function getBulkActions(): array
   {
-    return $this->bulkActions;
+    /**
+     * The bulk actions are normalized as a list of
+     * { label, identifier } entries so the table contract
+     * stays uniform whether a resource defines a map
+     * (identifier => label) or a ready-to-use list.
+     */
+    return collect($this->bulkActions)
+      ->map(fn ($action, $identifier) => is_array($action) ? $action : [
+        'label' => $action,
+        'identifier' => $identifier,
+      ])
+      ->values()
+      ->toArray();
   }
 
   /**
@@ -1395,12 +1407,29 @@ class CrudService
   public function getFilteredLinks(): array
   {
     $links = $this->getLinks();
+    $labels = $this->getLabels();
 
     $mapping = [
       'create' => ['post', 'create'],
       'read' => ['list'],
       'update' => ['put', 'update'],
       'delete' => ['delete'],
+    ];
+
+    /**
+     * Every link exposed on the table config is normalized
+     * as a CrudLink: { type: 'link', href, label }. The labels
+     * are pulled from the resource labels so the table engine
+     * never has to guess a caption.
+     */
+    $linkLabels = [
+      'list' => $labels['list_title'] ?? __('List'),
+      'create' => $labels['create_new'] ?? __('Create'),
+      'edit' => $labels['edit_title'] ?? __('Edit'),
+      'post' => $labels['create_title'] ?? __('Create'),
+      'put' => $labels['edit_title'] ?? __('Edit'),
+      'update' => $labels['edit_title'] ?? __('Edit'),
+      'delete' => __('Delete'),
     ];
 
     return collect($links)
@@ -1411,6 +1440,11 @@ class CrudService
 
         return $this->getPermission($rightVerb->first() ?: null);
       })
+      ->map(fn ($href, $key) => new CrudLink(
+        label: (string) ($linkLabels[$key] ?? Str::ucfirst($key)),
+        href: (string) $href
+      ))
+      ->values()
       ->toArray();
   }
 
