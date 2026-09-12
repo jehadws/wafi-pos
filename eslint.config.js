@@ -60,7 +60,7 @@ export default [
         },
     },
     {
-        ignores: ['vendor', 'node_modules', 'public', 'bootstrap/ssr', 'tailwind.config.js', 'playwright-report/**', 'print-agent/**', 'scripts/**', 'tests/**', '.agents/**'],
+        ignores: ['vendor', 'node_modules', 'public', 'bootstrap/ssr', 'tailwind.config.js', 'playwright-report/**', 'print-agent/**', 'scripts/**', 'tests/**', '.agents/**', '.claude/**'],
     },
     {
         // Files that legitimately spell out backend option keys: the registry

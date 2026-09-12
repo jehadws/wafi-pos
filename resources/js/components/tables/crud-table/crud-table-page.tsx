@@ -234,7 +234,8 @@ export function CrudTablePage({ namespace, initialConfig, title, description, br
     total: 0,
   };
 
-  const popupComponent = executor.popupState ? getActionPopup(namespace, executor.popupState.action.identifier) : null;
+  const popupState = executor.popupState;
+  const popupComponent = popupState ? getActionPopup(namespace, popupState.action.identifier) : null;
 
   const handleAddNew = () => {
     if (createLink) {
