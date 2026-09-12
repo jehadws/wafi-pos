@@ -19,8 +19,9 @@
  */
 
 import { del, get } from '@/api/http';
-import { getActionPopup } from '@/components/tables/crud-table/action-popup-registry';
+import { clearActionPopups, getActionPopup, popupKey, registerActionPopup } from '@/components/tables/crud-table/action-popup-registry';
 import { buildCrudColumns, crudCellValue, isDateishKey, nextSortDirection } from '@/components/tables/crud-table/columns-builder';
+import { PopupDialog } from '@/components/tables/crud-table/popup-dialog';
 import { RowActionsMenu } from '@/components/tables/crud-table/row-actions-menu';
 import { useActionExecutor } from '@/components/tables/crud-table/use-action-executor';
 import type { CrudEntryRow, CrudRowAction, CrudTableConfig } from '@/types/tables';
@@ -61,12 +62,12 @@ vi.mock('sonner', () => ({
   },
 }));
 
-// Real registry API, but `getActionPopup` is overridden per test.
+// Real registry API, but `getActionPopup` is a delegating spy (overridden per test).
 vi.mock('@/components/tables/crud-table/action-popup-registry', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/components/tables/crud-table/action-popup-registry')>();
   return {
     ...actual,
-    getActionPopup: vi.fn(),
+    getActionPopup: vi.fn(actual.getActionPopup),
   };
 });
 
@@ -557,5 +558,67 @@ describe('use-action-executor', () => {
     expect(router.visit).toHaveBeenCalledWith('/dashboard/orders/edit/7');
     expect(result.current.popupState).toBeNull();
     warn.mockRestore();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T2.6 — action-popup-registry + popup-dialog
+// ---------------------------------------------------------------------------
+
+describe('action-popup-registry', () => {
+  /** Restore the delegating spy after executor tests overrode it. */
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    const actual = await vi.importActual<typeof import('@/components/tables/crud-table/action-popup-registry')>(
+      '@/components/tables/crud-table/action-popup-registry',
+    );
+    (getActionPopup as Mock).mockImplementation(actual.getActionPopup);
+  });
+
+  it('keys popups as namespace::identifier', () => {
+    expect(popupKey('sb.orders', 'sb.order-options')).toBe('sb.orders::sb.order-options');
+  });
+
+  it('seeds the Wave-2 orders popups from the T1.6 enumeration', () => {
+    expect(getActionPopup('sb.orders', 'sb.order-options')).toBeTruthy();
+    expect(getActionPopup('sb.orders', 'sb.order-refunds')).toBeTruthy();
+    // Deferred resources register when their pages migrate (Phase 5).
+    expect(getActionPopup('sb.products', 'sb.quantities')).toBeNull();
+  });
+
+  it('resolves registered components and returns null for unknown keys', () => {
+    clearActionPopups();
+
+    const Dummy = () => null;
+    registerActionPopup('sb.test', 'dummy', Dummy);
+    expect(getActionPopup('sb.test', 'dummy')).toBe(Dummy);
+    expect(getActionPopup('sb.test', 'missing')).toBeNull();
+
+    clearActionPopups();
+    expect(getActionPopup('sb.test', 'dummy')).toBeNull();
+  });
+});
+
+describe('popup-dialog', () => {
+  it('renders the title and children when open', () => {
+    render(
+      <PopupDialog open onOpenChange={() => {}} title="Refund Receipt" description="Print the refund receipt">
+        <p data-testid="popup-body">receipt content</p>
+      </PopupDialog>,
+    );
+
+    expect(screen.getByText('Refund Receipt')).toBeTruthy();
+    expect(screen.getByText('Print the refund receipt')).toBeTruthy();
+    expect(screen.getByTestId('popup-body').textContent).toBe('receipt content');
+  });
+
+  it('renders nothing when closed', () => {
+    render(
+      <PopupDialog open={false} onOpenChange={() => {}} title="Refund Receipt">
+        <p data-testid="popup-body">receipt content</p>
+      </PopupDialog>,
+    );
+
+    expect(screen.queryByTestId('popup-body')).toBeNull();
   });
 });

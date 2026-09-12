@@ -17,8 +17,13 @@
  * their pages migrate.
  */
 
+import { get } from '@/api/http';
+import OrderOptionsDialog from '@/components/forms/orders/order-options-dialog';
+import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/lib/i18n';
 import type { CrudEntryRow, CrudRowAction } from '@/types/tables';
-import type { ComponentType } from 'react';
+import { useEffect, useRef, useState, type ComponentType } from 'react';
+import { PopupDialog } from './popup-dialog';
 
 /** Props every registered popup component receives from the shell. */
 export interface ActionPopupProps {
@@ -53,3 +58,83 @@ export function getActionPopup(namespace: string, identifier: string): ActionPop
 export function clearActionPopups(): void {
   components.clear();
 }
+
+// ---------------------------------------------------------------------------
+// Seeded Wave-2 popups (orders) — from the T1.6 POPUP enumeration
+// ---------------------------------------------------------------------------
+
+/**
+ * `sb.orders::sb.order-options` — the order options modal (details,
+ * payments, instalments, refunds). The backend URL points at the orders
+ * edit page; the modal itself fetches through `ordersApi`, so the row id is
+ * what matters here.
+ */
+function OrderOptionsPopup({ open, onClose, row }: ActionPopupProps) {
+  const orderId = Number(row.$id ?? row.id);
+
+  return <OrderOptionsDialog open={open} orderId={Number.isFinite(orderId) ? orderId : null} onOpenChange={(next) => !next && onClose()} />;
+}
+
+registerActionPopup('sb.orders', 'sb.order-options', OrderOptionsPopup);
+
+/**
+ * `sb.orders::sb.order-refunds` — the refund receipt. The URL answers with
+ * direct Blade HTML (T1.7), so the popup fetches the content and renders it
+ * in an iframe; printing targets the iframe document.
+ */
+function RefundReceiptPopup({ open, onClose, action }: ActionPopupProps) {
+  const { t } = useTranslation();
+  const frameRef = useRef<HTMLIFrameElement | null>(null);
+  const [html, setHtml] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open || !action.url) {
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    get<string>(action.url)
+      .then((content) => {
+        if (!cancelled) {
+          setHtml(typeof content === 'string' ? content : '');
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setHtml('');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, action.url]);
+
+  const handlePrint = () => {
+    frameRef.current?.contentWindow?.print();
+  };
+
+  return (
+    <PopupDialog open={open} onOpenChange={(next) => !next && onClose()} title={t('Refund Receipt')} className="sm:max-w-3xl">
+      <div className="flex flex-col gap-2">
+        {loading ? (
+          <div className="text-muted-foreground flex h-[60vh] items-center justify-center text-sm">{t('Loading...')}</div>
+        ) : (
+          <iframe ref={frameRef} title={t('Refund Receipt')} srcDoc={html} className="h-[60vh] w-full border" />
+        )}
+        <Button type="button" variant="outline" onClick={handlePrint} disabled={loading} className="self-end">
+          {t('Print')}
+        </Button>
+      </div>
+    </PopupDialog>
+  );
+}
+
+registerActionPopup('sb.orders', 'sb.order-refunds', RefundReceiptPopup);
