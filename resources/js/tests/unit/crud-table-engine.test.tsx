@@ -2,8 +2,11 @@
  * crud-table-engine.test.tsx
  *
  * Consolidated vitest coverage for the backend-driven table engine
- * (`components/tables/crud-table/`) — Plan T2.9, grown per micro-step:
+ * (`components/tables/crud-table/`) — Plan T2.9. One suite covering:
  *
+ *  - T2.2 use-crud-table: query-param composition (`page`/`per_page`/
+ *    `search`/`active`+`direction`/`queryFilters` JSON), sorting guard,
+ *    debounce, refresh and error states.
  *  - T2.3 columns-builder: column order, sorting flags, date convention,
  *    empty-value rendering, header sort wiring.
  *  - T2.4 row-actions-menu: renders only the backend actions, exactly one
@@ -12,6 +15,8 @@
  *    GOTO URL normalization, JSON-vs-HTML toast semantics, refresh).
  *  - T2.6 popup registry: registered components resolve, unknown keys fall
  *    back to navigation.
+ *  - T2.7 useBulkActions: payload shape, confirm gate, refresh, guards.
+ *  - T2.8 CrudTablePage: filter mapping helpers + shell smoke.
  *
  * Fixtures mirror the real backend shapes pinned by
  * `tests/Feature/CrudTableConfigContractTest.php` and
@@ -32,6 +37,7 @@ import CrudTablePage, {
 import { PopupDialog } from '@/components/tables/crud-table/popup-dialog';
 import { RowActionsMenu } from '@/components/tables/crud-table/row-actions-menu';
 import { useActionExecutor } from '@/components/tables/crud-table/use-action-executor';
+import { useCrudTable } from '@/components/tables/crud-table/use-crud-table';
 import type { CrudEntryRow, CrudRowAction, CrudTableConfig } from '@/types/tables';
 import { router } from '@inertiajs/react';
 import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
@@ -148,6 +154,209 @@ export function makePaginator(rows: CrudEntryRow[] = [makeRow()]): CustomPaginat
     total: rows.length,
   };
 }
+
+// ---------------------------------------------------------------------------
+// T2.2 — use-crud-table (query-param composition, consolidated from the
+// colocated hook test per T2.9)
+// ---------------------------------------------------------------------------
+
+describe('useCrudTable', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (crudApi.list as Mock).mockResolvedValue(makePaginator());
+  });
+
+  /** Flush the in-flight entries/config promises. */
+  const flush = async () => {
+    await act(async () => {
+      await Promise.resolve();
+    });
+  };
+
+  it('uses initialConfig directly without fetching the config', async () => {
+    const cfg = makeTableConfig();
+    renderHook(() => useCrudTable({ namespace: 'sb.orders', initialConfig: cfg }));
+    await flush();
+
+    expect(crudApi.tableConfig).not.toHaveBeenCalled();
+    expect(crudApi.list).toHaveBeenCalledWith('sb.orders', { page: 1, per_page: 20 });
+  });
+
+  it('fetches the config via crudApi.tableConfig when absent', async () => {
+    (crudApi.tableConfig as Mock).mockResolvedValue(makeTableConfig());
+    const { result } = renderHook(() => useCrudTable({ namespace: 'sb.orders' }));
+
+    expect(result.current.configLoading).toBe(true);
+    await waitFor(() => expect(result.current.configLoading).toBe(false));
+
+    expect(crudApi.tableConfig).toHaveBeenCalledWith('sb.orders');
+    expect(result.current.config?.namespace).toBe('sb.orders');
+  });
+
+  it('exposes the config error on a config fetch failure', async () => {
+    (crudApi.tableConfig as Mock).mockRejectedValue({
+      response: { data: { message: 'Not allowed.' } },
+    });
+    const { result } = renderHook(() => useCrudTable({ namespace: 'sb.orders' }));
+    await waitFor(() => expect(result.current.configLoading).toBe(false));
+
+    expect(result.current.config).toBeNull();
+    expect(result.current.configError).toBe('Not allowed.');
+  });
+
+  it('sends search and resets the page when searching (debounced)', async () => {
+    vi.useFakeTimers();
+    try {
+      const { result } = renderHook(() => useCrudTable({ namespace: 'sb.orders' }));
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      (crudApi.list as Mock).mockClear();
+
+      act(() => {
+        result.current.setSearch('piece');
+      });
+
+      // Not committed before the debounce elapses.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(100);
+      });
+      expect(crudApi.list).not.toHaveBeenCalled();
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(300);
+      });
+      expect(crudApi.list).toHaveBeenCalledWith('sb.orders', { page: 1, per_page: 20, search: 'piece' });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('sends active and direction only together', async () => {
+    const { result } = renderHook(() => useCrudTable({ namespace: 'sb.orders', initialConfig: makeTableConfig() }));
+    await flush();
+
+    act(() => {
+      result.current.setSort('code', 'asc');
+    });
+    await flush();
+
+    expect(crudApi.list).toHaveBeenLastCalledWith('sb.orders', {
+      page: 1,
+      per_page: 20,
+      active: 'code',
+      direction: 'asc',
+    });
+
+    act(() => {
+      result.current.setSort('code', null);
+    });
+    await flush();
+
+    const params = (crudApi.list as Mock).mock.calls.at(-1)?.[1] as Record<string, unknown>;
+    expect(params).not.toHaveProperty('active');
+    expect(params).not.toHaveProperty('direction');
+  });
+
+  it('never sends active/direction for a $sort === false column', async () => {
+    const { result } = renderHook(() => useCrudTable({ namespace: 'sb.orders', initialConfig: makeTableConfig() }));
+    await flush();
+
+    act(() => {
+      result.current.setSort('total', 'asc');
+    });
+    await flush();
+
+    const params = (crudApi.list as Mock).mock.calls.at(-1)?.[1] as Record<string, unknown>;
+    expect(params).not.toHaveProperty('active');
+    expect(params).not.toHaveProperty('direction');
+  });
+
+  it('sends queryFilters as JSON with initialQuery merged inside', async () => {
+    const { result } = renderHook(() =>
+      useCrudTable({
+        namespace: 'sb.coupons',
+        initialConfig: makeTableConfig({ namespace: 'sb.coupons' }),
+        initialQuery: { coupon_id: '3' },
+      }),
+    );
+    await flush();
+
+    expect((crudApi.list as Mock).mock.calls[0][1]).toHaveProperty('queryFilters', JSON.stringify({ coupon_id: '3' }));
+
+    act(() => {
+      result.current.setQueryFilters({ payment_status: 'paid' });
+    });
+    await flush();
+
+    expect((crudApi.list as Mock).mock.calls.at(-1)?.[1]).toHaveProperty('queryFilters', JSON.stringify({ payment_status: 'paid' }));
+  });
+
+  it('resets the page on setPerPage and setQueryFilters', async () => {
+    const { result } = renderHook(() => useCrudTable({ namespace: 'sb.orders', initialConfig: makeTableConfig() }));
+    await flush();
+
+    act(() => {
+      result.current.setPage(3);
+    });
+    await flush();
+    expect((crudApi.list as Mock).mock.calls.at(-1)?.[1]).toMatchObject({ page: 3 });
+
+    act(() => {
+      result.current.setPerPage(50);
+    });
+    await flush();
+    expect((crudApi.list as Mock).mock.calls.at(-1)?.[1]).toMatchObject({ page: 1, per_page: 50 });
+
+    act(() => {
+      result.current.setPage(2);
+    });
+    await flush();
+
+    act(() => {
+      result.current.setQueryFilters({ group_id: 2 });
+    });
+    await flush();
+    expect((crudApi.list as Mock).mock.calls.at(-1)?.[1]).toMatchObject({ page: 1 });
+  });
+
+  it('refresh() re-fetches the entries', async () => {
+    const { result } = renderHook(() => useCrudTable({ namespace: 'sb.orders', initialConfig: makeTableConfig() }));
+    await flush();
+    expect(crudApi.list).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      result.current.refresh();
+    });
+    await flush();
+
+    expect(crudApi.list).toHaveBeenCalledTimes(2);
+  });
+
+  it('exposes the error state and rows on an entries fetch failure', async () => {
+    (crudApi.list as Mock).mockRejectedValue({
+      response: { data: { message: 'Sorting is explicitly disabled for the column "Total".' } },
+    });
+    const { result } = renderHook(() => useCrudTable({ namespace: 'sb.orders', initialConfig: makeTableConfig() }));
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.error).toBe('Sorting is explicitly disabled for the column "Total".');
+    expect(result.current.rows).toEqual([]);
+  });
+
+  it('exposes the active sort for the header indicators', async () => {
+    const { result } = renderHook(() => useCrudTable({ namespace: 'sb.orders', initialConfig: makeTableConfig() }));
+    await flush();
+    expect(result.current.activeSort).toBeNull();
+
+    act(() => {
+      result.current.setSort('code', 'desc');
+    });
+    await flush();
+
+    expect(result.current.activeSort).toEqual({ key: 'code', direction: 'desc' });
+  });
+});
 
 // ---------------------------------------------------------------------------
 // T2.3 — columns-builder
