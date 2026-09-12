@@ -71,18 +71,33 @@ it('serializes valid form definitions with populated values for all settings pag
         expect($contract['options'])->toBeArray("Options must be array in {$className}");
         expect($contract['form'])->toBeArray("Form must be array in {$className}");
 
-        // 2. Assert form['tabs'] contains valid field definitions
+        // 2. Assert form['tabs'] contains valid field definitions with unique field names existing in payload
         expect($form)->toHaveKey('tabs');
         expect($form['tabs'])->toBeArray("Tabs must be array in {$className}");
+
+        $allFieldNames = [];
 
         foreach ($form['tabs'] as $tabKey => $tab) {
             if (isset($tab['fields']) && is_array($tab['fields'])) {
                 foreach ($tab['fields'] as $field) {
-                    if (is_array($field)) {
+                    if (is_array($field) && ! empty($field['name'])) {
+                        $fieldName = $field['name'];
                         expect(isset($field['name']))->toBeTrue("Field missing name in {$className} tab {$tabKey}");
                         expect($field['name'])->toBeString("Field name must be string in {$className} tab {$tabKey}");
                         expect(isset($field['type']))->toBeTrue("Field missing type in {$className} tab {$tabKey}");
                         expect($field['type'])->toBeString("Field type must be string in {$className} tab {$tabKey}");
+
+                        // Assert field names are unique across tabs
+                        expect(in_array($fieldName, $allFieldNames))->toBeFalse("Duplicate field name [{$fieldName}] across tabs in {$className}");
+                        $allFieldNames[] = $fieldName;
+
+                        // Assert every tab field exists in payload (flat, nested by tab, or dot-key)
+                        $existsInPayload = array_key_exists($fieldName, $payload)
+                            || (isset($payload[$tabKey]) && is_array($payload[$tabKey]) && array_key_exists($fieldName, $payload[$tabKey]))
+                            || (isset($tab['identifier']) && isset($payload[$tab['identifier']]) && is_array($payload[$tab['identifier']]) && array_key_exists($fieldName, $payload[$tab['identifier']]))
+                            || array_key_exists("{$tabKey}.{$fieldName}", $payload);
+
+                        expect($existsInPayload)->toBeTrue("Field [{$fieldName}] in tab [{$tabKey}] must exist in payload for {$className}");
                     }
                 }
             }
