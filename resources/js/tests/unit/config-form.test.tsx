@@ -6,8 +6,8 @@
  * and the FieldRenderer type→component mapping (including the documented
  * `ckeditor` → Textarea downgrade and option `disabled` handling).
  */
-import { buildCrudPayload, initialValuesFromConfig, validateConfigForm } from '@/components/forms/config-form/config-form';
-import { FieldRenderer } from '@/components/forms/config-form/field-renderer';
+import { ConfigForm, buildCrudPayload, initialValuesFromConfig, validateConfigForm } from '@/components/forms/config-form/config-form';
+import { FieldRenderer, formatDatetimeLocal } from '@/components/forms/config-form/field-renderer';
 import { parseValidation, validateFieldValue } from '@/components/forms/config-form/parse-validation';
 import type { CrudFormConfig, FormFieldDef } from '@/types/forms';
 import { fireEvent, render, screen } from '@testing-library/react';
@@ -81,12 +81,27 @@ describe('parseValidation', () => {
   it('still marks plain required as required even next to nullable', () => {
     expect(parseValidation('nullable|required').required).toBe(true);
   });
+
+  it('joins array-form rules and drops non-string entries (serialized Rule objects)', () => {
+    const parsed = parseValidation(['required', 'min:3', {}] as unknown as string[]);
+    expect(parsed.required).toBe(true);
+    expect(parsed.min).toBe(3);
+    expect(parsed.max).toBeUndefined();
+    expect(parseValidation(['required'])).toEqual(parseValidation('required'));
+  });
 });
 
 describe('validateFieldValue', () => {
   it('blocks empty required values', () => {
     expect(validateFieldValue({ value: '', validation: 'required', label: 'Name', t })).toBe('The Name field is required');
     expect(validateFieldValue({ value: '   ', validation: 'required', label: 'Name', t })).toBeTruthy();
+  });
+
+  it('honors array-form validation (e.g. CouponCrud code field) without crashing', () => {
+    expect(validateFieldValue({ value: '', validation: ['required'], label: 'Code', t })).toBe('The Code field is required');
+    expect(validateFieldValue({ value: '', validation: ['required', {}] as unknown as string[], label: 'Code', t })).toBe(
+      'The Code field is required',
+    );
   });
 
   it('lets 0 and "0" survive (mirrors the backend empty-check)', () => {
@@ -125,6 +140,23 @@ describe('buildCrudPayload / initialValuesFromConfig', () => {
     const errors = validateConfigForm(baseConfig, { name: '', 'general.identifier': 'weight', 'general.active': '0' }, t);
     expect(errors).toEqual({ name: 'The Name field is required' });
   });
+
+  it('strips non-persistent rule ids from buildCrudPayload to protect PUT requests', () => {
+    const values = {
+      name: 'Reward 1',
+      rules: [
+        { id: 45, from: 10, to: 20, reward: 5 },
+        { _clientId: 'rule-temp-1', from: 21, to: 30, reward: 10 },
+        { id: 'client_123', from: 31, to: 40, reward: 15 },
+      ],
+    };
+    const payload = buildCrudPayload(baseConfig, values);
+    expect(payload['rules']).toEqual([
+      { id: 45, from: 10, to: 20, reward: 5 },
+      { from: 21, to: 30, reward: 10 },
+      { from: 31, to: 40, reward: 15 },
+    ]);
+  });
 });
 
 describe('FieldRenderer type mapping', () => {
@@ -152,6 +184,11 @@ describe('FieldRenderer type mapping', () => {
     expect(screen.getByRole('textbox').getAttribute('type')).toBe('email');
   });
 
+  it('renders a field whose validation is an array without crashing (regression)', () => {
+    renderField({ type: 'text', validation: ['required'] });
+    expect(screen.getByRole('textbox')).toBeTruthy();
+  });
+
   it('renders hidden fields without label chrome', () => {
     const { container } = renderField({ type: 'hidden', value: '7' });
     const input = container.querySelector('input[type="hidden"]');
@@ -166,10 +203,17 @@ describe('FieldRenderer type mapping', () => {
     expect(editor.innerHTML).toBe('<p>hi</p>');
   });
 
-  it('renders datetimepicker as datetime-local input', () => {
-    const { container } = renderField({ type: 'datetimepicker' });
-    const input = container.querySelector('input[type="datetime-local"]');
+  it('renders datetimepicker as datetime-local input and formats DB datetime values', () => {
+    const { container } = renderField({ type: 'datetimepicker' }, '2026-05-10 14:30:00');
+    const input = container.querySelector('input[type="datetime-local"]') as HTMLInputElement;
     expect(input).toBeTruthy();
+    expect(input.value).toBe('2026-05-10T14:30');
+  });
+
+  it('formats ISO strings to datetime-local values', () => {
+    expect(formatDatetimeLocal('2026-05-10T14:30:00.000000Z')).toContain('2026-05-10T');
+    expect(formatDatetimeLocal('')).toBe('');
+    expect(formatDatetimeLocal(null)).toBe('');
   });
 
   it('renders switch fields from their explicit options and never assumes booleans', () => {
@@ -193,5 +237,33 @@ describe('FieldRenderer type mapping', () => {
     const { container } = renderField({ type: 'custom', component: 'notRegistered' });
     expect(container.firstChild).toBeNull();
     expect(warn).toHaveBeenCalled();
+  });
+});
+
+describe('ConfigForm tab identifier resilience', () => {
+  it('renders and allows editing when tabs lack an explicit identifier key', () => {
+    const configWithoutTabId: CrudFormConfig = {
+      ...baseConfig,
+      form: {
+        ...baseConfig.form,
+        tabs: {
+          general: {
+            label: 'General Tab',
+            fields: [{ name: 'code', label: 'Code', type: 'text', value: 'ABC' }],
+          } as any,
+        },
+      },
+    };
+
+    const onFieldChange = vi.fn();
+    const onSubmit = vi.fn();
+
+    render(<ConfigForm config={configWithoutTabId} values={{ 'general.code': 'ABC' }} onFieldChange={onFieldChange} onSubmit={onSubmit} />);
+
+    expect(screen.getByText('General Tab')).toBeTruthy();
+    const input = screen.getByDisplayValue('ABC');
+    expect(input).toBeTruthy();
+    fireEvent.change(input, { target: { value: 'XYZ' } });
+    expect(onFieldChange).toHaveBeenCalledWith('general.code', 'XYZ');
   });
 });

@@ -69,8 +69,12 @@ export interface FormFieldDef {
   type?: FormFieldType;
   value?: unknown;
   description?: string;
-  /** Laravel rule string, e.g. `'required|min:3'` or `'required|in:a,b'`. */
-  validation?: string;
+  /**
+   * Laravel rules — a string (`'required|min:3'`) or an array
+   * (`['required', Rule::unique(...)]`, e.g. `CouponCrud`'s `code` field;
+   * rule objects serialize to `{}` over JSON and are ignored client-side).
+   */
+  validation?: string | string[];
   disabled?: boolean;
   options?: FormOption[];
   /** Custom component name resolved through the registry (`sbCrudForm`, …). */

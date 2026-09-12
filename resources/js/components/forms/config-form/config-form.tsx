@@ -69,7 +69,17 @@ export function buildCrudPayload(config: CrudFormConfig, values: Record<string, 
 
   // Support root-level properties (e.g. `rules` in rewards system)
   if (values['rules'] !== undefined) {
-    payload['rules'] = values['rules'];
+    if (Array.isArray(values['rules'])) {
+      payload['rules'] = (values['rules'] as Array<Record<string, unknown>>).map((rule) => {
+        const { _clientId, ...cleanRule } = rule;
+        if (!cleanRule.id || String(cleanRule.id).startsWith('client_') || (typeof cleanRule.id === 'number' && cleanRule.id > 1000000000000)) {
+          delete cleanRule.id;
+        }
+        return cleanRule;
+      });
+    } else {
+      payload['rules'] = values['rules'];
+    }
   }
 
   return payload;
@@ -204,6 +214,7 @@ function TabFields({
               onChange={(value) => onFieldChange(key, value)}
               error={errors?.[key]}
               id={`${idPrefix}-${tab.identifier}-${field.name}-${index}`}
+              formValues={values}
             />
           );
         })}
@@ -231,7 +242,14 @@ export function ConfigForm({
 
   const mergedErrors = useMemo(() => ({ ...errors, ...localErrors }), [errors, localErrors]);
   const main = config.form.main;
-  const tabs = useMemo(() => Object.values(config.form.tabs ?? {}), [config.form.tabs]);
+  const tabs = useMemo(
+    () =>
+      Object.entries(config.form.tabs ?? {}).map(([key, tab]) => ({
+        ...tab,
+        identifier: tab.identifier ?? key,
+      })),
+    [config.form.tabs],
+  );
   const mainName = main?.name;
 
   const clearLocalError = (key: string) => {

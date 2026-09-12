@@ -8,6 +8,7 @@ import { registerCustomComponent, type CustomFieldComponentProps } from './regis
 
 export interface RewardRule {
   id?: number | string;
+  _clientId?: string;
   from: number | string;
   to: number | string;
   reward: number | string;
@@ -19,7 +20,7 @@ export function RulesEditorField({ value, onChange, disabled, error }: CustomFie
 
   const addRule = () => {
     const newRule: RewardRule = {
-      id: Date.now(),
+      _clientId: `rule-${Date.now()}-${Math.random()}`,
       from: '',
       to: '',
       reward: '',
@@ -31,7 +32,7 @@ export function RulesEditorField({ value, onChange, disabled, error }: CustomFie
     onChange(rules.filter((_, idx) => idx !== indexToRemove));
   };
 
-  const updateRule = (indexToUpdate: number, field: keyof RewardRule, val: string) => {
+  const updateRule = (indexToUpdate: number, field: keyof Omit<RewardRule, 'id' | '_clientId'>, val: string) => {
     onChange(rules.map((rule, idx) => (idx === indexToUpdate ? { ...rule, [field]: val } : rule)));
   };
 
@@ -52,7 +53,7 @@ export function RulesEditorField({ value, onChange, disabled, error }: CustomFie
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {rules.map((rule, index) => (
-          <Card key={rule.id ?? index} className="relative">
+          <Card key={rule.id ?? rule._clientId ?? index} className="relative">
             <CardContent className="p-4">
               <Button
                 type="button"

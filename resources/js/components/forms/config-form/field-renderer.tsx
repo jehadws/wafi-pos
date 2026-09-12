@@ -10,12 +10,31 @@ import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/lib/i18n';
 import type { FormFieldDef, FormOption, GroupFieldDef } from '@/types/forms';
 import type React from 'react';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FilePicker } from './file-picker';
 import { GroupRenderer } from './group-renderer';
+import { loadFieldOptions } from './option-loader';
 import { parseValidation } from './parse-validation';
 import { getCustomComponent } from './registry';
 import { RichTextEditor } from './rich-text-editor';
+
+/**
+ * Format date/datetime string from DB/API to HTML5 datetime-local compatible string (YYYY-MM-DDTHH:mm).
+ */
+export function formatDatetimeLocal(val: unknown): string {
+  if (val === undefined || val === null || val === '') return '';
+  const str = String(val).trim();
+  const match = str.match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})(?::\d{2})?/);
+  if (match) {
+    return `${match[1]}T${match[2]}`;
+  }
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  return '';
+}
 
 /**
  * Renders one backend form field, mapping `field.type` to a UI primitive
@@ -33,6 +52,7 @@ export interface FieldRendererProps {
   error?: string;
   disabled?: boolean;
   id?: string;
+  formValues?: Record<string, unknown>;
 }
 
 /** `switch` fields carry explicit `{label, value}` options — never booleans. */
@@ -80,9 +100,35 @@ function SelectField({
   disabled,
   id,
   hasError,
-}: Pick<FieldRendererProps, 'field' | 'value' | 'onChange' | 'disabled' | 'id'> & { hasError?: boolean }) {
+  formValues,
+}: Pick<FieldRendererProps, 'field' | 'value' | 'onChange' | 'disabled' | 'id' | 'formValues'> & { hasError?: boolean }) {
   const { t } = useTranslation();
-  const options: FormOption[] = Array.isArray(field.options) ? field.options : [];
+  const [options, setOptions] = useState<FormOption[]>(Array.isArray(field.options) ? field.options : []);
+
+  const formValuesRef = useRef(formValues);
+  formValuesRef.current = formValues;
+
+  const watchedValue = field.refresh?.watch
+    ? formValues?.[field.refresh.watch] ??
+      Object.entries(formValues ?? {}).find(([k]) => k.endsWith(`.${field.refresh!.watch}`))?.[1]
+    : undefined;
+
+  useEffect(() => {
+    if (field.refresh?.url) {
+      let active = true;
+      void loadFieldOptions(field, formValuesRef.current ?? {}).then((loaded) => {
+        if (active) {
+          setOptions(loaded);
+        }
+      });
+      return () => {
+        active = false;
+      };
+    } else {
+      setOptions(Array.isArray(field.options) ? field.options : []);
+    }
+  }, [field, watchedValue]);
+
   const selectValue = value === undefined || value === null ? '' : String(value);
 
   return (
@@ -155,7 +201,7 @@ function AudioSelectField({
   );
 }
 
-export function FieldRenderer({ field, value, onChange, error, disabled, id }: FieldRendererProps) {
+export function FieldRenderer({ field, value, onChange, error, disabled, id, formValues }: FieldRendererProps) {
   const { t } = useTranslation();
 
   const type = field.type ?? 'text';
@@ -208,7 +254,12 @@ export function FieldRenderer({ field, value, onChange, error, disabled, id }: F
     case 'datetimepicker':
       return (
         <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
-          <Input type="datetime-local" {...textProps} />
+          <Input
+            type="datetime-local"
+            {...textProps}
+            value={formatDatetimeLocal(value)}
+            onChange={(event) => onChange(event.target.value)}
+          />
         </FormField>
       );
 
@@ -236,7 +287,15 @@ export function FieldRenderer({ field, value, onChange, error, disabled, id }: F
     case 'search-select':
       return (
         <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
-          <SelectField field={field} value={value} onChange={onChange} disabled={isDisabled} id={id} hasError={Boolean(shownError)} />
+          <SelectField
+            field={field}
+            value={value}
+            onChange={onChange}
+            disabled={isDisabled}
+            id={id}
+            hasError={Boolean(shownError)}
+            formValues={formValues}
+          />
         </FormField>
       );
 

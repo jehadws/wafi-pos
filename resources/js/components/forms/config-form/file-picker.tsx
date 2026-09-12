@@ -2,7 +2,7 @@ import { mediasApi } from '@/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, UploadCloud } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface FilePickerProps {
   value: string | null;
@@ -14,6 +14,10 @@ export function FilePicker({ value, onChange, placeholder }: FilePickerProps) {
   const [localName, setLocalName] = useState('');
   const [preview, setPreview] = useState<string | null>(value);
   const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    setPreview(value ?? null);
+  }, [value]);
 
   const handleFile = async (f: File) => {
     setUploading(true);
@@ -32,7 +36,6 @@ export function FilePicker({ value, onChange, placeholder }: FilePickerProps) {
       setPreview(url);
     } catch (err) {
       console.error('Logo upload failed', err);
-      onChange(null);
       setPreview(value ?? null);
     } finally {
       URL.revokeObjectURL(localUrl);

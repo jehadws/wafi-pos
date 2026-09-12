@@ -65,9 +65,12 @@ export async function loadFieldOptions(field: FormFieldDef, formValues: Record<s
     const extraData = { ...(field.refresh.data ?? {}) };
 
     if (field.refresh.watch) {
-      const watchedValue = formValues[field.refresh.watch];
+      const watchedValue =
+        formValues[field.refresh.watch] ??
+        Object.entries(formValues).find(([k]) => k.endsWith(`.${field.refresh!.watch}`))?.[1];
       if (watchedValue !== undefined && watchedValue !== null && watchedValue !== '') {
         extraData[field.refresh.watch] = watchedValue;
+        extraData['identifier'] = watchedValue;
       }
     }
 

@@ -94,6 +94,17 @@ describe('loadFieldOptions', () => {
 
     const url = (vi.mocked(fetch).mock.calls[0][0] as string).toString();
     expect(url).toContain('category_id=42');
+    expect(url).toContain('identifier=42');
+  });
+
+  it('resolves watched sibling value from dot-keyed formValues (e.g. general.category_id)', async () => {
+    mockFetch([]);
+    const field = makeField({ refresh: { url: '/api/options', watch: 'category_id' } });
+    await loadFieldOptions(field, { 'general.category_id': 99 });
+
+    const url = (vi.mocked(fetch).mock.calls[0][0] as string).toString();
+    expect(url).toContain('category_id=99');
+    expect(url).toContain('identifier=99');
   });
 
   it('does NOT append the sibling value when it is empty string', async () => {
