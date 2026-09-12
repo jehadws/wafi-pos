@@ -182,4 +182,43 @@ No GOTO action points at an `api/` URL (the former "Create Reflection" GOTO alre
 ### Confirm payload standardization
 All 29 `DELETE` actions now use `'title' => __('Confirm Your Action')` + `'message' => __('Would you like to delete this ?')`; resources with a semantic message keep it (rewards system, transactions history). Copy-paste titles removed (`Delete a licence` on coupons / customer groups / rewards system, `Delete a customers`, `Delete a user`). GET-action confirms (set-paid, refresh, clone, trigger, create-reflection) intentionally keep message-only payloads. No HTML-bearing labels remain in `app/Crud` (verified by grep and pinned by the T1.2 contract test).
 
+## Action-target inventory (T1.7, 2026-09-12)
+
+Every GOTO action resolved against `routes/web/*.php`. Verdicts: **✅ exists**, **❌ missing** (no matching route), **⚠️ broken URL** (route shape exists but the URL can never match).
+
+| Namespace | Action | URL | Verdict |
+|---|---|---|---|
+| `sb.coupons` | Edit | `/dashboard/customers/coupons/edit/{id}` | ❌ missing (no such route) |
+| `sb.coupons` | History | `/dashboard/customers/coupons/history/{id}` | ❌ missing (route is `/customers/{customer}/coupons/{coupon}/history`) |
+| `sb.coupons-orders-history` | Edit | `/dashboard//edit/{id}` | ⚠️ broken (`$slug = '/'`) — resource has no SPA page (Phase 5) |
+| `sb.customers-account-history` | Edit | `/dashboard/customers/account-history/edit/{id}` | ❌ missing (route requires `/customers/{customer}/account-history/edit/{id}`) |
+| `sb.customers-coupons` | Usage History | `/dashboard/customers/{customer_id}/coupons/{id}/history/` | ✅ exists |
+| `sb.customers-coupons` | Edit | `/dashboard/customers/coupons-generated/edit/{id}` | ❌ missing |
+| `sb.customers-coupons-history` | Edit | `/dashboard//edit/{id}` | ⚠️ broken (`$slug = '/'`) — no SPA page (Phase 5) |
+| `sb.customers` | Edit / Orders / Rewards / Coupons / Wallet History | `/dashboard/customers/…` | ✅ all exist |
+| `sb.customers-groups` | Edit | `/dashboard/customers/groups/edit/{id}` | ✅ exists |
+| `sb.customers-rewards` | Edit | `/dashboard/customers/{customer_id}/rewards/edit/{id}` | ⚠️ broken — literal `{customer_id}` placeholder is never interpolated; resolves only by accident |
+| `sb.orders` | Invoice | `/dashboard/orders/invoice/{id}` | ✅ exists — **Inertia page** (`dashboard/orders/invoice/page`), safe for `router.visit` |
+| `sb.orders` | Receipt | `/dashboard/orders/receipt/{id}` | ✅ exists — **Inertia page** (`dashboard/orders/receipt/page`), safe for `router.visit` |
+| `sb.orders` | Refund Receipt (POPUP) | `/dashboard/orders/refund-receipt/{refund}` | ✅ exists — **direct Blade HTML** (`View::make`) → must open in a **new tab**, never `router.visit` |
+| `sb.orders-instalments` | Edit | `/dashboard/orders/instalments/edit/{id}` | ❌ missing (only the list route `/orders/instalments` exists) |
+| `sb.payments-types` | Edit | `/dashboard/orders/payments-types/edit/{id}` | ✅ exists |
+| `sb.procurements` | Edit / Invoice | `/dashboard/procurements/edit/{id}[/invoice]` | ✅ both exist |
+| `sb.procurements-products` | Edit | `/dashboard/procurements/products/edit/{id}` | ✅ exists |
+| `sb.products-categories` | Edit / Compute Products | `/dashboard/products/categories/edit/{id}` · `/compute-products/{id}` | ✅ both exist |
+| `sb.products` | Edit / See Quantities / See History | `/dashboard/products/edit/{id}` · `/{id}/units` · `/{id}/history` | ✅ all exist |
+| `sb.providers` | Edit / See Procurements / See Products | `/dashboard/providers/edit/{id}` · `/{id}/procurements` · `/{id}/products` | ✅ all exist |
+| `sb.providers-products` | Edit | `/dashboard//dashboard/providers/edit/{id}` | ⚠️ broken (`$slug = '/dashboard/providers'` double-prefixes) |
+| `sb.cash-registers` | Edit / Register History | `/dashboard/cash-registers/edit/{id}` · `/history/{id}` | ✅ both exist |
+| `sb.rewards-system` | Edit | `/dashboard/customers/rewards-system/edit/{id}` | ✅ exists |
+| `sb.roles` | Edit | `/dashboard/users/roles/edit/{id}` | ✅ exists |
+| `sb.taxes` / `sb.taxes-groups` | Edit | `/dashboard/taxes[/groups]/edit/{id}` | ✅ exists |
+| `sb.transactions` | Edit / History | `/dashboard/accounting/transactions/edit/{id}` · `/history/{id}` | ✅ both exist |
+| `sb.transactions-accounts` | Edit | `/dashboard/accounting/accounts/edit/{id}` | ✅ exists |
+| `sb.units` / `sb.units-groups` | Edit | `/dashboard/units[/groups]/edit/{id}` | ✅ exists |
+| `sb.users` | Edit | `/dashboard/users/edit/{id}` | ✅ exists |
+| `sb.users` | Orders / Rewards / Coupons / Wallet History | `/dashboard/users/{id}/orders|rewards|coupons|account-history` | ❌ all missing (users.php has no sub-list routes) |
+
+**Scheduling (rule 6):** the ❌ targets on namespaces that already have a host page — `sb.coupons` (Edit/History), `sb.customers-account-history` (Edit), `sb.customers-coupons` (Edit), `sb.orders-instalments` (Edit), `sb.users` sub-lists — must be built (or the actions removed) in **Phase 5 before their host page migrates**. The ⚠️ broken-URL CRUDs are all Phase 5 resources without SPA pages today; fix `$slug` when their pages are created.
+
 
