@@ -37,11 +37,13 @@ class UsersController extends DashboardController
 
   public function listUsers()
   {
-    $users = User::with(['roles'])->get();
-    return Inertia::render('dashboard/users/page', [
-      'title' => __('Permission Manager'),
-      'users' => $users,
-    ]);
+    /**
+     * The single backend-driven list shell (T4.5): the users table renders
+     * from `UserCrud::table()` — Edit + Delete render from `$actions`
+     * (the four broken sub-list GOTOs are omitted backend-side until
+     * T5.3 builds their routes/pages). `table()` enforces
+     * `allowedTo('read')` internally.
+     */
     return UserCrud::table();
   }
 
