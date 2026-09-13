@@ -63,13 +63,14 @@ class CustomersController extends DashboardController
    */
   public function listCustomers()
   {
-    $customers = $this->customerService->get();
-
-    return Inertia::render('dashboard/customers/page', [
-      'title' => __('Dashboard'),
-      'customers' => $customers
-    ]);
-    // return CustomerCrud::table();
+    /**
+     * The single backend-driven list shell (T4.4): the customers table
+     * renders from `CustomerCrud::table()` — the full action set (Edit,
+     * Orders, Rewards, Coupons, Wallet History GOTOs + Delete) renders
+     * from `$actions`, with every GOTO target resolving to an existing
+     * route. `table()` enforces `allowedTo('read')` internally.
+     */
+    return CustomerCrud::table();
   }
 
   /**
