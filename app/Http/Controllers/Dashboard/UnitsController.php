@@ -15,7 +15,6 @@ use App\Http\Requests\UnitRequest;
 // use App\Http\Requests\UnitsGroupsRequest;
 use App\Models\Unit;
 use App\Models\UnitGroup;
-use App\Models\User;
 use App\Services\DateService;
 use App\Services\UnitService;
 use Illuminate\Http\Request;
@@ -140,22 +139,14 @@ class UnitsController extends DashboardController
 
   public function listUnits()
   {
-    sb()->restrict(['subul.read.products-units']);
-
-    $units =  Unit::addSelect([
-      'author_name' => User::select('username')
-        ->whereColumn('subul_users.id', 'author')
-        ->limit(1),
-      'group_name' => UnitGroup::select('name')
-        ->whereColumn('subul_units_groups.id', 'group_id')
-        ->limit(1),
-    ])->get();
-    return Inertia::render('dashboard/units/page', [
-      'title' => __('Dashboard'),
-      'units' => $units
-    ]);
-
-    // return UnitCrud::table();
+    /**
+     * The single backend-driven list shell (T3.3): the units table renders
+     * from `UnitCrud::table()` — `group_name`/`user_username` hydrate
+     * through the CRUD's `group`/`user` relations (the hand subqueries are
+     * gone). `table()` enforces `allowedTo('read')`
+     * (`subul.read.products-units`) internally.
+     */
+    return UnitCrud::table();
   }
 
   public function createUnitGroup()
