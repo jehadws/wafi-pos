@@ -109,6 +109,9 @@ export function DataTableToolbar<TData>({
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null)
 
   const isFiltered = table.getState().columnFilters.length > 0
+  // The bulk-actions bar renders whenever the table defines actions; it
+  // stays disabled until at least one row is checked (selection affordance).
+  const hasSelection = table.getFilteredSelectedRowModel().rows.length > 0
   const [selectedAction, setSelectedAction] = useState<string | null>(null)
 
   const handleApplyAction = () => {
@@ -118,6 +121,10 @@ export function DataTableToolbar<TData>({
     if (!action) return
 
     const selectedRows = table.getFilteredSelectedRowModel().rows.map((row) => row.original)
+    // Defensive: the Apply button is disabled without a selection, but a
+    // selection that clears between render and click must not fire empty.
+    if (selectedRows.length === 0) return
+
     action.action(selectedRows)
     table.resetRowSelection();
     setSelectedAction(null)
@@ -224,10 +231,10 @@ export function DataTableToolbar<TData>({
         )}
       </div>
       <div className="flex items-center gap-2">
-        {table.getFilteredSelectedRowModel().rows.length > 0 && bulkActions.length > 0 && (
+        {bulkActions.length > 0 && (
           <div className="flex items-center gap-2">
             <Select value={selectedAction || ""} onValueChange={setSelectedAction}>
-              <SelectTrigger className="h-9 w-[150px]">
+              <SelectTrigger className="h-9 w-[150px]" disabled={!hasSelection}>
                 <SelectValue placeholder={t('Bulk Actions')} />
               </SelectTrigger>
               <SelectContent>
@@ -238,7 +245,13 @@ export function DataTableToolbar<TData>({
                 ))}
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm" onClick={handleApplyAction} disabled={!selectedAction} className="h-9">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleApplyAction}
+              disabled={!selectedAction || !hasSelection}
+              className="h-9"
+            >
               {t('Apply')}
             </Button>
           </div>
