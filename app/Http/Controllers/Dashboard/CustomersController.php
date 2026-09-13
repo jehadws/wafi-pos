@@ -248,13 +248,15 @@ class CustomersController extends DashboardController
 
   public function listCoupons()
   {
-    $coupons = Coupon::get();
-    return Inertia::render('dashboard/customers/coupons/page', [
-      'title' => __('Coupons'),
-      'description' => __('List of all coupons.'),
-      'coupons' => $coupons
-    ]);
-    // return CouponCrud::table();
+    /**
+     * The single backend-driven list shell (T4.3): the coupons table renders
+     * from `CouponCrud::table()` — the History GOTO (its target
+     * `couponHistory` already renders `CouponOrderHistoryCrud::table()`)
+     * and the other actions render from `$actions` (replacing the hand
+     * stub toast action, bug #4). `table()` enforces `allowedTo('read')`
+     * internally.
+     */
+    return CouponCrud::table();
   }
 
   public function createCoupon()
