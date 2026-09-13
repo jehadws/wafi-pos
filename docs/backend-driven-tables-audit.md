@@ -319,6 +319,124 @@ The 10 simple/aligned list pages are fully backend-driven. Each controller's lis
 1. **Users sub-list actions** (Orders/Rewards/Coupons/Wallet History) — omitted backend-side until T5.3 builds `/dashboard/users/{id}/…` routes + generic pages (would 404 otherwise).
 2. **Products page** — bespoke exception retained (T4.9 decision above).
 
+---
+
+## Post-migration status (Phase 6 close-out — 2026-09-13)
+
+**Project exit criteria: MET.** Every dashboard list page is backend-driven or a recorded sanctioned exception; all 9 audit bugs are resolved; the contract + vitest suites guard the engine; docs updated.
+
+### Bugs #1–#9 — all resolved
+
+| # | Bug | Where it died |
+|---|---|---|
+| 1 | Duplicate "Copy ID" menu item (units) | Phase 3 T3.10 — hand page deleted; the engine appends exactly one built-in Copy ID per row menu |
+| 2 | Set Paid without confirmation | Phase 4 T4.1 — hand menu deleted; `ProcurementCrud` serializes GET + `confirm`; the executor renders it |
+| 3 | Refresh without confirmation | Phase 4 T4.1 — same mechanism as #2 |
+| 4 | Stub coupon History (`toast.info`) | Phase 4 T4.3 — the real History GOTO renders from `$actions`; target table live since T5.2 |
+| 5 | `GlobalProductHistoryCrud` delete serialized as GOTO | Phase 1 action normalization; Phase 5 then stripped the dead Delete entirely (`delete => false`) |
+| 6 | `CouponOrderHistoryCrud` "hitory" URL typo | Phase 1 backend fix — zero `hitory` matches remain under `app/` |
+| 7 | Inconsistent delete confirmation text | Phase 1 T1.6 standardized payloads backend-side; Phase 3 T3.10 renders them verbatim |
+| 8 | No permission filtering on the frontend | Solved at source — `CrudEntry::filterActions()` (rows) + `getFilteredLinks()` (toolbar); pinned by contract tests |
+| 9 | Inconsistent delete API methods | Phase 3 T3.10 — all deletes resolve `del(action.url)` → `DELETE /api/crud/{ns}/{id}`; bulk likewise |
+
+### Final page migration table
+
+Every controller list method is a one-liner (`return XCrud::table();`); the hand `page.tsx` shells were deleted wholesale — the single generic `resources/js/pages/crud/list.tsx` renders everything. Waves: **1** = Phase 3 (T3.1–T3.10), **2** = Phase 4 (T4.1–T4.8), **3** = Phase 5 (T5.2–T5.4) + T6.1. Sub-lists are scoped via `queryParams`; secondary/history pages render the generic page directly (most never had a bespoke file).
+
+| Page | Namespace | Wave |
+|---|---|---|
+| `/dashboard/units` | `sb.units` | 1 |
+| `/dashboard/units/groups` | `sb.units-groups` | 1 |
+| `/dashboard/taxes` | `sb.taxes` | 1 |
+| `/dashboard/taxes/groups` | `sb.taxes-groups` | 1 |
+| `/dashboard/customers/groups` | `sb.customers-groups` | 1 |
+| `/dashboard/accounting/accounts` | `sb.transactions-accounts` | 1 |
+| `/dashboard/accounting/transactions/accounts` | `sb.transactions-accounts` | 1 |
+| `/dashboard/orders/payments-types` | `sb.payments-types` | 1 |
+| `/dashboard/products/categories` | `sb.products-categories` | 1 |
+| `/dashboard/customers/rewards-system` | `sb.rewards-system` | 1 |
+| `/dashboard/users/roles` | `sb.roles` | 1 (`90245d3`) |
+| `/dashboard/procurements` | `sb.procurements` | 2 (T4.1) |
+| `/dashboard/accounting/transactions` | `sb.transactions` | 2 (T4.2) |
+| `/dashboard/customers/coupons` | `sb.coupons` | 2 (T4.3, `10cef4e`) |
+| `/dashboard/customers` | `sb.customers` | 2 (T4.4) |
+| `/dashboard/users` | `sb.users` | 2 (T4.5) |
+| `/dashboard/providers` | `sb.providers` | 2 (T4.6) |
+| `/dashboard/cash-registers` | `sb.cash-registers` | 2 (T4.7) |
+| `/dashboard/orders` | `sb.orders` | 2 (T4.8) |
+| `/dashboard/customers/{customer}/orders` | `sb.customers-orders` (scoped) | 3 |
+| `/dashboard/customers/{customer}/rewards` | `sb.customers-rewards` (scoped) | 3 |
+| `/dashboard/customers/{customer}/coupons` | `sb.customers-coupons` (scoped) | 3 |
+| `/dashboard/customers/{customer}/account-history` | `sb.customers-account-history` (scoped) | 3 |
+| `/dashboard/customers/{customer}/coupons/{customerCoupon}/history` | `sb.customers-coupons-history` (scoped) | 3 (T5.2) |
+| `/dashboard/customers/coupons/history/{coupon}` | `sb.coupons-orders-history` (scoped) | 3 (T5.2) |
+| `/dashboard/customers/coupons-generated` | `sb.customers-coupons` | 3 (generic page; never a bespoke file) |
+| `/dashboard/users/{id}/orders` | `sb.customers-orders` (scoped) | 3 (T5.3) |
+| `/dashboard/users/{id}/rewards` | `sb.customers-rewards` (scoped) | 3 (T5.3) |
+| `/dashboard/users/{id}/coupons` | `sb.customers-coupons` (scoped) | 3 (T5.3) |
+| `/dashboard/users/{id}/account-history` | `sb.customers-account-history` (scoped) | 3 (T5.3) |
+| `/dashboard/providers/{provider}/procurements` | `sb.providers-procurements` (scoped) | 3 |
+| `/dashboard/providers/{provider}/products` | `sb.providers-products` (scoped) | 3 |
+| `/dashboard/orders/instalments` | `sb.orders-instalments` | 3 |
+| `/dashboard/products/{product}/history` | `sb.products-histories` (scoped) | 3 |
+| `/dashboard/products/{product}/units` | `sb.products-units` (scoped) | 3 |
+| `/dashboard/products/stock-flow-records` | `sb.global-products-history` | 3 |
+| `/dashboard/accounting/transactions/history` | `sb.transactions-history` | 3 |
+| `/dashboard/cash-registers/history/{register}` | `sb.cash-registers-history` (scoped) | 3 |
+| `/dashboard/procurements/products` | `sb.procurements-products` | 3 (T6.1) |
+
+Sanctioned non-migrations (remaining `page.tsx` files): `/dashboard/products` — bespoke tables exception (B3.b-analog); `/dashboard/medias` and `/dashboard/accounting/rules` — not CRUD-table-backed resources; `/dashboard/orders/invoice` + `/dashboard/orders/receipt` — Inertia GOTO *target* pages, not lists; `/dashboard/products/print-labels` + `/dashboard/products/stock-adjustment` — bespoke tools, no list.
+
+### Missing frontend actions — now exposed
+
+Every row of the planning-time "Missing frontend actions" table except the sanctioned products exception:
+
+| Action (audit finding) | Status |
+|---|---|
+| Roles — Clone (GET) | Exposed (Wave 1) |
+| Procurements — Set Paid / Refresh (GET + confirm) | Exposed (Wave 2, T4.1) |
+| Transactions — Trigger (GET) / History (GOTO) | Exposed (Wave 2, T4.2) |
+| Coupons — History (GOTO) | Exposed (Wave 2, T4.3); target table live (T5.2) |
+| Orders — Refund Receipt (conditional POPUP) | Exposed (Wave 2, T4.8 popup registry) |
+| Categories — Compute | Exposed (Wave 1) |
+| Providers — See Procurements / See Products | Exposed (Wave 2, T4.6); targets live (Phase 5) |
+| Cash Registers — Register History | Exposed (Wave 2, T4.7); target table live (Phase 5) |
+| Users — Orders / Rewards / Coupons / Wallet History | Exposed (T5.3 routes + generic pages) |
+| Products — Preview / Quantities / History | **Not exposed** — bespoke exception; the hand dropdown keeps Copy ID / Edit / Delete |
+
+### Popup registry coverage
+
+| `namespace::identifier` | Coverage |
+|---|---|
+| `sb.orders::sb.order-options` | Registered — Options modal |
+| `sb.orders::sb.order-refunds` | Registered (conditional — serialized only when refunds exist); iframe print |
+| `sb.cash-registers-history::view-details` | Registered — row-field dialog (no URL) |
+| `sb.products-histories::sb.description` | Registered — row-description dialog (no URL) |
+| `sb.hold-orders::sb.open` | POS-handled — never rendered on a dashboard list |
+| `sb.products::sb.quantities` | Intentionally unregistered — the navigate fallback (dev-time warning) reaches the product edit page |
+
+### Final deferrals / sanctioned exceptions
+
+1. **Products list page** — bespoke (tables B3.b-analog): its hand-built rows carry no `$actions`; wiring the executor would force the crud-list round-trip onto the page. Preview/Quantities/History GOTOs stay unexposed there.
+2. **Medias manager and accounting rules** — not CRUD-table-backed resources; out of the engine's scope by design.
+3. **Client-only columns dropped in Wave 1** (`displays_on_pos` / `total_items` / `base_unit` buckets) — candidates for `getQueryFilters()` if the need resurfaces (carried from the Phase 3 notes).
+4. **Users sub-list actions** — the T4.10 deferral is **closed**: T5.3 built the routes + generic pages, so the four GOTOs ship on `UserCrud` rows.
+5. **Translation legacy drift** — pre-existing `ar-old` / `de` under-maintenance recorded in the verification evidence below; intentionally not repaired ("fix nothing unrelated").
+
+### Phase 6 verification evidence (2026-09-13)
+
+- `npm run types` + `npm run lint` — green, zero warnings (re-run after formatting).
+- `npm run test` — 43 files / **393 tests green**, including the ambient-type guard and the table contract suites (`crud-table-engine.test.tsx`, `use-action-executor` tests, `api-modules` / `api-transactions` contract tests).
+- `php artisan test` — **13 failed / 34 passed (7309 assertions)**. The 13 failures are the pre-existing Auth/Settings env baseline (Authentication, EmailVerification ×4, PasswordReset ×3, Registration ×2, Dashboard visit, PasswordUpdate, ProfileUpdate ×2) — failure count identical to the Phase 3/4 baseline; the passed count grew 31 → 34 from the contract tests added in Phases 1–5. Zero CRUD regressions.
+- `npm run test:e2e` — **4/4 checkout journeys pass** (7.1s). The plan's optional dashboard CRUD Playwright smoke was not added: list/sort/search/delete-with-confirm and popup/pagination behavior are pinned by the engine unit suites (`crud-table-engine`, `use-action-executor`), so the cheap-e2e condition was not met and this note stands as the manual-smoke record.
+- `npm run translation:check` — every string this plan introduced is present in both maintained locales (`Copy ID`, `Confirm Your Action`, `Customer Orders/Rewards/Coupons`, `Account History`, `Display All Product Stock Flow`, `Display All Procurement Products` — verified in `en.json` + `ar.json`). Remaining checker failures are pre-existing legacy drift unrelated to the tables plan: `ar-old` stale since `b14c51d` (888 missing / 767 code-missing / 2208 unused), `de` never fully maintained (845 missing + 26 duplicates — receipt-template strings from the forms plan), and `ar` missing 4 keys from the pre-plan POS create-customer form (`c19f57d`) plus 3 extra legacy keys. Recorded, not repaired.
+- `npm run format` — clean: `prettier --write resources/` reports zero formatting drift at the close-out HEAD (formatting was already satisfied by the Phase 6 verification commit `912c737`); types + lint re-ran green after it.
+
+### Cross-links
+
+- Architecture: `docs/agents/architecture.md` — layer-map `components/tables/crud-table/` row, the **Backend-driven tables engine** section (rendering spine, payload contract, JSON-only toast rule, coverage & exceptions), ripple map, and known-debt #8.
+- Plans: `docs/plans/backend-driven-tables/01` (backend contract) → `02` (engine) → `03` (Wave 1) → `04` (Wave 2) → `05` (history & secondary pages) → `06` (this close-out).
+
 
 
 
