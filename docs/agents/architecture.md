@@ -19,11 +19,12 @@ Laravel API + Inertia v2 / React 19 / TypeScript (strict) SPA. Zustand for state
 | `hooks/pos/` | POS stores | `usePOS.ts` facade + five slices (`use-pos-dialogs`, `use-cart-store`, `use-payments-store`, `use-customer-store`, `use-pos-session`), typed by `pos-store-types.ts`. `use-register-store` is a separate companion store for cash-register sessions. |
 | `hooks/` | UI-level hooks | Effects, keyboard, debounce, selection. Store access through `usePOS` selectors. |
 | `api/` | Resource clients (`ordersApi`, `taxesApi`, …) exported from `index.ts` | Components and hooks call `*Api` clients; HTTP, endpoint URLs, and error shaping stay here. |
+| `components/tables/crud-table/` | Backend-driven table engine: `crud-table-page`, `columns-builder`, `row-actions-menu`, `bulk-actions`, `use-crud-table`, `use-action-executor`, popup registry | Render + user intent; columns/actions/config come from `GET /api/crud/{ns}/config` + `CrudEntry::$actions`; computation/state in `use-crud-table`/`use-action-executor`. |
 | `components/pos/`, `components/settings/` | POS & settings screens | Render + user intent; computation goes to services, state to the store. |
 | `components/ui/` | shadcn/radix primitives | Edit only to change the primitive itself. |
 | `utils/` | Formatting (`formatCurrency`, `formatDate`, `rawCurrency`) | Reads settings through `lib/settings`; see **Options & settings**. |
 | `lib/` | Singletons & platform glue: `settings`, `i18n`, `utils` | All UI strings through `useTranslation` from `@/lib/i18n`. |
-| `pages/` | Inertia route pages (`dashboard/**`) | Compose features; hold little logic. |
+| `pages/` | Inertia route pages (`dashboard/**`) | Compose features; hold little logic. Lists render through the single generic `pages/crud/list.tsx` — controllers call `XCrud::table()`; no per-page React list shells. |
 | `resources/js/tests/{unit,integration}` and root `tests/e2e` | Vitest unit/integration, Playwright e2e | `cart-engine.test.ts` guards the tax math — extend it when touching the engine. |
 
 ## Ripple map — what moves together
@@ -36,6 +37,7 @@ The fastest way to break this app is to change one of these and miss its sibling
 | How prices display | All four surfaces must agree: catalog tiles/unit pickers (`resolveUnitDisplayPrice`), cart lines (cart-engine), order totals (`sumProductsTotals` / `refreshCart`), printed receipts (`printOrderReceipt` → `print-agent-service`). |
 | A POS option | Backend tab (`app/Settings/pos/*.php`) + `getPayload()` in `PosSettings.php` + `POS_OPTION_KEYS` + settings UI (`components/settings/pos/`) + every read site. |
 | A store slice | `pos-store-types.ts` (shared `POSStore` type), the facade's orchestration, and that slice's test. |
+| A CRUD's `getColumns()` / `setActions()` / query filters | The table contract tests (`CrudTableConfigContractTest`, `CrudEntryActionsContractTest`) and the affected page(s) — the generic engine renders whatever the CUD serializes. |
 
 ## Store rules (invariant)
 
@@ -77,6 +79,13 @@ Precision 0 is a valid setting — resolve it with `resolveCurrencyPrecision`, a
   - Hand-crafted pages retained: `products` (sanctioned bespoke exception due to multi-level variations tree), `units/groups`, `cash-registers`, `customers`, and `users` (note: `CustomerCrud` and `UserCrud` carry duplicate billing/shipping field names across tabs that preclude generic flattening without tab namespacing).
 - **Payload contract**: Flattened submissions mirror `SbForms::getFlatForm`. Empty strings `''` and `null` are omitted on submit, while `0`, `'0'`, and `false` are preserved. Validation errors return 422 with `tabId.fieldName` or `fieldName` keys surfaced inline in both CRUD and settings pages.
 
+## Backend-driven tables engine
+
+- **Rendering spine**: a controller list method is a one-liner — `return XCrud::table();` (scope sub-lists with `queryParams`, e.g. `['customer_id' => …]`). `CrudService::table()` renders the **single** generic list page `resources/js/pages/crud/list.tsx` with `initialConfig` traveling once from the controller; there are no per-page React list shells.
+- **Engine** (`components/tables/crud-table/`): `use-crud-table` owns entries/config state (server pagination, search, sort via `GET /api/crud/{ns}`), `columns-builder` maps backend columns to tanstack `ColumnDef`s, `row-actions-menu` + `use-action-executor` render and execute `CrudEntry::$actions` (GOTO → `router.visit`; GET/DELETE → confirm-then-call, toast, refresh), `bulk-actions` posts to `POST /crud/{ns}/bulk-actions`, and the popup registry (`action-popup-registry.tsx`) resolves POPUP components by `namespace::identifier`.
+- **Payload contract**: list requests carry `page`, `per_page` (default 20), `search`, `active` + `direction` (sort), and `queryFilters` (URL-encoded JSON built by the toolbar; daterange filters serialize to the backend's `{ startDate, endDate }` shape, both bounds required). **JSON-only toast rule**: GET/DELETE action toasts display a `message` only when the response body is JSON — HTML answers (`redirect()->back()`) stay silent; failures surface as `toast.error(getApiErrorMessage(...))`, with 401/403/419 handled globally by `api/http.ts`.
+- **Coverage & exceptions**: every dashboard CRUD list renders through the engine. Sanctioned exceptions: `products` (bespoke list page — tables B3.b-analog), `medias` manager and `accounting/rules` (not CRUD-table-backed resources). Unregistered POPUP keys fall back to navigating to `action.url` with a dev-time warning — `sb.products::sb.quantities` intentionally relies on this to reach the product edit page.
+
 ## Types rules (invariant)
 
 - Import entities by path from `types/models/`.
@@ -106,3 +115,4 @@ Precision 0 is a valid setting — resolve it with `resolveCurrencyPrecision`, a
 5. `app/Forms/*` (`ProcurementForm`, `UserProfileForm`, `POSAddressesForm`) inherit from `SettingsPage` but are registered exclusively via `App\Providers\FormsProvider` on the `sb.forms` Hook filter rather than `app/Settings/` autoloading.
 6. The `app/Fields/*` classes and `/api/fields/*` routes are an unconsumed extension surface in the Inertia SPA; retained for module/custom compatibility, with no active SPA consumers.
 7. Products form (`resources/js/pages/dashboard/products/`): Retained as a sanctioned bespoke exception (Plan B §B3.b) due to `ProductCrud`'s multi-level variations tree (`{main, variations: [{tabs, selling_group, groups: {product_subitems}}]}`), dynamic unit conversions, and composite grouped subitems. Standard backend-driven `ConfigForm` covers all other CRUD and settings resources.
+8. Products **list** page (`resources/js/pages/dashboard/products/page.tsx`): retained as the sanctioned bespoke exception for tables (B3.b-analog) — its hand-built rows carry no `$actions`, so the action executor cannot render there without forcing the crud-list round-trip onto the page. Unregistered POPUP actions intentionally fall back to navigation (dev-time warning) until a component is registered in `action-popup-registry.tsx`; `sb.products::sb.quantities` relies on that fallback.
