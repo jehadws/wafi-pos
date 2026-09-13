@@ -58,9 +58,4 @@ export const ordersApi = {
     pay: (orderId: number | string, instalmentId: number | string, payment_type?: string) =>
       post(`/orders/${orderId}/instalments/${instalmentId}/pay`, { payment_type }),
   },
-
-  // ── CRUD — sb.orders ────────────────────────────────────────────────────
-
-  /** Bulk-delete orders by ID. */
-  bulkDelete: (ids: Array<number | string>) => post('/crud/sb.orders/bulk-actions', { action: 'delete_selected', entries: ids }),
 };

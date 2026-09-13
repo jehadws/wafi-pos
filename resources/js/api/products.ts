@@ -2,6 +2,10 @@ import { del, get, post } from './http';
 
 /**
  * Products API — `/api/products/*`, `/api/crud/sb.products`
+ *
+ * `remove` / `bulkDelete` serve the bespoke products list page (the one
+ * sanctioned exception to the backend-driven table, Plan T4.9); the rest
+ * serve the POS search, the product form and the stock-adjustment page.
  */
 export const productsApi = {
   /** Fetch all products. */
@@ -20,9 +24,6 @@ export const productsApi = {
 
   /** Submit a stock adjustment for a set of products. */
   createAdjustment: (products: unknown[]) => post<{ message: string }>('/products/adjustments', { products }),
-
-  /** Create a new product. */
-  create: (data: unknown) => post('/products', data),
 
   // ── CRUD — sb.products ──────────────────────────────────────────────────
 

@@ -33,10 +33,4 @@ export const usersApi = {
 
   /** Update an existing user. */
   update: (id: number | string, data: unknown) => put(`/crud/sb.users/${id}`, data),
-
-  /** Delete a single user. */
-  remove: (id: number | string) => del(`/crud/sb.users/${id}`),
-
-  /** Bulk-delete users by ID. */
-  bulkDelete: (ids: Array<number | string>) => post('/crud/sb.users/bulk-actions', { action: 'delete_selected', entries: ids }),
 };

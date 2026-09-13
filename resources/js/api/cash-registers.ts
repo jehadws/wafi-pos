@@ -77,7 +77,4 @@ export const cashRegistersApi = {
 
   /** Update an existing cash register. */
   update: (id: number | string, data: unknown) => put(`/crud/sb.cash-registers/${id}`, data),
-
-  /** Bulk-delete cash registers by ID. */
-  bulkDelete: (ids: Array<number | string>) => post('/crud/sb.cash-registers/bulk-actions', { action: 'delete_selected', entries: ids }),
 };

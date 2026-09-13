@@ -22,7 +22,6 @@ use App\Models\Product;
 use App\Models\Provider;
 use App\Models\TaxGroup;
 use App\Models\Unit;
-use App\Models\User;
 use App\Services\DateService;
 use App\Services\Options;
 use App\Services\ProcurementService;
@@ -388,35 +387,14 @@ class ProcurementController extends DashboardController
 
   public function getProcurementProducts()
   {
-
-    // public $relations = [
-    //     [ 'subul_procurements as procurement', 'procurement.id', '=', 'subul_procurements_products.procurement_id' ],
-    //     [ 'subul_units as unit', 'unit.id', '=', 'subul_procurements_products.unit_id' ],
-    //     [ 'subul_users as user', 'user.id', '=', 'subul_procurements_products.author' ],
-    // ];
-
-    // $products = ProcurementProduct::get();
-
-    $products = ProcurementProduct::addSelect([
-      'author_name' => User::select('username')
-        ->whereColumn('subul_users.id', 'author')
-        ->limit(1),
-      'procurement_name' => Procurement::select('name')
-        ->whereColumn('subul_procurements.id', 'procurement_id')
-        ->limit(1),
-      'unit_name' => Unit::select('name')
-        ->whereColumn('subul_units.id', 'unit_id')
-        ->limit(1),
-    ])
-      ->get();
-
-    return Inertia::render('dashboard/procurements/products/page', [
-      'title' => __('Procurement Products List'),
-      'description' => __('Display all procurement products.'),
-      'products' => $products
-    ]);
-
-    // return ProcurementProductCrud::table();
+    /**
+     * The single backend-driven list shell (T5.4 item 4): the procurement
+     * products table renders from `ProcurementProductCrud::table()` —
+     * procurement/unit/author hydrate through the CRUD's relations, and the
+     * per-row Edit GOTO targets the existing
+     * `/dashboard/procurements/products/edit/{id}` form.
+     */
+    return ProcurementProductCrud::table();
   }
 
   public function editProcurementProduct(ProcurementProduct $product)
@@ -426,7 +404,6 @@ class ProcurementController extends DashboardController
       'description' => __('Display all procurement products.'),
       'product' => $product
     ]);
-    return ProcurementProductCrud::form($product);
   }
 
   public function preload($uuid)

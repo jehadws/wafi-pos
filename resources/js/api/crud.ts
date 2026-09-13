@@ -1,6 +1,6 @@
 import type { CrudFormConfig, CrudSubmitResponse } from '@/types/forms';
 import type { CrudTableConfig } from '@/types/tables';
-import { del, get, post, put } from './http';
+import { get, post, put } from './http';
 
 /**
  * Generic CRUD API — `/api/crud/{table}`
@@ -9,15 +9,16 @@ import { del, get, post, put } from './http';
  * (sb.orders, sb.transactions-accounts, ...). Pagination goes through
  * `page` / `per_page` params; any extra filters are passed as-is.
  *
+ * Row deletes are NOT here: the table engine resolves DELETE actions
+ * straight from the backend-defined URLs (`del(action.url)` in
+ * `use-action-executor`); bulk deletes go through `bulkActions`.
+ *
  * Responses are Laravel paginators — pass an explicit type parameter
  * (e.g. `HttpCrudResponse`) where a typed result is useful.
  */
 export const crudApi = {
   /** List entries of a CRUD table with pagination and filters. */
   list: <T = any>(table: string, params?: Record<string, unknown>) => get<T>(`/crud/${table}`, { params: { ...params } }),
-
-  /** Delete a single entry of a CRUD table. */
-  remove: (table: string, id: number | string) => del(`/crud/${table}/${id}`),
 
   /**
    * Fetch the backend form definition of a CRUD resource
