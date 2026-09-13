@@ -390,7 +390,15 @@ class ProviderProductsCrud extends CrudService
 
     public function hook( $query ): void
     {
-        $query->whereIn( 'procurement_id', explode( ',', request()->query( 'procurements' ) ) );
+        /**
+         * The `procurements` scope arrives either as an array (SPA
+         * `queryParams` merged into the request by `getEntries`) or as
+         * a comma-separated string (standalone Blade-era calls).
+         */
+        $procurements = request()->query( 'procurements' );
+        $procurementIds = is_array( $procurements ) ? $procurements : explode( ',', (string) $procurements );
+
+        $query->whereIn( 'procurement_id', array_values( array_filter( $procurementIds, fn( $id ) => $id !== null && $id !== '' ) ) );
     }
 
     /**

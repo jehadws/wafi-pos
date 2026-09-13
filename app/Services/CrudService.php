@@ -804,6 +804,36 @@ class CrudService
     }
 
     /**
+     * Sub-list scoping: the SPA sends scoping keys (e.g. `customer_id`,
+     * `coupon_id`) INSIDE the `queryFilters` JSON — `use-crud-table`
+     * merges its `initialQuery` into that object — while every sub-list
+     * hook() reads them through `request()->query()`. Merge every
+     * non-declared, non-empty key into the request query bag BEFORE
+     * hook() runs, so hook-based scoping (where / whereIn /
+     * explode(',', …) semantics) keeps working from the SPA. Keys that
+     * match a declared `getQueryFilters()` definition stay untouched —
+     * they are handled by the filter branch below (daterangepicker,
+     * operators, …).
+     */
+    $decodedScopes = [];
+
+    if ($request->query('queryFilters')) {
+      $decodedScopes = json_decode(urldecode($request->query('queryFilters')), true) ?? [];
+
+      if (! empty($decodedScopes)) {
+        $declaredNames = collect($this->queryFilters)->pluck('name')->all();
+
+        foreach ($decodedScopes as $scopeKey => $scopeValue) {
+          if ($scopeValue === null || $scopeValue === '' || in_array($scopeKey, $declaredNames, true)) {
+            continue;
+          }
+
+          $request->query->set($scopeKey, $scopeValue);
+        }
+      }
+    }
+
+    /**
      * if hook method is defined and only when conditional argument
      * that affect result sorting is not active.
      */
@@ -864,6 +894,18 @@ class CrudService
                 break;
             }
           } else {
+            /**
+             * Array-valued scopes (e.g. `procurements` on
+             * `sb.providers-products`) are hook-owned multi-value
+             * filters — the key names the scope, not a column, so the
+             * resource hook translates it (`whereIn`) and this branch
+             * must skip it (a plain `where` would crash on the array
+             * operand).
+             */
+            if (is_array($value)) {
+              continue;
+            }
+
             $query->where($key, $value);
           }
         }
