@@ -13,11 +13,11 @@
  *  - `columns-builder` output, with the checkbox column, actions column
  *    (`row-actions-menu` → executor) and `showOptions`/`showCheckboxes`/
  *    `prependOptions` honored.
- *  - `queryFilters` (select-type) → `DataTable` faceted filters; the
- *    resolved filter state is translated into server-side `queryFilters`
- *    through `onColumnFiltersChange`. `daterangepicker` filters are
- *    deferred — the pages that need them (orders, account history) keep
- *    bespoke dialogs in Waves 2/5.
+ *  - `queryFilters` → `DataTable` toolbar filters: `select`/`multiselect`
+ *    render faceted filters; `daterangepicker` renders a date-range
+ *    popover (`{ startDate, endDate }` on the wire) and `text` a debounced
+ *    input — the resolved state is translated into server-side
+ *    `queryFilters` through `onColumnFiltersChange`.
  *  - `use-bulk-actions` for the toolbar menu; Add-New/Refresh resolve from
  *    `config.links` (never hardcoded).
  *  - `ConfirmationDialog` (single dialog, shared by row + bulk actions) and
@@ -26,6 +26,7 @@
  */
 
 import ConfirmationDialog from '@/components/feedback/confirmation-dialog';
+import type { FilterableColumn } from '@/components/ui/data-table/data-table';
 import { DataTable } from '@/components/ui/data-table/data-table';
 import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
@@ -34,6 +35,7 @@ import type { BreadcrumbItem } from '@/types';
 import type { CrudEntryRow, CrudTableConfig, CrudTableLink } from '@/types/tables';
 import { Head, router } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
+import { format } from 'date-fns';
 import { useCallback, useMemo } from 'react';
 import { getActionPopup } from './action-popup-registry';
 import { useBulkActions } from './bulk-actions';
@@ -68,37 +70,73 @@ export interface CrudTablePageProps {
 /** Filter types the faceted toolbar can express today. */
 const FACETED_FILTER_TYPES = new Set(['select', 'multiselect']);
 
+/** Filter types the toolbar can express overall (faceted + native controls). */
+const TOOLBAR_FILTER_TYPES = new Set([...FACETED_FILTER_TYPES, 'daterangepicker', 'text']);
+
 function isFacetedFilter(filter: { type: string; options?: unknown }): boolean {
   return FACETED_FILTER_TYPES.has(filter.type) && Array.isArray(filter.options);
 }
 
-/** `filterableColumns` shape consumed by `DataTable`. */
-interface FilterableColumn {
-  id: string;
-  title: string;
-  options: { label: string; value: string }[];
+function isToolbarFilter(filter: { type: string; options?: unknown }): boolean {
+  if (isFacetedFilter(filter)) {
+    return true;
+  }
+  return TOOLBAR_FILTER_TYPES.has(filter.type);
 }
 
 export function buildFilterableColumns(config: CrudTableConfig, t: (key: string) => string): FilterableColumn[] {
-  return (config.queryFilters ?? []).filter(isFacetedFilter).map((filter) => ({
-    id: filter.name,
-    title: t(filter.label),
-    options: (filter.options ?? []).map((option) => ({ label: String(option.label), value: String(option.value) })),
-  }));
+  return (config.queryFilters ?? []).filter(isToolbarFilter).map((filter) => {
+    if (isFacetedFilter(filter)) {
+      return {
+        id: filter.name,
+        title: t(filter.label),
+        type: 'select' as const,
+        options: (filter.options ?? []).map((option) => ({ label: String(option.label), value: String(option.value) })),
+      };
+    }
+
+    if (filter.type === 'daterangepicker') {
+      return { id: filter.name, title: t(filter.label), type: 'daterangepicker' as const };
+    }
+
+    return { id: filter.name, title: t(filter.label), type: 'text' as const };
+  });
 }
 
 /**
- * Resolved faceted-filter state → server `queryFilters`. The backend
- * applies filter values with a scalar `where` (`CrudService.php:853-864`),
+ * Resolved filter state → server `queryFilters`. The backend applies
+ * faceted values with a scalar `where` (`CrudService.php:853-864`),
  * so a multi-pick narrows to the first selected value; `daterangepicker`
- * filters are deferred and skipped here.
+ * state (`{ from?: Date; to?: Date }`) serializes to the backend's
+ * `{ startDate, endDate }` shape (`CrudService.php:848-858`, both bounds
+ * required); `text` state passes through as a scalar (backend applies
+ * the filter's `operator`, e.g. `like`).
  */
 export function filterStateToQueryFilters(state: Array<{ id: string; value: unknown }>, config: CrudTableConfig): Record<string, unknown> {
   const filters: Record<string, unknown> = {};
 
   for (const entry of state) {
     const definition = config.queryFilters?.find((filter) => filter.name === entry.id);
-    if (!definition || !isFacetedFilter(definition)) {
+    if (!definition || !isToolbarFilter(definition)) {
+      continue;
+    }
+
+    if (definition.type === 'daterangepicker') {
+      const range = entry.value as { from?: Date; to?: Date } | undefined;
+      if (range?.from && range?.to) {
+        filters[entry.id] = {
+          startDate: format(range.from, 'yyyy-MM-dd'),
+          endDate: format(range.to, 'yyyy-MM-dd'),
+        };
+      }
+      continue;
+    }
+
+    if (definition.type === 'text') {
+      const value = typeof entry.value === 'string' ? entry.value.trim() : '';
+      if (value !== '') {
+        filters[entry.id] = value;
+      }
       continue;
     }
 
@@ -130,7 +168,7 @@ export function wireQueryFilterColumns(
   columns: ColumnDef<CrudEntryRow, unknown>[],
   config: CrudTableConfig,
 ): { columns: ColumnDef<CrudEntryRow, unknown>[]; visibility: Record<string, boolean> } {
-  const filterIds = (config.queryFilters ?? []).filter(isFacetedFilter).map((filter) => filter.name);
+  const filterIds = (config.queryFilters ?? []).filter(isToolbarFilter).map((filter) => filter.name);
   const existing = new Set(columns.map((column) => column.id));
 
   const wired = columns.map((column) => (column.id && filterIds.includes(column.id) ? { ...column, filterFn: () => true } : column));

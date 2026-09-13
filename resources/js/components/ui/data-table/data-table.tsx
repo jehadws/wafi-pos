@@ -20,20 +20,48 @@ import { DataTableToolbar } from "./data-table-toolbar"
 import { useTranslation } from "@/lib/i18n"
 
 
+interface DataTableFacetedFilterOption {
+  label: string
+  value: string
+}
+
+/**
+ * Toolbar filter controls. `select` renders a faceted multi-select
+ * (legacy shape without `type` defaults to select); `daterangepicker`
+ * renders a date-range popover whose value is a
+ * `{ from?: Date; to?: Date }` range; `text` renders a debounced input
+ * whose value is a scalar string. All of them resolve through the
+ * tanstack `columnFilters` state — server pages wire no-op `filterFn`s
+ * and translate the state into `queryFilters`.
+ */
+export type FilterableColumn =
+  | {
+      id: string
+      title: string
+      type?: 'select'
+      options: DataTableFacetedFilterOption[]
+    }
+  | {
+      id: string
+      title: string
+      type: 'daterangepicker'
+      options?: DataTableFacetedFilterOption[]
+    }
+  | {
+      id: string
+      title: string
+      type: 'text'
+      options?: DataTableFacetedFilterOption[]
+      placeholder?: string
+    }
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[] | CustomPaginationData<TData>
   title?: string
   description?: string
   searchKey?: string
-  filterableColumns?: {
-    id: string
-    title: string
-    options: {
-      label: string
-      value: string
-    }[]
-  }[]
+  filterableColumns?: FilterableColumn[]
   bulkActions?: {
     label: string
     action: (selectedRows: TData[]) => void

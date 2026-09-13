@@ -985,33 +985,64 @@ describe('useBulkActions', () => {
 // ---------------------------------------------------------------------------
 
 describe('crud-table-page helpers', () => {
-  it('builds faceted columns from select-type queryFilters only', () => {
+  it('builds toolbar columns from every supported filter type', () => {
     const config = makeTableConfig({
       queryFilters: [
         { name: 'payment_status', label: 'Payment Status', type: 'select', options: [{ label: 'Paid', value: 'paid' }] },
         { name: 'subul_orders.created_at', label: 'Created Between', type: 'daterangepicker' },
+        { name: 'phone', label: 'Customer Phone', type: 'text', operator: 'like' },
       ],
     });
 
     expect(buildFilterableColumns(config, t)).toEqual([
-      { id: 'payment_status', title: 'Payment Status', options: [{ label: 'Paid', value: 'paid' }] },
+      { id: 'payment_status', title: 'Payment Status', type: 'select', options: [{ label: 'Paid', value: 'paid' }] },
+      { id: 'subul_orders.created_at', title: 'Created Between', type: 'daterangepicker', options: undefined },
+      { id: 'phone', title: 'Customer Phone', type: 'text', options: undefined },
     ]);
   });
 
   it('narrows resolved filter state to the scalar the backend contract expects', () => {
     const config = makeTableConfig({
-      queryFilters: [{ name: 'payment_status', label: 'Payment Status', type: 'select', options: [] }],
+      queryFilters: [
+        { name: 'payment_status', label: 'Payment Status', type: 'select', options: [] },
+        { name: 'subul_orders.created_at', label: 'Created Between', type: 'daterangepicker' },
+        { name: 'phone', label: 'Customer Phone', type: 'text', operator: 'like' },
+      ],
     });
 
     expect(
       filterStateToQueryFilters(
         [
           { id: 'payment_status', value: ['paid', 'hold'] },
-          { id: 'subul_orders.created_at', value: [{ startDate: '2026-01-01', endDate: '2026-02-01' }] },
+          { id: 'subul_orders.created_at', value: { from: new Date(2026, 0, 1), to: new Date(2026, 1, 1) } },
+          { id: 'phone', value: '  555-0100  ' },
         ],
         config,
       ),
-    ).toEqual({ payment_status: 'paid' });
+    ).toEqual({
+      payment_status: 'paid',
+      'subul_orders.created_at': { startDate: '2026-01-01', endDate: '2026-02-01' },
+      phone: '555-0100',
+    });
+  });
+
+  it('skips incomplete date ranges and blank text filters', () => {
+    const config = makeTableConfig({
+      queryFilters: [
+        { name: 'subul_orders.created_at', label: 'Created Between', type: 'daterangepicker' },
+        { name: 'phone', label: 'Customer Phone', type: 'text', operator: 'like' },
+      ],
+    });
+
+    expect(
+      filterStateToQueryFilters(
+        [
+          { id: 'subul_orders.created_at', value: { from: new Date(2026, 0, 1) } },
+          { id: 'phone', value: '   ' },
+        ],
+        config,
+      ),
+    ).toEqual({});
   });
 
   it('resolves the Add-New link from config.links (never hardcoded)', () => {
