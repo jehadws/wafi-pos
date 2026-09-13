@@ -9,7 +9,6 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Classes\Hook;
-use App\Classes\Output;
 use App\Crud\CustomerCrud;
 use App\Crud\OrderCrud;
 use App\Crud\OrderInstalmentCrud;
@@ -19,14 +18,12 @@ use App\Exceptions\NotAllowedException;
 use App\Fields\OrderPaymentFields;
 use App\Http\Controllers\DashboardController;
 use App\Http\Requests\OrderPaymentRequest;
-use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderInstalment;
 use App\Models\OrderPayment;
 use App\Models\OrderRefund;
 use App\Models\PaymentType;
 use App\Models\ProductCategory;
-use App\Models\Register;
 use App\Models\User;
 use App\Services\DateService;
 use App\Services\Options;
@@ -104,24 +101,17 @@ class OrdersController extends DashboardController
 
   public function listOrders()
   {
-    Hook::addAction(
-      'sb-crud-footer',
-      fn(Output $output) => $output
-        ->addView('pages.dashboard.orders.footer')
-    );
-
-    $customers = Customer::get(['id', 'first_name', 'last_name',]);
-    $users = User::get(['id', 'username',]);
-    $registers = Register::get(['id', 'name',]);
-    return Inertia::render('dashboard/orders/page', [
-      'title' => __('Orders List'),
-      'description' => __('List of orders'),
-      'customers' => $customers,
-      'users' => $users,
-      'registers' => $registers,
-    ]);
-
-    // return OrderCrud::table();
+    /**
+     * The single backend-driven list shell (T4.8): the orders table renders
+     * from `OrderCrud::table()` — the POPUP Options / conditional Refund
+     * Receipt actions, the row `$cssClass` payment-status colors, the
+     * Invoice/Receipt GOTOs and the full queryFilters set (daterangepicker,
+     * selects, customer phone) all travel with the config. The bespoke
+     * filter dialog options and the Blade `sb-crud-footer` hook are gone
+     * with the hand page (the SPA shell never rendered the footer).
+     * `table()` enforces `allowedTo('read')` internally.
+     */
+    return OrderCrud::table();
   }
 
   public function getPOSOrder($order_id)
