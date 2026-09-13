@@ -12,31 +12,24 @@ use App\Crud\RewardSystemCrud;
 use App\Http\Controllers\DashboardController;
 use App\Models\Coupon;
 use App\Models\RewardSystem;
-use App\Models\RewardSystemRule;
-use App\Models\User;
 use Inertia\Inertia;
 
 class RewardsSystemController extends DashboardController
 {
+  /**
+   * List reward systems
+   *
+   * @return \Inertia\Response
+   */
   public function list()
   {
-    $rewards = RewardSystem::select('*')
-      ->addSelect([
-        'author_name' => User::select('username')
-          ->whereColumn('subul_users.id', 'author')
-          ->limit(1),
-        'coupon_name' => Coupon::select('name')
-          ->whereColumn('subul_coupons.id', 'coupon_id')
-          ->limit(1),
-        'number_of_rules' => RewardSystemRule::selectRaw('COUNT(*)')
-          ->whereColumn('reward_id', 'subul_rewards_system.id'),
-      ])
-      ->get();
-
-    return Inertia::render('dashboard/customers/rewards-system/page', [
-      'title' => __('Rewards System'),
-      'rewards' => $rewards,
-    ]);
+    /**
+     * The single backend-driven list shell (T3.9): the reward systems
+     * table renders from `RewardSystemCrud::table()` — the rule count
+     * appended to the name and the author/coupon relations come from the
+     * CRUD (`setActions()`/`getColumns()`), not from hand subqueries.
+     */
+    return RewardSystemCrud::table();
   }
 
   public function create()
