@@ -56,9 +56,13 @@ class TransactionController extends DashboardController
 
   public function listTransactions()
   {
-
-    return Inertia::render('dashboard/accounting/transactions/page');
-    // return TransactionCrud::table();
+    /**
+     * The single backend-driven list shell (T4.2): the transactions table
+     * renders from `TransactionCrud::table()` — the Trigger GET (with its
+     * confirm) and History GOTO actions render from `$actions`. `table()`
+     * enforces `allowedTo('read')` (`subul.read.transactions`) internally.
+     */
+    return TransactionCrud::table();
   }
 
   public function createTransaction()
