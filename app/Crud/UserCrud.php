@@ -709,12 +709,33 @@ class UserCrud extends CrudService
     );
 
     /**
-     * The four customer-scoped sub-list GOTOs (Orders, Rewards, Coupons,
-     * Wallet History) are intentionally omitted (T4.5 / rule 6 of `00`):
-     * their URLs (`/dashboard/users/{id}/orders|rewards|coupons|account-history`)
-     * resolve to no SPA route and would 404. They are restored by T5.3
-     * (Phase 5) once user sub-list routes + generic pages exist.
+     * The four customer-scoped sub-list GOTOs (T5.3): their targets are
+     * the `/dashboard/users/{user}/…` routes + backend-driven sub-list
+     * pages built by T5.3 (routes/web/users.php + UsersController).
      */
+    $entry->action(
+      identifier: 'customers_orders',
+      label: __('Orders'),
+      url: sb()->url('dashboard/users/' . $entry->id . '/orders'),
+    );
+
+    $entry->action(
+      identifier: 'customers_rewards',
+      label: __('Rewards'),
+      url: sb()->url('dashboard/users/' . $entry->id . '/rewards'),
+    );
+
+    $entry->action(
+      identifier: 'customers_coupons',
+      label: __('Coupons'),
+      url: sb()->url('dashboard/users/' . $entry->id . '/coupons'),
+    );
+
+    $entry->action(
+      identifier: 'customers_history',
+      label: __('Wallet History'),
+      url: sb()->url('dashboard/users/' . $entry->id . '/account-history'),
+    );
 
     $entry->action(
       identifier: 'delete',

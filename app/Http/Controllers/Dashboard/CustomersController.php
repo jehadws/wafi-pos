@@ -14,6 +14,7 @@ use App\Crud\CustomerAccountCrud;
 use App\Crud\CustomerCouponCrud;
 use App\Crud\CustomerCouponHistoryCrud;
 use App\Crud\CustomerCrud;
+use App\Crud\CustomerOrderCrud;
 use App\Crud\CustomerRewardCrud;
 use App\Exceptions\NotFoundException;
 use App\Http\Controllers\DashboardController;
@@ -318,26 +319,38 @@ class CustomersController extends DashboardController
   /**
    * Displays the orders placed by a specific customer
    *
+   * The single backend-driven sub-list shell (T5.3): the customer's
+   * orders render from `CustomerOrderCrud::table()` scoped by the
+   * `customer_id` query param (the hook applies it). `table()`
+   * enforces `allowedTo('read')` internally.
+   *
    * @return \Inertia\Response
    */
   public function getCustomersOrders(Customer $customer)
   {
-    return Inertia::render('dashboard/customers/orders/page', [
-      'title' => __('Dashboard'),
-      'customer' => $customer->only([ 'id', 'first_name', 'last_name' ]),
+    return CustomerOrderCrud::table([
+      'title' => sprintf(__('Orders by "%s"'), $customer->name),
+      'queryParams' => [
+        'customer_id' => $customer->id,
+      ],
     ]);
   }
 
   /**
    * Displays the rewards earned by a specific customer
    *
+   * The single backend-driven sub-list shell (T5.3), same pattern as
+   * `getCustomersOrders`.
+   *
    * @return \Inertia\Response
    */
   public function getCustomersRewards(Customer $customer)
   {
-    return Inertia::render('dashboard/customers/rewards/page', [
-      'title' => __('Dashboard'),
-      'customer' => $customer->only([ 'id', 'first_name', 'last_name' ]),
+    return CustomerRewardCrud::table([
+      'title' => sprintf(__('Rewards by "%s"'), $customer->name),
+      'queryParams' => [
+        'customer_id' => $customer->id,
+      ],
     ]);
   }
 
@@ -360,13 +373,21 @@ class CustomersController extends DashboardController
   /**
    * Displays the coupons claimed by a specific customer
    *
+   * The single backend-driven sub-list shell (T5.3): the customer's
+   * generated coupons render from `CustomerCouponCrud::table()` scoped
+   * by the `customer_id` query param (the hook applies it). The
+   * unscoped `/customers/coupons-generated` list renders the same CRUD
+   * without the scope.
+   *
    * @return \Inertia\Response
    */
   public function getCustomersCoupons(Customer $customer)
   {
-    return Inertia::render('dashboard/customers/customer-coupons/page', [
-      'title' => __('Dashboard'),
-      'customer' => $customer->only([ 'id', 'first_name', 'last_name' ]),
+    return CustomerCouponCrud::table([
+      'title' => sprintf(__('Coupons by "%s"'), $customer->name),
+      'queryParams' => [
+        'customer_id' => $customer->id,
+      ],
     ]);
   }
 
@@ -395,13 +416,22 @@ class CustomersController extends DashboardController
   /**
    * Displays the customer account history
    *
+   * The single backend-driven sub-list shell (T5.3): the wallet
+   * history renders from `CustomerAccountCrud::table()` scoped by the
+   * `customer_id` query param (the hook applies it). The Add-New and
+   * Edit flows resolve through `getLinks()`/`setActions()` and the
+   * existing `/customers/{customer}/account-history/[create|edit/{id}]`
+   * form routes.
+   *
    * @return \Inertia\Response
    */
   public function getCustomerAccountHistory(Customer $customer)
   {
-    return Inertia::render('dashboard/customers/account-history/page', [
-      'title' => __('Dashboard'),
-      'customer' => $customer->only([ 'id', 'first_name', 'last_name' ]),
+    return CustomerAccountCrud::table([
+      'title' => sprintf(__('Account History : %s'), $customer->name),
+      'queryParams' => [
+        'customer_id' => $customer->id,
+      ],
     ]);
   }
 

@@ -512,12 +512,18 @@ class CustomerAccountCrud extends CrudService
         $entry->previous_amount = (string) sb()->currency->define( $entry->previous_amount );
         $entry->next_amount = (string) sb()->currency->define( $entry->next_amount );
 
-        // you can make changes here
+        /**
+         * T5.3: the edit route is
+         * `/dashboard/customers/{customer}/account-history/edit/{id}` —
+         * build it from the row's `customer_id` (the hook scopes every
+         * row of this table to one customer, so the value is always
+         * present), never from the flat `$slug`.
+         */
         $entry->action(
             identifier: 'edit',
             label: __( 'Edit' ),
             type: 'GOTO',
-            url: sb()->url( '/dashboard/' . $this->slug . '/edit/' . $entry->id )
+            url: sb()->url( '/dashboard/customers/' . $entry->customer_id . '/account-history/edit/' . $entry->id )
         );
 
         $entry->action(

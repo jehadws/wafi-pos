@@ -8,6 +8,10 @@
 
 namespace App\Http\Controllers\Dashboard;
 
+use App\Crud\CustomerAccountCrud;
+use App\Crud\CustomerCouponCrud;
+use App\Crud\CustomerOrderCrud;
+use App\Crud\CustomerRewardCrud;
 use App\Crud\RolesCrud;
 use App\Crud\UserCrud;
 use App\Http\Controllers\DashboardController;
@@ -39,12 +43,69 @@ class UsersController extends DashboardController
   {
     /**
      * The single backend-driven list shell (T4.5): the users table renders
-     * from `UserCrud::table()` — Edit + Delete render from `$actions`
-     * (the four broken sub-list GOTOs are omitted backend-side until
-     * T5.3 builds their routes/pages). `table()` enforces
-     * `allowedTo('read')` internally.
+     * from `UserCrud::table()` — Edit + Delete render from `$actions` and,
+     * since T5.3, the four sub-list GOTOs (Orders, Rewards, Coupons,
+     * Wallet History) too — their targets are the T5.3 routes below.
+     * `table()` enforces `allowedTo('read')` internally.
      */
     return UserCrud::table();
+  }
+
+  /**
+   * Displays the orders placed by a specific user.
+   *
+   * T5.3: users are rows of `subul_users` (the same table the customer
+   * domain lists), so the sub-lists reuse the customer-domain CRUDs
+   * scoped by `customer_id = user->id` — the exact targets the
+   * `UserCrud` sub-list GOTOs point at.
+   */
+  public function getUserOrders(User $user)
+  {
+    return CustomerOrderCrud::table([
+      'title' => sprintf(__('Orders by "%s"'), $user->username),
+      'queryParams' => [
+        'customer_id' => $user->id,
+      ],
+    ]);
+  }
+
+  /**
+   * Displays the rewards earned by a specific user.
+   */
+  public function getUserRewards(User $user)
+  {
+    return CustomerRewardCrud::table([
+      'title' => sprintf(__('Rewards by "%s"'), $user->username),
+      'queryParams' => [
+        'customer_id' => $user->id,
+      ],
+    ]);
+  }
+
+  /**
+   * Displays the coupons claimed by a specific user.
+   */
+  public function getUserCoupons(User $user)
+  {
+    return CustomerCouponCrud::table([
+      'title' => sprintf(__('Coupons by "%s"'), $user->username),
+      'queryParams' => [
+        'customer_id' => $user->id,
+      ],
+    ]);
+  }
+
+  /**
+   * Displays the wallet history of a specific user.
+   */
+  public function getUserAccountHistory(User $user)
+  {
+    return CustomerAccountCrud::table([
+      'title' => sprintf(__('Account History : %s'), $user->username),
+      'queryParams' => [
+        'customer_id' => $user->id,
+      ],
+    ]);
   }
 
   public function createUser()
