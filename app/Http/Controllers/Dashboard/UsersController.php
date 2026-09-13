@@ -194,19 +194,17 @@ class UsersController extends DashboardController
   /**
    * List all available roles
    *
-   * @return View
+   * @return \Inertia\Response
    */
   public function rolesList()
   {
-    sb()->restrict(['read.roles']);
-
-    $roles = Role::with('permissions')->get();
-    return Inertia::render('dashboard/users/roles/page', [
-      'title' => __('Roles'),
-      'description' => __('Manage all roles'),
-      'roles' => $roles
-    ]);
-    // return RolesCrud::table();
+    /**
+     * The single backend-driven list shell (T3.1): the roles table renders
+     * from `RolesCrud::table()` — columns, actions, bulk actions and links
+     * come from the CRUD config. `table()` enforces `allowedTo('read')`
+     * (`read.roles`) internally.
+     */
+    return RolesCrud::table();
   }
 
   /**
