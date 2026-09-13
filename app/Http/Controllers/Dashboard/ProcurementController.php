@@ -265,27 +265,15 @@ class ProcurementController extends DashboardController
    */
   public function listProcurements()
   {
-
-    $procurements = Procurement::with(['provider'])
-      ->addSelect([
-        'author_name' => User::select('username')
-          ->whereColumn('subul_users.id', 'author')
-          ->limit(1),
-      ])
-      ->get()
-      ->map(function ($procurement) {
-        return [
-          ...$procurement->toArray(),
-          'provider_name' => $procurement->provider->name ?? null, // uses accessor
-        ];
-      });
-
-    return Inertia::render('dashboard/procurements/page', [
-      'title' => __('Procurements'),
-      'description' => __('List of all procurements.'),
-      'procurements' => $procurements
-    ]);
-    // return ProcurementCrud::table();
+    /**
+     * The single backend-driven list shell (T4.1): the procurements table
+     * renders from `ProcurementCrud::table()` — the provider/author columns
+     * hydrate through the CRUD's relations (the hand subqueries are gone),
+     * and the conditional Set Paid + Refresh GET actions (with their
+     * confirms) render from `$actions`. `table()` enforces
+     * `allowedTo('read')` (`subul.read.procurements`) internally.
+     */
+    return ProcurementCrud::table();
   }
 
   /**
