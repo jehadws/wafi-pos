@@ -36,9 +36,14 @@ class CashRegistersController extends DashboardController
 
     public function listRegisters()
     {
-        return Inertia::render('dashboard/cash-registers/page', [
-            'title' => __('Cash Registers'),
-        ]);
+        /**
+         * The single backend-driven list shell (T4.7): the cash-registers
+         * table renders from `RegisterCrud::table()` — the Register History
+         * GOTO renders from `$actions` and delete is omitted per-row for
+         * opened registers (server-conditional action). `table()` enforces
+         * `allowedTo('read')` internally.
+         */
+        return RegisterCrud::table();
     }
 
     public function createRegister()

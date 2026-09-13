@@ -390,16 +390,23 @@ class RegisterCrud extends CrudService
             url: sb()->url( '/dashboard/' . 'cash-registers' . '/history/' . $entry->id )
         );
 
-        $entry->action(
-            identifier: 'delete',
-            label: __( 'Delete' ),
-            type: 'DELETE',
-            url: sb()->url( '/api/crud/' . self::IDENTIFIER . '/' . $entry->id ),
-            confirm: [
-                'title' => __( 'Confirm Your Action' ),
-                'message' => __( 'Would you like to delete this ?' ),
-            ]
-        );
+        /**
+         * Delete is omitted per-row for opened registers (T4.7): the hand
+         * page disabled it client-side; the backend is the source of truth.
+         * The `beforeDelete` guard below remains as the server-side net.
+         */
+        if ( $entry->status !== Register::STATUS_OPENED ) {
+            $entry->action(
+                identifier: 'delete',
+                label: __( 'Delete' ),
+                type: 'DELETE',
+                url: sb()->url( '/api/crud/' . self::IDENTIFIER . '/' . $entry->id ),
+                confirm: [
+                    'title' => __( 'Confirm Your Action' ),
+                    'message' => __( 'Would you like to delete this ?' ),
+                ]
+            );
+        }
 
         return $entry;
     }
