@@ -14,7 +14,6 @@ use App\Exceptions\NotFoundException;
 use App\Http\Controllers\DashboardController;
 use App\Models\Product;
 use App\Models\ProductCategory;
-use App\Models\User;
 use App\Services\DateService;
 use App\Services\ProductCategoryService;
 use Exception;
@@ -215,21 +214,20 @@ class CategoryController extends DashboardController
     ];
   }
 
+  /**
+   * List categories
+   *
+   * @return \Inertia\Response
+   */
   public function listCategories()
   {
-    $categories =  ProductCategory::addSelect([
-      'author_name' => User::select('username')
-        ->whereColumn('subul_users.id', 'author')
-        ->limit(1),
-    ])->get();
-
-    return Inertia::render('dashboard/categories/page', [
-      'title' => __('Dashboard'),
-      'categories' => $categories
-    ]);
-
-
-    // return ProductCategoryCrud::table();
+    /**
+     * The single backend-driven list shell (T3.8): the categories table
+     * renders from `ProductCategoryCrud::table()` — the author hydrates
+     * through the CRUD's `user` relation, and the **Compute Products**
+     * action renders from `$actions` (it was missing on the hand page).
+     */
+    return ProductCategoryCrud::table();
   }
 
   public function createCategory()
