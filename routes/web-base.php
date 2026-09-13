@@ -54,7 +54,7 @@ Route::middleware([
         require dirname(__FILE__) . '/subul.php';
       });
 
-      // include dirname(__FILE__) . '/web/modules.php';
+      include dirname(__FILE__) . '/web/modules.php';
       include dirname(__FILE__) . '/web/users.php';
       //
       Route::get('/crud/download/{hash}', [CrudController::class, 'downloadSavedFile'])->name('sb.dashboard.crud-download');
