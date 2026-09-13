@@ -450,14 +450,20 @@ class OrdersController extends DashboardController
     return $this->ordersService->changeDeliveryStatus($order, $request->input('delivery_status'));
   }
 
+  /**
+   * List payment types
+   *
+   * @return \Inertia\Response
+   */
   public function listPaymentsTypes()
   {
-    $payments = PaymentType::all();
-    return Inertia::render('dashboard/orders/payments-types/page', [
-      'paymentTypes' => $payments,
-    ]);
-
-    // return PaymentTypeCrud::table();
+    /**
+     * The single backend-driven list shell (T3.7): the payment types
+     * table renders from `PaymentTypeCrud::table()` — the readonly
+     * Yes/No formatting and the per-entry Delete omission for system
+     * types come from `PaymentTypeCrud::setActions()`.
+     */
+    return PaymentTypeCrud::table();
   }
 
   public function createPaymentType()
