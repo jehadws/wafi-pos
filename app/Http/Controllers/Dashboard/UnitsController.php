@@ -127,14 +127,14 @@ class UnitsController extends DashboardController
 
   public function listUnitsGroups()
   {
-    sb()->restrict(['subul.read.products-units']);
-    $units =  UnitGroup::get();
-    return Inertia::render('dashboard/units/groups/page', [
-      'title' => __('Dashboard'),
-      'unitGroups' => $units
-    ]);
-
-    // return UnitGroupCrud::table();
+    /**
+     * The single backend-driven list shell (T3.4): the unit groups table
+     * renders from `UnitGroupCrud::table()` — columns (incl. the author
+     * through the `user` relation) come from `UnitGroupCrud::getColumns()`.
+     * `table()` enforces `allowedTo('read')` (`subul.read.products-units`)
+     * internally.
+     */
+    return UnitGroupCrud::table();
   }
 
   public function listUnits()
