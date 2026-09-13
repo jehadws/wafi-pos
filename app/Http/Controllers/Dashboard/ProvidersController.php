@@ -42,14 +42,15 @@ class ProvidersController extends DashboardController
 
   public function listProviders()
   {
-    $providers = $this->providerService->get();
-
-    return Inertia::render('dashboard/providers/page', [
-      'title' => __('Dashboard'),
-      'providers' => $providers
-    ]);
-
-    // return ProviderCrud::table();
+    /**
+     * The single backend-driven list shell (T4.6): the providers table
+     * renders from `ProviderCrud::table()` — the See Procurements / See
+     * Products GOTOs (restored — they were missing on the hand page) render
+     * from `$actions` and their targets already render the backend-driven
+     * `ProviderProcurementsCrud`/`ProviderProductsCrud` tables.
+     * `table()` enforces `allowedTo('read')` internally.
+     */
+    return ProviderCrud::table();
   }
 
   public function createProvider()
