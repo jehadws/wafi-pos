@@ -346,11 +346,13 @@ class CategoryController extends DashboardController
   /**
    * Will display the actual stock flow history
    *
-   * @return array crud table.
+   * The single backend-driven list shell (T5.4): the stock-flow table
+   * renders from `GlobalProductHistoryCrud::table()` — no row actions
+   * exist (deletes are refused by `beforeDelete`). `table()` enforces
+   * the resource `read` permission internally.
    */
   public function showStockFlowCrud()
   {
-    return Inertia::render('dashboard/products/stock-flow-records');
-    // return GlobalProductHistoryCrud::table();
+    return GlobalProductHistoryCrud::table();
   }
 }

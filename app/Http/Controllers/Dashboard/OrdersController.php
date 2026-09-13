@@ -368,7 +368,14 @@ class OrdersController extends DashboardController
 
   public function listInstalments()
   {
-    return Inertia::render('dashboard/orders/instalments/page', [
+    /**
+     * The single backend-driven list shell (T5.4): the instalments
+     * table renders from `OrderInstalmentCrud::table()` — no row
+     * actions exist (the former Edit GOTO targeted a route that does
+     * not exist, and deletes are refused). `table()` enforces the
+     * resource `read` permission internally.
+     */
+    return OrderInstalmentCrud::table([
       'title' => __('Order Instalments'),
       'description' => __('List of all scheduled instalments across orders.'),
     ]);

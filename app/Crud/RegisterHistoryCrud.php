@@ -545,19 +545,16 @@ class RegisterHistoryCrud extends CrudService
     /**
      * Get Bulk actions
      *
+     * Read-only resource (`delete => false`): the generated
+     * `delete_selected` entry was always refused by `bulkAction()`, so
+     * the list stays empty. The Hook filter is preserved so modules can
+     * still register their own bulk actions.
+     *
      * @return array of actions
      **/
     public function getBulkActions(): array
     {
-        return Hook::filter( $this->namespace . '-bulk', [
-            [
-                'label' => __( 'Delete Selected Groups' ),
-                'identifier' => 'delete_selected',
-                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
-                    'namespace' => $this->namespace,
-                ] ),
-            ],
-        ] );
+        return Hook::filter( $this->namespace . '-bulk', [] );
     }
 
     /**

@@ -12,9 +12,11 @@
  *
  * The seed set comes from the T1.6 POPUP enumeration
  * (`docs/backend-driven-tables-audit.md`): orders `sb.order-options` /
- * `sb.order-refunds` first (Wave 2); products preview/quantities,
- * register-history details and product-history description follow when
- * their pages migrate.
+ * `sb.order-refunds` (Wave 2), plus the Phase-5 history popups
+ * (`sb.cash-registers-history::view-details`,
+ * `sb.products-histories::sb.description`). `sb.products::sb.quantities`
+ * keeps its URL, so an unregistered fallback still navigates somewhere
+ * meaningful (the product edit page).
  */
 
 import { get } from '@/api/http';
@@ -22,7 +24,7 @@ import OrderOptionsDialog from '@/components/forms/orders/order-options-dialog';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n';
 import type { CrudEntryRow, CrudRowAction } from '@/types/tables';
-import { useEffect, useRef, useState, type ComponentType } from 'react';
+import { Fragment, useEffect, useRef, useState, type ComponentType } from 'react';
 import { PopupDialog } from './popup-dialog';
 
 /** Props every registered popup component receives from the shell. */
@@ -138,3 +140,73 @@ function RefundReceiptPopup({ open, onClose, action }: ActionPopupProps) {
 }
 
 registerActionPopup('sb.orders', 'sb.order-refunds', RefundReceiptPopup);
+
+// ---------------------------------------------------------------------------
+// Phase-5 popups (secondary/history pages) — T5.4. Both POPUP actions carry
+// no URL: every field they show ships pre-formatted on the row itself.
+// ---------------------------------------------------------------------------
+
+/**
+ * `sb.products-histories::sb.description` — the stock-history entry
+ * description. The (potentially long) description text ships on the row.
+ */
+function ProductHistoryDescriptionPopup({ open, onClose, row }: ActionPopupProps) {
+  const { t } = useTranslation();
+  const description = typeof row.description === 'string' && row.description.trim().length > 0 ? row.description : null;
+
+  return (
+    <PopupDialog open={open} onOpenChange={(next) => !next && onClose()} title={t('Description')} className="sm:max-w-lg">
+      <p className="text-sm whitespace-pre-wrap">{description ?? t('No description provided for this entry.')}</p>
+    </PopupDialog>
+  );
+}
+
+registerActionPopup('sb.products-histories', 'sb.description', ProductHistoryDescriptionPopup);
+
+/**
+ * `sb.cash-registers-history::view-details` — the register history details
+ * popup. `RegisterHistoryCrud::setActions` formats action labels, money and
+ * dates server-side, so the popup only lays the row fields out.
+ */
+
+/** Row-field → display string (`null` when the field carries no text). */
+function stringField(value: unknown): string | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  return String(value);
+}
+
+function RegisterHistoryDetailsPopup({ open, onClose, row }: ActionPopupProps) {
+  const { t } = useTranslation();
+
+  const details = (
+    [
+      { label: t('Register'), value: stringField(row.register_name) ?? stringField(row.register_id) },
+      { label: t('Author'), value: stringField(row.user_username) },
+      { label: t('Action'), value: stringField(row.action) },
+      { label: t('Value'), value: stringField(row.value) },
+      { label: t('Initial Balance'), value: stringField(row.balance_before) },
+      { label: t('New Balance'), value: stringField(row.balance_after) },
+      { label: t('Transaction Type'), value: stringField(row.transaction_type) },
+      { label: t('Done At'), value: stringField(row.created_at) },
+      { label: t('Uuid'), value: stringField(row.uuid) },
+    ] as Array<{ label: string; value: string | null }>
+  ).filter((detail): detail is { label: string; value: string } => detail.value !== null);
+
+  return (
+    <PopupDialog open={open} onOpenChange={(next) => !next && onClose()} title={t('Register History Details')} className="sm:max-w-lg">
+      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+        {details.map((detail) => (
+          <Fragment key={detail.label}>
+            <dt className="text-muted-foreground whitespace-nowrap">{detail.label}</dt>
+            <dd className="break-all font-medium">{detail.value}</dd>
+          </Fragment>
+        ))}
+      </dl>
+    </PopupDialog>
+  );
+}
+
+registerActionPopup('sb.cash-registers-history', 'view-details', RegisterHistoryDetailsPopup);

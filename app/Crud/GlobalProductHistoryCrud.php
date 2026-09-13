@@ -35,7 +35,7 @@ class GlobalProductHistoryCrud extends CrudService
      *
      * @param  string
      */
-    protected $slug = '/products/history';
+    protected $slug = 'products/stock-flow-records';
 
     /**
      * Define namespace
@@ -387,17 +387,10 @@ class GlobalProductHistoryCrud extends CrudService
         $entry->order_code = $entry->order_code ?: __( 'N/A' );
         $entry->total_price = sb()->currency->fresh( $entry->total_price )->format();
 
-        $entry->action(
-            label: __( 'Delete' ),
-            identifier: 'delete',
-            url: sb()->url( '/api/crud/sb.global-products-history/' . $entry->id ),
-            type: 'DELETE',
-            confirm: [
-                'title' => __( 'Confirm Your Action' ),
-                'message' => __( 'Would you like to delete this ?' ),
-            ]
-        );
-
+        /**
+         * No row actions: the Delete was always refused by
+         * `beforeDelete` (`delete => false`).
+         */
         return $entry;
     }
 
@@ -452,35 +445,33 @@ class GlobalProductHistoryCrud extends CrudService
     /**
      * get Links
      *
+     * The list page is `/dashboard/products/stock-flow-records`; no
+     * create/edit targets — the resource is read-only (create/update
+     * permissions are `false`, and the former `/products/history`
+     * targets pointed at a route that does not exist).
+     *
      * @return array of links
      */
     public function getLinks(): array
     {
         return [
-            'list' => sb()->url( 'dashboard/' . '/products/history' ),
-            'create' => sb()->url( 'dashboard/' . '/products/history/create' ),
-            'edit' => sb()->url( 'dashboard/' . '/products/history/edit/' ),
-            'post' => sb()->url( 'api/crud/' . 'sb.global-products-history' ),
-            'put' => sb()->url( 'api/crud/' . 'sb.global-products-history/{id}' . '' ),
+            'list' => sb()->url( 'dashboard/' . $this->slug ),
         ];
     }
 
     /**
      * Get Bulk actions
      *
+     * Read-only deletes (`delete => false`): the generated
+     * `delete_selected` entry was always refused by `bulkAction()`, so
+     * the list stays empty. The Hook filter is preserved so modules can
+     * still register their own bulk actions.
+     *
      * @return array of actions
      **/
     public function getBulkActions(): array
     {
-        return Hook::filter( $this->namespace . '-bulk', [
-            [
-                'label' => __( 'Delete Selected Groups' ),
-                'identifier' => 'delete_selected',
-                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
-                    'namespace' => $this->namespace,
-                ] ),
-            ],
-        ] );
+        return Hook::filter( $this->namespace . '-bulk', [] );
     }
 
     /**

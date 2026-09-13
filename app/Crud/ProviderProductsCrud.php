@@ -31,9 +31,13 @@ class ProviderProductsCrud extends CrudService
     /**
      * default slug
      *
+     * The resource renders as the provider's products sub-list
+     * (`/dashboard/providers/{provider}/products`, T4.6) — no
+     * standalone page; `getLinks()` carries the breadcrumb.
+     *
      * @param  string
      */
-    protected $slug = '/dashboard/providers';
+    protected $slug = 'providers';
 
     /**
      * Define namespace
@@ -366,23 +370,17 @@ class ProviderProductsCrud extends CrudService
         $entry->total_purchase_price = sb()->currency->define( $entry->total_purchase_price )->format();
         $entry->expiration_date = $entry->expiration_date ?: __( 'N/A' );
 
-        // you can make changes here
+        /**
+         * The row is a procurement product — the edit page is the
+         * procurement-products form (`sb.procurements-products`, whose
+         * edit route exists). The former GOTO double-prefixed the
+         * `$slug` into `/dashboard//dashboard/providers/edit/{id}`.
+         */
         $entry->action(
             identifier: 'edit',
             label: __( 'Edit' ),
             type: 'GOTO',
-            url: sb()->url( '/dashboard/' . $this->slug . '/edit/' . $entry->id )
-        );
-
-        $entry->action(
-            identifier: 'delete',
-            label: __( 'Delete' ),
-            type: 'DELETE',
-            url: sb()->url( '/api/crud/sb.providers-products/' . $entry->id ),
-            confirm: [
-                'title' => __( 'Confirm Your Action' ),
-                'message' => __( 'Would you like to delete this ?' ),
-            ]
+            url: sb()->url( '/dashboard/procurements/products/edit/' . $entry->id )
         );
 
         return $entry;
@@ -452,7 +450,7 @@ class ProviderProductsCrud extends CrudService
     public function getLinks(): array
     {
         return [
-            'list' => sb()->url( 'dashboard/' . '/dashboard/providers' ),
+            'list' => sb()->url( 'dashboard/providers' ),
             'create' => false,
             'edit' => false,
             'post' => false,
@@ -465,17 +463,19 @@ class ProviderProductsCrud extends CrudService
      *
      * @return array of actions
      **/
+    /**
+     * Get Bulk actions
+     *
+     * Read-only resource (`delete => false`): the generated
+     * `delete_selected` entry was always refused by `bulkAction()`, so
+     * the list stays empty. The Hook filter is preserved so modules can
+     * still register their own bulk actions.
+     *
+     * @return array of actions
+     **/
     public function getBulkActions(): array
     {
-        return Hook::filter( $this->namespace . '-bulk', [
-            [
-                'label' => __( 'Delete Selected Groups' ),
-                'identifier' => 'delete_selected',
-                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
-                    'namespace' => $this->namespace,
-                ] ),
-            ],
-        ] );
+        return Hook::filter( $this->namespace . '-bulk', [] );
     }
 
     /**

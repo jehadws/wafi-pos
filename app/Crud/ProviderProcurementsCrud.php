@@ -484,7 +484,7 @@ class ProviderProcurementsCrud extends CrudService
     public function getLinks(): array
     {
         return [
-            'list' => sb()->url( 'dashboard/' . '/providers/procurements' ),
+            'list' => sb()->url( 'dashboard/providers' ),
             'create' => false,
             'edit' => false,
             'post' => false,

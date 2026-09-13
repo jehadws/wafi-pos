@@ -257,8 +257,14 @@ class TransactionController extends DashboardController
 
   public function transactionsHistory()
   {
-    return Inertia::render('dashboard/accounting/transactions/history');
-    // return TransactionsHistoryCrud::table();
+    /**
+     * The single backend-driven list shell (T5.4): the history table
+     * renders from `TransactionsHistoryCrud::table()` — the
+     * Create-Reflection GET and Delete actions render from `$actions`
+     * (both real permissions). `table()` enforces
+     * `subul.read.transactions-history` internally.
+     */
+    return TransactionsHistoryCrud::table();
   }
 
   public function triggerTransaction(Transaction $transaction)

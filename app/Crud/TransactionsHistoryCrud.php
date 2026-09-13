@@ -36,9 +36,9 @@ class TransactionsHistoryCrud extends CrudService
     /**
      * default slug
      *
-     * @param string
+     * @param  string
      */
-    protected $slug = 'accounting/transactions/histories';
+    protected $slug = 'accounting/transactions/history';
 
     /**
      * Define namespace
@@ -426,16 +426,22 @@ class TransactionsHistoryCrud extends CrudService
     /**
      * get Links
      *
+     * The list page is `/dashboard/accounting/transactions/history`
+     * (the former `dashboard/history` target pointed at a route that
+     * does not exist). No create/edit targets — create/update
+     * permissions are `false`; the DELETE API stays available
+     * (`delete => subul.delete.transactions-history`).
+     *
      * @return array of links
      */
     public function getLinks(): array
     {
         return [
-            'list' => sb()->url( 'dashboard/' . 'history' ),
-            'create' => sb()->url( 'dashboard/' . 'history/create' ),
-            'edit' => sb()->url( 'dashboard/' . 'history/edit/' ),
+            'list' => sb()->url( 'dashboard/' . 'accounting/transactions/history' ),
+            'create' => false,
+            'edit' => false,
             'post' => sb()->url( 'api/crud/' . 'sb.transactions-history' ),
-            'put' => sb()->url( 'api/crud/' . 'sb.transactions-history/{id}' . '' ),
+            'put' => sb()->url( 'api/crud/' . 'sb.transactions-history/{id}' ),
         ];
     }
 

@@ -427,22 +427,20 @@ class ProductsController extends DashboardController
    * render the crud table for the product
    * history
    *
-   * @return View
+   * The single backend-driven list shell (T5.4): the stock history
+   * table renders from `ProductHistoryCrud::table()`, and the
+   * description popup renders from the frontend popup registry
+   * (`sb.products-histories::sb.description`). The former
+   * `sb-crud-footer` Blade hook rendered a bespoke page below the
+   * shell and has no effect on the generic page. `{product}` is bound
+   * by the route's SubstituteBindings middleware.
    */
-  public function productHistory($identifier)
+  public function productHistory(Product $product)
   {
-    Hook::addAction('sb-crud-footer', function (Output $output, $identifier) {
-      $output->addView('pages.dashboard.products.history');
-
-      return $output;
-    }, 10, 2);
-
-    $product = Product::find($identifier);
-
     return ProductHistoryCrud::table([
       'title' => sprintf(__('Stock History For %s'), $product->name),
       'queryParams' => [
-        'product_id' => $identifier,
+        'product_id' => $product->id,
       ],
     ]);
   }
