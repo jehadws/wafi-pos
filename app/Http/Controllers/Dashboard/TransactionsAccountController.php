@@ -19,12 +19,16 @@ class TransactionsAccountController extends DashboardController
   /**
    * List transactions accounts
    *
-   * @return view
+   * @return \Inertia\Response
    */
   public function listTransactionsAccounts()
   {
-    return Inertia::render('dashboard/accounting/accounts/page');
-    // return TransactionAccountCrud::table();
+    /**
+     * The single backend-driven list shell (T3.6): the transaction
+     * accounts table renders from `TransactionAccountCrud::table()` —
+     * columns, actions and links come from the CRUD config.
+     */
+    return TransactionAccountCrud::table();
   }
 
   /**
