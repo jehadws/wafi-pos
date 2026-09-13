@@ -14,7 +14,6 @@ use App\Exceptions\NotFoundException;
 use App\Http\Controllers\DashboardController;
 use App\Models\Tax;
 use App\Models\TaxGroup;
-use App\Models\User;
 use App\Services\DateService;
 use App\Services\TaxService;
 use Exception;
@@ -172,24 +171,17 @@ class TaxesController extends DashboardController
   /**
    * List all available taxes
    *
-   * @return view
+   * @return \Inertia\Response
    */
   public function listTaxes()
   {
-    $taxes = Tax::addSelect([
-      'author_name' => User::select('username')
-        ->whereColumn('subul_users.id', 'author')
-        ->limit(1),
-      'parent_name' => TaxGroup::select('name')
-        ->whereColumn('subul_taxes_groups.id', 'tax_group_id')
-        ->limit(1),
-    ])
-      ->get();
-    return Inertia::render('dashboard/taxes/page', [
-      'title' => __('Dashboard'),
-      'taxes' => $taxes
-    ]);
-    // return TaxCrud::table();
+    /**
+     * The single backend-driven list shell (T3.2): the taxes table renders
+     * from `TaxCrud::table()` — columns (incl. the parent group and the
+     * backend-formatted rate) come from `TaxCrud::getColumns()`, and the
+     * `%` suffix is appended by `TaxCrud::setActions()`.
+     */
+    return TaxCrud::table();
   }
 
   /**
@@ -225,25 +217,18 @@ class TaxesController extends DashboardController
   }
 
   /**
-   * Create tax groups
+   * List tax groups
    *
-   * @return view
+   * @return \Inertia\Response
    */
   public function taxesGroups()
   {
-    $groups = TaxGroup::with('taxes')
-      ->addSelect([
-        'author_name' => User::select('username')
-          ->whereColumn('subul_users.id', 'author')
-          ->limit(1),
-      ])
-      ->get();
-    return Inertia::render('dashboard/taxes/groups/page', [
-      'title' => __('Dashboard'),
-      'description' => __('List of all tax groups.'),
-      'groups' => $groups
-    ]);
-    // return TaxesGroupCrud::table();
+    /**
+     * The single backend-driven list shell (T3.2): the tax groups table
+     * renders from `TaxesGroupCrud::table()` — columns (incl. the author
+     * through the `user` relation) come from `TaxesGroupCrud::getColumns()`.
+     */
+    return TaxesGroupCrud::table();
   }
 
   /**
