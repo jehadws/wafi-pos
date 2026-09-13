@@ -109,8 +109,7 @@ function SelectField({
   formValuesRef.current = formValues;
 
   const watchedValue = field.refresh?.watch
-    ? formValues?.[field.refresh.watch] ??
-      Object.entries(formValues ?? {}).find(([k]) => k.endsWith(`.${field.refresh!.watch}`))?.[1]
+    ? (formValues?.[field.refresh.watch] ?? Object.entries(formValues ?? {}).find(([k]) => k.endsWith(`.${field.refresh!.watch}`))?.[1])
     : undefined;
 
   useEffect(() => {
@@ -254,12 +253,7 @@ export function FieldRenderer({ field, value, onChange, error, disabled, id, for
     case 'datetimepicker':
       return (
         <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
-          <Input
-            type="datetime-local"
-            {...textProps}
-            value={formatDatetimeLocal(value)}
-            onChange={(event) => onChange(event.target.value)}
-          />
+          <Input type="datetime-local" {...textProps} value={formatDatetimeLocal(value)} onChange={(event) => onChange(event.target.value)} />
         </FormField>
       );
 

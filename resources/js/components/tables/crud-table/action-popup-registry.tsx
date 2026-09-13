@@ -201,7 +201,7 @@ function RegisterHistoryDetailsPopup({ open, onClose, row }: ActionPopupProps) {
         {details.map((detail) => (
           <Fragment key={detail.label}>
             <dt className="text-muted-foreground whitespace-nowrap">{detail.label}</dt>
-            <dd className="break-all font-medium">{detail.value}</dd>
+            <dd className="font-medium break-all">{detail.value}</dd>
           </Fragment>
         ))}
       </dl>
