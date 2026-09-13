@@ -258,5 +258,37 @@ The 10 simple/aligned list pages are fully backend-driven. Each controller's lis
 
 **Regression pass (T3.10):** `npm run types` + `npm run lint` + `npm run test` green (43/43). `php artisan test`: **13 failed / 31 passed — identical to the Phase 3 baseline** (pre-existing Auth/Settings/Dashboard license-restriction env failures; no CRUD regressions). `CrudTableConfigContractTest` and `CrudEntryActionsContractTest` green.
 
+---
+
+## Phase 4 — Wave 2 parity results (T4.10)
+
+**Migrated to `CrudTablePage` (hand `page.tsx` deleted, controller = `return XCrud::table();`):**
+
+| Step | Page | Namespace | Notable hard paths exercised |
+|---|---|---|---|
+| T4.1 | procurements | `sb.procurements` | Conditional GET + confirm (Set Paid, unpaid rows only) + Refresh GET — **bugs #2/#3 die** (executor honors backend `confirm`) |
+| T4.2 | accounting/transactions | `sb.transactions` | Gains **Trigger** (GET + confirm) and **History** (GOTO → existing `TransactionsHistoryCrud::table()` target) |
+| T4.3 | customers/coupons | `sb.customers-coupons` | History GOTO target already live (`CouponOrderHistoryCrud::table()` at `/dashboard/customers/coupons/history/{coupon}`) — **T5.2 prerequisite already satisfied; bug #4 dies** |
+| T4.4 | customers | `sb.customers` | Widest action set (Edit, Orders, Rewards, Coupons, Wallet History, Delete) — every GOTO target verified against `routes/web/customers.php` |
+| T4.5 | users | `sb.users` | **The four sub-list GOTOs (Orders/Rewards/Coupons/Wallet History) are omitted backend-side** — their URLs (`/dashboard/users/{id}/…`) resolve to no SPA route (rule 6); restored by T5.3 when the routes/pages exist |
+| T4.6 | providers | `sb.providers` | Gains **See Procurements / See Products** — targets already render backend-driven sub-list tables |
+| T4.7 | cash-registers | `sb.cash-registers` | Gains **Register History** GOTO (target route exists); **delete is now row-conditional backend-side** (`RegisterCrud::setActions` omits it for opened registers; `beforeDelete` remains the server-side net) |
+| T4.8 | orders | `sb.orders` | POPUP registry first live use (`sb.order-options`, conditional `sb.order-refunds` with iframe print); row `$cssClass` payment-status colors; server pagination on the busiest table (default sort from `OrderCrud`); Invoice/Receipt GOTOs per the T1.7 finding (SPA pages, plain `router.visit`) |
+
+**Engine extension (T4.8 prerequisite, its own commit):** `daterangepicker` and `text` query-filter types are now first-class toolbar controls — `filterableColumns` is a discriminated union; daterange serializes to the backend `{ startDate, endDate }` shape (both bounds required, `CrudService.php:848-858`), text passes the scalar through the filter's `operator` (`like`). All types flow through the tanstack `columnFilters` channel (`onColumnFiltersChange` + toolbar Reset unchanged).
+
+**Products (T4.9) — decision: kept bespoke.** The optional cheap adoption (swap the hand dropdown for `row-actions-menu` + executor) was **not taken**: the bespoke page's rows come from its own hand query and carry no `$actions`, so wiring the executor would force the crud list round-trip onto the page — exactly the "touching columns/queries" the plan excludes. Preview (`sb.quantities` POPUP — falls back to navigation until a popup component exists), See Quantities and See History GOTOs stay unexposed on the bespoke page; the hand dropdown keeps Copy ID/Edit/Delete. Recorded as the sanctioned bespoke exception (tables B3.b-analog).
+
+**Bug verification (T4.10):**
+- **#2 / #3 (Set Paid / Refresh without confirm) — die.** The procurements hand menu is deleted; `ProcurementCrud::setActions` serializes both GETs with `confirm`, and the executor renders it (also for already-paid rows: the backend omits Set Paid per-row). Both endpoints answer JSON `{status, message}` → success toast + refresh; `SbRestrictMiddleware` 403s surface through the executor's error toast (no navigation).
+- **#4 (stub coupon History) — dies.** The stub `toast.info` item is deleted with the hand page; the real History GOTO renders from `$actions` and lands on the live coupon-history table.
+
+**Regression pass (T4.10):** `npm run types` + `npm run lint` green (zero warnings); `npm run test` 393/393 (43 files). `php artisan test`: **13 failed / 31 passed — identical to the Phase 3 baseline** (pre-existing Auth env failures; no CRUD regressions). `CrudEntryActionsContractTest` + `CrudTableConfigContractTest` green after the `RegisterCrud`/`UserCrud` action edits. `npm run test:e2e` smoke: 4/4 checkout journeys pass. Payload spot-check: orders + procurements now load through `GET /api/crud/{ns}` with `per_page=20` server pagination (previously whole-dataset Inertia props / client-driven fetches).
+
+**Deferrals with written reasons:**
+1. **Users sub-list actions** (Orders/Rewards/Coupons/Wallet History) — omitted backend-side until T5.3 builds `/dashboard/users/{id}/…` routes + generic pages (would 404 otherwise).
+2. **Products page** — bespoke exception retained (T4.9 decision above).
+
+
 
 
