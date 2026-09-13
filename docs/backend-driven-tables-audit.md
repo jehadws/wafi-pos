@@ -221,4 +221,42 @@ Every GOTO action resolved against `routes/web/*.php`. Verdicts: **✅ exists**,
 
 **Scheduling (rule 6):** the ❌ targets on namespaces that already have a host page — `sb.coupons` (Edit/History), `sb.customers-account-history` (Edit), `sb.customers-coupons` (Edit), `sb.orders-instalments` (Edit), `sb.users` sub-lists — must be built (or the actions removed) in **Phase 5 before their host page migrates**. The ⚠️ broken-URL CRUDs are all Phase 5 resources without SPA pages today; fix `$slug` when their pages are created.
 
+## Phase 3 — Wave 1 parity results (T3.1–T3.10, 2026-09-12)
+
+The 10 simple/aligned list pages are fully backend-driven. Each controller's list method is now the one-liner shell over its CRUD's `table()` (`return ProductCategoryCrud::table();`), and the hand page is deleted — the shared engine renders rows, columns, and actions. Page → CRUD mapping:
+
+| SPA page (hand shell deleted) | Namespace | Controller list method |
+|---|---|---|
+| `dashboard/units/page.tsx` | `sb.units` | `UnitController::listUnits` |
+| `dashboard/units/groups/page.tsx` | `sb.units-groups` | `UnitController::listUnitGroups` |
+| `dashboard/taxes/page.tsx` | `sb.taxes` | `TaxController::listTaxes` |
+| `dashboard/taxes/groups/page.tsx` | `sb.taxes-groups` | `TaxController::listTaxGroups` |
+| `dashboard/customers/groups/page.tsx` | `sb.customers-groups` | `CustomersController::listGroups` |
+| `dashboard/accounting/accounts/page.tsx` | `sb.transactions-accounts` | `TransactionsHistoryController::listAccountsCrud` |
+| `dashboard/accounting/transactions/accounts/page.tsx` | `sb.transactions-accounts` | `TransactionsHistoryController::listAccountsCrud` |
+| `dashboard/orders/payments-types/page.tsx` | `sb.payments-types` | `PaymentsTypesController::listPaymentsTypes` |
+| `dashboard/categories/page.tsx` | `sb.products-categories` | `CategoryController::listCategories` |
+| `dashboard/customers/rewards-system/page.tsx` | `sb.rewards-system` | `RewardsSystemController::list` |
+
+**Exit criteria met:**
+1. All 10 pages fully backend-driven — server-paginated (`per_page=20`) + server search + server sort from `GET /api/crud/{ns}` with `initialConfig` traveling once from `table()`. Previously 8 of them loaded whole datasets client-side; only `sb.transactions-accounts` and `sb.payments-types` were already server-paginated.
+2. No hand-written dropdowns/columns remain on them — every row menu is the built-in `row-actions-menu` (exactly one **Copy ID** per menu, backend-defined labels/icons/targets), every column comes from `getColumns()`.
+3. No client-side permission filtering — server-side `CrudEntry::filterActions()` (row actions) + `getFilteredLinks()` (toolbar links); pinned by `CrudEntryActionsContractTest` (contract tests green).
+
+**Bug verification (T3.10):**
+- **#1 duplicate Copy ID — dies.** The hand `units/page.tsx` (the only page with a hand Copy ID) is deleted; the engine appends exactly one built-in Copy ID per row menu. Verified: no `copy-id` remains outside `row-actions-menu.tsx` across the 10 namespaces.
+- **#7 inconsistent delete confirm text — dies.** All 10 namespaces serialize the T1.6-standardized payload (`Confirm Your Action` / `Would you like to delete this ?`); the executor renders it verbatim with no hand override. Resource-specific messages (rewards system) keep them per rule 3 with a constant title.
+- **#9 inconsistent delete API methods — dies.** All row-menu deletes resolve `del(action.url)` → `DELETE /api/crud/{ns}/{id}`; the hand pages' split `entityApi.remove()` / `crudApi.remove()` paths are gone with the deleted pages. Bulk deletes resolve the same way against the bulk `DELETE` endpoint.
+
+**Parity notes & accepted deviations (columns/actions reconciled to the backend as source of truth):**
+1. **Payment types:** readonly entries no longer serialize a Delete row action (`PaymentTypeCrud::setActions` omits Delete when `readonly`), and bulk delete keeps its server-side readonly guard — the hand page never filtered this.
+2. **Author columns renamed:** `author_name` (hand subqueries) → `user_username` / `subul_users_username` (relation-hydrated); labels unchanged ("Author").
+3. **Yes/No cosmetics:** `active` / `readonly` (payment types) and `displays_on_pos` (categories) render backend-defined Yes/No strings; the hand Badge styling was client-only.
+4. **Bulk labels backend-defined:** "Delete Selected Groups" (most CRUDs) / "Delete Selected Rewards" replace the hand "Delete Selected"; Add-New/Refresh ride from `config.links` (permission-filtered).
+5. **Client-only columns dropped:** the hand pages' client-side filterable columns (`displays_on_pos` / `total_items` buckets on categories, `base_unit` on units) and client-side name lookups (category parent) have no server counterpart (`getQueryFilters()` empty) — dropped per "backend is the single source of truth"; recorded as candidates for `getQueryFilters()` in a later phase if the need resurfaces.
+6. **Roles:** name/namespace/created_at parity; the permission checkboxes live on the separate Permission Manager page — no loss on the list.
+
+**Regression pass (T3.10):** `npm run types` + `npm run lint` + `npm run test` green (43/43). `php artisan test`: **13 failed / 31 passed — identical to the Phase 3 baseline** (pre-existing Auth/Settings/Dashboard license-restriction env failures; no CRUD regressions). `CrudTableConfigContractTest` and `CrudEntryActionsContractTest` green.
+
+
 
