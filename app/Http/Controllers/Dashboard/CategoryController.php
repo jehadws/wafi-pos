@@ -19,7 +19,6 @@ use App\Services\ProductCategoryService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
 
 class CategoryController extends DashboardController
 {
@@ -232,11 +231,12 @@ class CategoryController extends DashboardController
 
   public function createCategory()
   {
-    $categories =  ProductCategory::get();
-    return Inertia::render('dashboard/categories/create', [
-      'title' => __('Dashboard'),
-      'categories' => $categories
-    ]);
+    /**
+     * The single backend-driven form shell (Phase 3): the category create
+     * form renders from `ProductCategoryCrud::form()` — the parent category
+     * options travel inside the CRUD's own form config.
+     */
+    return ProductCategoryCrud::form();
   }
 
   /**
@@ -244,14 +244,10 @@ class CategoryController extends DashboardController
    */
   public function editCategory(ProductCategory $category)
   {
-
-    $categories =  ProductCategory::get();
-    return Inertia::render('dashboard/categories/edit', [
-      'title' => __('Dashboard'),
-      'categories' => $categories,
-      'category' => $category
-    ]);
-    // return ProductCategoryCrud::form($category);
+    /**
+     * Same generic form shell, pre-filled from the route-bound category.
+     */
+    return ProductCategoryCrud::form($category);
   }
 
   public function computeCategoryProducts(ProductCategory $category)
