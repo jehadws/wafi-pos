@@ -310,6 +310,16 @@ class CrudService
         $resource->getFillable()
       );
 
+      /**
+       * Fields that opt in to a tag allowlist through the
+       * "allowedTags" definition keep those tags after the
+       * sanitization. Every other field keeps the blanket
+       * strip_tags() behavior.
+       */
+      $allowedTagsMap = SettingsPage::allowedTagsMap(
+        $resource->getFormObject($entry)
+      );
+
       foreach ($inputs as $name => $value) {
         /**
          * If the field where explicitly added
@@ -329,10 +339,11 @@ class CrudService
 
             /**
              * sanitizing input to remove
-             * all script tags
+             * all script tags, unless the
+             * field declares "allowedTags".
              */
             if (! empty($entry->$name)) {
-              $entry->$name = strip_tags($entry->$name);
+              $entry->$name = SettingsPage::sanitizeValue($name, $entry->$name, $allowedTagsMap);
             }
           }
         }

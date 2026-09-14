@@ -10,7 +10,8 @@
 Fix audit #11: the backend currently strips **all** HTML from saved values with a blanket `strip_tags()`, so `ckeditor`/rich-text fields (e.g. category description) silently lose their formatting on save. Replace it with a **per-field opt-in tag allowlist**, defaulting to the current blanket behavior for every field that doesn't opt in.
 
 > **Design decisions — confirmed:**
-> 1. **Allowlist for rich-text fields** (Decision): `<p><br><strong><b><em><i><u><s><ul><ol><li><a href title><h2><h3><h4><blockquote><span><img src alt>`. Scripts, iframes, and event attributes are always stripped.
+> 1. **Allowlist for rich-text fields** (Decision): `<p><br><strong><b><em><i><u><s><ul><ol><li><a><h2><h3><h4><blockquote><span><img>`. Scripts, iframes, and all non-allowlisted tags are always stripped.
+>    > **Implementation note (landed):** the originally agreed string `<a href title>` / `<img src alt>` cannot work — PHP `strip_tags` does not support attribute qualifiers, and empirically parses `<a href>` as an unknown tag name, stripping the tag *entirely* (verified: `strip_tags('<a href="x">link</a>', '<a href>')` → `link`). The landed allowlist uses bare `<a>` / `<img>` entries so links and images survive with their attributes. Residual (accepted): strip_tags cannot strip event attributes (`onclick`, …) *inside* allowlisted tags — same exposure class as before for any allowlist approach built on PHP `strip_tags`.
 > 2. **Field-def key** (Decision): `allowedTags` on the field definition (string, PHP `strip_tags` format). Absent = current blanket strip — no behavior change for non-rich-text fields.
 > 3. **Settings-page rich fields** (Decision): yes, same treatment — `Options.php` and `UserOptions.php` save paths apply the same resolver. Currently there is exactly **one** `ckeditor` field in the codebase (`ProductCategoryCrud.php:182` — category description); all others get the unchanged blanket strip.
 
@@ -59,7 +60,7 @@ Fix audit #11: the backend currently strips **all** HTML from saved values with 
 - **Files**:
   - `[MODIFY]` `app/Crud/ProductCategoryCrud.php` (`description` field — `type: 'ckeditor'`)
   - Any other field emitting `type: 'ckeditor'` (grep `app/` for `'ckeditor'`)
-- **Implementation**: add `'allowedTags' => '<p><br><strong><b><em><i><u><s><ul><ol><li><a href title><h2><h3><h4><blockquote><span><img src alt>'` to each rich-text field def (the agreed allowlist from decision #1 above). Verified there is currently only one ckeditor field: ProductCategoryCrud.php:182.
+- **Implementation**: add `'allowedTags' => '<p><br><strong><b><em><i><u><s><ul><ol><li><a><h2><h3><h4><blockquote><span><img>'` to each rich-text field def (the agreed allowlist from decision #1 — with the landed correction for PHP's lack of attribute qualifiers, see the implementation note there). Verified there is currently only one ckeditor field: ProductCategoryCrud.php:182.
 - **Test & Analyze**: manual — edit a category description in the browser, save, reload: formatting survives; scripts do not.
 - **Commit**:
   ```bash

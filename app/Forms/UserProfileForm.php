@@ -74,9 +74,15 @@ class UserProfileForm extends SettingsPage
           'user_id' => auth::id(),
         ]);
 
+      /**
+       * fields that opt in to a tag allowlist
+       * ("allowedTags") keep those tags on save.
+       */
+      $allowedTagsMap = SettingsPage::allowedTagsMap($this->getForm());
+
       foreach ($request->input('attribute') as $key => $value) {
         if (in_array($key, $allowedInputs)) {
-          $user->$key = strip_tags($value);
+          $user->$key = SettingsPage::sanitizeValue($key, $value, $allowedTagsMap);
         }
       }
 
@@ -98,12 +104,18 @@ class UserProfileForm extends SettingsPage
     $userOptions = app()->make(UserOptions::class);
 
     if ($request->input('options')) {
+      /**
+       * fields that opt in to a tag allowlist
+       * ("allowedTags") keep those tags on save.
+       */
+      $allowedTagsMap = SettingsPage::allowedTagsMap($this->getForm());
+
       foreach ($request->input('options') as $field => $value) {
         if (! in_array($field, ['password', 'old_password', 'password_confirm'])) {
           if (empty($value)) {
             $userOptions->delete($field);
           } else {
-            $userOptions->set($field, $value);
+            $userOptions->set($field, $value, null, $allowedTagsMap[$field] ?? null);
           }
         }
       }
