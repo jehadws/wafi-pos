@@ -9,14 +9,12 @@ use App\Exceptions\NotAllowedException;
 use App\Traits\SbForms;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Contracts\View\View as ContractView;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -1298,7 +1296,7 @@ class CrudService
    * Will render a crud form using
    * the provided settings.
    */
-  public static function form($entry = null, array $config = [], string $title = '', string $description = '', string $src = '', string $returnUrl = '', string $submitUrl = '', string $submitMethod = '', array $queryParams = []): ContractView
+  public static function form($entry = null, array $config = [], string $title = '', string $description = '', string $src = '', string $returnUrl = '', string $submitUrl = '', string $submitMethod = '', array $queryParams = []): Response
   {
     /**
      * in case the default way of proceeding is not defined
@@ -1311,13 +1309,50 @@ class CrudService
     }
 
     /**
-     * use crud form to render a valid form.
-     * "view" on the $config might be used to use a custom view file.
+     * getFormConfig() enforces the permission gate ("read" on create,
+     * "update" on edit) and resolves every default from the labels.
      */
-    return View::make($config['view'] ?? 'pages.dashboard.crud.form', self::getFormConfig(
-      config: $config,
-      entry: $entry
-    ));
+    $formConfig = self::getFormConfig(config: $config, entry: $entry);
+
+    /**
+     * The form page is the single generic Inertia shell
+     * (resources/js/pages/crud/form.tsx). The form config travels as
+     * `initialConfig` so the page renders without a config round-trip
+     * (use-crud-form still fetches when the prop is absent).
+     */
+    return Inertia::render('crud/form', array_merge([
+      /**
+       * the CRUD namespace, driving the form-config and submit requests.
+       */
+      'namespace' => $formConfig['namespace'],
+
+      /**
+       * the backend-defined form configuration (form, labels, links,
+       * submitMethod, optionAttributes, title, description).
+       */
+      'initialConfig' => $formConfig,
+
+      /**
+       * that displays the title on the page. getFormConfig() already
+       * resolves the create/edit fallbacks from the labels.
+       */
+      'title' => $formConfig['title'],
+
+      /**
+       * That displays the page description. getFormConfig() already
+       * resolves the create/edit fallbacks from the labels.
+       */
+      'description' => $formConfig['description'],
+
+      /**
+       * The default breadcrumb trail: Dashboard → list title. The list
+       * URL is reduced to its SPA path so Inertia renders client-side.
+       * The `?? ''` guards keep create-only / no-list Cruds safe.
+       */
+      'breadcrumbs' => [
+        ['title' => $formConfig['labels']['list_title'] ?? '', 'href' => static::toPath($formConfig['links']['list'] ?? '')],
+      ],
+    ], $config));
   }
 
   public static function getFormConfig($config = [], $entry = null)
