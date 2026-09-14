@@ -14,6 +14,27 @@
 | New Pest contract tests | ✅ `CrudFormConfigContractTest`, `CrudValidationErrorsContractTest`, `SettingsFormConfigContractTest`, `ProductCrudSpikeTest` all pass |
 | `php artisan test` (full) | ❌ 13 failures — all pre-existing, see item 14 |
 
+
+## Status (updated by `docs/plans/backend-driven-leftovers/`)
+
+| # | Finding | Status | Evidence / owner |
+|---|---|---|---|
+| Addendum | Tab `identifier` missing → blank tabs | ✅ FIXED | `CrudService.php:1347-1354` normalizes `$tab['identifier'] ?? (string) $tabKey`; asserted by `CrudFormConfigContractTest.php:50-68` |
+| 1 | Reward rule `id` → 500 on edit | ✅ FIXED | `rules-editor-field.tsx:23` uses `_clientId`, no `id` |
+| 2 | `option-loader.ts` dead-wired | ✅ FIXED | imported by `field-renderer.tsx:16` |
+| 3 | Empty-value filter tautology (`SbForms`) | ✅ FIXED | `app/Traits/SbForms.php:152` = `$value !== null && $value !== ''`; pinned by `CrudValidationErrorsContractTest.php:41` |
+| 4 | `datetime` fields blank on edit | ✅ FIXED | `field-renderer.tsx:24` `formatDatetimeLocal` + vitest `config-form.test.tsx:206` |
+| 5 | Settings null-delete unguarded | ✅ FIXED | `SettingsFormConfigContractTest.php:74-104` (unique names across tabs + every field exists in payload) |
+| 6 | `initialConfig` prop is dead | 🔴 OPEN | → `docs/plans/backend-driven-leftovers/02` + `03` |
+| 7 | Settings 422 never inline | ✅ FIXED | `use-settings-form.ts:204-208` maps per-field; `settings-form-page.tsx:202` renders |
+| 8 | `lib/form-flags.ts` dead code | ✅ FIXED | `resources/js/lib/` holds only `settings.ts`, `utils.ts` |
+| 9 | Orphans missed by cleanup | 🟡 PARTIAL | Old orphans deleted; 7 new orphans (taxes, tax-groups, categories, coupons) → `docs/plans/backend-driven-leftovers/01` |
+| 10 | `architecture.md` overstates coverage | 🔴 OPEN | → `docs/plans/backend-driven-leftovers/01` (L1.2) |
+| 11 | Blanket `strip_tags()` vs RichTextEditor | 🔴 OPEN | `CrudService.php:337`, `Options.php:158`, `UserOptions.php:30` → `docs/plans/backend-driven-leftovers/04` |
+| 12 | FilePicker clears value on failure | ✅ FIXED | `config-form/file-picker.tsx:37-39` (no `onChange(null)`), `:18-20` (preview resync) |
+| 13 | Registry name-hijack (`'code'` key) | 🔴 OPEN | `code-generator-field.tsx:36` → `docs/plans/backend-driven-leftovers/05` |
+| 14 | 13 pre-existing Pest failures | 🔴 OPEN | root-cause evidence → `docs/plans/backend-driven-leftovers/06` |
+
 ---
 
 ## 🔴 High — user-breaking
