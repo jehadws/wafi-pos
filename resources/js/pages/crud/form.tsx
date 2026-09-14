@@ -20,11 +20,17 @@ export interface CrudFormPageProps {
   title?: string;
   description?: string;
   breadcrumbs?: BreadcrumbItem[];
+  /**
+   * Optional warning/notice banner rendered above the form
+   * (e.g. transactions queue/expense-account warnings).
+   */
+  infoMessage?: string;
   [key: string]: unknown;
 }
 
 export default function CrudFormRoutePage() {
-  const { namespace, initialConfig, title, description, breadcrumbs } = usePage<CrudFormPageProps>().props;
+  const { namespace, initialConfig, title, description, breadcrumbs, infoMessage } =
+    usePage<CrudFormPageProps>().props;
 
   return (
     <CrudFormPage
@@ -33,6 +39,9 @@ export default function CrudFormRoutePage() {
       title={title ?? ''}
       description={description}
       breadcrumbs={breadcrumbs}
+      topNotice={
+        infoMessage ? <div className="bg-accent/30 border-primary border-l border-l-3 p-2">{infoMessage}</div> : undefined
+      }
     />
   );
 }
