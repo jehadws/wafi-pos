@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Inertia\Inertia;
 
 class CashRegistersController extends DashboardController
 {
@@ -48,9 +47,13 @@ class CashRegistersController extends DashboardController
 
     public function createRegister()
     {
-        return Inertia::render('dashboard/cash-registers/create', [
-            'title' => __('Create Cash Register'),
-        ]);
+        /**
+         * The single backend-driven form shell (Phase 7): the register create
+         * form renders from `RegisterCrud::form()` — the config travels inline
+         * as `initialConfig` (no client-side form-config round-trip). `form()`
+         * enforces `allowedTo` internally.
+         */
+        return RegisterCrud::form();
     }
 
     public function editRegister( Register $register )
@@ -59,9 +62,10 @@ class CashRegistersController extends DashboardController
             throw new NotAllowedException( __( 'Unable to edit a register that is currently in use' ) );
         }
 
-        return Inertia::render('dashboard/cash-registers/edit', [
-            'register' => $register,
-        ]);
+        /**
+         * Same generic form shell, pre-filled from the route-bound register.
+         */
+        return RegisterCrud::form($register);
     }
 
     public function getRegisters( $register_id = null )

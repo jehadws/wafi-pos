@@ -189,7 +189,11 @@ class RegisterCrud extends CrudService
                                 Register::STATUS_CLOSED => __( 'Closed' ),
                             ] ),
                             'description' => __( 'Define what is the status of the register.' ),
-                            'value' => $entry->status ?? '',
+                            /**
+                             * Seed the hand page's default ('closed') on create;
+                             * edit pre-fills the stored status.
+                             */
+                            'value' => $entry->status ?? Register::STATUS_CLOSED,
                             'validation' => 'required',
                         ],
                         [
