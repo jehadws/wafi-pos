@@ -32,7 +32,7 @@
 | 10 | `architecture.md` overstates coverage | 🔴 OPEN | → `docs/plans/backend-driven-leftovers/01` (L1.2) |
 | 11 | Blanket `strip_tags()` vs RichTextEditor | 🔴 OPEN | `CrudService.php:337`, `Options.php:158`, `UserOptions.php:30` → `docs/plans/backend-driven-leftovers/04` |
 | 12 | FilePicker clears value on failure | ✅ FIXED | `config-form/file-picker.tsx:37-39` (no `onChange(null)`), `:18-20` (preview resync) |
-| 13 | Registry name-hijack (`'code'` key) | 🔴 OPEN | `code-generator-field.tsx:36` → `docs/plans/backend-driven-leftovers/05` |
+| 13 | Registry name-hijack (`'code'` key) | ✅ FIXED | `'code'` registration removed (`code-generator-field.tsx`); `CouponCrud` declares `component: 'codeGenerator'` explicitly (`CrudInput::text(..., $component)`); pinned by `field-renderer.test.tsx` |
 | 14 | 13 pre-existing Pest failures | 🔴 OPEN | root-cause evidence → `docs/plans/backend-driven-leftovers/06` |
 
 ---
