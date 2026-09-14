@@ -29,8 +29,7 @@ export interface CrudFormPageProps {
 }
 
 export default function CrudFormRoutePage() {
-  const { namespace, initialConfig, title, description, breadcrumbs, infoMessage } =
-    usePage<CrudFormPageProps>().props;
+  const { namespace, initialConfig, title, description, breadcrumbs, infoMessage } = usePage<CrudFormPageProps>().props;
 
   return (
     <CrudFormPage
@@ -39,9 +38,7 @@ export default function CrudFormRoutePage() {
       title={title ?? ''}
       description={description}
       breadcrumbs={breadcrumbs}
-      topNotice={
-        infoMessage ? <div className="bg-accent/30 border-primary border-l border-l-3 p-2">{infoMessage}</div> : undefined
-      }
+      topNotice={infoMessage ? <div className="bg-accent/30 border-primary border-l border-l-3 p-2">{infoMessage}</div> : undefined}
     />
   );
 }
