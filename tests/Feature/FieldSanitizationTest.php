@@ -3,25 +3,11 @@
 use App\Models\ProductCategory;
 use App\Models\User;
 use App\Services\Options;
-use App\Services\UsersService;
 use Illuminate\Support\Facades\Gate;
 
-/**
- * Factory users carry no `UserAttribute` row (production creates it at
- * user-creation time via `UsersService::createAttribute()`). DateService
- * reads `Auth::user()->attribute->language` unguarded, and any timestamped
- * SbRootModel save goes through `freshTimestamp()` → `sb()->date->getNow()`
- * → that unguarded read — a known production bug scheduled for Phase 6.
- * Seed the attribute row here so this suite pins the sanitization
- * contract, not that unrelated crash.
- */
 function fieldSanitizationTestUser(): User
 {
-    $user = User::factory()->create();
-    app(UsersService::class)->createAttribute($user);
-    $user->load('attribute');
-
-    return $user;
+    return User::factory()->create();
 }
 
 /**

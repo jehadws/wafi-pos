@@ -12,35 +12,18 @@
 use App\Crud\ProductCategoryCrud;
 use App\Models\ProductCategory;
 use App\Models\User;
-use App\Services\UsersService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Response;
 use Inertia\Support\Header;
 
-/**
- * Factory users carry no `UserAttribute` row (production creates it at
- * user-creation time via `UsersService::createAttribute()`). DateService
- * reads `Auth::user()->attribute->language` unguarded, and any timestamped
- * SbRootModel save (e.g. the edit test's `ProductCategory::factory()->create()`)
- * goes through `freshTimestamp()` → `sb()->date->getNow()` → that unguarded
- * read — a known production bug scheduled for Phase 6. Seed the attribute row
- * here so this suite pins the form render, not that unrelated crash.
- */
 function crudFormTestUser(): User
 {
-    $user = User::factory()->create();
-    app(UsersService::class)->createAttribute($user);
-    /**
-     * createAttribute() read `$user->attribute` for its guard, which lazily
-     * loaded — and cached — a null relation before the row was inserted.
-     * Auth::user() returns this same instance, so re-load the relation to
-     * surface the freshly saved row.
-     */
-    $user->load('attribute');
-
-    return $user;
+    return User::factory()->create();
 }
+
+/**
+ * `Inertia\Response` exposes no `toArray()`; the wire payload (`component`,
 
 /**
  * `Inertia\Response` exposes no `toArray()`; the wire payload (`component`,
