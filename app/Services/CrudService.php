@@ -524,7 +524,14 @@ class CrudService
      * @param string $key
      * @param mixed  $value
      */
-    if (isset($definition['operator'])) {
+    if (is_array($value)) {
+      /**
+       * multiselect picks travel as arrays — they are an IN clause,
+       * never a scalar operand (a plain `where` would crash on the
+       * array value).
+       */
+      $query->whereIn($key, $value);
+    } elseif (isset($definition['operator'])) {
       $query->where($key, $definition['operator'], $value);
     } else {
       $query->where($key, $value);
@@ -887,7 +894,21 @@ class CrudService
               case 'daterangepicker':
                 if ($value['startDate'] !== null && $value['endDate'] !== null) {
                   $query->where($key, '>=', Carbon::parse($value['startDate'])->toDateTimeString());
-                  $query->where($key, '<=', Carbon::parse($value['endDate'])->toDateTimeString());
+
+                  /**
+                   * The toolbar sends bare `Y-m-d` bounds; a bare end date
+                   * must cover the whole day, otherwise a same-day range
+                   * excludes every row created during that last day. The
+                   * orders filter dialog sends explicit datetimes, which
+                   * are honored as-is.
+                   */
+                  $endDate = Carbon::parse($value['endDate']);
+
+                  if (preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $value['endDate'])) {
+                    $endDate->endOfDay();
+                  }
+
+                  $query->where($key, '<=', $endDate->toDateTimeString());
                 }
                 break;
               default:
