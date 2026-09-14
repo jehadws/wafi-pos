@@ -177,23 +177,21 @@ class UnitsController extends DashboardController
   {
     sb()->restrict(['subul.create.products-units']);
 
-    $unitGroups = UnitGroup::get();
-
-    return Inertia::render('dashboard/units/create', [
-      'unitGroups' => $unitGroups
-    ]);
-    // return UnitCrud::form();
+    /**
+     * The single backend-driven form shell (Phase 3): the unit create form
+     * renders from `UnitCrud::form()` — the group options travel inside the
+     * CRUD's own form config, so the hand-fetched `unitGroups` prop is gone.
+     */
+    return UnitCrud::form();
   }
 
   public function editUnit(Unit $unit)
   {
     sb()->restrict(['subul.update.products-units']);
-    $unitGroups = UnitGroup::get();
 
-    return Inertia::render('dashboard/units/edit', [
-      'groups' => $unitGroups,
-      'unit' => $unit
-    ]);
-    // return UnitCrud::form($unit);
+    /**
+     * Same generic form shell, pre-filled from the route-bound unit.
+     */
+    return UnitCrud::form($unit);
   }
 }
