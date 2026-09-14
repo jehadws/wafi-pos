@@ -184,10 +184,9 @@ class OrderCrud extends CrudService
       [
         'type' => 'text',
         'label' => __('Customer Phone'),
-        'name' => 'phone',
+        'name' => 'customer.phone',
         'operator' => 'like',
         'description' => __('Filter orders using the customer phone number.'),
-        'options' => Helper::toJsOptions(Customer::get(), ['id', 'phone']),
       ],
       [
         'type' => 'select',

@@ -289,7 +289,10 @@ describe('useCrudTable', () => {
     });
     await flush();
 
-    expect((crudApi.list as Mock).mock.calls.at(-1)?.[1]).toHaveProperty('queryFilters', JSON.stringify({ payment_status: 'paid' }));
+    expect((crudApi.list as Mock).mock.calls.at(-1)?.[1]).toHaveProperty(
+      'queryFilters',
+      JSON.stringify({ coupon_id: '3', payment_status: 'paid' }),
+    );
   });
 
   it('resets the page on setPerPage and setQueryFilters', async () => {
@@ -1001,7 +1004,7 @@ describe('crud-table-page helpers', () => {
     ]);
   });
 
-  it('narrows resolved filter state to the scalar the backend contract expects', () => {
+  it('translates resolved filter state to the backend queryFilters contract', () => {
     const config = makeTableConfig({
       queryFilters: [
         { name: 'payment_status', label: 'Payment Status', type: 'select', options: [] },
@@ -1020,7 +1023,7 @@ describe('crud-table-page helpers', () => {
         config,
       ),
     ).toEqual({
-      payment_status: 'paid',
+      payment_status: ['paid', 'hold'],
       'subul_orders.created_at': { startDate: '2026-01-01', endDate: '2026-02-01' },
       phone: '555-0100',
     });

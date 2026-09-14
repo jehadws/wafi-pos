@@ -105,12 +105,11 @@ export function buildFilterableColumns(config: CrudTableConfig, t: (key: string)
 
 /**
  * Resolved filter state → server `queryFilters`. The backend applies
- * faceted values with a scalar `where` (`CrudService.php:853-864`),
- * so a multi-pick narrows to the first selected value; `daterangepicker`
- * state (`{ from?: Date; to?: Date }`) serializes to the backend's
- * `{ startDate, endDate }` shape (`CrudService.php:848-858`, both bounds
- * required); `text` state passes through as a scalar (backend applies
- * the filter's `operator`, e.g. `like`).
+ * `daterangepicker` state (`{ from?: Date; to?: Date }`) serialized to the
+ * `{ startDate, endDate }` shape (both bounds required — `endDate` is
+ * applied as end-of-day server-side), faceted picks as arrays via
+ * `whereIn` (multiselect), and `text` state as a scalar with the filter's
+ * `operator` (e.g. `like`).
  */
 export function filterStateToQueryFilters(state: Array<{ id: string; value: unknown }>, config: CrudTableConfig): Record<string, unknown> {
   const filters: Record<string, unknown> = {};
@@ -142,7 +141,11 @@ export function filterStateToQueryFilters(state: Array<{ id: string; value: unkn
 
     const values = Array.isArray(entry.value) ? entry.value : [entry.value];
     if (values.length > 0) {
-      filters[entry.id] = values[0];
+      /**
+       * Multiselect picks travel whole — the backend applies array
+       * values as `whereIn` (CrudService default filter branch).
+       */
+      filters[entry.id] = values;
     }
   }
 

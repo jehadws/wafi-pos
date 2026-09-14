@@ -24,7 +24,7 @@ import { crudApi } from '@/api/crud';
 import { useTranslation } from '@/lib/i18n';
 import type { CrudEntryRow, CrudTableConfig } from '@/types/tables';
 import { getApiErrorMessage } from '@/utils/api-errors';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CrudActiveSort } from './columns-builder';
 
 // ---------------------------------------------------------------------------
@@ -267,10 +267,23 @@ export function useCrudTable({ namespace, initialConfig, initialQuery }: UseCrud
     [config],
   );
 
+  /**
+   * `initialQuery` scopes (sub-lists, e.g. `{ coupon_id }`) must survive
+   * every filter change: the DataTable reports the resolved column-filter
+   * state through `onColumnFiltersChange` — which fires with `[]` on
+   * mount — and that translation must never wipe the seeded scopes
+   * (an unscoped sub-list hook like `whereIn('procurement_id', [])`
+   * would empty the table).
+   */
+  const initialQueryRef = useRef(initialQuery);
+
   const setQueryFilters = useCallback((filters: Record<string, unknown>) => {
-    setQuery((current) =>
-      JSON.stringify(current.queryFilters) === JSON.stringify(filters) ? current : { ...current, queryFilters: filters, page: 1 },
-    );
+    setQuery((current) => {
+      const merged = { ...initialQueryRef.current, ...filters };
+      return JSON.stringify(current.queryFilters) === JSON.stringify(merged)
+        ? current
+        : { ...current, queryFilters: merged, page: 1 };
+    });
   }, []);
 
   return {

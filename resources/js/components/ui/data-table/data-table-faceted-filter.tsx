@@ -1,4 +1,5 @@
 "use client"
+"use no memo"
 
 import type * as React from "react"
 import type { Column } from "@tanstack/react-table"
@@ -82,13 +83,13 @@ export function DataTableFacetedFilter<TData, TValue>({
                   <CommandItem
                     key={option.value}
                     onSelect={() => {
-                      if (isSelected) {
-                        selectedValues.delete(option.value)
+                      const current = new Set((column?.getFilterValue() as string[] | undefined) ?? [])
+                      if (current.has(option.value)) {
+                        current.delete(option.value)
                       } else {
-                        selectedValues.add(option.value)
+                        current.add(option.value)
                       }
-                      const filterValues = Array.from(selectedValues)
-                      column?.setFilterValue(filterValues.length ? filterValues : undefined)
+                      column?.setFilterValue(current.size ? Array.from(current) : undefined)
                     }}
                   >
                     <div
