@@ -263,23 +263,22 @@ class CustomersController extends DashboardController
 
   public function createCoupon()
   {
-    return Inertia::render('dashboard/customers/coupons/create', [
-      'title' => __('Create Coupon'),
-      'description' => __('helps you creating a coupon.'),
-    ]);
+    /**
+     * The single backend-driven form shell (Phase 3): the coupon create
+     * form renders from `CouponCrud::form()` — the `code` field keeps its
+     * registry-attached generator (keyed by field name in the embedded
+     * config) and the unique rule is resolved backend-side.
+     */
+    return CouponCrud::form();
   }
 
   public function editCoupon(Coupon $coupon)
   {
-    $coupon->categories;
-    $coupon->products;
-    $coupon->groups;
-
-    return Inertia::render('dashboard/customers/coupons/edit', [
-      'title' => __('Edit Coupon'),
-      'description' => __('Editing an existing coupon.'),
-      'coupon' => $coupon,
-    ]);
+    /**
+     * Same generic form shell, pre-filled from the route-bound coupon
+     * (products/categories/groups hydrate inside the CRUD's getForm()).
+     */
+    return CouponCrud::form($coupon);
   }
 
   public function searchCustomer(Request $request)
