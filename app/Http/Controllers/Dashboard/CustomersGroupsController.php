@@ -14,11 +14,9 @@ use App\Exceptions\NotFoundException;
 use App\Http\Controllers\DashboardController;
 use App\Models\Customer;
 use App\Models\CustomerGroup;
-use App\Models\RewardSystem;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
 
 class CustomersGroupsController extends DashboardController
 {
@@ -40,24 +38,20 @@ class CustomersGroupsController extends DashboardController
 
   public function createCustomerGroup()
   {
-    $rewards = RewardSystem::get(['id', 'name']);
-    return Inertia::render('dashboard/customers/groups/create', [
-      'title' => __('Create Customer Group'),
-      'rewards' => $rewards,
-    ]);
-    // return CustomerGroupCrud::form();
+    /**
+     * The single backend-driven form shell (Phase 3): the customer group
+     * create form renders from `CustomerGroupCrud::form()` — the reward
+     * options travel inside the CRUD's own form config.
+     */
+    return CustomerGroupCrud::form();
   }
 
   public function editCustomerGroup(CustomerGroup $group)
   {
-    $rewards = RewardSystem::get(['id', 'name']);
-    $group->reward;
-    return Inertia::render('dashboard/customers/groups/edit', [
-      'title' => __('Edit Customer Group'),
-      'rewards' => $rewards,
-      'group' => $group,
-    ]);
-    // return CustomerGroupCrud::form($group);
+    /**
+     * Same generic form shell, pre-filled from the route-bound group.
+     */
+    return CustomerGroupCrud::form($group);
   }
 
   /**
