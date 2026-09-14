@@ -278,20 +278,23 @@ class UsersController extends DashboardController
   public function editRole(Role $role)
   {
     sb()->restrict(['update.roles']);
-    return Inertia::render('dashboard/users/roles/edit', [
-      'title' => __('Edit Role'),
-      'role' => $role
-    ]);
 
-    // return RolesCrud::form($role);
+    /**
+     * The single backend-driven form shell (Phase 3): the role edit form
+     * renders from `RolesCrud::form()`, pre-filled from the route-bound
+     * role.
+     */
+    return RolesCrud::form($role);
   }
 
-  public function createRole(Role $role)
+  public function createRole()
   {
-    return Inertia::render('dashboard/users/roles/create', [
-      'title' => __('Create Role'),
-    ]);
-    // return RolesCrud::form();
+    /**
+     * The single backend-driven form shell (Phase 3): the role create form
+     * renders from `RolesCrud::form()`. (The dead `Role $role` binding is
+     * gone — the create route carries no `{role}` segment.)
+     */
+    return RolesCrud::form();
   }
 
   public function cloneRole(Role $role)
