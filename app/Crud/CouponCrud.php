@@ -199,6 +199,7 @@ class CouponCrud extends CrudService
             FormInput::text(
               label: __('Coupon Code'),
               name: 'code',
+              component: 'codeGenerator',
               validation: [
                 'required',
                 Rule::unique('subul_coupons', 'code')->ignore($entry !== null ? $entry->id : 0),

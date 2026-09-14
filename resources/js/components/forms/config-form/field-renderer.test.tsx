@@ -8,10 +8,15 @@
 import type { FormFieldDef } from '@/types/forms';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import './code-generator-field'; // side-effect: registers 'couponCodeGenerator' + 'codeGenerator'
 import { FieldRenderer } from './field-renderer';
 
 vi.mock('@/lib/i18n', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
+}));
+
+vi.mock('sonner', () => ({
+  toast: { error: vi.fn(), warning: vi.fn(), info: vi.fn(), success: vi.fn() },
 }));
 
 // Stub Radix Select to avoid pointer-events / portal issues in jsdom.
@@ -109,5 +114,56 @@ describe('FieldRenderer — inline-multiselect', () => {
     render(<FieldRenderer field={field} value={['mon']} onChange={onChange} />);
     fireEvent.click(screen.getByRole('button', { name: 'Tue' }));
     expect(onChange).toHaveBeenCalledWith(['mon', 'tue']);
+  });
+});
+
+// -----------------------------------------------------------------
+// code generator registry keys (audit #13)
+//
+// The generator is registered under explicit component identifiers
+// only ('couponCodeGenerator', 'codeGenerator') — never under the
+// generic field-name key 'code'.
+// -----------------------------------------------------------------
+describe('FieldRenderer — code generator registry keys', () => {
+  it("hides a field declaring the hijackable component key 'code' (unregistered path)", () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const field: FormFieldDef = {
+      name: 'code',
+      label: 'Coupon Code',
+      type: 'text',
+      component: 'code',
+    };
+
+    const { container } = render(<FieldRenderer field={field} value="" onChange={vi.fn()} />);
+
+    expect(container.firstChild).toBeNull();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('No custom component registered for "code"'));
+    warn.mockRestore();
+  });
+
+  it("renders a plain text input for a 'code'-named field without an explicit component (name hijack removed)", () => {
+    const field: FormFieldDef = { name: 'code', label: 'Coupon Code', type: 'text' };
+
+    render(<FieldRenderer field={field} value="" onChange={vi.fn()} id="code" />);
+
+    expect(screen.queryByRole('button', { name: 'Generate' })).toBeNull();
+    const input = screen.getByLabelText('Coupon Code') as HTMLInputElement;
+    expect(input.type).toBe('text');
+  });
+
+  it("renders the generator when the backend declares component: 'codeGenerator'", () => {
+    const onChange = vi.fn();
+    const field: FormFieldDef = {
+      name: 'code',
+      label: 'Coupon Code',
+      type: 'text',
+      component: 'codeGenerator',
+    };
+
+    render(<FieldRenderer field={field} value="" onChange={onChange} id="code" />);
+
+    expect(screen.getByLabelText('Coupon Code')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Generate' }));
+    expect(onChange).toHaveBeenCalledWith(expect.stringMatching(/^[A-Z0-9]{8}$/));
   });
 });

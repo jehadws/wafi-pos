@@ -4,9 +4,21 @@ namespace App\Classes;
 
 class CrudInput
 {
-    public static function text( $label, $name, $value = '', $validation = '', $description = '', $disabled = false, $type = 'text', $errors = [] )
+    public static function text( $label, $name, $value = '', $validation = '', $description = '', $disabled = false, $type = 'text', $errors = [], $component = '' )
     {
-        return compact( 'label', 'name', 'value', 'validation', 'description', 'disabled', 'type', 'errors' );
+        $field = compact( 'label', 'name', 'value', 'validation', 'description', 'disabled', 'type', 'errors' );
+
+        /**
+         * Only fields that opt in carry a component key, so every
+         * existing text field keeps its exact previous shape. Registry
+         * keys must be explicit component names — never field names
+         * (audit #13: the coupon code field declares 'codeGenerator').
+         */
+        if ( $component !== '' ) {
+            $field[ 'component' ] = $component;
+        }
+
+        return $field;
     }
 
     public static function password( $label, $name, $value = '', $validation = '', $description = '', $disabled = false )
