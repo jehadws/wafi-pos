@@ -183,6 +183,17 @@ class ProductCategoryCrud extends CrudService
               'name' => 'description',
               'label' => __('Description'),
               'value' => $entry->description ?? '',
+
+              /**
+               * Rich-text allowlist: keep formatting tags and
+               * drop everything else (script, iframe, ...).
+               *
+               * PHP strip_tags can't restrict attributes, so
+               * `a` and `img` are allowlisted as bare tags —
+               * entries like `<a href>` would strip the tag
+               * entirely instead of matching it.
+               */
+              'allowedTags' => '<p><br><strong><b><em><i><u><s><ul><ol><li><a><h2><h3><h4><blockquote><span><img>',
             ],
           ],
         ],
