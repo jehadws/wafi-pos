@@ -465,17 +465,19 @@ class OrdersController extends DashboardController
 
   public function createPaymentType()
   {
-
-    return Inertia::render('dashboard/orders/payments-types/create');
-    // return PaymentTypeCrud::form();
+    /**
+     * The single backend-driven form shell (Phase 3): the payment type
+     * create form renders from `PaymentTypeCrud::form()`.
+     */
+    return PaymentTypeCrud::form();
   }
 
   public function updatePaymentType(PaymentType $paymentType)
   {
-    return inertia::render('dashboard/orders/payments-types/edit', [
-      'paymentType' => $paymentType,
-    ]);
-    // return PaymentTypeCrud::form($paymentType);
+    /**
+     * Same generic form shell, pre-filled from the route-bound payment type.
+     */
+    return PaymentTypeCrud::form($paymentType);
   }
 
   public function getOrderProductsRefunded(Request $request, Order $order)
