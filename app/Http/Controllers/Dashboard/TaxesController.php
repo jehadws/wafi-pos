@@ -19,7 +19,6 @@ use App\Services\TaxService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
-use Inertia\Inertia;
 
 class TaxesController extends DashboardController
 {
@@ -191,12 +190,13 @@ class TaxesController extends DashboardController
    */
   public function createTax()
   {
-    $groups = TaxGroup::get(['id', 'name']);
-    return Inertia::render('dashboard/taxes/create', [
-      'title' => __('Dashboard'),
-      'groups' => $groups
-    ]);
-    // return TaxCrud::form();
+    /**
+     * The single backend-driven form shell (Phase 3): the tax create form
+     * renders from `TaxCrud::form()` — fields, submit URL and title come
+     * from the CRUD config, which travels inline as `initialConfig`
+     * (no client-side form-config round-trip).
+     */
+    return TaxCrud::form();
   }
 
   /**
@@ -206,14 +206,10 @@ class TaxesController extends DashboardController
    */
   public function editTax(Tax $tax)
   {
-
-    $groups = TaxGroup::get(['id', 'name']);
-    return Inertia::render('dashboard/taxes/edit', [
-      'title' => __('Dashboard'),
-      'tax' => $tax,
-      'groups' => $groups
-    ]);
-    // return TaxCrud::form($tax);
+    /**
+     * Same generic form shell, pre-filled from the route-bound tax.
+     */
+    return TaxCrud::form($tax);
   }
 
   /**
@@ -238,10 +234,11 @@ class TaxesController extends DashboardController
    */
   public function createTaxGroups()
   {
-    return Inertia::render('dashboard/taxes/groups/create', [
-      'title' => __('Dashboard'),
-    ]);
-    // return TaxesGroupCrud::form();
+    /**
+     * The single backend-driven form shell (Phase 3): the tax group create
+     * form renders from `TaxesGroupCrud::form()`.
+     */
+    return TaxesGroupCrud::form();
   }
 
   /**
@@ -251,10 +248,9 @@ class TaxesController extends DashboardController
    */
   public function editTaxGroup(TaxGroup $group)
   {
-    return Inertia::render('dashboard/taxes/groups/edit', [
-      'title' => __('Dashboard'),
-      'group' => $group
-    ]);
-    // return TaxesGroupCrud::form($group);
+    /**
+     * Same generic form shell, pre-filled from the route-bound tax group.
+     */
+    return TaxesGroupCrud::form($group);
   }
 }
