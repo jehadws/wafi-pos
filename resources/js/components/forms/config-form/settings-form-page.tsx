@@ -25,6 +25,7 @@ import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '../../ui/button';
 import { FieldRenderer } from './field-renderer';
+import './sb-crud-form';
 import { useSettingsForm } from './use-settings-form';
 
 // ---------------------------------------------------------------------------

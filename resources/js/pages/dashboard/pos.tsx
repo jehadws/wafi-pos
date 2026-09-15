@@ -1,4 +1,3 @@
-import { customersApi } from '@/api';
 import ErrorBoundary from '@/components/feedback/error-boundary';
 import { OpenRegisterDialog } from '@/components/pos/open-register-dialog';
 import PosSystem from '@/components/pos/pos-system';
@@ -8,7 +7,6 @@ import { useRegisterSession } from '@/hooks/pos/use-register-session';
 import { usePosBeforeUnload } from '@/hooks/use-pos-before-unload';
 import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
-import { resolveDefaultCustomerId } from '@/services/pos-defaults';
 import { PaymentType } from '@/types/models/payment-type';
 import { Head, usePage } from '@inertiajs/react';
 import { useEffect } from 'react';
@@ -60,29 +58,8 @@ export default function PosPage() {
   // (use-pos-session.ts initialize → applyDefaultOrderType) and re-applied
   // after every cart reset — no page-level effect needed for it.
 
-  // Auto-assign the shop's default (walk-in) customer to new carts when configured.
-  // Shops without a default customer keep the explicit select-customer requirement.
-  useEffect(() => {
-    const defaultCustomerId = resolveDefaultCustomerId(options);
-    if (!defaultCustomerId || order.customer) return;
-
-    let cancelled = false;
-    customersApi
-      .get(defaultCustomerId)
-      .then((customer) => {
-        if (!cancelled && customer) {
-          return usePOS.getState().selectCustomer(customer);
-        }
-      })
-      .catch((error) => {
-        console.warn('[POS] Failed to load or assign the default customer:', error);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [options[POS_OPTION_KEYS.defaultCustomer]]);
+  // Default customer is loaded by the store's initialization queue
+  // (use-pos-session.ts initialize → step 3) — no page-level effect needed.
 
   if (license && (license.isRestricted || !license.isValid)) {
     return (
