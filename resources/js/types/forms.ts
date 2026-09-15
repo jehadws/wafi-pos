@@ -99,7 +99,32 @@ export interface FormTabDef {
   footer?: Array<Record<string, unknown>>;
 }
 
-/** `CrudForm::form(main, tabs)` output. */
+/**
+ * Root-level custom section of a form definition — the declarative shape
+ * (Phase 2 of `docs/plans/backend-driven-completion`). `ProcurementCrud`
+ * emits `{ component: 'procurementProducts', taxGroups: …, value: rows }`;
+ * `value` seeds `values[key]` on mount and is emitted back on submit with
+ * client bookkeeping keys (`_key`, `$invalid`, `_clientId`) and phantom row
+ * ids stripped, while every other key reaches the component through
+ * `field.props` at render time. `RewardSystemCrud`'s legacy `rules` array
+ * predates this shape and keeps a back-compat branch in `ConfigForm`.
+ */
+export interface CrudFormCustomSection {
+  component: string;
+  value?: unknown;
+  label?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * `CrudForm::form(main, tabs)` output.
+ *
+ * Beyond `main`/`tabs`, a root key whose value is an object carrying a
+ * `component` string is a root custom section (`CrudFormCustomSection`,
+ * e.g. ProcurementCrud's `products`) — `ConfigForm` seeds it from `value`,
+ * renders it through the custom-component registry, and emits it as a
+ * top-level payload key.
+ */
 export interface CrudFormDefinition {
   main: FormFieldDef | null;
   tabs: Record<string, FormTabDef>;
