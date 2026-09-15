@@ -20,7 +20,7 @@ export default function PosPage() {
     license?: { isValid: boolean; isRestricted: boolean; hwid: string };
     paymentTypes: PaymentType[];
   };
-  const { defineOptions, defineSettings, initialize, processInitialQueue, setAutoMerge, order, definedPaymentsType } = usePOS();
+  const { defineOptions, defineSettings, initialize, processInitialQueue, setAutoMerge, order: _order, definedPaymentsType } = usePOS();
 
   usePosBeforeUnload();
 
