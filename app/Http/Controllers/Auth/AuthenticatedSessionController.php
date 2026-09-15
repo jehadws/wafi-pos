@@ -91,7 +91,7 @@ class AuthenticatedSessionController extends Controller
 
             // return redirect()->intended(Hook::filter('sb-login-redirect'));
             $request->session()->regenerate();
-            return redirect()->intended(route('dashboard', absolute: false));
+            return redirect()->intended(sb()->route('sb.dashboard.home'));
         }
 
         $validator = Validator::make($request->all(), []);
@@ -122,8 +122,7 @@ class AuthenticatedSessionController extends Controller
             data: [
                 'redirectTo' => Hook::filter(
                     'sb-login-redirect',
-                    // ($intended) === url('/') ? sb()->route('sb.dashboard.home') : $intended,
-                    ($intended) === url('/') ? route('dashboard') : $intended,
+                    ($intended) === url('/') ? sb()->route('sb.dashboard.home') : $intended,
                     redirect()->intended()->getTargetUrl() ? true : false
                 ),
             ]

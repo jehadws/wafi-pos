@@ -4,7 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Middleware\SbRestrictMiddleware;
 use Illuminate\Support\Facades\Route;
 
-Route::get('', [DashboardController::class, 'home'])->name('dashboard')
+Route::get('', [DashboardController::class, 'home'])->name('sb.dashboard.home')
   ->middleware([SbRestrictMiddleware::arguments('read.dashboard')]);
 
 include dirname(__FILE__) . '/web/orders.php';

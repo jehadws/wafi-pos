@@ -41,7 +41,7 @@ export default function Welcome() {
           <div className="flex w-full flex-col gap-2.5">
             {auth.user ? (
               <Link
-                href={route('dashboard')}
+                href={route('sb.dashboard.home')}
                 className="bg-primary text-primary-foreground focus-visible:outline-ring rounded-md px-5 py-2.5 text-sm font-semibold shadow-sm transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               >
                 {t('Go to Dashboard')}
