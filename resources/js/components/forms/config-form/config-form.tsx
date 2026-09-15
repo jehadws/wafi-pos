@@ -7,6 +7,7 @@ import { useMemo, useState } from 'react';
 import './code-generator-field';
 import { FieldRenderer } from './field-renderer';
 import { validateFieldValue } from './parse-validation';
+import './procurement-products-field';
 import { getCustomComponent } from './registry';
 import './rules-editor-field';
 import './sb-crud-form';
@@ -17,9 +18,10 @@ import './sb-crud-form';
  *
  * Values are keyed the same way server validation errors arrive
  * (`{mainFieldName}` and `{tabId}.{fieldName}` dot keys), so 422 error
- * maps plug in without reshaping. The side-effect import above
- * registers the backend custom field components (`sbCrudForm`,
- * `sbCreateCoupons`) so definitions can reference them.
+ * maps plug in without reshaping. The side-effect imports above
+ * register the backend custom field components (`sbCrudForm`,
+ * `sbCreateCoupons`, `procurementProducts`) so definitions can reference
+ * them.
  *
  * Root-level custom sections (`CrudFormCustomSection` — a root key of
  * `form` whose value carries a `component` string, e.g. procurements'

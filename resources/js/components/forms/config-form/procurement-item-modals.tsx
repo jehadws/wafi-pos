@@ -5,11 +5,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslation } from '@/lib/i18n';
 import type { ProcurementProductItem } from '@/services/procurement';
-import type { ProcurementFormData, ProcurementModalState } from './use-procurement-form';
+import type { ProcurementModalState } from './procurement-products-field';
 
 interface ProcurementItemModalsProps {
   form: {
-    data: ProcurementFormData;
+    data: {
+      products: ProcurementProductItem[];
+    };
   };
   activeModal: ProcurementModalState;
   taxGroups: { id: number; name: string; taxes?: { id: number; rate: number }[] }[];

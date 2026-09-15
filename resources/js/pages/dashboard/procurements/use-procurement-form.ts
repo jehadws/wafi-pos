@@ -1,19 +1,25 @@
 import { procurementsApi } from '@/api';
+import {
+  createProcurementProductRow,
+  markInvalidProcurementRows,
+  normalizeProductRow,
+  upsertProcurementProductRow,
+  type ProcurementModalState,
+} from '@/components/forms/config-form/procurement-products-field';
 import { useTranslation } from '@/lib/i18n';
-import { buildProcurementPayload, calculateLineItemPrices, ProcurementProductItem } from '@/services/procurement';
+import { buildProcurementPayload, ProcurementProductItem } from '@/services/procurement';
 import { useForm } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-/** Build a unique client-side row key (stable across product_id / procurement-product id collisions). */
-const makeRowKey = (product_id: number, id?: number | null) => `row-${id ?? 'new'}-${product_id}-${Math.random().toString(36).slice(2, 9)}`;
-
-/** Ensure every product row carries a unique `_key` used for React keys + row mutations. */
-const normalizeProductRow = (product: ProcurementProductItem): ProcurementProductItem => ({
-  ...product,
-  _key: product._key ?? makeRowKey(product.product_id, product.id),
-});
+/**
+ * The row logic lives in `components/forms/config-form/procurement-products-field.tsx`
+ * (the `procurementProducts` registry component, Phase 2 of
+ * docs/plans/backend-driven-completion); this hook is a thin wrapper kept
+ * until Phase 3 deletes the hand create/edit pages.
+ */
+export type { ProcurementModalState };
 
 export interface ProcurementFormData {
   name: string;
@@ -26,13 +32,6 @@ export interface ProcurementFormData {
   general_provider_id: string | number;
   products: ProcurementProductItem[];
 }
-
-export type ProcurementModalState = {
-  type: 'options' | 'unit' | 'tax' | 'convert' | null;
-  /** Holds the product row's `_key` (string) — the client-side row identity. */
-  product_id: number | string | null;
-  group_id: number | null;
-};
 
 export interface ProcurementInitialData {
   id: number;
@@ -86,30 +85,7 @@ export function useProcurementForm(initialData?: ProcurementInitialData) {
       return;
     }
 
-    const newProduct: ProcurementProductItem = normalizeProductRow({
-      product_id: product.id,
-      // No `id` here: only rows loaded from an existing procurement carry a
-      // procurement-product id. Sending the catalog product id would make the
-      // backend `ProcurementProduct::find($id)` overwrite an unrelated row.
-      name: product.name,
-      expiration_date: null,
-      gross_purchase_price: 0,
-      purchase_price_edit: 0,
-      net_purchase_price: null,
-      purchase_price: 0,
-      total_price: 0,
-      total_purchase_price: 0,
-      quantity: 1,
-      unit_id: product.unit_quantities?.length > 0 ? product.unit_quantities[0].unit_id : null,
-      unit_group: product.unit_group,
-      unit_quantities: product.unit_quantities || [],
-      convert_unit_id: null,
-      procurement_id: null,
-      $invalid: false,
-      convert_unit_label: null,
-    });
-
-    form.setData((data) => ({ ...data, products: [newProduct, ...data.products] }));
+    form.setData((data) => ({ ...data, products: [createProcurementProductRow(product), ...data.products] }));
     setSearchQuery('');
     setSearchResults([]);
   };
@@ -130,12 +106,7 @@ export function useProcurementForm(initialData?: ProcurementInitialData) {
   const updateProduct = (key: number | string, field: keyof ProcurementProductItem | Partial<ProcurementProductItem>, value?: any) => {
     form.setData((data) => ({
       ...data,
-      products: data.products.map((p) => {
-        if (p._key !== key) return p;
-        const patch = typeof field === 'object' && field !== null ? field : { [field]: value };
-        const merged = { ...p, ...patch } as ProcurementProductItem;
-        return calculateLineItemPrices(merged, 'quantity', Number(merged.quantity || 0));
-      }),
+      products: upsertProcurementProductRow(data.products, key, field, value),
     }));
   };
 
@@ -182,17 +153,9 @@ export function useProcurementForm(initialData?: ProcurementInitialData) {
       valid = false;
     }
 
-    const invalidKeys = new Set<string>();
-    form.data.products.forEach((p) => {
-      if (!p.unit_id) invalidKeys.add(p._key!);
-      if (!Number(p.quantity) || Number(p.quantity) <= 0) invalidKeys.add(p._key!);
-    });
-
-    if (invalidKeys.size > 0) {
-      form.setData((data) => ({
-        ...data,
-        products: data.products.map((p) => ({ ...p, $invalid: invalidKeys.has(p._key!) })),
-      }));
+    const invalidRows = markInvalidProcurementRows(form.data.products);
+    if (invalidRows.some((p) => p.$invalid)) {
+      form.setData((data) => ({ ...data, products: markInvalidProcurementRows(data.products) }));
       toast.error(t('Every product needs a unit and a quantity greater than zero.'));
       valid = false;
     }

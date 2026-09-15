@@ -7,8 +7,8 @@ import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Head, usePage } from '@inertiajs/react';
 import { ProcurementGeneralTab } from './procurement-general-tab';
-import { ProcurementItemModals } from './procurement-item-modals';
-import { ProcurementProductsTab } from './procurement-products-tab';
+import { ProcurementItemModals } from '@/components/forms/config-form/procurement-item-modals';
+import { ProcurementProductsTab } from '@/components/forms/config-form/procurement-products-tab';
 import { ProcurementInitialData, useProcurementForm } from './use-procurement-form';
 
 interface EditProcurementProps {

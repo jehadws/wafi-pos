@@ -5,11 +5,13 @@ import { useTranslation } from '@/lib/i18n';
 import type { ProcurementProductItem } from '@/services/procurement';
 import { formatCurrency } from '@/utils/format';
 import { ArrowRightLeft, Calculator, Package, Settings, Trash2 } from 'lucide-react';
-import type { ProcurementFormData, ProcurementModalState } from './use-procurement-form';
+import type { ProcurementModalState } from './procurement-products-field';
 
 interface ProcurementProductsTabProps {
   form: {
-    data: ProcurementFormData;
+    data: {
+      products: ProcurementProductItem[];
+    };
   };
   searchQuery: string;
   searchResults: any[];
