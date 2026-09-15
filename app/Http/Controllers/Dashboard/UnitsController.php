@@ -19,7 +19,6 @@ use App\Services\DateService;
 use App\Services\UnitService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
-use Inertia\Inertia;
 
 class UnitsController extends DashboardController
 {
@@ -153,9 +152,12 @@ class UnitsController extends DashboardController
   {
     sb()->restrict(['subul.create.products-units']);
 
-    return Inertia::render('dashboard/units/groups/create');
-
-    // return UnitGroupCrud::form();
+    /**
+     * The single backend-driven form shell (Phase 7): the unit-group create
+     * form renders from `UnitGroupCrud::form()` — the config travels inline
+     * as `initialConfig` (no client-side form-config round-trip).
+     */
+    return UnitGroupCrud::form();
   }
 
   /**
@@ -167,10 +169,10 @@ class UnitsController extends DashboardController
   {
     sb()->restrict(['subul.update.products-units']);
 
-    return Inertia::render('dashboard/units/groups/edit', [
-      'group' => $group
-    ]);
-    // return UnitGroupCrud::form($group);
+    /**
+     * Same generic form shell, pre-filled from the route-bound group.
+     */
+    return UnitGroupCrud::form($group);
   }
 
   public function createUnit()
