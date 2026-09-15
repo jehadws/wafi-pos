@@ -25,15 +25,15 @@
 | 3 | Empty-value filter tautology (`SbForms`) | ✅ FIXED | `app/Traits/SbForms.php:152` = `$value !== null && $value !== ''`; pinned by `CrudValidationErrorsContractTest.php:41` |
 | 4 | `datetime` fields blank on edit | ✅ FIXED | `field-renderer.tsx:24` `formatDatetimeLocal` + vitest `config-form.test.tsx:206` |
 | 5 | Settings null-delete unguarded | ✅ FIXED | `SettingsFormConfigContractTest.php:74-104` (unique names across tabs + every field exists in payload) |
-| 6 | `initialConfig` prop is dead | 🔴 OPEN | → `docs/plans/backend-driven-leftovers/02` + `03` |
+| 6 | `initialConfig` prop is dead | ✅ FIXED | `CrudService::form()` renders `crud/form` with inline `initialConfig` (L2.2, commit `328285c`); all 11 migrated pages switched to `XCrud::form()` one-liners and their per-page shells deleted (Phase 3, commits `5c1293e`…`5a13e4a`) |
 | 7 | Settings 422 never inline | ✅ FIXED | `use-settings-form.ts:204-208` maps per-field; `settings-form-page.tsx:202` renders |
 | 8 | `lib/form-flags.ts` dead code | ✅ FIXED | `resources/js/lib/` holds only `settings.ts`, `utils.ts` |
-| 9 | Orphans missed by cleanup | 🟡 PARTIAL | Old orphans deleted; 7 new orphans (taxes, tax-groups, categories, coupons) → `docs/plans/backend-driven-leftovers/01` |
-| 10 | `architecture.md` overstates coverage | 🔴 OPEN | → `docs/plans/backend-driven-leftovers/01` (L1.2) |
-| 11 | Blanket `strip_tags()` vs RichTextEditor | 🔴 OPEN | `CrudService.php:337`, `Options.php:158`, `UserOptions.php:30` → `docs/plans/backend-driven-leftovers/04` |
+| 9 | Orphans missed by cleanup | ✅ FIXED | 7 orphan files deleted (L1.1, commit `551d5fd`); the unit-group hook/fields went with the Phase 7 migration (commit `babb5c9`) — no legacy form orphans remain |
+| 10 | `architecture.md` overstates coverage | ✅ FIXED | coverage claim corrected (L1.2, commit `d92807a`) and refreshed after Phases 7–8: 14 CRUD resources render on the `crud/form` shell |
+| 11 | Blanket `strip_tags()` vs RichTextEditor | ✅ FIXED | per-field allowed-tags sanitization (`CrudService.php`, `Options.php`, `UserOptions.php`; commit `bf3bdc7`), categories description allowlist (commit `9688994`) |
 | 12 | FilePicker clears value on failure | ✅ FIXED | `config-form/file-picker.tsx:37-39` (no `onChange(null)`), `:18-20` (preview resync) |
 | 13 | Registry name-hijack (`'code'` key) | ✅ FIXED | `'code'` registration removed (`code-generator-field.tsx`); `CouponCrud` declares `component: 'codeGenerator'` explicitly (`CrudInput::text(..., $component)`); pinned by `field-renderer.test.tsx` |
-| 14 | 13 pre-existing Pest failures | 🔴 OPEN | root-cause evidence → `docs/plans/backend-driven-leftovers/06` |
+| 14 | 13 pre-existing Pest failures | 🟡 PARTIAL | Phase 6 fixes landed (commits `5dfa00f`, `a96771c`, `fc03539`); 2 failures remain in the working tree (`AuthenticationTest`, `PasswordConfirmationTest`) and trace to the uncommitted auth WIP on the branch — re-verify once that lands |
 
 ---
 
