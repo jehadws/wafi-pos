@@ -66,5 +66,41 @@ it('serializes getFormConfig to clean JSON across all registered CRUD resources'
                 }
             }
         }
+
+        // 5. Field names must be unique across main + every tab — `SbForms::getFlatForm`
+        //    flattens the submit body per field name (later tab wins), so a duplicate
+        //    silently overwrites the earlier value on POST/PUT.
+        //
+        // Blocked migrations (docs/plans/backend-driven-leftovers/08): these Cruds
+        // still carry duplicate field names across tabs. Remove from this list when
+        // their forms are redesigned (L8.2) and migrated.
+        $knownDuplicates = ['CustomerCrud', 'UserCrud', 'ProcurementCrud'];
+        $shortName = $file->getFilenameWithoutExtension();
+
+        if (! in_array($shortName, $knownDuplicates, true)) {
+            $allFieldNames = [];
+            $fieldGroups = [];
+
+            if (isset($config['form']['main']) && is_array($config['form']['main']) && ! empty($config['form']['main']['name'])) {
+                $fieldGroups['main'] = [$config['form']['main']];
+            }
+
+            foreach ($config['form']['tabs'] ?? [] as $tabKey => $tab) {
+                if (is_array($tab) && isset($tab['fields']) && is_array($tab['fields'])) {
+                    $fieldGroups[$tabKey] = $tab['fields'];
+                }
+            }
+
+            foreach ($fieldGroups as $groupKey => $fields) {
+                foreach ($fields as $field) {
+                    if (is_array($field) && ! empty($field['name']) && is_string($field['name'])) {
+                        expect(in_array($field['name'], $allFieldNames, true))->toBeFalse(
+                            "Duplicate field name [{$field['name']}] in {$className} (main/tabs group [{$groupKey}]) — SbForms flattening would overwrite it"
+                        );
+                        $allFieldNames[] = $field['name'];
+                    }
+                }
+            }
+        }
     }
 });
