@@ -294,16 +294,59 @@ class ProcurementCrud extends CrudService
   }
 
   /**
-   * Before saving a record
+   * Reshape the flat inputs produced by SbForms::getPlainData
+   * (`{ name, general.* fields, products }`) into the nested shape
+   * ProcurementService::create/edit consume:
+   * `{ name, general: {…7 whitelisted fields…}, products: [...] }`.
+   * Client-only row keys (`_key`, `$invalid`) are stripped here.
+   */
+  private function toServicePayload(array $inputs): array
+  {
+    return [
+      'name' => $inputs['name'] ?? '',
+
+      'general' => collect($inputs)->only([
+        'provider_id',
+        'delivery_status',
+        'payment_status',
+        'invoice_reference',
+        'delivery_time',
+        'invoice_date',
+        'automatic_approval',
+      ])->all(),
+
+      'products' => collect($inputs['products'] ?? [])
+        ->map(fn ($row) => collect($row)->except(['_key', '$invalid'])->all())
+        ->values()
+        ->all(),
+    ];
+  }
+
+  /**
+   * Before saving a record — delegate the whole write to
+   * ProcurementService::create (single transactional writer). The
+   * generic fill/save block is disabled (disablePost) so this is
+   * the only place a procurement is written on the crud path.
    *
-   * @param  Request $request
+   * @param  array $inputs flat inputs from SbForms::getPlainData
    * @return void
    */
-  public function beforePost($request)
+  public function beforePost($inputs, $entry = null, $filtered = [])
   {
     $this->allowedTo('create');
 
-    return $request;
+    $payload = $this->toServicePayload($inputs);
+
+    /**
+     * Double validation is intentional: CrudPostRequest already
+     * validated the general.* rules extracted from the form
+     * definition; this re-checks them (identical rules) and adds
+     * the per-row rules the form definition cannot express.
+     * ValidationException keys land as `general.{name}` / `products.{i}.{name}`.
+     */
+    Validator::make($payload, app(ProcurementRequest::class)->rules())->validate();
+
+    app(ProcurementService::class)->create($payload);
   }
 
   /**
@@ -333,17 +376,39 @@ class ProcurementCrud extends CrudService
   }
 
   /**
-   * Before updating a record
+   * Before updating a record — delegate the whole write to
+   * ProcurementService::edit (single transactional writer). The
+   * generic fill/save block is disabled (disablePut).
    *
-   * @param Request $request
-   * @param  object entry
+   * @param  array  $inputs flat inputs from SbForms::getPlainData
+   * @param  object $entry
    * @return void
    */
-  public function beforePut($request, $entry)
+  public function beforePut($inputs, $entry = null, $filtered = [])
   {
     $this->allowedTo('update');
 
-    return $request;
+    /**
+     * Same guard as ProcurementController::edit — a stocked procurement
+     * is frozen (its stock has already been synced). Surfaced as a
+     * validation error on general.delivery_status (422, not 500), so the
+     * ProcurementService internal guard never produces an unhandled 500.
+     */
+    if ($entry instanceof Procurement && $entry->delivery_status === Procurement::STOCKED) {
+      throw ValidationException::withMessages([
+        'general.delivery_status' => __('Unable to edit a procurement that is stocked. Consider performing an adjustment or either delete the procurement.'),
+      ]);
+    }
+
+    $payload = $this->toServicePayload($inputs);
+
+    /**
+     * Row rules + the general.* whitelist re-checked server-side —
+     * see beforePost for why the double validation is intentional.
+     */
+    Validator::make($payload, app(ProcurementRequest::class)->rules())->validate();
+
+    app(ProcurementService::class)->edit($entry->id, $payload);
   }
 
   /**
