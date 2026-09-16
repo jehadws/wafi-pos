@@ -17,7 +17,6 @@ use App\Exceptions\NotAllowedException;
 use App\Exceptions\NotFoundException;
 use App\Http\Requests\PostNewPasswordRequest;
 use App\Http\Requests\PostPasswordLostRequest;
-use App\Http\Requests\SignInRequest;
 use App\Http\Requests\SignUpRequest;
 use App\Mail\ResetPasswordMail;
 use App\Models\User;
@@ -136,7 +135,7 @@ class AuthController extends Controller
         ] );
     }
 
-    public function postSignIn( SignInRequest $request )
+    public function postSignIn( Request $request )
     {
         Hook::action( 'sb-login-form', $request );
 
