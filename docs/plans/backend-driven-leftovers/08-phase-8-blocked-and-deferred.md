@@ -71,5 +71,5 @@ Then migrate (controller one-liner + delete, per the Phase 3/7 pattern):
 
 - `productsApi.getAll()` — **kept**; live caller `components/forms/product-form/groups-tab.tsx:39`.
 - Settings pages — 8/8 migrated; reset page intentionally custom.
-- Tables Track D — all 7 bespoke `page.tsx` files documented as non-CRUD/bespoke (`architecture.md` known-debt #7/#8); products list exception already documented.
+- Tables Track D — the bespoke `page.tsx` files documented as non-CRUD/bespoke (`architecture.md`, tables coverage & exceptions); the products list exception is closed — migrated to `ProductCrud::table()` (Phase 4 of `docs/plans/backend-driven-completion/`).
 - Forms-audit items 1, 2, 3, 4, 5, 7, 8, 12 + tab-identifier addendum — fixed (evidence in `00-overview-and-verification.md`).

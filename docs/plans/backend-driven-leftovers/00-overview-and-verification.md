@@ -47,7 +47,7 @@ Every phase is atomic: implement → verify (per-phase gate) → commit.
 
 ### Tables
 
-- List pages: 27 migrated via the generic `crud/list` shell; exceptions per `architecture.md` known-debt #7/#8. **Track D of the old plan needs no action** — all 7 bespoke `page.tsx` files (`products`, `medias`, `accounting/rules`, `stock-adjustment`, `print-labels`, `orders/receipt`, `orders/invoice`) are documented or non-CRUD by design.
+- List pages: 27 migrated via the generic `crud/list` shell; exceptions per `architecture.md` known-debt #7/#8. **Track D of the old plan needs no action** — the bespoke `page.tsx` files (`medias`, `accounting/rules`, `stock-adjustment`, `print-labels`, `orders/receipt`, `orders/invoice`) are documented or non-CRUD by design. *(Update: the 7th file, `products`, has since migrated to `ProductCrud::table()` — Phase 4 of `docs/plans/backend-driven-completion/`; known-debt #8 records the resolution.)*
 
 ### Corrected form-page census (replaces the old plan's "~14/21 migrated")
 

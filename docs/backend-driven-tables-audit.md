@@ -175,7 +175,7 @@ No GOTO action points at an `api/` URL (the former "Create Reflection" GOTO alre
 |---|---|---|---|---|
 | `sb.orders::sb.order-options` | OrderCrud | Options | `/dashboard/orders/edit/{id}` | Order options modal |
 | `sb.orders::sb.order-refunds` | OrderCrud (only when refunds exist) | Refund Receipt | `/dashboard/orders/refund-receipt/{id}` | Refund receipt print modal |
-| `sb.products::sb.quantities` | ProductCrud | Preview | `/dashboard/products/edit/{id}` | Product preview modal (identifier predates the Preview label) |
+| `sb.products::sb.quantities` | ProductCrud | ~~Preview~~ | `/dashboard/products/edit/{id}` | Was a mislabeled POPUP (identifier predates the label); converted to a **GOTO** ("See Quantities" → `/dashboard/products/{id}/units`) in Phase 4 of backend-driven-completion — no POPUP remains on `sb.products` |
 | `sb.cash-registers-history::view-details` | RegisterHistoryCrud | Details | — (content-only) | Register history details modal |
 | `sb.hold-orders::sb.open` | HoldOrderCrud | Continue | — (POS-handled) | Restores the held order into the POS |
 
@@ -385,7 +385,7 @@ Every controller list method is a one-liner (`return XCrud::table();`); the hand
 | `/dashboard/cash-registers/history/{register}` | `sb.cash-registers-history` (scoped) | 3 |
 | `/dashboard/procurements/products` | `sb.procurements-products` | 3 (T6.1) |
 
-Sanctioned non-migrations (remaining `page.tsx` files): `/dashboard/products` — bespoke tables exception (B3.b-analog); `/dashboard/medias` and `/dashboard/accounting/rules` — not CRUD-table-backed resources; `/dashboard/orders/invoice` + `/dashboard/orders/receipt` — Inertia GOTO *target* pages, not lists; `/dashboard/products/print-labels` + `/dashboard/products/stock-adjustment` — bespoke tools, no list.
+Sanctioned non-migrations (remaining `page.tsx` files): `/dashboard/medias` and `/dashboard/accounting/rules` — not CRUD-table-backed resources; `/dashboard/orders/invoice` + `/dashboard/orders/receipt` — Inertia GOTO *target* pages, not lists; `/dashboard/products/print-labels` + `/dashboard/products/stock-adjustment` — bespoke tools, no list. (*The `/dashboard/products` entry was struck by the Phase 4 addendum below — the list migrated to `ProductCrud::table()`.*)
 
 ### Missing frontend actions — now exposed
 
@@ -402,7 +402,7 @@ Every row of the planning-time "Missing frontend actions" table except the sanct
 | Providers — See Procurements / See Products | Exposed (Wave 2, T4.6); targets live (Phase 5) |
 | Cash Registers — Register History | Exposed (Wave 2, T4.7); target table live (Phase 5) |
 | Users — Orders / Rewards / Coupons / Wallet History | Exposed (T5.3 routes + generic pages) |
-| Products — Preview / Quantities / History | **Not exposed** — bespoke exception; the hand dropdown keeps Copy ID / Edit / Delete |
+| Products — Preview / Quantities / History | Exposed (Phase 4, backend-driven-completion) — the list moved to `ProductCrud::table()`; Edit / "See Quantities" / "See History" GOTOs and Delete ship from `$actions`; the dead "Preview" POPUP became the See-Quantities GOTO |
 
 ### Popup registry coverage
 
@@ -413,11 +413,11 @@ Every row of the planning-time "Missing frontend actions" table except the sanct
 | `sb.cash-registers-history::view-details` | Registered — row-field dialog (no URL) |
 | `sb.products-histories::sb.description` | Registered — row-description dialog (no URL) |
 | `sb.hold-orders::sb.open` | POS-handled — never rendered on a dashboard list |
-| `sb.products::sb.quantities` | Intentionally unregistered — the navigate fallback (dev-time warning) reaches the product edit page |
+| `sb.products::sb.quantities` | Removed (Phase 4, backend-driven-completion) — the POPUP became a "See Quantities" GOTO; nothing registers or falls back for this key |
 
 ### Final deferrals / sanctioned exceptions
 
-1. **Products list page** — bespoke (tables B3.b-analog): its hand-built rows carry no `$actions`; wiring the executor would force the crud-list round-trip onto the page. Preview/Quantities/History GOTOs stay unexposed there.
+1. ~~**Products list page**~~ — **resolved** (Phase 4, backend-driven-completion): rendered through `ProductCrud::table()`; hand page deleted — see the addendum below.
 2. **Medias manager and accounting rules** — not CRUD-table-backed resources; out of the engine's scope by design.
 3. **Client-only columns dropped in Wave 1** (`displays_on_pos` / `total_items` / `base_unit` buckets) — candidates for `getQueryFilters()` if the need resurfaces (carried from the Phase 3 notes).
 4. **Users sub-list actions** — the T4.10 deferral is **closed**: T5.3 built the routes + generic pages, so the four GOTOs ship on `UserCrud` rows.
@@ -436,6 +436,18 @@ Every row of the planning-time "Missing frontend actions" table except the sanct
 
 - Architecture: `docs/agents/architecture.md` — layer-map `components/tables/crud-table/` row, the **Backend-driven tables engine** section (rendering spine, payload contract, JSON-only toast rule, coverage & exceptions), ripple map, and known-debt #8.
 - Plans: `docs/plans/backend-driven-tables/01` (backend contract) → `02` (engine) → `03` (Wave 1) → `04` (Wave 2) → `05` (history & secondary pages) → `06` (this close-out).
+
+---
+
+## Addendum — Phase 4: products list migration (2026-09-16)
+
+Phase 4 of `docs/plans/backend-driven-completion/04-phase-4-products-list-migration.md` un-sanctioned the B3.b-analog tables exception (last hand-built list page):
+
+- **Controller flip**: `ProductsController::listProducts` → `return ProductCrud::table();`. The hand `page.tsx` (unbounded `Product::addSelect(…)->get()` prop, its own dropdown/ConfirmationDialog) is deleted — server pagination/search replaces the unbounded load, and the dead `sb-crud-footer` quantity-popup hook went with it (its Blade view no longer existed on disk; the SPA shell never rendered the footer).
+- **Row-action reconciliation** (P4.2): the mislabeled pair — `sb.quantities` POPUP labeled "Preview" opening the **edit** URL, plus the duplicate `units` GOTO — collapsed into one truthful `sb.quantities` **GOTO** → `/dashboard/products/{id}/units` labeled "See Quantities". No POPUP remains on `sb.products`, so nothing registers in `action-popup-registry.tsx` and no unregistered-fallback warning can fire on the primary list.
+- **Pre-flight parity audit** (P4.1, evidence in the phase plan): columns parity via `getColumns` (author/category hydrate from the CUD's existing `user`/`category` relations — `user_username` / `category_name`); Copy ID is the shell's built-in; bulk delete parity via `getBulkActions`; Add-New/Refresh/title/description parity via `getLinks`/`getLabels`. Accepted differences recorded: all columns `$sort => false` (backend single source of truth, consistent with every migrated CRUD); "Delete Selected Groups" bulk label is the fleet-wide copy-paste — recorded, not changed.
+- **Dead client code**: `productsApi.remove` / `productsApi.bulkDelete` deleted (`api/products.ts` — they existed solely for the hand page, per that file's own comment).
+- **Verification**: `php artisan test` green (62 passed, 7643 assertions — zero regressions, no known baseline); `npm run types && npm run lint && npm run test` green (47 files / 421 tests). Manual row-action smoke on `/dashboard/products` remains as the standing manual check (columns/actions/bulk/pagination), as for the prior waves.
 
 
 
