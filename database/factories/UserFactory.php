@@ -26,7 +26,7 @@ class UserFactory extends Factory
 
     public function definition()
     {
-        return Hook::filter( 'ns-user-factory', [
+        return Hook::filter( 'sb-user-factory', [
             'username' => $this->faker->unique()->userName,
             'first_name' => $this->faker->firstName,
             'last_name' => $this->faker->lastName(),
