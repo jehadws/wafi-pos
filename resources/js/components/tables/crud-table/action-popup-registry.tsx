@@ -15,8 +15,9 @@
  * `sb.order-refunds` (Wave 2), plus the Phase-5 history popups
  * (`sb.cash-registers-history::view-details`,
  * `sb.products-histories::sb.description`). `sb.products::sb.quantities`
- * keeps its URL, so an unregistered fallback still navigates somewhere
- * meaningful (the product edit page).
+ * no longer exists as a POPUP — Phase 4 (backend-driven-completion)
+ * converted it to a GOTO ("See Quantities" → the product-units page), so
+ * nothing registers under that key.
  */
 
 import { get } from '@/api/http';

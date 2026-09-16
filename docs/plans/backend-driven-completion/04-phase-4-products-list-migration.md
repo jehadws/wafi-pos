@@ -51,11 +51,28 @@ This **un-sanctions** the B3.b-analog exception recorded in `docs/plans/backend-
 
 ---
 
-## Parity table (fill during P4.1, before implementing)
+## Parity table (filled during P4.1 — pre-flight audit evidence)
 
 | Hand page behavior | Config carrier | Status |
 |---|---|---|
-| *(fill in during pre-flight)* | | |
+| Columns: select, name, type, sku, category_name, status, author_name, created_at, actions (`page.tsx:62-146`) | `getColumns` :682-724 (name, type, sku, category_name, status, `user_username`, created_at) + checkbox/actions columns via `showCheckboxes` / `prependOptions` | ✅ Parity — backend superset: `type` cast-labeled (`ProductTypeCast`), `status` → Available/Hidden, `category_name` → "Unassigned" fallback, `created_at` date-formatted by the `*_at` convention, nulls → em dash |
+| Author/category hydration — hand `addSelect(['author_name' => …, 'category_name' => …])` (`ProductsController.php:338-341`) | `ProductCrud::$relations` :63-69 joins `user` / `category` + `$pick` :72-76 → `user_username` / `category_name` | ✅ Already hydrated — aliases match the columns exactly; **no relations added** (the `ProcurementCrud.php:46-49` pattern was already applied here) |
+| Search `searchKey="name"` — client-side over the unbounded prop | server-side `search` param on `GET /api/crud/sb.products` | ✅ Improved (server-side + paginated; fixes the N-products memory load) |
+| Sortable headers (TanStack client-side sort on every column) | `$sort => false` on all columns; backend `hook()` orders `updated_at desc` | ⚠️ Accepted difference — backend is the single source of truth; consistent with the 27 already-migrated pages |
+| Row actions: Copy ID (`page.tsx:129`), Edit → `/dashboard/products/edit/{id}`, Delete w/ own dialog | shell built-in Copy ID (`row-actions-menu` copies `row.$id`); `edit` GOTO :743-748; `delete` DELETE + standardized confirm :771-780 | ✅ Parity + gains (See Quantities / See History GOTOs); delete moves to the standardized confirm |
+| `sb.quantities` POPUP labeled "Preview" → **edit** URL (:750-755) + duplicate `units` GOTO "See Quantities" (:757-762) | **P4.2 resolution:** `sb.quantities` becomes **GOTO** → `/dashboard/products/{id}/units` labeled "See Quantities"; the duplicate `units` action is **deleted**; no POPUP survives → no registry entry needed | 🔧 Fixed in P4.2 |
+| Bulk "Delete Selected" → `productsApi.bulkDelete` (`page.tsx:148-164`) | `getBulkActions` :848-860 `delete_selected` → same `sb.api.crud-bulk-actions` endpoint | ✅ Parity; note the "Delete Selected Groups" label is the fleet-wide copy-paste present on every CRUD — recorded, deliberately not changed here (a cross-cutting label sweep is not this phase) |
+| Add New → `route('sb.dashboard.products.create')`; Refresh; title "Products List" / "Display all products." | `getLinks` :834-841 + `getLabels` :136-153 (same strings) | ✅ Parity; Add New keeps targeting the bespoke products form (Phase 5) |
+| Blade quantity popup: `Hook::addAction('sb-crud-footer', …)` + `pages.dashboard.products.quantity-popup` view (`ProductsController.php:331-335`) | — (the SPA shell never rendered `sb-crud-footer`) | 🗑️ Dead — **the view file does not exist on disk** (verified `Test-Path`); hook deleted with the hand render |
+
+### P4.1 checklist (conclusions before implementation)
+
+1. No `ProductCrud` relations work required (`user_username` / `category_name` already hydrate).
+2. P4.2: `sb.quantities` → GOTO (units URL, "See Quantities" label); delete the `units` action; no POPUP identifier survives → **no** `action-popup-registry` registration; the stale registry comment + registry test comment (`sb.products::sb.quantities` fallback note) must be updated instead.
+3. `edit` GOTO, `history` GOTO, `delete` DELETE stay as-is.
+4. Delete the dead `sb-crud-footer` hook with the hand render (referenced view already absent).
+5. After the flip, `productsApi.remove` / `productsApi.bulkDelete` (`api/products.ts:30-35`) become dead — their own doc comment says they "serve the bespoke products list page". Delete both methods + fix the file comment (same spirit as the Phase-9 dead-API-helpers sweep).
+6. `Output` and `User` imports in `ProductsController` become unused with the flip — remove them (verified: no other usage/type-hints).
 
 ## Risks / rollback
 

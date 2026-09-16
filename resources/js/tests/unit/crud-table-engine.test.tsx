@@ -832,7 +832,8 @@ describe('action-popup-registry', () => {
   it('seeds the Wave-2 orders popups from the T1.6 enumeration', () => {
     expect(getActionPopup('sb.orders', 'sb.order-options')).toBeTruthy();
     expect(getActionPopup('sb.orders', 'sb.order-refunds')).toBeTruthy();
-    // Deferred resources register when their pages migrate (Phase 5).
+    // sb.products emits no POPUP anymore — Phase 4 (backend-driven-completion)
+    // converted sb.quantities to a GOTO, so nothing registers under that key.
     expect(getActionPopup('sb.products', 'sb.quantities')).toBeNull();
   });
 

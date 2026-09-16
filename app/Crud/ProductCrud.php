@@ -747,15 +747,16 @@ class ProductCrud extends CrudService
             url: sb()->url( '/dashboard/' . 'products' . '/edit/' . $entry->id ),
         );
 
+        /**
+         * Phase 4 (backend-driven-completion) reconciled the former mislabeled
+         * pair: the old `sb.quantities` POPUP was labeled "Preview" but opened
+         * the edit URL, while a duplicate `units` GOTO carried the real
+         * "See Quantities" target. Only the truthful pair remains: the
+         * quantities surface is the product-units table, reached by GOTO —
+         * no POPUP identifier survives, so nothing needs popup registration.
+         */
         $entry->action(
             identifier: 'sb.quantities',
-            label: __( 'Preview' ),
-            type: 'POPUP',
-            url: sb()->url( '/dashboard/' . 'products' . '/edit/' . $entry->id ),
-        );
-
-        $entry->action(
-            identifier: 'units',
             label: __( 'See Quantities' ),
             type: 'GOTO',
             url: sb()->url( '/dashboard/' . 'products/' . $entry->id . '/units' ),
