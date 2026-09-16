@@ -100,8 +100,9 @@ function procurementWriteSeedStockedProduct(int $authorId): array
 }
 
 /**
- * A client-shaped product row — the exact keys buildProcurementPayload
- * emits (plus the client-only `_key`/`$invalid` the backend strips).
+ * A client-shaped product row — the exact keys the crud form shell's
+ * buildCrudPayload emits (plus the client-only `_key`/`$invalid` the
+ * backend strips).
  */
 function procurementWriteProductRow(int $productId, int $unitId, int $quantity = 5, float $price = 10.0): array
 {
