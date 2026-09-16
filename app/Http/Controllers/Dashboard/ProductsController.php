@@ -9,7 +9,6 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Classes\Hook;
-use App\Classes\Output;
 use App\Crud\ProductCrud;
 use App\Crud\ProductHistoryCrud;
 use App\Crud\ProductUnitQuantitiesCrud;
@@ -26,7 +25,6 @@ use App\Models\ProductUnitQuantity;
 use App\Models\TaxGroup;
 use App\Models\Unit;
 use App\Models\UnitGroup;
-use App\Models\User;
 use App\Services\DateService;
 use App\Services\Helper;
 use App\Services\ProductService;
@@ -326,25 +324,17 @@ class ProductsController extends DashboardController
 
   public function listProducts()
   {
-    sb()->restrict(['subul.read.products']);
-
-    Hook::addAction('sb-crud-footer', function (Output $output) {
-      $output->addView('pages.dashboard.products.quantity-popup');
-
-      return $output;
-    });
-
-
-    $products =  Product::addSelect([
-      'author_name' => User::select('username')->whereColumn('subul_users.id', 'author')->limit(1),
-      'category_name' => ProductCategory::select('name')->whereColumn('subul_products_categories.id', 'category_id')->limit(1),
-    ])->get();
-    return Inertia::render('dashboard/products/page', [
-      'title' => __('Dashboard'),
-      'products' => $products
-    ]);
-
-    // return ProductCrud::table();
+    /**
+     * The single backend-driven list shell (Phase 4, backend-driven-completion):
+     * the products table renders from `ProductCrud::table()` — columns, row
+     * actions (Edit / See Quantities / See History / Delete), bulk delete and
+     * server pagination all travel with the config, replacing the hand page's
+     * unbounded `Product::addSelect(…)->get()` prop and its own dropdown. The
+     * Blade `sb-crud-footer` quantity-popup hook went with it (the view no
+     * longer exists and the SPA shell never rendered the footer).
+     * `table()` enforces `allowedTo('read')` internally.
+     */
+    return ProductCrud::table();
   }
 
   public function editProduct(Product $product)
