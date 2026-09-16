@@ -19,8 +19,6 @@ use App\Jobs\ProcurementRefreshJob;
 use App\Models\Procurement;
 use App\Models\ProcurementProduct;
 use App\Models\Product;
-use App\Models\Provider;
-use App\Models\TaxGroup;
 use App\Models\Unit;
 use App\Services\DateService;
 use App\Services\Options;
@@ -282,50 +280,29 @@ class ProcurementController extends DashboardController
   {
     sb()->restrict(['subul.create.procurements']);
 
-    $tax_groups = TaxGroup::with('taxes:id,tax_group_id,rate')->get(['id', 'name']);
-    $providers = Provider::get(['id', 'first_name', 'last_name']);
-    $providers = $providers->map(function ($provider) {
-      return [
-        'id' => $provider->id,
-        'name' => $provider->name, // uses accessor
-      ];
-    });
-    return Inertia::render('dashboard/procurements/create', [
-      'title' => __('New Procurement'),
-      'description' => __('Make a new procurement.'),
-      'providers' => $providers,
-      'tax_groups' => $tax_groups
-    ]);
-    // return View::make( 'pages.dashboard.procurements.create', Hook::filter( 'sb-create-procurement-labels', [
-    //     'title' => __( 'New Procurement' ),
-    //     'description' => __( 'Make a new procurement.' ),
-    // ] ) );
+    /**
+     * The single backend-driven form shell (P3.1): the create form renders
+     * from `ProcurementCrud::form()` — the main name field, the general tab
+     * (provider with inline-create, delivery/payment status, invoice
+     * date/reference, delivery time, approval) and the root products
+     * section all come from `getForm()`, which carries the tax groups and
+     * provider options. `form()` re-checks a permission via getFormConfig
+     * (read on create), hence the explicit create guard kept above.
+     */
+    return ProcurementCrud::form();
   }
 
   public function updateProcurement(Procurement $procurement)
   {
-    sb()->restrict(['subul.update.procurements']);
-
-    if ($procurement->delivery_status === Procurement::STOCKED) {
-      throw new NotAllowedException(__('Unable to edit a procurement that is stocked. Consider performing an adjustment or either delete the procurement.'));
-    }
-
-    $tax_groups = TaxGroup::with('taxes:id,tax_group_id,rate')->get(['id', 'name']);
-    $providers = Provider::get(['id', 'first_name', 'last_name']);
-    $providers = $providers->map(function ($provider) {
-      return [
-        'id' => $provider->id,
-        'name' => $provider->name,
-      ];
-    });
-
-    return Inertia::render('dashboard/procurements/edit', [
-      'title' => __('Edit Procurement'),
-      'description' => __('Perform adjustment on existing procurement.'),
-      'procurement' => $procurement->load('products'),
-      'providers' => $providers,
-      'tax_groups' => $tax_groups,
-    ]);
+    /**
+     * The single backend-driven form shell (P3.1): `getFormConfig(entry)`
+     * enforces `subul.update.procurements`, the rows and header fields are
+     * seeded from `getForm($entry)` (products hydrate from the relation),
+     * and the stocked-edit guard now lives in `ProcurementCrud::beforePut`
+     * and `ProcurementService::edit` (422 on general.delivery_status
+     * instead of the former exception page).
+     */
+    return ProcurementCrud::form($procurement);
   }
 
   public function procurementInvoice(Procurement $procurement)
