@@ -33,6 +33,7 @@ export interface AuthFormShellProps {
   submitLabel?: string;
   submitMethod?: 'post' | 'put';
   onSuccessRedirect?: string | null;
+  resetFieldsOnFinish?: string[];
   processing?: boolean;
   errors?: Record<string, string>;
   topSlot?: ReactNode;
@@ -77,6 +78,7 @@ export function AuthFormShell({
   submitLabel,
   submitMethod = 'post',
   onSuccessRedirect = null,
+  resetFieldsOnFinish,
   processing: externalProcessing,
   errors: externalErrors,
   topSlot,
@@ -88,7 +90,7 @@ export function AuthFormShell({
 
   const initialData = buildInitialData(fields, initialValues) as Record<string, any>;
   const form = useForm(initialData);
-  const { data, setData, post, put, processing, errors, clearErrors } = form;
+  const { data, setData, post, put, processing, errors, clearErrors, reset } = form;
 
   const isProcessing = externalProcessing ?? processing;
   const displayErrors = externalErrors ?? errors;
@@ -104,6 +106,11 @@ export function AuthFormShell({
       onSuccess: () => {
         if (onSuccessRedirect) {
           router.visit(onSuccessRedirect);
+        }
+      },
+      onFinish: () => {
+        if (resetFieldsOnFinish && resetFieldsOnFinish.length > 0) {
+          reset(...resetFieldsOnFinish);
         }
       },
     };
