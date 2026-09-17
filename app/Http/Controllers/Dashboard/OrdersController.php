@@ -313,8 +313,10 @@ class OrdersController extends DashboardController
     return Inertia::render('dashboard/orders/receipt/page', [
       'order' => $order,
       'title' => sprintf(__('Order Receipt &mdash; %s'), $order->code),
-      'optionsService' => $this->optionsService,
-      'ordersService' => $this->ordersService,
+      'options' => [
+        'sb_invoice_receipt_logo' => $this->optionsService->get('sb_invoice_receipt_logo'),
+        'sb_invoice_receipt_footer' => $this->optionsService->get('sb_invoice_receipt_footer'),
+      ],
       'paymentTypes' => collect($this->paymentTypes)->mapWithKeys(function ($payment) {
         return [$payment['identifier'] => $payment['label']];
       }),
