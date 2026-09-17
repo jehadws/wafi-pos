@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Fields\AuthLoginFields;
 use App\Fields\AuthRegisterFields;
 use App\Fields\CashRegisterCashingFields;
+use App\Fields\ConfirmPasswordFields;
 use App\Fields\CashRegisterCashoutFields;
 use App\Fields\CashRegisterClosingFields;
 use App\Fields\CashRegisterOpeningFields;
@@ -77,6 +78,9 @@ class FormsProvider extends ServiceProvider
                     break;
                 case AuthRegisterFields::getIdentifier():
                     return new AuthRegisterFields;
+                    break;
+                case ConfirmPasswordFields::getIdentifier():
+                    return new ConfirmPasswordFields;
                     break;
                 case CustomersAccountFields::getIdentifier():
                     return new CustomersAccountFields;

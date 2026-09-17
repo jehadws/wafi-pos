@@ -6,6 +6,7 @@ use App\Casts\ProductTypeCast;
 use App\Classes\CrudForm;
 use App\Classes\FormInput;
 use App\Exceptions\NotAllowedException;
+use App\Http\Requests\ProductRequest;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductUnitQuantity;
@@ -14,8 +15,11 @@ use App\Models\UnitGroup;
 use App\Services\CrudEntry;
 use App\Services\CrudService;
 use App\Services\Helper;
+use App\Services\ProductService;
 use App\Services\TaxService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use TorMorten\Eventy\Facades\Events as Hook;
 
 class ProductCrud extends CrudService
@@ -107,6 +111,22 @@ class ProductCrud extends CrudService
     public $fillable = [];
 
     /**
+     * Phase 5 (docs/plans/backend-driven-completion/05): the crud write path
+     * delegates products to ProductService (the single transactional writer
+     * — product + unit quantities + gallery + sub items) from
+     * beforePost/beforePut, exactly like ProcurementCrud delegates to
+     * ProcurementService. The generic fill/save block is disabled so the
+     * nested `variations` array can never reach the model; the section key
+     * is skipped for good measure. After a successful write the shell
+     * redirects to the products list (same UX as the former dedicated
+     * endpoints' to_route redirect).
+     */
+    public $to_route = 'sb.dashboard.products';
+    public $disablePost = true;
+    public $disablePut = true;
+    public $skippable = [ 'variations' ];
+
+    /**
      * protected tax service
      *
      * @param TaxService
@@ -195,7 +215,7 @@ class ProductCrud extends CrudService
                 errors: [],
                 label: __( 'Convert Unit' ),
                 name: 'convert_unit_id',
-                validation: 'different:variations.*.units.selling_group.*.unit_id',
+                validation: 'different:units.selling_group.*.unit_id',
                 options: Helper::toJsOptions( $units, [ 'id', 'name' ] ),
                 value: '',
                 description: __( 'The unit that is selected for convertion by default.' ),
@@ -262,7 +282,7 @@ class ProductCrud extends CrudService
             ),
         ) );
 
-        return Hook::filter( 'sb-products-crud-form', [
+        $legacyShape = [
             'main' => [
                 'label' => __( 'Name' ),
                 'name' => 'name',
@@ -363,32 +383,16 @@ class ProductCrud extends CrudService
                         ],
                         'groups' => [
                             'label' => __( 'Groups' ),
-                            'fields' => [
-                                [
-                                    'type' => 'hidden',
-                                    'name' => 'product_subitems',
-                                    'value' => $entry !== null ? $entry->sub_items()->get()->map( function ( $subItem ) {
-                                        $subItem->load( 'product.unit_quantities.unit' );
 
-                                        return [
-                                            '_quantity_toggled' => false,
-                                            '_price_toggled' => false,
-                                            '_unit_toggled' => false,
-                                            'id' => $subItem->id,
-                                            'name' => $subItem->product->name,
-                                            'unit_quantity_id' => $subItem->unit_quantity_id,
-                                            'unit_quantity' => $subItem->unit_quantity,
-                                            'product_id' => $subItem->product_id,
-                                            'parent_id' => $subItem->parent_id,
-                                            'unit_id' => $subItem->unit_id,
-                                            'unit' => $subItem->unit,
-                                            'quantity' => $subItem->quantity,
-                                            'unit_quantities' => $subItem->product->unit_quantities,
-                                            'sale_price' => $subItem->sale_price,
-                                        ];
-                                    } ) : [],
-                                ],
-                            ],
+                            /**
+                             * The grouped-product sub items are owned by the
+                             * `productVariations` section value
+                             * (`groups.product_subitems` rows, hydrated from
+                             * `sub_items` below) — the former hidden
+                             * `product_subitems` field def only pre-filled
+                             * them for the bespoke tab.
+                             */
+                            'fields' => [],
                             'component' => 'sbProductGroup',
                         ],
                         'units' => [
@@ -430,49 +434,16 @@ class ProductCrud extends CrudService
                                     'description' => __( 'Determine the unit for sale.' ),
                                     'label' => __( 'Selling Unit' ),
                                     'fields' => $fields,
+                                    'closable' => true,
 
                                     /**
-                                     * We make sure to popular the unit quantity
-                                     * with the entry values using the fields array.
+                                     * The selling-group rows hydrate from the
+                                     * section `value` (`units.selling_group`,
+                                     * seeded from ProductUnitQuantity below) —
+                                     * the former per-row `groups` pre-fill and
+                                     * the entry `options` are gone with the
+                                     * bespoke tab.
                                      */
-                                    'groups' => ( $entry instanceof Product ? ProductUnitQuantity::withProduct( $entry->id )
-                                        ->get()
-                                        ->map( function ( $productUnitQuantity ) use ( $fields ) {
-                                            // get label of field having as name "unit_group"
-                                            $field = collect( $fields )->filter( fn( $field ) => $field[ 'name' ] === 'unit_id' )->map( function ( $field ) use ( $productUnitQuantity ) {
-                                                $field[ 'value' ] = $productUnitQuantity->{ $field[ 'name' ] };
-
-                                                return $field;
-                                            } );
-
-                                            $optionLabel = __( 'Unammed Section' );
-
-                                            if ( $field->isNotEmpty() ) {
-                                                $option = collect( $field[0][ 'options' ] )->filter( fn( $option ) => $option[ 'value' ] == $field[0][ 'value' ] );
-                                                $optionLabel = $option->first() ? $option->first()[ 'label' ] : __( 'N/A' );
-                                            }
-
-                                            return [
-                                                'fields' => collect( $fields )->map( function ( $field ) use ( $productUnitQuantity ) {
-
-                                                    /**
-                                                     * When the unit is assigned, a UnitQuantity model is created
-                                                     * for the product. It shouldn't be possible to change the unit,
-                                                     * to prevent loosing a reference to the created UnitQuantity.
-                                                     */
-                                                    if ( $field[ 'name' ] === 'unit_id' ) {
-                                                        $field[ 'disabled' ] = true;
-                                                    }
-
-                                                    $field[ 'value' ] = $productUnitQuantity->{ $field[ 'name' ] };
-
-                                                    return $field;
-                                                } ),
-                                                'closable' => true,
-                                                'label' => $optionLabel,
-                                            ];
-                                        } ) : [] ),
-                                    'options' => $entry instanceof Product ? UnitGroup::find( $entry->unit_group )->units : [],
                                 ],
                             ],
                         ],
@@ -482,7 +453,6 @@ class ProductCrud extends CrudService
                                 [
                                     'type' => 'switch',
                                     'name' => 'expires',
-                                    'validation' => 'required',
                                     'label' => __( 'Product Expires' ),
                                     'options' => Helper::boolToOptions(
                                         true: __( 'Yes' ),
@@ -490,6 +460,13 @@ class ProductCrud extends CrudService
                                     ),
                                     'description' => __( 'Set to "No" expiration time will be ignored.' ),
                                     'value' => $entry->expires ?? false,
+
+                                    /**
+                                     * No `required` here: the switch always has a
+                                     * value client-side, and the flat payload drops
+                                     * `false` leaves (flatArrayWithKeys), which would
+                                     * turn this into a false-positive 422.
+                                     */
                                 ], [
                                     'type' => 'select',
                                     'options' => Helper::kvToJsOptions( [
@@ -542,30 +519,93 @@ class ProductCrud extends CrudService
                                     'description' => __( 'Define whether the image should be primary. If there are more than one primary image, one will be chosen for you.' ),
                                 ],
                             ],
-                            'groups' => $entry ? $entry->galleries->map( function ( $gallery ) {
-                                return [
-                                    [
-                                        'type' => 'media',
-                                        'name' => 'url',
-                                        'label' => __( 'Image' ),
-                                        'value' => $gallery->url,
-                                        'description' => __( 'Choose an image to add on the product gallery' ),
-                                    ], [
-                                        'type' => 'switch',
-                                        'name' => 'featured',
-                                        'options' => Helper::boolToOptions(
-                                            true: __( 'Yes' ),
-                                            false: __( 'No' ),
-                                        ),
-                                        'label' => __( 'Is Primary' ),
-                                        'value' => $gallery->featured ?? false,
-                                        'description' => __( 'Define whether the image should be primary. If there are more than one primary image, one will be chosen for you.' ),
-                                    ],
-                                ];
-                            } ) : [],
                         ],
                     ],
                 ],
+            ],
+        ];
+
+        /**
+         * Phase 5 (docs/plans/backend-driven-completion/05): the variations
+         * tree becomes a declarative root custom section — `{ component,
+         * value, tabs }`. The authored tab definitions ride `tabs` (the
+         * `productVariations` registry component renders them through
+         * FieldRenderer) and `value` seeds the $primary variation rows the
+         * component owns; on submit `buildCrudPayload` emits `variations`
+         * verbatim and `getFlatForm` reshapes it into the exact payload
+         * ProductService::create/update consume.
+         */
+        $tabs = $legacyShape['variations'][0]['tabs'];
+
+        $seed = $this->extractForm( [
+            'tabs' => collect( $tabs )->only( [ 'identification', 'units', 'expiracy', 'taxes' ] )->all(),
+        ] );
+
+        /**
+         * Selling-group rows hydrate from the same ProductUnitQuantity rows
+         * the former per-row `groups` pre-fill carried, keyed by the authored
+         * child field names (incl. the hidden `id`/`quantity`).
+         */
+        $sellingGroupRows = $entry instanceof Product
+            ? ProductUnitQuantity::withProduct( $entry->id )->get()
+                ->map( fn ( $unitQuantity ) => collect( $tabs['units']['selling_group']['fields'] ?? [] )
+                    ->mapWithKeys( fn ( $field ) => [
+                        $field['name'] => $unitQuantity->{ $field['name'] } ?? '',
+                    ] )
+                    ->all() )
+                ->values()
+                ->toArray()
+            : [];
+
+        $subItemRows = $entry instanceof Product
+            ? $entry->sub_items()->get()->map( function ( $subItem ) {
+                $subItem->load( 'product.unit_quantities.unit' );
+
+                return [
+                    'id' => $subItem->id,
+                    'product_id' => $subItem->product_id,
+                    'unit_id' => $subItem->unit_id,
+                    'unit_quantity_id' => $subItem->unit_quantity_id,
+                    'quantity' => $subItem->quantity,
+                    'sale_price' => $subItem->sale_price,
+                    'total_price' => $subItem->total_price,
+                    'name' => $subItem->product->name,
+                    'product' => [
+                        'name' => $subItem->product->name,
+                        'unit_quantities' => $subItem->product->unit_quantities,
+                    ],
+                ];
+            } )->toArray()
+            : [];
+
+        $imageRows = $entry instanceof Product
+            ? $entry->galleries->map( fn ( $gallery ) => [ 'url' => $gallery->url ] )->toArray()
+            : [];
+
+        return Hook::filter( 'sb-products-crud-form', [
+            'main' => $legacyShape['main'],
+            'variations' => [
+                'component' => 'productVariations',
+                'value' => [
+                    [
+                        '$primary' => true,
+                        'identification' => $seed['identification'] ?? [],
+                        'groups' => [ 'product_subitems' => $subItemRows ],
+                        'units' => array_merge( $seed['units'] ?? [], [ 'selling_group' => $sellingGroupRows ] ),
+                        'expiracy' => $seed['expiracy'] ?? [],
+                        'taxes' => $seed['taxes'] ?? [],
+                        'images' => $imageRows,
+                    ],
+                ],
+                'tabs' => $tabs,
+
+                /**
+                 * The unit options are refiltered client-side per the selected
+                 * unit group (the authored `unit_id` options carry only the
+                 * first/entry group's units); the full groups-with-units list
+                 * travels here for that refilter.
+                 */
+                'unitGroups' => UnitGroup::with( 'units:id,name' )->get( [ 'id', 'name' ] ),
             ],
         ], $entry );
     }
@@ -593,16 +633,90 @@ class ProductCrud extends CrudService
     }
 
     /**
-     * Before saving a record
+     * Before saving a record — delegate the whole write to
+     * ProductService::create (the single transactional writer for products,
+     * unit quantities, gallery and sub items), exactly like ProcurementCrud
+     * delegates to ProcurementService. The generic fill/save block is
+     * disabled (disablePost) so this is the only place a product is written
+     * on the crud path.
      *
-     * @param  Request $request
+     * @param  array $inputs the flattened ProductService payload
+     *                        (BaseCrudRequest::getPlainData →
+     *                        ProductCrud::getFlatForm)
      * @return void
      */
-    public function beforePost( $request )
+    public function beforePost( $inputs, $entry = null, $filtered = [] )
     {
         $this->allowedTo( 'create' );
 
-        return $request;
+        $this->validateProductPayload( $inputs );
+
+        /**
+         * the method "create" is capable of
+         * creating either a product or a variable product
+         */
+        app( ProductService::class )->create( $inputs );
+    }
+
+    /**
+     * Before updating a record — delegate the whole write to
+     * ProductService::update (single transactional writer). The generic
+     * fill/save block is disabled (disablePut).
+     *
+     * @param  array  $inputs the flattened ProductService payload
+     * @param  object $entry
+     * @return void
+     */
+    public function beforePut( $inputs, $entry = null, $filtered = [] )
+    {
+        $this->allowedTo( 'update' );
+
+        $this->validateProductPayload( $inputs );
+
+        app( ProductService::class )->update( $entry, $inputs );
+    }
+
+    /**
+     * Double validation is intentional: CrudPostRequest already validated
+     * the main `name` rule (the form has no root tabs); this re-checks the
+     * flattened variation rules (ProductRequest) against the payload that
+     * ProductService consumes, plus the two structural guards the bespoke
+     * form enforced client-side (≥ 1 selling group; non-empty sub items for
+     * grouped products). ValidationException keys land flat —
+     * `category_id`, `units.selling_group`, `units.selling_group.*.unit_id`,
+     * `groups.product_subitems` — and the `productVariations` section maps
+     * them onto its fields/rows.
+     *
+     * @param  array $inputs the flattened ProductService payload
+     * @return void
+     */
+    private function validateProductPayload( array $inputs ): void
+    {
+        /**
+         * Phase 5: a FormRequest must NOT be resolved through the container
+         * here — `app()` triggers `validateResolved()`, which runs the flat
+         * rules against the raw nested body and 422s before the flattening
+         * we perform below. A bare `new` skips the auto-validation and lets
+         * the rules run against the flattened payload.
+         */
+        $validator = Validator::make( $inputs, ( new ProductRequest )->rules() );
+
+        $validator->validate();
+
+
+
+        if ( empty( $inputs['units']['selling_group'] ) ) {
+            throw ValidationException::withMessages( [
+                'units.selling_group' => __( 'At least one selling group is required' ),
+            ] );
+        }
+
+        if ( ( $inputs['type'] ?? '' ) === Product::TYPE_GROUPED
+            && empty( $inputs['groups']['product_subitems'] ) ) {
+            throw ValidationException::withMessages( [
+                'groups.product_subitems' => __( 'A grouped product cannot be saved without any sub items.' ),
+            ] );
+        }
     }
 
     /**
@@ -631,21 +745,8 @@ class ProductCrud extends CrudService
     }
 
     /**
-     * Before updating a record
-     *
-     * @param Request $request
-     * @param  object entry
-     * @return void
-     */
-    public function beforePut( $request, $entry )
-    {
-        $this->allowedTo( 'update' );
-
-        return $request;
-    }
-
-    /**
-     * After updating a record
+     * Before updating a record — handled by beforePut above (ProductService
+     * delegation).
      *
      * @param Request $request
      * @param  object entry
@@ -654,13 +755,12 @@ class ProductCrud extends CrudService
     public function afterPut( $request, Product $product )
     {
         /**
-         * delete all assigned taxes as it
-         * be newly assigned
+         * Phase 5: the former `$product->taxes()->delete()` here assumed the
+         * generic fill/save path (a raw PUT that re-assigned taxes). The crud
+         * write path now delegates to ProductService::update, which releases
+         * and re-creates the taxes itself (releaseProductTaxes) — deleting
+         * them again here would wipe the freshly written rows.
          */
-        if ( $product instanceof Product ) {
-            $product->taxes()->delete();
-        }
-
         return $request;
     }
 
@@ -870,53 +970,19 @@ class ProductCrud extends CrudService
         return [];
     }
 
-    public function getExtractedProductForm( $product = null )
-    {
-        $rawForm = $this->getForm( $product );
-
-        return array_merge(
-            $this->extractForm( $rawForm ),
-            [
-                'variations' => collect( $rawForm[ 'variations' ] )->map( function ( $variation, $index ) {
-                    $data = $this->extractForm( $variation );
-                    if ( $index === 0 ) {
-                        $data[ '$primary' ] = true;
-                    }
-
-                    $data[ 'images' ] = collect( $variation[ 'tabs' ][ 'images' ][ 'groups' ] )->map( function ( $fields ) {
-                        return $this->extractFields( $fields );
-                    } )->toArray();
-
-                    $groups = [];
-
-                    collect( $variation[ 'tabs' ][ 'units' ][ 'fields' ] )->filter( function ( $field ) {
-                        return $field[ 'type' ] === 'group';
-                    } )->each( function ( $field ) use ( &$groups ) {
-                        $groups[ $field[ 'name' ] ] = collect( $field[ 'groups' ] )
-                            ->map( fn( $group ) => $this->extractFields( $group[ 'fields' ] ) )
-                            ->toArray();
-                    } );
-
-                    $data[ 'units' ] = [
-                        ...$data[ 'units' ],
-                        ...$groups,
-                    ];
-
-                    return $data;
-                } )->toArray(),
-            ]
-        );
-    }
-
     /**
      * Returns a key-value array format
      * of the crud post submitted.
      */
     public function getFlatForm( array $inputs, $model = null ): array
     {
-        $primary = collect( $inputs[ 'variations' ] )
+        $primary = collect( $inputs[ 'variations' ] ?? [] )
             ->filter( fn( $variation ) => isset( $variation[ '$primary' ] ) )
             ->first();
+
+        if ( $primary === null ) {
+            return [];
+        }
 
         $source = $primary;
 
@@ -936,9 +1002,9 @@ class ProductCrud extends CrudService
          * let's restore the fields before
          * storing that.
          */
-        $primary[ 'images' ] = $source[ 'images' ];
-        $primary[ 'units' ] = $source[ 'units' ];
-        $primary[ 'groups' ] = $source[ 'groups' ];
+        $primary[ 'images' ] = $source[ 'images' ] ?? [];
+        $primary[ 'units' ] = $source[ 'units' ] ?? [];
+        $primary[ 'groups' ] = $source[ 'groups' ] ?? [];
 
         unset( $primary[ '$primary' ] );
 
@@ -946,7 +1012,15 @@ class ProductCrud extends CrudService
          * As foreign fields aren't handled with
          * they are complex (array), this methods allow
          * external script to reinject those complex fields.
+         * The hook mirrors the former dedicated endpoints:
+         * `sb-create-products-inputs` (saveProduct, no model) vs
+         * `sb-update-products-inputs` (updateProduct).
          */
-        return Hook::filter( 'sb-update-products-inputs', $primary, $source, $model );
+        return Hook::filter(
+            $model === null ? 'sb-create-products-inputs' : 'sb-update-products-inputs',
+            $primary,
+            $source,
+            $model
+        );
     }
 }

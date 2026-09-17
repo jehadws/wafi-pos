@@ -68,6 +68,9 @@ it('renders crud/form through Inertia for create flows', function () {
     // default breadcrumb: list title → SPA path of the list link
     expect($inertia['props']['breadcrumbs'][0]['title'])->toBe($config['labels']['list_title']);
     expect(str_ends_with($inertia['props']['breadcrumbs'][0]['href'], '/dashboard/products/categories'))->toBeTrue();
+
+    // create flows carry no record id (the prop must be absent, not null)
+    expect(array_key_exists('id', $inertia['props']))->toBeFalse();
 });
 
 it('renders crud/form through Inertia for edit flows', function () {
@@ -95,4 +98,9 @@ it('renders crud/form through Inertia for edit flows', function () {
     // title/description pass through the edit fallbacks computed inside getFormConfig()
     expect($inertia['props']['title'])->toBe($config['title']);
     expect($inertia['props']['description'])->toBe($config['labels']['edit_description']);
+
+    // the record id travels as a page prop so the shell submits via PUT
+    // (Phase 5, docs/plans/backend-driven-completion/05 — useCrudForm
+    // decides POST vs PUT on `id`)
+    expect($inertia['props']['id'])->toBe($entry->id);
 });

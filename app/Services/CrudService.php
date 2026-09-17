@@ -1384,7 +1384,14 @@ class CrudService
       'breadcrumbs' => [
         ['title' => $formConfig['labels']['list_title'] ?? '', 'href' => static::toPath($formConfig['links']['list'] ?? '')],
       ],
-    ], $config));
+    ],
+    /**
+     * The record id travels as a page prop on edit flows so the generic
+     * shell submits via PUT (`useCrudForm` decides POST vs PUT on `id`).
+     * Create flows stay id-less — the prop must be absent, not null.
+     */
+    $entry !== null ? ['id' => $entry->id] : [],
+    $config));
   }
 
   public static function getFormConfig($config = [], $entry = null)

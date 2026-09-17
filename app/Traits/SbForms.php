@@ -28,24 +28,37 @@ trait SbForms
             $rules[$form['main']['name']] = $form['main']['validation'];
         }
 
-        foreach ( $form['variations'] as $variationKey => $variation ) {
-            foreach ( $variation[ 'tabs' ] as $tabIdentifier => $tab ) {
-                if ( ! empty( $tab[ 'fields' ] ) ) {
-                    foreach ( $tab[ 'fields' ] as $field ) {
-                        if ( isset( $field[ 'validation' ] ) ) {
-                            $rules[ 'variations' ][ '*' ][ $tabIdentifier ][ $field[ 'name' ] ] = $field[ 'validation' ];
-                        }
+        /**
+         * Phase 5 (docs/plans/backend-driven-completion/05): the variations
+         * tree is a declarative root custom section (`{ component, value,
+         * tabs }`) and the crud write path flattens it through
+         * ProductCrud::getFlatForm BEFORE these rules run in
+         * beforePost/beforePut — so the rules address the flat payload keys
+         * (`category_id`, `units.selling_group.*.unit_id`, …), not the raw
+         * `variations.*` tree.
+         */
+        foreach ( $form['variations']['tabs'] ?? [] as $tabIdentifier => $tab ) {
+            if ( empty( $tab['fields'] ) ) {
+                continue;
+            }
 
-                        if ( isset( $field[ 'groups' ] ) ) {
-                            foreach ( $field[ 'groups' ] as $index => $groupField ) {
-                                if ( isset( $groupField[ 'fields' ] ) ) {
-                                    foreach ( $groupField[ 'fields' ] as $__field ) {
-                                        if ( isset( $__field[ 'validation' ] ) ) {
-                                            $rules[ 'variations' ][ '*' ][ $tabIdentifier ][ $field[ 'name' ] ][ '*' ][ $__field[ 'name' ] ] = $__field[ 'validation' ];
-                                        }
-                                    }
-                                }
-                            }
+            /**
+             * getFlatForm hoists the identification/expiracy/taxes leaves to
+             * the payload top level, while `units` and `groups` are restored
+             * as arrays (their containers survive the flattening), so their
+             * field keys stay tab-prefixed.
+             */
+            $prefix = in_array( $tabIdentifier, [ 'units', 'groups' ] ) ? $tabIdentifier . '.' : '';
+
+            foreach ( $tab['fields'] as $field ) {
+                if ( ! empty( $field['validation'] ) ) {
+                    $rules[$prefix . $field['name']] = $field['validation'];
+                }
+
+                if ( ( $field['type'] ?? '' ) === 'group' && ! empty( $field['fields'] ) ) {
+                    foreach ( $field['fields'] as $groupField ) {
+                        if ( ! empty( $groupField['validation'] ) ) {
+                            $rules[$prefix . $field['name']]['*'][$groupField['name']] = $groupField['validation'];
                         }
                     }
                 }
@@ -68,7 +81,12 @@ trait SbForms
             $rules[ $form[ 'main' ][ 'name' ] ] = $form[ 'main' ][ 'validation' ];
         }
 
-        foreach ( $form[ 'tabs' ] as $tabIdentifier => $tab ) {
+        /**
+         * Root custom sections (e.g. ProductCrud's `variations`) carry their
+         * own nested tabs — the rules extracted here are `{tabId}.{field}`
+         * only. Guard against Cruds without a root `tabs` key.
+         */
+        foreach ( $form[ 'tabs' ] ?? [] as $tabIdentifier => $tab ) {
             if ( ! empty( $tab[ 'fields' ] ) ) {
                 foreach ( $tab[ 'fields' ] as $field ) {
                     if ( isset( $field[ 'validation' ] ) ) {
@@ -126,7 +144,7 @@ trait SbForms
             $data[ $form[ 'main' ][ 'name' ] ] = $fields[ $form[ 'main' ][ 'name' ] ];
         }
 
-        foreach ( $form[ 'tabs' ] as $tabKey => $tab ) {
+        foreach ( $form[ 'tabs' ] ?? [] as $tabKey => $tab ) {
             /**
              * if the object bein used is not an instance
              * of a Crud and include the method, let's skip
@@ -160,7 +178,7 @@ trait SbForms
          * We'll add custom fields
          * that might be added by modules
          */
-        $fieldsToIgnore = array_keys( collect( $form[ 'tabs' ] )->toArray() );
+        $fieldsToIgnore = array_keys( collect( $form[ 'tabs' ] ?? [] )->toArray() );
 
         foreach ( $fields as $field => $value ) {
             if ( ! in_array( $field, $fieldsToIgnore ) ) {

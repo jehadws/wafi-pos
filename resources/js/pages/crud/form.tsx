@@ -16,6 +16,8 @@ import { usePage } from '@inertiajs/react';
 
 export interface CrudFormPageProps {
   namespace: string;
+  /** Record id — present only on edit flows ( CrudService::form($entry) ). */
+  id?: string | number;
   initialConfig?: CrudFormConfig;
   title?: string;
   description?: string;
@@ -29,11 +31,12 @@ export interface CrudFormPageProps {
 }
 
 export default function CrudFormRoutePage() {
-  const { namespace, initialConfig, title, description, breadcrumbs, infoMessage } = usePage<CrudFormPageProps>().props;
+  const { namespace, id, initialConfig, title, description, breadcrumbs, infoMessage } = usePage<CrudFormPageProps>().props;
 
   return (
     <CrudFormPage
       namespace={namespace}
+      id={id}
       initialConfig={initialConfig}
       title={title ?? ''}
       description={description}
