@@ -24,6 +24,11 @@ class AuthLoginFields extends FieldsService
                 'validation' => 'required',
                 'name' => 'password',
                 'type' => 'password',
+            ], [
+                'label' => __( 'Remember me' ),
+                'description' => __( 'Stay logged in on this device.' ),
+                'name' => 'remember',
+                'type' => 'checkbox',
             ],
         ] );
 

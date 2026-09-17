@@ -15,9 +15,9 @@ class PasswordLostFields extends FieldsService
             [
                 'label' => __( 'Email' ),
                 'description' => __( 'Provide your email.' ),
-                'validation' => 'required',
+                'validation' => 'required|email',
                 'name' => 'email',
-                'type' => 'text',
+                'type' => 'email',
             ],
         ] );
 

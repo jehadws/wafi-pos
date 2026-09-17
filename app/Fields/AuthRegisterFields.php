@@ -31,10 +31,10 @@ class AuthRegisterFields extends FieldsService
                 'name' => 'password',
                 'type' => 'password',
             ], [
-                'label' => __( 'Password Confirm' ),
+                'label' => __( 'Confirm Password' ),
                 'description' => __( 'Should be the same as the password.' ),
-                'validation' => 'required|min:6',
-                'name' => 'password_confirm',
+                'validation' => 'required|min:6|same:password',
+                'name' => 'password_confirmation',
                 'type' => 'password',
             ],
         ] );
