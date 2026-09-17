@@ -17,6 +17,24 @@ test('registration screen can be rendered', function () {
     $response->assertOk();
 });
 
+test('registration screen delivers backend fields prop via Inertia', function () {
+    sb()->option->set('sb_registration_enabled', 'yes');
+
+    $response = $this->get('/register');
+
+    $response->assertOk();
+
+    $page = $response->viewData('page');
+    $fields = $page['props']['fields'];
+
+    expect($fields)->toBeArray();
+    expect($fields)->toHaveCount(4);
+    expect($fields[0]['name'])->toBe('username');
+    expect($fields[1]['name'])->toBe('email');
+    expect($fields[2]['name'])->toBe('password');
+    expect($fields[3]['name'])->toBe('password_confirm');
+});
+
 test('registration screen is not accessible while registration is disabled', function () {
     $response = $this->get('/register');
 

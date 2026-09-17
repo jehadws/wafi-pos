@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Classes\Hook;
+use App\Fields\AuthRegisterFields;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SignUpRequest;
 use App\Services\UsersService;
@@ -20,7 +21,9 @@ class RegisteredUserController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('auth/register');
+        return Inertia::render('auth/register', [
+            'fields' => app(AuthRegisterFields::class)->get(),
+        ]);
     }
 
     /**
