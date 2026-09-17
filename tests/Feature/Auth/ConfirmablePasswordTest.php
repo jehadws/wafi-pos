@@ -4,6 +4,25 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
+test('confirm password screen delivers backend fields prop via Inertia', function () {
+    $user = User::factory()->create([
+        'username' => 'confirmfieldsuser',
+        'email' => 'confirmfields@example.com',
+    ]);
+
+    $response = $this->actingAs($user)->get('/confirm-password');
+
+    $response->assertStatus(200);
+
+    $page = $response->viewData('page');
+    $fields = $page['props']['fields'];
+
+    expect($fields)->toBeArray();
+    expect($fields)->toHaveCount(1);
+    expect($fields[0]['name'])->toBe('password');
+    expect($fields[0]['type'])->toBe('password');
+});
+
 test('confirm password uses username guard key instead of email', function () {
     $user = User::factory()->create([
         'username' => 'testuser',

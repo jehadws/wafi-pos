@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Fields\ConfirmPasswordFields;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,7 +18,9 @@ class ConfirmablePasswordController extends Controller
      */
     public function show(): Response
     {
-        return Inertia::render('auth/confirm-password');
+        return Inertia::render('auth/confirm-password', [
+            'fields' => app(ConfirmPasswordFields::class)->get(),
+        ]);
     }
 
     /**
