@@ -2,22 +2,43 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import Settings from '@/lib/settings';
+import type { Address } from '@/types/models/address';
+import type { Order } from '@/types/models/order';
+import type { OrderProduct } from '@/types/models/order-product';
+import type { FormFieldDef } from '@/types/forms';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { Head, usePage } from '@inertiajs/react';
 import { Printer } from 'lucide-react';
+
+/**
+ * Order as serialized by `OrdersController::orderInvoice`: the `type` column
+ * is a plain string (not an OrderType object) and `paymentStatus`/`deliveryStatus`
+ * are human-readable labels attached by the controller, on top of the shared
+ * POS `Order` shape.
+ */
+type InvoiceOrder = Omit<Order, 'type' | 'payments'> & {
+  type?: string;
+  paymentStatus?: string;
+  deliveryStatus?: string;
+  billing_address?: Partial<Address>;
+  shipping_address?: Partial<Address>;
+};
+
+interface OrderInvoicePageProps {
+  order: InvoiceOrder;
+  options: Record<string, string>;
+  billing: FormFieldDef[];
+  shipping: FormFieldDef[];
+  title: string;
+  [key: string]: unknown;
+}
 
 export default function OrderInvoicePage() {
   const { t } = useTranslation();
   const generalSettings = Settings.get();
   const storeName = generalSettings?.identification?.sb_store_name || 'Subul POS';
 
-  const { order, title } = usePage<{
-    order: any;
-    options: any;
-    billing: any;
-    shipping: any;
-    title: string;
-  }>().props;
+  const { order, title } = usePage<OrderInvoicePageProps>().props;
 
   const handlePrint = () => {
     window.print();
@@ -25,7 +46,7 @@ export default function OrderInvoicePage() {
 
   return (
     <AppLayout breadcrumbs={[]}>
-      <Head title={title} />
+      <Head title={title.replace('&mdash;', '—')} />
 
       <style>{`
                 @media print {
@@ -47,7 +68,8 @@ export default function OrderInvoicePage() {
         <div className="mx-auto max-w-5xl">
           {/* Print Button */}
           <div className="no-print mb-4 flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-800" dangerouslySetInnerHTML={{ __html: title }} />
+            {/* Controller-controlled string (`Order Invoice &mdash; {code}`); the HTML entity is decoded manually instead of dangerouslySetInnerHTML. */}
+            <h1 className="text-2xl font-bold text-gray-800">{title.replace('&mdash;', '—')}</h1>
             <Button onClick={handlePrint} className="gap-2">
               <Printer className="h-4 w-4" />
               {t('Print')}
@@ -164,7 +186,7 @@ export default function OrderInvoicePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {order.products.map((product: any, index: number) => (
+                  {order.products.map((product: OrderProduct, index: number) => (
                     <tr key={product.id} className={`border-b border-gray-100 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
                       <td className="py-3">
                         <div className="font-semibold text-gray-800">{product.name}</div>
@@ -172,7 +194,7 @@ export default function OrderInvoicePage() {
                       </td>
                       <td className="py-3 text-center text-gray-600">{formatCurrency(product.unit_price)}</td>
                       <td className="py-3 text-center text-gray-600">{product.quantity}</td>
-                      <td className="py-3 text-center text-gray-600">{formatCurrency(product.discount)}</td>
+                      <td className="py-3 text-center text-gray-600">{formatCurrency(product.discount ?? 0)}</td>
                       <td className="py-3 text-center text-gray-600">{formatCurrency(product.tax_value * product.quantity)}</td>
                       <td className="py-3 text-end font-semibold text-gray-800">{formatCurrency(product.total_price)}</td>
                     </tr>
