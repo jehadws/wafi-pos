@@ -11,6 +11,23 @@ test('login screen can be rendered', function () {
     $response->assertStatus(200);
 });
 
+test('login screen delivers backend fields prop via Inertia', function () {
+    $response = $this->get('/login');
+
+    $response->assertStatus(200);
+
+    $page = $response->viewData('page');
+    $fields = $page['props']['fields'];
+
+    expect($fields)->toBeArray();
+    expect($fields)->toHaveCount(2);
+    expect($fields[0]['name'])->toBe('username');
+    expect($fields[1]['name'])->toBe('password');
+
+    expect(array_key_exists('canResetPassword', $page['props']))->toBeTrue();
+    expect(array_key_exists('status', $page['props']))->toBeTrue();
+});
+
 test('users can authenticate using the login screen', function () {
     $user = User::factory()->create();
 
