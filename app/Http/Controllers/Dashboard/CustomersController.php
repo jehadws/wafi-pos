@@ -47,12 +47,14 @@ class CustomersController extends DashboardController
 
   public function createCustomer()
   {
-    $groups = CustomerGroup::get(['id', 'name']);
-    return Inertia::render('dashboard/customers/create', [
-      'title' => __('Dashboard'),
-      'groups' => $groups
-    ]);
-    // return CustomerCrud::form();
+    /**
+     * The backend-driven form shell (Phase 6,
+     * docs/plans/backend-driven-completion/06): the customer create form
+     * renders from `CustomerCrud::form()` — the renamed billing/shipping
+     * tabs replace the hand pages. `form()` enforces the create
+     * permission internally.
+     */
+    return CustomerCrud::form();
   }
 
   /**
@@ -213,16 +215,14 @@ class CustomersController extends DashboardController
    */
   public function editCustomer(Customer $customer)
   {
-
-    $groups = CustomerGroup::get(['id', 'name']);
-    $customer->shipping;
-    $customer->billing;
-    return Inertia::render('dashboard/customers/edit', [
-      'title' => __('Dashboard'),
-      'groups' => $groups,
-      'customer' => $customer
-    ]);
-    // return CustomerCrud::form($customer);
+    /**
+     * The backend-driven form shell (Phase 6,
+     * docs/plans/backend-driven-completion/06): the customer edit form
+     * renders from `CustomerCrud::form($customer)` — the billing/shipping
+     * tabs seed from the metadata accessors. `form()` enforces the update
+     * permission internally.
+     */
+    return CustomerCrud::form($customer);
   }
 
   /**
