@@ -340,7 +340,7 @@ export function FieldRenderer({ field, value, onChange, error, disabled, id, for
 
     case 'checkbox':
       return (
-        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError}>
+        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
           <div className="flex items-center gap-2">
             <Checkbox
               id={id}
