@@ -74,9 +74,10 @@ it('serializes getFormConfig to clean JSON across all registered CRUD resources'
         // Blocked migrations (docs/plans/backend-driven-leftovers/08): these Cruds
         // still carry duplicate field names across tabs. Remove from this list when
         // their forms are redesigned (L8.2) and migrated. ProcurementCrud left the
-        // list in docs/plans/backend-driven-completion/01 (customers/users follow
-        // in Phases 6–7).
-        $knownDuplicates = ['UserCrud'];
+        // list in docs/plans/backend-driven-completion/01, customers in Phase 6
+        // (billing_*/shipping_* renames + metadata delegation) and users in Phase 7
+        // — the allowlist is now empty and the check is unconditional for every Crud.
+        $knownDuplicates = [];
         $shortName = $file->getFilenameWithoutExtension();
 
         if (! in_array($shortName, $knownDuplicates, true)) {

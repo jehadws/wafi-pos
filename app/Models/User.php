@@ -142,6 +142,31 @@ class User extends Authenticatable
     }
 
     /**
+     * Relation with the billing/shipping metadata rows (Phase 7,
+     * docs/plans/backend-driven-completion/07): `UserCrud::getForm` seeds the
+     * renamed `billing_*`/`shipping_*` tabs from them — the same accessors
+     * the hand edit page hydrated manually (`CustomerAddress` rows typed
+     * billing/shipping). Mirrors `Customer::billing()`/`Customer::shipping()`.
+     */
+    public function billing(): HasOne
+    {
+        return $this->hasOne(
+            related: CustomerBillingAddress::class,
+            foreignKey: 'customer_id',
+            localKey: 'id'
+        );
+    }
+
+    public function shipping(): HasOne
+    {
+        return $this->hasOne(
+            related: CustomerShippingAddress::class,
+            foreignKey: 'customer_id',
+            localKey: 'id'
+        );
+    }
+
+    /**
      * Relation with roles
      **/
     public function roles(): HasManyThrough
