@@ -1,27 +1,16 @@
-import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler } from 'react';
+import { Head } from '@inertiajs/react';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import InputError from '@/components/ui/input-error';
-import { Label } from '@/components/ui/label';
+import AuthFormShell from '@/components/auth/auth-form-shell';
+import type { FormFieldDef } from '@/types/forms';
 import AuthLayout from '@/layouts/auth-layout';
 import { useTranslation } from '@/lib/i18n';
 
-export default function ConfirmPassword() {
+interface Props {
+  fields: FormFieldDef[];
+}
+
+export default function ConfirmPassword({ fields }: Props) {
   const { t } = useTranslation();
-  const { data, setData, post, processing, errors, reset } = useForm<Required<{ password: string }>>({
-    password: '',
-  });
-
-  const submit: FormEventHandler = (e) => {
-    e.preventDefault();
-
-    post(route('password.confirm'), {
-      onFinish: () => reset('password'),
-    });
-  };
 
   return (
     <AuthLayout
@@ -30,32 +19,14 @@ export default function ConfirmPassword() {
     >
       <Head title={t('Confirm password')} />
 
-      <form onSubmit={submit}>
-        <div className="space-y-6">
-          <div className="grid gap-2">
-            <Label htmlFor="password">{t('Password')}</Label>
-            <Input
-              id="password"
-              type="password"
-              name="password"
-              placeholder={t('Password')}
-              autoComplete="current-password"
-              value={data.password}
-              autoFocus
-              onChange={(e) => setData('password', e.target.value)}
-            />
-
-            <InputError message={errors.password} />
-          </div>
-
-          <div className="flex items-center">
-            <Button className="w-full" disabled={processing}>
-              {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-              {t('Confirm password')}
-            </Button>
-          </div>
-        </div>
-      </form>
+      <AuthFormShell
+        fields={fields}
+        submitUrl={route('password.confirm')}
+        submitLabel={t('Confirm password')}
+        onSuccessRedirect={null}
+        resetFieldsOnFinish={['password']}
+        className="w-full"
+      />
     </AuthLayout>
   );
 }
