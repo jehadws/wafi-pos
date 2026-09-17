@@ -377,32 +377,9 @@ class CrudService
        */
       foreach ($resource->getTabsRelations() as $tab => $relationParams) {
         $fields = request()->input($tab);
-        $class = $relationParams[0];
-        $localKey = $relationParams[1];
-        $foreignKey = $relationParams[2];
 
         if (! empty($fields)) {
-          $model = $class::where($localKey, $entry->$foreignKey)->first();
-
-          /**
-           * no relation has been found
-           * so we'll store that.
-           */
-          if (! $model instanceof $class) {
-            $model = new $relationParams[0]; // should be the class;
-          }
-
-          /**
-           * We're saving here all the fields for
-           * the related model
-           */
-          foreach ($fields as $name => $value) {
-            $model->$name = $value;
-          }
-
-          $model->$localKey = $entry->$foreignKey;
-          $model->author = Auth::id();
-          $model->save();
+          $resource->saveTabRelation($relationParams, $entry, $fields);
         }
       }
     }
@@ -447,6 +424,47 @@ class CrudService
       'status' => 'success',
       'message' => $message,
     ]);
+  }
+
+  /**
+   * Persist one tabs-relation payload — the exact writer the generic
+   * submit loop uses, exposed so crud hooks can delegate the same
+   * metadata persistence (Phase 6, docs/plans/backend-driven-completion/06:
+   * CustomerCrud::afterPost/afterPut write the renamed billing/shipping
+   * tabs through it; Phase 7 reuses the pattern).
+   *
+   * @param  array $relationParams [ RelatedModel::class, localKey, foreignKey ]
+   * @param  mixed $entry          the persisted crud entry
+   * @param  array $fields         raw tab payload keyed by the related model columns
+   * @return void
+   */
+  public function saveTabRelation(array $relationParams, $entry, array $fields): void
+  {
+    $class = $relationParams[0];
+    $localKey = $relationParams[1];
+    $foreignKey = $relationParams[2];
+
+    $model = $class::where($localKey, $entry->$foreignKey)->first();
+
+    /**
+     * no relation has been found
+     * so we'll store that.
+     */
+    if (! $model instanceof $class) {
+      $model = new $class;
+    }
+
+    /**
+     * We're saving here all the fields for
+     * the related model
+     */
+    foreach ($fields as $name => $value) {
+      $model->$name = $value;
+    }
+
+    $model->$localKey = $entry->$foreignKey;
+    $model->author = Auth::id();
+    $model->save();
   }
 
   /**

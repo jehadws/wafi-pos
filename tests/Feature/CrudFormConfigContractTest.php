@@ -76,7 +76,7 @@ it('serializes getFormConfig to clean JSON across all registered CRUD resources'
         // their forms are redesigned (L8.2) and migrated. ProcurementCrud left the
         // list in docs/plans/backend-driven-completion/01 (customers/users follow
         // in Phases 6–7).
-        $knownDuplicates = ['CustomerCrud', 'UserCrud'];
+        $knownDuplicates = ['UserCrud'];
         $shortName = $file->getFilenameWithoutExtension();
 
         if (! in_array($shortName, $knownDuplicates, true)) {
