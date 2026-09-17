@@ -362,6 +362,24 @@ it('rejects a create without the create.users permission', function () {
     $response->assertStatus(403);
 });
 
+
+it('rejects mismatched password confirmation on the general.password_confirm dot key', function () {
+    // parity pin: the hand payload sent `password_confirmation` (a key the
+    // extracted rules never validated), so the `same:general.password` rule
+    // never fired server-side; the ConfigForm submits the real
+    // `password_confirm` field and the inline error now surfaces.
+    userWriteActor($this);
+
+    $payload = userWritePayload();
+    $payload['general']['password_confirm'] = 'different1';
+
+    $response = $this->postJson('/api/crud/sb.users', $payload);
+
+    $response->assertStatus(422);
+    expect($response->json('errors'))->toHaveKey('general.password_confirm');
+});
+
+
 it('renders the backend-driven user form with the renamed tabs seeded from the metadata', function () {
     userWriteActor($this);
 

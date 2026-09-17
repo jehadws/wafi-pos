@@ -16,7 +16,6 @@ use App\Crud\RolesCrud;
 use App\Crud\UserCrud;
 use App\Http\Controllers\DashboardController;
 use App\Models\CustomerAddress;
-use App\Models\CustomerGroup;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
@@ -110,40 +109,33 @@ class UsersController extends DashboardController
 
   public function createUser()
   {
-    sb()->restrict(['create.users']);
-    $roles = Role::get(['id', 'name']);
-    $groups = CustomerGroup::get(['id', 'name']);
-    return Inertia::render('dashboard/users/create', [
-      'title' => __('Permission Manager'),
-      'groups' => $groups,
-      'roles' => $roles
-    ]);
-
-    // return UserCrud::form();
+    /**
+     * The backend-driven form shell (Phase 7,
+     * docs/plans/backend-driven-completion/07): the user create form
+     * renders from `UserCrud::form()` — the renamed billing/shipping tabs
+     * replace the hand pages. `form()` enforces the permission internally
+     * and the crud write path re-checks `create.users` in beforePost.
+     */
+    return UserCrud::form();
   }
 
   public function editUser(User $user)
   {
-    sb()->restrict(['update.users']);
-    $roles = Role::get(['id', 'name']);
-    $groups = CustomerGroup::get(['id', 'name']);
-    $user->roles;
-    $billing = CustomerAddress::where('customer_id', $user->id)->where('type', 'billing')->first();
-    $shipping = CustomerAddress::where('customer_id', $user->id)->where('type', 'shipping')->first();
-    $user->billing = $billing;
-    $user->shipping = $shipping;
-
+    /**
+     * Editing your own account still goes to the profile page (the profile
+     * is the separate sb.user-profile form surface).
+     */
     if ($user->id === Auth::id()) {
       return redirect(sb()->route('sb.dashboard.users.profile'));
     }
 
-    return Inertia::render('dashboard/users/edit', [
-      'title' => __('Permission Manager'),
-      'groups' => $groups,
-      'roles' => $roles,
-      'user' => $user
-    ]);
-
+    /**
+     * The backend-driven form shell (Phase 7,
+     * docs/plans/backend-driven-completion/07): the user edit form renders
+     * from `UserCrud::form($user)` — the billing/shipping tabs seed from
+     * the `User::billing`/`User::shipping` metadata accessors. `form()`
+     * enforces the update permission internally.
+     */
     return UserCrud::form($user);
   }
 
