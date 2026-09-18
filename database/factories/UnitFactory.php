@@ -15,7 +15,7 @@ class UnitFactory extends Factory
 
     public function definition()
     {
-        return Hook::filter( 'ns-unit-factory', [
+        return Hook::filter( 'sb-unit-factory', [
             'name' => $this->faker->name,
             'description' => $this->faker->sentence,
             'base_unit' => $this->faker->randomElement( [ 0, 1 ] ),

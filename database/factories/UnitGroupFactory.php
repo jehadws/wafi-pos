@@ -15,7 +15,7 @@ class UnitGroupFactory extends Factory
 
     public function definition()
     {
-        return Hook::filter( 'ns-unit-group', [
+        return Hook::filter( 'sb-unit-group', [
             'name' => $this->faker->word,
             'description' => $this->faker->sentence,
             'author' => $this->faker->randomElement( User::get()->map( fn( $user ) => $user->id ) ),

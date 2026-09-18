@@ -23,7 +23,7 @@ class CustomerBillingAddressFactory extends Factory
     {
         $email = $this->faker->email();
 
-        return Hook::filter( 'ns-customer-billing-factory', [
+        return Hook::filter( 'sb-customer-billing-factory', [
             'type' => 'billing',
             'email' => $email,
             'first_name' => $this->faker->firstName(),

@@ -16,7 +16,7 @@ class RewardSystemFactory extends Factory
 
     public function definition()
     {
-        return Hook::filter( 'ns-reward-system-factory', [
+        return Hook::filter( 'sb-reward-system-factory', [
             'name' => $this->faker->company,
             'target' => $this->faker->numberBetween( 500, 10000 ),
             'coupon_id' => $this->faker->randomElement( Coupon::get()->map( fn( $user ) => $user->id ) ),

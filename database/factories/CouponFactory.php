@@ -23,7 +23,7 @@ class CouponFactory extends Factory
      */
     public function definition()
     {
-        return Hook::filter( 'ns-coupon-factory', [
+        return Hook::filter( 'sb-coupon-factory', [
             'name' => __( 'Sample Coupon' ),
             'type' => 'percentage_discount',
             'code' => 'CP-' . ( $this->faker->randomDigit ) . ( $this->faker->randomDigit ) . ( $this->faker->randomDigit ) . ( $this->faker->randomDigit ) . ( $this->faker->randomDigit ),

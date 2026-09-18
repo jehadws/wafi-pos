@@ -190,7 +190,7 @@ class CategoryController extends DashboardController
       throw new NotFoundException(__('Unable to find the category using the provided identifier'));
     }
 
-    return $category->products->products()
+    return $category->products()
       ->whereIn('product_type', ['variation'])
       ->onSale()
       ->get();

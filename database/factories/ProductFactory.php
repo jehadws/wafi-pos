@@ -26,7 +26,7 @@ class ProductFactory extends Factory
         $taxType = $this->faker->randomElement( [ 'inclusive', 'exclusive' ] );
         $taxGroup = TaxGroup::get()->first();
 
-        return Hook::filter( 'ns-product', [
+        return Hook::filter( 'sb-product', [
             'name' => $this->faker->word,
             'product_type' => 'product',
             'barcode' => $this->faker->word,

@@ -18,7 +18,7 @@ class CustomerFactory extends Factory
 
     public function definition()
     {
-        return Hook::filter( 'ns-customer-factory', [
+        return Hook::filter( 'sb-customer-factory', [
             'username' => $this->faker->userName(),
             'password' => $this->faker->password(),
             'first_name' => $this->faker->firstName(),

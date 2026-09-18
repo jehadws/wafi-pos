@@ -23,7 +23,7 @@ class CustomerShippingAddressFactory extends Factory
     {
         $email = $this->faker->email();
 
-        return Hook::filter( 'ns-customer-shipping-factory', [
+        return Hook::filter( 'sb-customer-shipping-factory', [
             'type' => 'shipping',
             'email' => $email,
             'first_name' => $this->faker->firstName(),

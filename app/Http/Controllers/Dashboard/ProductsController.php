@@ -108,7 +108,7 @@ class ProductsController extends DashboardController
    *
    * @return array
    */
-  public function getProduts()
+  public function getProducts()
   {
     return $this->productService->getProducts();
   }

@@ -47,7 +47,6 @@ class HandleInertiaRequests extends Middleware
             // redirects back to /login with validation errors, and swallowing
             // that into a 409 would drop the error feedback (covered by
             // tests/Feature/Auth/LoginInactiveFeedbackTest.php).
-            file_put_contents(storage_path('inertia-diag-'.getmypid().'.log'), 'CLOSURE path='.$requestPath.' xi='.var_export($request->header('X-Inertia'), true).' status='.$response->getStatusCode().' loc='.$response->headers->get('Location', '').PHP_EOL, FILE_APPEND);
             if (
                 $request->header('X-Inertia') &&
                 $response->isRedirect() &&

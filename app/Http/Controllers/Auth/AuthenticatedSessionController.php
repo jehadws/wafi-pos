@@ -51,7 +51,7 @@ class AuthenticatedSessionController extends Controller
                 throw new NotAllowedException(__('Unable to login, the provided account is not active.'));
             }
 
-            return back()->withInput($request->only('username', 'remember'))->withErrors($validator);
+            return redirect()->back(fallback: route('login'))->withInput($request->only('username', 'remember'))->withErrors($validator);
         }
 
         Auth::guard('web')->setRememberDuration(60 * 24 * 30);
