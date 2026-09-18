@@ -12,6 +12,8 @@ use App\Events\AfterMigrationExecutedEvent;
 use App\Services\ModulesService;
 use App\Services\UpdateService;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class UpdateController extends Controller
 {
@@ -22,12 +24,13 @@ class UpdateController extends Controller
         // ...
     }
 
-    public function updateDatabase()
+    public function updateDatabase(): Response
     {
-        return view( 'pages.database.update', [
+        return Inertia::render( 'database/update', [
             'title' => __( 'Database Update' ),
             'redirect' => session( 'after_update', sb()->route( 'sb.dashboard.home' ) ),
-            'modules' => collect( $this->modulesService->getEnabledAndAutoloadedModules() )->filter( fn( $module ) => count( $module[ 'migrations' ] ) > 0 )->toArray(),
+            'migrations' => $this->updateService->getMigrations()->values()->toArray(),
+            'modules' => collect( $this->modulesService->getEnabledAndAutoloadedModules() )->filter( fn( $module ) => count( $module[ 'migrations' ] ) > 0 )->values()->toArray(),
         ] );
     }
 
