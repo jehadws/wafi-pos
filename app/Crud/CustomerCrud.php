@@ -390,15 +390,16 @@ class CustomerCrud extends CrudService
      */
     if (empty($inputs['email'])) {
       $domain = parse_url(url('/'));
+      $host = $domain['host'] ?? 'subul.com';
       $lastCustomer = User::orderBy('subul_users.id', 'desc')->first();
+      $nextId = ($lastCustomer instanceof User ? $lastCustomer->id : 0) + 1;
 
-      if ($lastCustomer instanceof User) {
-        $lastCustomerId = $lastCustomer->id + 1;
-      } else {
-        $lastCustomerId = 1;
-      }
+      do {
+        $generatedEmail = "customer-{$nextId}@{$host}";
+        $nextId++;
+      } while (User::where('email', $generatedEmail)->exists());
 
-      $inputs['email'] = 'customer-' . $lastCustomerId + 1 . '@' . ($domain['host'] ?? 'subul.com');
+      $inputs['email'] = $generatedEmail;
     }
 
     /**

@@ -168,7 +168,6 @@ export function SbCrudForm({ field, value, onChange, error, disabled, id }: SbCr
               ))}
           </SelectContent>
         </Select>
-        {error ? <p className="text-destructive mt-1 text-sm">{error}</p> : null}
       </div>
 
       {showTrigger && (

@@ -245,6 +245,51 @@ it('updates a customer through the crud endpoint and round-trips the metadata on
     expect($customer->shipping->address_1)->toBe('8 New Shipping Avenue');
 });
 
+it('creates a customer whose email was left empty (the payload drops empty keys, so the key is missing entirely)', function () {
+    customerWriteActor($this);
+    $group = CustomerGroup::factory()->create();
+
+    $payload = customerWritePayload();
+    $payload['general']['email'] = '';
+    $payload['general']['group_id'] = $group->id;
+
+    $response = $this->postJson('/api/crud/sb.customers', $payload);
+
+    // Regression: precheckCustomers used to read $fields['email'] directly,
+    // crashing with "Undefined array key \"email\"" once getFlatForm dropped
+    // the empty value. The write must succeed and filterPostInputs falls
+    // back to a generated customer-{id}@host email.
+    $response->assertStatus(200);
+    expect($response->json('status'))->toBe('success');
+
+    $customer = Customer::findOrFail($response->json('entry.id'));
+    expect($customer->email)->toMatch('/^customer-\d+@/');
+});
+
+it('updates a customer whose email key is omitted from the payload', function () {
+    customerWriteActor($this);
+    $group = CustomerGroup::factory()->create();
+
+    $payload = customerWritePayload();
+    $payload['general']['group_id'] = $group->id;
+
+    $customerId = $this->postJson('/api/crud/sb.customers', $payload)->json('entry.id');
+
+    // The ConfigForm/backend contract: empty values are dropped by
+    // SbForms::getFlatForm, so a blank email never reaches beforePut —
+    // the key is absent, not an empty string.
+    $update = customerWritePayload(['first_name' => 'Jane']);
+    $update['general']['group_id'] = $group->id;
+    unset($update['general']['email']);
+
+    $response = $this->putJson('/api/crud/sb.customers/'.$customerId, $update);
+
+    $response->assertStatus(200);
+    expect($response->json('status'))->toBe('success');
+    // the omitted email must not wipe or corrupt the stored one
+    expect(Customer::findOrFail($customerId)->email)->toBe('john.doe@example.com');
+});
+
 it('renders the backend-driven customer form with the renamed tabs seeded from the metadata', function () {
     customerWriteActor($this);
 

@@ -262,20 +262,21 @@ export function FieldRenderer({ field, value, onChange, error, disabled, id, for
       return <Input type="hidden" id={id} value={stringValue} onChange={(event) => onChange(event.target.value)} />;
 
     case 'textarea':
+    case 'ckeditor':
       return (
         <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
           <Textarea {...textProps} />
         </FormField>
       );
 
-    case 'ckeditor':
-      // B1.5: replaced the Plan A textarea downgrade with the lightweight
-      // contenteditable RichTextEditor (no external dep; HTML string interface).
-      return (
-        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
-          <RichTextEditor id={id} value={stringValue} onChange={onChange} disabled={isDisabled} aria-invalid={Boolean(shownError)} />
-        </FormField>
-      );
+    // case 'ckeditor':
+    //   // B1.5: replaced the Plan A textarea downgrade with the lightweight
+    //   // contenteditable RichTextEditor (no external dep; HTML string interface).
+    //   return (
+    //     <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
+    //       <RichTextEditor id={id} value={stringValue} onChange={onChange} disabled={isDisabled} aria-invalid={Boolean(shownError)} />
+    //     </FormField>
+    //   );
 
     case 'select':
     case 'search-select':

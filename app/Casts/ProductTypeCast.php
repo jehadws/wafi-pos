@@ -28,9 +28,9 @@ class ProductTypeCast implements CastsAttributes
         ] );
 
         if ( isset( $productTypes[ $value ] ) ) {
-            return '<strong class="' . $class . ' ">' . $productTypes[ $value ] . '</strong>';
+            return $productTypes[ $value ];
         } else {
-            return '<strong class="' . $class . ' ">' . sprintf( __( 'Unknown Type: %s' ), $value ) . '</strong>';
+            return sprintf( __( 'Unknown Type: %s' ), $value );
         }
     }
 
