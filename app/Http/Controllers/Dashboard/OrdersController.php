@@ -85,17 +85,21 @@ class OrdersController extends DashboardController
     $order->load('user');
 
     $orderPayment->load('order');
+    $orderPayment->label = $orderPayment->payment_label ?? (collect($this->paymentTypes)->firstWhere('identifier', $orderPayment->identifier)?->label ?? __('Unknown Payment'));
 
-    return View::make('pages.dashboard.orders.templates.payment-receipt', [
+    return Inertia::render('dashboard/orders/templates/payment-receipt/page', [
       'payment' => $orderPayment,
       'order' => $order,
       'paymentTypes' => collect($this->paymentTypes)->mapWithKeys(function ($payment) {
         return [$payment['identifier'] => $payment['label']];
       }),
-      'ordersService' => app()->make(OrdersService::class),
       'billing' => (new CustomerCrud)->getForm()['tabs']['billing']['fields'],
       'shipping' => (new CustomerCrud)->getForm()['tabs']['shipping']['fields'],
       'title' => sprintf(__('Payment Receipt &mdash; %s'), $order->code),
+      'options' => [
+        'sb_invoice_receipt_logo' => $this->optionsService->get('sb_invoice_receipt_logo'),
+        'sb_invoice_receipt_footer' => $this->optionsService->get('sb_invoice_receipt_footer'),
+      ],
     ]);
   }
 
@@ -291,12 +295,15 @@ class OrdersController extends DashboardController
 
     $refund->refunded_products = Hook::filter('sb-refund-receipt-products', $refund->refunded_products);
 
-    return View::make('pages.dashboard.orders.templates.refund-receipt', [
+    return Inertia::render('dashboard/orders/templates/refund-receipt/page', [
       'refund' => $refund,
-      'ordersService' => app()->make(OrdersService::class),
       'billing' => (new CustomerCrud)->getForm()['tabs']['billing']['fields'],
       'shipping' => (new CustomerCrud)->getForm()['tabs']['shipping']['fields'],
       'title' => sprintf(__('Order Refund Receipt &mdash; %s'), $refund->order->code),
+      'options' => [
+        'sb_invoice_receipt_logo' => $this->optionsService->get('sb_invoice_receipt_logo'),
+        'sb_invoice_receipt_footer' => $this->optionsService->get('sb_invoice_receipt_footer'),
+      ],
     ]);
   }
 

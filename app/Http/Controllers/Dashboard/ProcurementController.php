@@ -309,11 +309,13 @@ class ProcurementController extends DashboardController
   {
     sb()->restrict(['subul.read.procurements']);
 
-    return View::make('pages.dashboard.procurements.invoice', [
+    $procurement->load('products', 'products.product', 'products.unit', 'provider');
+
+    return Inertia::render('dashboard/procurements/invoice/page', [
       'title' => sprintf(__('%s - Invoice'), $procurement->name),
       'description' => __('list of product procured.'),
       'procurement' => $procurement,
-      'options' => $this->options,
+      'options' => $this->options->get(),
     ]);
   }
 

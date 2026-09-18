@@ -2,12 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\View;
+use Illuminate\Http\JsonResponse;
 
 class DevController extends DashboardController
 {
-    public function index()
+    public function index(): JsonResponse
     {
-        return View::make( 'dev.index' );
+        if (!app()->environment('local', 'development', 'testing')) {
+            abort(404);
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'environment' => app()->environment(),
+            'debug' => config('app.debug'),
+            'version' => config('app.version') ?? '1.0.0',
+            'message' => 'Dev controller endpoint — local-only diagnostic surface.',
+        ]);
     }
 }
