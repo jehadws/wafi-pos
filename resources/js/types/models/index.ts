@@ -9,6 +9,7 @@ export * from './category';
 export * from './customer';
 export * from './http-crud-response';
 export * from './http-status-response';
+export * from './module';
 export * from './notification';
 export * from './order';
 export * from './order-payment';

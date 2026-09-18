@@ -13,6 +13,7 @@ export { crudApi } from './crud';
 export { customersApi } from './customers';
 export { http } from './http';
 export { mediasApi } from './medias';
+export { modulesApi } from './modules';
 export { notificationsApi } from './notifications';
 export type { NotificationActionResponse } from './notifications';
 export { ordersApi } from './orders';

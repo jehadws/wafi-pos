@@ -26,6 +26,7 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+/.trae
 /temp
 print-agent/node_modules
 print-agent/jobs
