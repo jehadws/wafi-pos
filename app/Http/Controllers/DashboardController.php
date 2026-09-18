@@ -13,9 +13,11 @@ use App\Classes\Output;
 use App\Models\Customer;
 use App\Models\DashboardDay;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\Role;
 use App\Services\DateService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 // use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -85,6 +87,85 @@ class DashboardController extends Controller
     }, 15);
   }
 
+  public function getWeekReports()
+  {
+    $weekMap = [
+      0 => [
+        'label' => __('Sunday'),
+        'value' => 'SU',
+      ],
+      1 => [
+        'label' => __('Monday'),
+        'value' => 'MO',
+      ],
+      2 => [
+        'label' => __('Tuesday'),
+        'value' => 'TU',
+      ],
+      3 => [
+        'label' => __('Wednesday'),
+        'value' => 'WE',
+      ],
+      4 => [
+        'label' => __('Thursday'),
+        'value' => 'TH',
+      ],
+      5 => [
+        'label' => __('Friday'),
+        'value' => 'FR',
+      ],
+      6 => [
+        'label' => __('Saturday'),
+        'value' => 'SA',
+      ],
+    ];
+
+    $currentWeekStarts = $this->dateService->copy()->startOfWeek();
+    $currentWeekEnds = $this->dateService->copy()->endOfWeek();
+    $lastWeekStarts = $currentWeekStarts->copy()->subDay()->startOfWeek();
+    $lastWeekEnds = $currentWeekStarts->copy()->subDay()->endOfWeek();
+
+    DashboardDay::from($currentWeekStarts->toDateTimeString())
+      ->to($currentWeekEnds->toDateTimeString())
+      ->get()
+      ->each(function ($report) use (&$weekMap) {
+        $dayIdx = Carbon::parse($report->range_starts)->dayOfWeek;
+        if (!isset($weekMap[$dayIdx]['current']['entries'])) {
+          $weekMap[$dayIdx]['current']['entries'] = [];
+        }
+        $report->setAttribute(
+          'total_sales_amount',
+          (float) ($report->day_paid_orders ?? 0)
+            + (float) ($report->day_partially_paid_orders ?? 0)
+            + (float) ($report->day_unpaid_orders ?? 0)
+        );
+        $weekMap[$dayIdx]['current']['entries'][] = $report;
+      });
+
+    DashboardDay::from($lastWeekStarts->toDateTimeString())
+      ->to($lastWeekEnds->toDateTimeString())
+      ->get()
+      ->each(function ($report) use (&$weekMap) {
+        $dayIdx = Carbon::parse($report->range_starts)->dayOfWeek;
+        if (!isset($weekMap[$dayIdx]['previous']['entries'])) {
+          $weekMap[$dayIdx]['previous']['entries'] = [];
+        }
+        $report->setAttribute(
+          'total_sales_amount',
+          (float) ($report->day_paid_orders ?? 0)
+            + (float) ($report->day_partially_paid_orders ?? 0)
+            + (float) ($report->day_unpaid_orders ?? 0)
+        );
+        $weekMap[$dayIdx]['previous']['entries'][] = $report;
+      });
+
+    return [
+      'range_starts' => $lastWeekStarts->toDateTimeString(),
+      'range_ends' => $currentWeekEnds->toDateTimeString(),
+      'result' => $weekMap,
+    ];
+  }
+
   /**
    * Determines whether the currently authenticated user holds at least one
    * of the elevated roles that should see full financial & customer data.
@@ -103,23 +184,55 @@ class DashboardController extends Controller
     $userId = Auth::id();
 
     // --- Stats cards ---
-    // Elevated roles get the full DashboardDay aggregate; cashiers get null
-    // so the frontend can hide financial metrics entirely.
-    $cards = $isElevated
-      ? (DashboardDay::from($todayStarts)->to($todayEnds)->first() ?: [])
-      : null;
+    // We compute today's summary fields directly with live DB queries for
+    // accuracy (not cached DashboardDay which may lag behind the queue).
+    // Cumulative fields (total_customers, total_products) are global counts.
+    // Expenses come from the precomputed DashboardDay when available.
+    $cards = null;
+    if ($isElevated) {
+      $todayReport = DashboardDay::from($todayStarts)->to($todayEnds)->first();
+
+      // Match NexoPOS semantics: revenue counts paid & partially-paid orders
+      // only (unpaid, voided and refunded orders are excluded).
+      $todaySalesAmount = Order::from($todayStarts)
+        ->to($todayEnds)
+        ->whereIn('payment_status', [Order::PAYMENT_PAID, Order::PAYMENT_PARTIALLY])
+        ->sum('total');
+
+      $todayOrdersCount = Order::from($todayStarts)
+        ->to($todayEnds)
+        ->whereIn('payment_status', [Order::PAYMENT_PAID, Order::PAYMENT_PARTIALLY])
+        ->count();
+
+      $totalCustomers = Customer::count();
+      $totalProducts = Product::count();
+
+      $cards = [
+        'total_sales_amount' => $todaySalesAmount,
+        'total_orders'       => $todayOrdersCount,
+        'total_customers'    => $totalCustomers,
+        'total_products'     => $totalProducts,
+        'day_expenses'       => $todayReport->day_expenses ?? 0,
+      ];
+    }
 
     // --- Best customers (admin/store-admin only) ---
     $bestCustomers = $isElevated
       ? Customer::orderBy('purchases_amount', 'desc')
           ->limit(5)
-          ->get(['subul_users.id', 'subul_users.username', 'subul_users.email', 'subul_users.purchases_amount'])
+          ->get([
+            'subul_users.id',
+            'subul_users.username',
+            'subul_users.email',
+            'subul_users.purchases_amount',
+            DB::raw("TRIM(CONCAT_WS(' ', subul_users.first_name, subul_users.last_name)) as name"),
+          ])
       : [];
 
     // --- Recent orders ---
     // Cashiers only see their own orders (author = current user id).
     $recentOrdersQuery = Order::orderBy('created_at', 'desc')
-      ->with('user')
+      ->with('user:id,username,first_name,last_name,email')
       ->limit(10);
 
     if (!$isElevated) {
@@ -143,40 +256,7 @@ class DashboardController extends Controller
     // --- Weekly chart (admin/store-admin only) ---
     $weeks = null;
     if ($isElevated) {
-      $weekMap = [
-        0 => ['label' => __('Sunday'), 'value' => 'SU'],
-        1 => ['label' => __('Monday'), 'value' => 'MO'],
-        2 => ['label' => __('Tuesday'), 'value' => 'TU'],
-        3 => ['label' => __('Wednesday'), 'value' => 'WE'],
-        4 => ['label' => __('Thursday'), 'value' => 'TH'],
-        5 => ['label' => __('Friday'), 'value' => 'FR'],
-        6 => ['label' => __('Saturday'), 'value' => 'SA'],
-      ];
-
-      $currentWeekStarts = $this->dateService->copy()->startOfWeek();
-      $currentWeekEnds = $this->dateService->copy()->endOfWeek();
-      $lastWeekStarts = $currentWeekStarts->copy()->subDay()->startOfWeek();
-      $lastWeekEnds = $currentWeekStarts->copy()->subDay()->endOfWeek();
-
-      DashboardDay::from($currentWeekStarts->toDateTimeString())->to($currentWeekEnds->toDateTimeString())->get()->each(function ($report) use (&$weekMap) {
-        if (!isset($weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['current']['entries'])) {
-          $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['current']['entries'] = [];
-        }
-        $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['current']['entries'][] = $report;
-      });
-
-      DashboardDay::from($lastWeekStarts->toDateTimeString())->to($lastWeekEnds->toDateTimeString())->get()->each(function ($report) use (&$weekMap) {
-        if (!isset($weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['previous']['entries'])) {
-          $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['previous']['entries'] = [];
-        }
-        $weekMap[Carbon::parse($report->range_starts)->dayOfWeek]['previous']['entries'][] = $report;
-      });
-
-      $weeks = [
-        'range_starts' => $lastWeekStarts->toDateTimeString(),
-        'range_ends'   => $currentWeekEnds->toDateTimeString(),
-        'result'       => $weekMap,
-      ];
+      $weeks = $this->getWeekReports();
     }
 
     return [

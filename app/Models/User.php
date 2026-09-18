@@ -36,6 +36,14 @@ class User extends Authenticatable
 
     protected $table = 'subul_users';
 
+    /**
+     * Full name accessor used by the dashboard & recent orders widgets.
+     */
+    public function getNameAttribute()
+    {
+        return trim($this->first_name . ' ' . $this->last_name) ?: $this->username;
+    }
+
     protected $casts = [
         'active'                => 'boolean',
         'activation_expiration' => 'datetime',
