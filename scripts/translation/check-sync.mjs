@@ -18,14 +18,14 @@ const LANG_DIR = path.join(ROOT, 'lang');
 const localeArg = process.argv.find(a => a.startsWith('--locale='));
 const targetLocale = localeArg ? localeArg.split('=')[1] : null;
 
+import { MAINTAINED_LOCALES } from './locales.mjs';
+
 const en = JSON.parse(fs.readFileSync(path.join(LANG_DIR, 'en.json'), 'utf8'));
 const enKeys = Object.keys(en);
 
-const langFiles = fs.readdirSync(LANG_DIR)
-  .filter(f => f.endsWith('.json') && f !== 'en.json')
-  .map(f => f.replace('.json', ''));
-
-const locales = targetLocale ? [targetLocale] : langFiles;
+// The gate validates the maintained set only (see locales.mjs);
+// pass --locale=<code> to audit any other locale on demand.
+const locales = targetLocale ? [targetLocale] : MAINTAINED_LOCALES.filter(locale => locale !== 'en');
 
 let totalIssues = 0;
 

@@ -18,8 +18,8 @@ const LANG_DIR = path.join(ROOT, 'lang');
 const en = JSON.parse(fs.readFileSync(path.join(LANG_DIR, 'en.json'), 'utf8'));
 const ar = JSON.parse(fs.readFileSync(path.join(LANG_DIR, 'ar.json'), 'utf8'));
 
-// Skip patterns: technical, numeric, brand, or very short keys
-const SKIP = /^\d+$|^[{}\s%_\-/\\.,:;!?@#$%^&*()+=<>'"]+$|^[A-Z0-9_]+$|^Subul|^ESC\/POS|^TSPL|^CP864|^UTF-8|^CP1256|^CP437/;
+// Skip patterns: technical, numeric, brand, placeholder-only, or example values
+const SKIP = /^\d+$|^[{}\s%_\-/\\.,:;!?@#$%^&*()+=<>'"]+$|^[A-Z0-9_]+$|^Subul|^ESC\/POS|^TSPL|^CP864|^UTF-8|^CP1256|^CP437|^\{[a-z]+\}$|^PSR-4$|^email@example\.com$|^johndoe$|^MySQL|^SQLite/;
 
 const identical = [];
 for (const [key, enVal] of Object.entries(en)) {

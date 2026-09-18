@@ -7,10 +7,14 @@
  *
  * Usage:  node scripts/translation/check-duplicates.mjs
  *         node scripts/translation/check-duplicates.mjs --locale ar
+ *
+ * Defaults to the maintained locales (see locales.mjs); `--locale=<code>`
+ * audits any other locale file on demand.
  */
 
 import fs from 'fs';
 import path from 'path';
+import { MAINTAINED_LOCALES } from './locales.mjs';
 
 const ROOT = path.resolve(process.cwd());
 const LANG_DIR = path.join(ROOT, 'lang');
@@ -18,11 +22,7 @@ const LANG_DIR = path.join(ROOT, 'lang');
 const localeArg = process.argv.find(a => a.startsWith('--locale='));
 const targetLocale = localeArg ? localeArg.split('=')[1] : null;
 
-const langFiles = fs.readdirSync(LANG_DIR)
-  .filter(f => f.endsWith('.json'))
-  .map(f => f.replace('.json', ''));
-
-const locales = targetLocale ? [targetLocale] : langFiles;
+const locales = targetLocale ? [targetLocale] : MAINTAINED_LOCALES;
 let totalIssues = 0;
 
 for (const locale of locales) {

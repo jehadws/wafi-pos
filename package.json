@@ -20,7 +20,9 @@
         "translation:untranslated": "node scripts/translation/check-untranslated.mjs",
         "translation:unused": "node scripts/translation/check-unused.mjs",
         "translation:scan-ar": "node scripts/translation/scan-missing-ar.mjs",
-        "translation:fix-ar": "node scripts/translation/scan-missing-ar.mjs --fix"
+        "translation:fix-ar": "node scripts/translation/scan-missing-ar.mjs --fix",
+        "translation:sync-maintained": "node scripts/translation/sync-maintained.mjs",
+        "translation:dedupe": "node scripts/translation/dedupe-locales.mjs"
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",

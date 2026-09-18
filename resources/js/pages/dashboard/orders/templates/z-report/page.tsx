@@ -3,14 +3,11 @@ import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
 import Settings from '@/lib/settings';
 import type {
-  Register,
-  RegisterHistory,
   ZReport as ZReportData,
   ZReportCategoryBreakdown,
   ZReportPaymentBreakdown,
   ZReportProductBreakdown,
 } from '@/types/models/register';
-import type { Order } from '@/types/models/order';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { Head, usePage } from '@inertiajs/react';
 import { Printer } from 'lucide-react';

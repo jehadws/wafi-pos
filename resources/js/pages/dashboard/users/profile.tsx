@@ -141,7 +141,7 @@ export default function EnhancedProfileSettings() {
             description={
               tokenToDelete
                 ? t(
-                    'Are you sure you want to revoke the token "{{name}}"? This action cannot be undone and any applications using this token will lose access.',
+                    'Are you sure you want to revoke the token "{name}"? This action cannot be undone and any applications using this token will lose access.',
                     { name: tokenToDelete.name },
                   )
                 : t('Are you sure you want to revoke this token?')

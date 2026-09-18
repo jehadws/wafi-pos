@@ -7,27 +7,18 @@
  *
  * Usage:  node scripts/translation/check-missing.mjs
  *         node scripts/translation/check-missing.mjs --lang ar
+ *
+ * Defaults to the maintained locales (see locales.mjs); `--lang=<code>`
+ * audits any locale on demand.
  */
 
 import fs from 'fs';
 import path from 'path';
+import { MAINTAINED_LOCALES } from './locales.mjs';
+import { collectCodeKeys } from './scan-code-keys.mjs';
 
 const ROOT = path.resolve(process.cwd());
 const LANG_DIR = path.join(ROOT, 'lang');
-
-function walkDir(dir, exts) {
-  const results = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (entry.name === 'node_modules' || entry.name === 'vendor') continue;
-      results.push(...walkDir(full, exts));
-    } else if (exts.some(ext => entry.name.endsWith(ext))) {
-      results.push(full);
-    }
-  }
-  return results;
-}
 
 // Parse args
 const langArg = process.argv.find(a => a.startsWith('--lang='));
@@ -41,24 +32,11 @@ for (const file of langFiles) {
   translations[locale] = JSON.parse(fs.readFileSync(path.join(LANG_DIR, file), 'utf8'));
 }
 
-// Collect all t() keys from source files
-const sourceFiles = walkDir(path.join(ROOT, 'resources/js'), ['.tsx', '.ts']);
-const keyPattern = /\bt\(\s*['"`]([^'"`]+?)['"`]/g;
-const codeKeys = new Map(); // key -> Set<file>
-
-for (const abs of sourceFiles) {
-  const file = path.relative(ROOT, abs);
-  const content = fs.readFileSync(abs, 'utf8');
-  let match;
-  while ((match = keyPattern.exec(content)) !== null) {
-    const key = match[1];
-    if (!codeKeys.has(key)) codeKeys.set(key, new Set());
-    codeKeys.get(key).add(file);
-  }
-}
+// Collect all t() keys from source files (full string literals)
+const codeKeys = collectCodeKeys(ROOT); // key -> Set<file>
 
 // Check each locale
-const locales = targetLang ? [targetLang] : Object.keys(translations);
+const locales = targetLang ? [targetLang] : MAINTAINED_LOCALES;
 let totalMissing = 0;
 
 for (const locale of locales) {

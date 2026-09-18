@@ -421,7 +421,7 @@ Every row of the planning-time "Missing frontend actions" table except the sanct
 2. **Medias manager and accounting rules** — not CRUD-table-backed resources; out of the engine's scope by design.
 3. **Client-only columns dropped in Wave 1** (`displays_on_pos` / `total_items` / `base_unit` buckets) — candidates for `getQueryFilters()` if the need resurfaces (carried from the Phase 3 notes).
 4. **Users sub-list actions** — the T4.10 deferral is **closed**: T5.3 built the routes + generic pages, so the four GOTOs ship on `UserCrud` rows.
-5. **Translation legacy drift** — pre-existing `ar-old` / `de` under-maintenance recorded in the verification evidence below; intentionally not repaired ("fix nothing unrelated").
+5. **Translation legacy drift** — pre-existing `ar-old` / `de` under-maintenance recorded in the verification evidence below; intentionally not repaired ("fix nothing unrelated"). *Resolution note (2026-09-18):* the Phase 5 sweep of `docs/plans/codebase-stabilization/` removed the dead `ar-old.json` / `nl.json`, scoped the `translation:check` gate to the maintained locales (`en`, `ar`), and brought both to full parity (3,864 keys, gate exits 0); the 9 remaining legacy locales are gate-excluded and deduped only.
 
 ### Phase 6 verification evidence (2026-09-13)
 

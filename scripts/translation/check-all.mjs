@@ -9,8 +9,11 @@
 
 import { execSync } from 'child_process';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-const DIR = path.dirname(new URL(import.meta.url).pathname);
+// fileURLToPath — pathname alone yields "/C:/…" on Windows, which node
+// resolves as "C:\C:\…" and every child script fails to load.
+const DIR = path.dirname(fileURLToPath(import.meta.url));
 const scripts = [
   { name: 'Sync (en vs other locales)', file: 'check-sync.mjs' },
   { name: 'Missing keys in code', file: 'check-missing.mjs' },
