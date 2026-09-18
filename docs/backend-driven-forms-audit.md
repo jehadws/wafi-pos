@@ -29,7 +29,7 @@
 | 7 | Settings 422 never inline | ✅ FIXED | `use-settings-form.ts:204-208` maps per-field; `settings-form-page.tsx:202` renders |
 | 8 | `lib/form-flags.ts` dead code | ✅ FIXED | `resources/js/lib/` holds only `settings.ts`, `utils.ts` |
 | 9 | Orphans missed by cleanup | ✅ FIXED | 7 orphan files deleted (L1.1, commit `551d5fd`); the unit-group hook/fields went with the Phase 7 migration (commit `babb5c9`) — no legacy form orphans remain |
-| 10 | `architecture.md` overstates coverage | ✅ FIXED | coverage claim corrected (L1.2, commit `d92807a`) and refreshed after Phases 7–8: 14 CRUD resources render on the `crud/form` shell |
+| 10 | `architecture.md` overstates coverage | ✅ FIXED | coverage claim corrected and refreshed: all dashboard CRUD resources (including products, customers, users, and procurements) render on the `crud/form` shell via `docs/plans/backend-driven-completion/` |
 | 11 | Blanket `strip_tags()` vs RichTextEditor | ✅ FIXED | per-field allowed-tags sanitization (`CrudService.php`, `Options.php`, `UserOptions.php`; commit `bf3bdc7`), categories description allowlist (commit `9688994`) |
 | 12 | FilePicker clears value on failure | ✅ FIXED | `config-form/file-picker.tsx:37-39` (no `onChange(null)`), `:18-20` (preview resync) |
 | 13 | Registry name-hijack (`'code'` key) | ✅ FIXED | `'code'` registration removed (`code-generator-field.tsx`); `CouponCrud` declares `component: 'codeGenerator'` explicitly (`CrudInput::text(..., $component)`); pinned by `field-renderer.test.tsx` |

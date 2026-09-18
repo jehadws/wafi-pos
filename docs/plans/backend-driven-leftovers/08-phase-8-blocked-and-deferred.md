@@ -7,6 +7,8 @@
 
 ## Objective
 
+> **Update (Backend-Driven Completion):** The blocked items in this document (Procurements, Customers, Users) have been fully unblocked and migrated onto the generic `crud/form` shell by `docs/plans/backend-driven-completion/` (Phases 1–3, 6, 7). The contract-test allowlist is now empty (`CrudFormConfigContractTest.php`).
+
 Record why **customers**, **users**, and **procurements** must not be migrated yet, add a contract-test guard so nobody migrates them by accident, and capture the deferred/closed decisions from the stale leftover plan.
 
 ## Why these three are blocked (audit #10, verified)
