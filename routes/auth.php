@@ -27,19 +27,6 @@ Route::middleware([
 });
 
 Route::middleware('guest')->group(function () {
-    // Route::get('register', [RegisteredUserController::class, 'create'])
-    //     ->name('register');
-    //
-    // Route::post('register', [RegisteredUserController::class, 'store']);
-
-
-
-    // Route::get('/sign-in', [AuthController::class, 'signIn'])->name(sb()->routeName('sb.login'));
-    // Route::get('/auth/activate/{user}/{token}', [AuthController::class, 'activateAccount'])->name(sb()->routeName('sb.activate-account'));
-    // Route::get('/new-password/{user}/{token}', [AuthController::class, 'newPassword'])->name(sb()->routeName('sb.new-password'));
-    // Route::get('/sign-out', [AuthController::class, 'signOut'])->name(sb()->routeName('sb.logout'));
-    // Route::post('/auth/sign-in', [AuthController::class, 'postSignIn'])->name(sb()->routeName('sb.login.post'));
-
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 

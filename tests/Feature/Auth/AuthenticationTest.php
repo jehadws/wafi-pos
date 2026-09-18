@@ -20,9 +20,10 @@ test('login screen delivers backend fields prop via Inertia', function () {
     $fields = $page['props']['fields'];
 
     expect($fields)->toBeArray();
-    expect($fields)->toHaveCount(2);
-    expect($fields[0]['name'])->toBe('username');
-    expect($fields[1]['name'])->toBe('password');
+    expect($fields)->toHaveCount(3);
+
+    $names = array_column($fields, 'name');
+    expect($names)->toContain('username', 'password', 'remember');
 
     expect(array_key_exists('canResetPassword', $page['props']))->toBeTrue();
     expect(array_key_exists('status', $page['props']))->toBeTrue();

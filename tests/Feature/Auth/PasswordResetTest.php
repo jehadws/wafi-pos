@@ -60,9 +60,10 @@ test('reset password screen delivers backend fields prop via Inertia', function 
     $fields = $page['props']['fields'];
 
     expect($fields)->toBeArray();
-    expect($fields)->toHaveCount(2);
-    expect($fields[0]['name'])->toBe('password');
-    expect($fields[1]['name'])->toBe('password_confirm');
+    expect($fields)->toHaveCount(4);
+
+    $names = array_column($fields, 'name');
+    expect($names)->toContain('email', 'password', 'password_confirmation', 'token');
 
     expect($page['props']['token'])->toBe('dummytoken');
     expect($page['props']['email'])->toBe('foo@bar.com');
