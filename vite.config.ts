@@ -41,7 +41,6 @@ export default defineConfig({
                     'translations-de': ['./lang/de.json'],
                     'translations-es': ['./lang/es.json'],
                     'translations-it': ['./lang/it.json'],
-                    'translations-nl': ['./lang/nl.json'],
                     'translations-sq': ['./lang/sq.json'],
                     'translations-vi': ['./lang/vi.json'],
                 },
