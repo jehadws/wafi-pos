@@ -17,8 +17,6 @@ use App\Services\DateService;
 use App\Services\Options;
 use App\Services\ProviderService;
 use App\Services\Validation;
-use Inertia\Inertia;
-
 class ProvidersController extends DashboardController
 {
   public function __construct(
@@ -42,31 +40,34 @@ class ProvidersController extends DashboardController
 
   public function listProviders()
   {
-    $providers = $this->providerService->get();
-
-    return Inertia::render('dashboard/providers/page', [
-      'title' => __('Dashboard'),
-      'providers' => $providers
-    ]);
-
-    // return ProviderCrud::table();
+    /**
+     * The single backend-driven list shell (T4.6): the providers table
+     * renders from `ProviderCrud::table()` — the See Procurements / See
+     * Products GOTOs (restored — they were missing on the hand page) render
+     * from `$actions` and their targets already render the backend-driven
+     * `ProviderProcurementsCrud`/`ProviderProductsCrud` tables.
+     * `table()` enforces `allowedTo('read')` internally.
+     */
+    return ProviderCrud::table();
   }
 
   public function createProvider()
   {
-    return Inertia::render('dashboard/providers/create');
-
-    // return ProviderCrud::form();
+    /**
+     * The single backend-driven form shell (Phase 7): the provider create
+     * form renders from `ProviderCrud::form()` — the config travels inline
+     * as `initialConfig` (no client-side form-config round-trip). `form()`
+     * enforces `allowedTo` internally.
+     */
+    return ProviderCrud::form();
   }
 
   public function editProvider(Provider $provider)
   {
-    // return ProviderCrud::form($provider);
-
-    return Inertia::render('dashboard/providers/edit', [
-      'title' => __('Edit Provider'),
-      'provider' => $provider
-    ]);
+    /**
+     * Same generic form shell, pre-filled from the route-bound provider.
+     */
+    return ProviderCrud::form($provider);
   }
 
   public function providerProcurements($provider_id)

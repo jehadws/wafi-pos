@@ -14,57 +14,44 @@ use App\Exceptions\NotFoundException;
 use App\Http\Controllers\DashboardController;
 use App\Models\Customer;
 use App\Models\CustomerGroup;
-use App\Models\RewardSystem;
-use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
 
 class CustomersGroupsController extends DashboardController
 {
+  /**
+   * List customers groups
+   *
+   * @return \Inertia\Response
+   */
   public function listCustomersGroups()
   {
-
-    $groups = CustomerGroup::select('*')
-      ->addSelect([
-        'author_name' => User::select('username')
-          ->whereColumn('subul_users.id', 'author')
-          ->limit(1),
-        'reward_name' => RewardSystem::select('name')
-          ->whereColumn('subul_rewards_system.id', 'reward_system_id')
-          ->limit(1),
-      ])
-      ->get();
-
-    return Inertia::render('dashboard/customers/groups/page', [
-      'title' => __('Customer Groups'),
-      'groups' => $groups,
-    ]);
-
-    // return CustomerGroupCrud::table();
+    /**
+     * The single backend-driven list shell (T3.5): the customer groups
+     * table renders from `CustomerGroupCrud::table()` — the reward system
+     * and author columns hydrate through the CRUD's relations (the hand
+     * subqueries are gone).
+     */
+    return CustomerGroupCrud::table();
   }
 
   public function createCustomerGroup()
   {
-    $rewards = RewardSystem::get(['id', 'name']);
-    return Inertia::render('dashboard/customers/groups/create', [
-      'title' => __('Create Customer Group'),
-      'rewards' => $rewards,
-    ]);
-    // return CustomerGroupCrud::form();
+    /**
+     * The single backend-driven form shell (Phase 3): the customer group
+     * create form renders from `CustomerGroupCrud::form()` — the reward
+     * options travel inside the CRUD's own form config.
+     */
+    return CustomerGroupCrud::form();
   }
 
   public function editCustomerGroup(CustomerGroup $group)
   {
-    $rewards = RewardSystem::get(['id', 'name']);
-    $group->reward;
-    return Inertia::render('dashboard/customers/groups/edit', [
-      'title' => __('Edit Customer Group'),
-      'rewards' => $rewards,
-      'group' => $group,
-    ]);
-    // return CustomerGroupCrud::form($group);
+    /**
+     * Same generic form shell, pre-filled from the route-bound group.
+     */
+    return CustomerGroupCrud::form($group);
   }
 
   /**

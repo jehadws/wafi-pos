@@ -15,7 +15,7 @@ class ProductCategoryFactory extends Factory
 
     public function definition()
     {
-        return Hook::filter( 'ns-product-category-factory', [
+        return Hook::filter( 'sb-product-category-factory', [
             'name' => $this->faker->name,
             'description' => $this->faker->sentence,
             'displays_on_pos' => $this->faker->randomElement( [ true, false ] ),

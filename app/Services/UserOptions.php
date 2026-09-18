@@ -19,15 +19,17 @@ class UserOptions extends Options
         return Option::where( 'user_id', $this->user_id );
     }
 
-    public function beforeSave( $option )
+    public function beforeSave( $option, ?string $allowedTags = null )
     {
         $option->user_id = $this->user_id;
 
         /**
          * sanitizing input to remove
-         * all script tags
+         * all script tags. Fields that opt in
+         * with an "allowedTags" allowlist keep
+         * those tags.
          */
-        $option->value = strip_tags( $option->value );
+        $option->value = strip_tags( $option->value, $allowedTags ?? '' );
 
         return $option;
     }

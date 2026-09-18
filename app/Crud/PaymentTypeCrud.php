@@ -424,7 +424,15 @@ class PaymentTypeCrud extends CrudService
    */
   public function setActions(CrudEntry $entry): CrudEntry
   {
-    $entry->readonly = $entry->readonly ? __('Yes') : __('No');
+    /**
+     * Capture the raw flag BEFORE it's overwritten by the
+     * display value: readonly (system) payment types are
+     * non-deletable, so the Delete action is omitted for them
+     * (T3.7) instead of failing at delete time.
+     */
+    $isReadonly = (bool) $entry->readonly;
+
+    $entry->readonly = $isReadonly ? __('Yes') : __('No');
     $entry->active = $entry->active ? __('Yes') : __('No');
 
     // you can make changes here
@@ -435,15 +443,18 @@ class PaymentTypeCrud extends CrudService
       url: sb()->url('/dashboard/' . $this->slug . '/edit/' . $entry->id),
     );
 
-    $entry->action(
-      identifier: 'delete',
-      label: __('Delete'),
-      type: 'DELETE',
-      url: sb()->url('/api/crud/sb.payments-types/' . $entry->id),
-      confirm: [
-        'message' => __('Would you like to delete this ?'),
-      ]
-    );
+    if (! $isReadonly) {
+      $entry->action(
+        identifier: 'delete',
+        label: __('Delete'),
+        type: 'DELETE',
+        url: sb()->url('/api/crud/sb.payments-types/' . $entry->id),
+        confirm: [
+          'title' => __('Confirm Your Action'),
+          'message' => __('Would you like to delete this ?'),
+        ]
+      );
+    }
 
     return $entry;
   }

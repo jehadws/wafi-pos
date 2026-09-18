@@ -7,50 +7,28 @@
  *
  * Usage:  node scripts/translation/check-unused.mjs
  *         node scripts/translation/check-unused.mjs --locale en
+ *
+ * Defaults to the maintained locales (see locales.mjs); `--locale=<code>`
+ * audits any other locale on demand. Backend `__()` usage is not scanned,
+ * so "unused" here is advisory only — never mass-delete on this signal.
  */
 
 import fs from 'fs';
 import path from 'path';
+import { MAINTAINED_LOCALES } from './locales.mjs';
+import { collectCodeKeys } from './scan-code-keys.mjs';
 
 const ROOT = path.resolve(process.cwd());
 const LANG_DIR = path.join(ROOT, 'lang');
 
-function walkDir(dir, exts) {
-  const results = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (entry.name === 'node_modules' || entry.name === 'vendor') continue;
-      results.push(...walkDir(full, exts));
-    } else if (exts.some(ext => entry.name.endsWith(ext))) {
-      results.push(full);
-    }
-  }
-  return results;
-}
-
 const localeArg = process.argv.find(a => a.startsWith('--locale='));
 const targetLocale = localeArg ? localeArg.split('=')[1] : null;
 
-// Collect all t() keys from source files
-const sourceFiles = walkDir(path.join(ROOT, 'resources/js'), ['.tsx', '.ts']);
-const keyPattern = /\bt\(\s*['"`]([^'"`]+?)['"`]/g;
-const codeKeys = new Set();
-
-for (const abs of sourceFiles) {
-  const content = fs.readFileSync(abs, 'utf8');
-  let match;
-  while ((match = keyPattern.exec(content)) !== null) {
-    codeKeys.add(match[1]);
-  }
-}
+// Collect all t() keys from source files (full string literals)
+const codeKeys = new Set(collectCodeKeys(ROOT).keys());
 
 // Check each locale
-const langFiles = fs.readdirSync(LANG_DIR)
-  .filter(f => f.endsWith('.json'))
-  .map(f => f.replace('.json', ''));
-
-const locales = targetLocale ? [targetLocale] : langFiles;
+const locales = targetLocale ? [targetLocale] : MAINTAINED_LOCALES;
 
 for (const locale of locales) {
   const filePath = path.join(LANG_DIR, `${locale}.json`);

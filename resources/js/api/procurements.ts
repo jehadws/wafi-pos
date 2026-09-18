@@ -1,8 +1,12 @@
-import { del, get, post, put } from './http';
+import { get, post, put } from './http';
 
 /**
- * Procurements API — `/api/procurements/*`, `/api/units-groups/*`,
- * `/api/crud/sb.procurements`, `/api/crud/sb.procurements-products`
+ * Procurements API — `/api/procurements/*`, `/api/crud/sb.procurements-products`
+ *
+ * `sb.procurements` row deletes/bulk-deletes and the Set-Paid / Refresh
+ * GET actions are backend-driven (crud table engine); these helpers serve
+ * the procurement form, the stock-adjustment page and the
+ * procurement-product edit form.
  */
 export const procurementsApi = {
   /** Search products while building a procurement. */
@@ -13,24 +17,6 @@ export const procurementsApi = {
 
   /** Fetch the units belonging to a unit group. */
   getUnitGroupUnits: (groupId: number | string) => get(`/units-groups/${groupId}/units`),
-
-  // ── CRUD — sb.procurements ──────────────────────────────────────────────
-
-  /** Delete a single procurement. */
-  remove: (id: number | string) => del(`/crud/sb.procurements/${id}`),
-
-  /** Bulk-delete procurements by ID. */
-  bulkDelete: (ids: Array<number | string>) => post('/crud/sb.procurements/bulk-actions', { action: 'delete_selected', entries: ids }),
-
-  /** Mark a procurement as paid. */
-  setAsPaid: (id: number | string) => get(`/procurements/${id}/set-as-paid`),
-
-  /** Change a procurement's payment status (paid | unpaid). */
-  changePaymentStatus: (id: number | string, paymentStatus: 'paid' | 'unpaid') =>
-    put(`/procurements/${id}/change-payment-status`, { payment_status: paymentStatus }),
-
-  /** Trigger a procurement refresh. */
-  refresh: (id: number | string) => get(`/procurements/${id}/refresh`),
 
   // ── CRUD — sb.procurements-products ────────────────────────────────────
 

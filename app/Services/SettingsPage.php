@@ -50,6 +50,44 @@ class SettingsPage
     return Hook::filter(self::method('getForm'), $form);
   }
 
+  /**
+   * Build a "field name => allowed tags" map from a form
+   * object (crud form or settings tabs).
+   *
+   * Only fields that explicitly define `allowedTags` are
+   * included: every other field keeps the default blanket
+   * `strip_tags()` behavior.
+   */
+  public static function allowedTagsMap(array $form): array
+  {
+    $map = [];
+
+    if (isset($form['main']['name'], $form['main']['allowedTags'])) {
+      $map[$form['main']['name']] = $form['main']['allowedTags'];
+    }
+
+    foreach ($form['tabs'] ?? [] as $tab) {
+      foreach ($tab['fields'] ?? [] as $field) {
+        if (isset($field['name'], $field['allowedTags'])) {
+          $map[$field['name']] = $field['allowedTags'];
+        }
+      }
+    }
+
+    return $map;
+  }
+
+  /**
+   * Sanitize a value using the tag allowlist declared on the
+   * field definition (`allowedTags`). Fields that don't opt in
+   * fall back to the blanket `strip_tags()` (an empty allowlist
+   * strips everything).
+   */
+  public static function sanitizeValue(string $name, $value, array $allowedTagsMap = [])
+  {
+    return strip_tags($value, $allowedTagsMap[$name] ?? '');
+  }
+
   public function getIdentifier()
   {
     return get_called_class()::IDENTIFIER;
@@ -153,11 +191,18 @@ class SettingsPage
     $data = [];
     $inputs = Hook::filter(SettingsPage::method('saveForm'), $this->getPlainData($request));
 
+    /**
+     * Fields that opt in to a tag allowlist through the
+     * "allowedTags" definition keep those tags on save.
+     * Every other field keeps the blanket strip_tags().
+     */
+    $allowedTagsMap = self::allowedTagsMap($this->getForm());
+
     foreach ($inputs as $key => $value) {
       if ($value === null) {
         $options->delete($key);
       } else {
-        $options->set($key, $value);
+        $options->set($key, $value, null, $allowedTagsMap[$key] ?? null);
         $data[$key] = $value;
       }
     }

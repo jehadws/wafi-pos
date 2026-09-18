@@ -357,16 +357,10 @@ class CustomerRewardCrud extends CrudService
             url: sb()->url( '/dashboard/' . $this->getSlug() . '/edit/' . $entry->id )
         );
 
-        // Snippet 2
-        $entry->action(
-            identifier: 'delete',
-            label: __( 'Delete' ),
-            type: 'DELETE',
-            url: sb()->url( '/api/crud/sb.customers-rewards/' . $entry->id ),
-            confirm: [
-                'message' => __( 'Would you like to delete this ?' ),
-            ]
-        );
+        /**
+         * No Delete action: `delete => false` and `beforeDelete` always
+         * refuses, so the row action was dead UI.
+         */
 
         return $entry;
     }
@@ -438,19 +432,16 @@ class CustomerRewardCrud extends CrudService
     /**
      * Get Bulk actions
      *
+     * Read-only resource (`delete => false`): the generated
+     * `delete_selected` entry was always refused by `bulkAction()`, so
+     * the list stays empty. The Hook filter is preserved so modules can
+     * still register their own bulk actions.
+     *
      * @return array of actions
      **/
     public function getBulkActions(): array
     {
-        return Hook::filter( $this->namespace . '-bulk', [
-            [
-                'label' => __( 'Delete Selected Groups' ),
-                'identifier' => 'delete_selected',
-                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
-                    'namespace' => $this->namespace,
-                ] ),
-            ],
-        ] );
+        return Hook::filter( $this->namespace . '-bulk', [] );
     }
 
     /**

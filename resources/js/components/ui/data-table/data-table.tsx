@@ -20,20 +20,48 @@ import { DataTableToolbar } from "./data-table-toolbar"
 import { useTranslation } from "@/lib/i18n"
 
 
+interface DataTableFacetedFilterOption {
+  label: string
+  value: string
+}
+
+/**
+ * Toolbar filter controls. `select` renders a faceted multi-select
+ * (legacy shape without `type` defaults to select); `daterangepicker`
+ * renders a date-range popover whose value is a
+ * `{ from?: Date; to?: Date }` range; `text` renders a debounced input
+ * whose value is a scalar string. All of them resolve through the
+ * tanstack `columnFilters` state — server pages wire no-op `filterFn`s
+ * and translate the state into `queryFilters`.
+ */
+export type FilterableColumn =
+  | {
+      id: string
+      title: string
+      type?: 'select'
+      options: DataTableFacetedFilterOption[]
+    }
+  | {
+      id: string
+      title: string
+      type: 'daterangepicker'
+      options?: DataTableFacetedFilterOption[]
+    }
+  | {
+      id: string
+      title: string
+      type: 'text'
+      options?: DataTableFacetedFilterOption[]
+      placeholder?: string
+    }
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+  data: TData[] | CustomPaginationData<TData>
   title?: string
   description?: string
   searchKey?: string
-  filterableColumns?: {
-    id: string
-    title: string
-    options: {
-      label: string
-      value: string
-    }[]
-  }[]
+  filterableColumns?: FilterableColumn[]
   bulkActions?: {
     label: string
     action: (selectedRows: TData[]) => void
@@ -55,6 +83,21 @@ interface DataTableProps<TData, TValue> {
   searchValue?: string
 
   isLoading?: boolean
+
+  // ── Engine hooks (backend-driven tables) — all optional, no-op when unset ──
+  /**
+   * Row-level class resolved per row (engine: `CrudEntryRow.$cssClass`
+   * status colors). Returning `undefined` keeps the row class-free.
+   */
+  rowClassName?: (row: TData) => string | undefined
+  /**
+   * Observes resolved column-filter state (engine: translates faceted
+   * filter selections into server-side `queryFilters`). Called on mount
+   * with `[]` too.
+   */
+  onColumnFiltersChange?: (filters: ColumnFiltersState) => void
+  /** Seeds the column-visibility state (engine: hides filter-only columns). */
+  initialColumnVisibility?: VisibilityState
 }
 
 export function DataTable<TData, TValue>({
@@ -77,12 +120,25 @@ export function DataTable<TData, TValue>({
   onSearch,
   searchValue = "",
   isLoading = false,
+  rowClassName,
+  onColumnFiltersChange,
+  initialColumnVisibility,
 }: DataTableProps<TData, TValue>) {
   const { t } = useTranslation()
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(initialColumnVisibility ?? {})
   const [rowSelection, setRowSelection] = React.useState({})
+
+  // Observe resolved column-filter state for engine consumers (server-side
+  // queryFilters). Filters themselves never client-filter server pages —
+  // the engine wires a no-op filterFn on those columns.
+  React.useEffect(() => {
+    if (onColumnFiltersChange) {
+      onColumnFiltersChange(columnFilters)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [columnFilters])
 
 
   // Determine if we're using custom pagination based on data structure
@@ -170,7 +226,7 @@ export function DataTable<TData, TValue>({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"} className={rowClassName?.(row.original)}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                   ))}

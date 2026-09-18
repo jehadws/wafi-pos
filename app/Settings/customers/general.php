@@ -48,7 +48,10 @@ return SettingForm::tab(
             props: CustomerCrud::getFormConfig(),
             value: sb()->option->get( 'sb_customers_default', 'no' ),
             description: __( 'You must create a customer to which each sales are attributed when the walking customer doesn\'t register.' ),
-            options: Helper::toJsOptions( Customer::get(), [ 'id', [ 'first_name', 'last_name' ] ] ),
+            options: collect( [ [ 'value' => 'no', 'label' => __( 'None' ) ] ] )
+                ->merge( Helper::toJsOptions( Customer::get(), [ 'id', [ 'first_name', 'last_name' ] ] ) )
+                ->values()
+                ->toArray(),
         ),
         FormInput::select(
             label: __( 'Default Customer Group' ),

@@ -10,64 +10,44 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Crud\RewardSystemCrud;
 use App\Http\Controllers\DashboardController;
-use App\Models\Coupon;
 use App\Models\RewardSystem;
-use App\Models\RewardSystemRule;
-use App\Models\User;
-use Inertia\Inertia;
 
 class RewardsSystemController extends DashboardController
 {
+  /**
+   * List reward systems
+   *
+   * @return \Inertia\Response
+   */
   public function list()
   {
-    $rewards = RewardSystem::select('*')
-      ->addSelect([
-        'author_name' => User::select('username')
-          ->whereColumn('subul_users.id', 'author')
-          ->limit(1),
-        'coupon_name' => Coupon::select('name')
-          ->whereColumn('subul_coupons.id', 'coupon_id')
-          ->limit(1),
-        'number_of_rules' => RewardSystemRule::selectRaw('COUNT(*)')
-          ->whereColumn('reward_id', 'subul_rewards_system.id'),
-      ])
-      ->get();
-
-    return Inertia::render('dashboard/customers/rewards-system/page', [
-      'title' => __('Rewards System'),
-      'rewards' => $rewards,
-    ]);
+    /**
+     * The single backend-driven list shell (T3.9): the reward systems
+     * table renders from `RewardSystemCrud::table()` — the rule count
+     * appended to the name and the author/coupon relations come from the
+     * CRUD (`setActions()`/`getColumns()`), not from hand subqueries.
+     */
+    return RewardSystemCrud::table();
   }
 
   public function create()
   {
-    $coupons = Coupon::get(['id', 'name']);
-    return Inertia::render('dashboard/customers/rewards-system/create', [
-      'title' => __('Rewards System'),
-      'coupons' => $coupons,
-    ]);
-    // return RewardSystemCrud::form(
-    //   config: [
-    //     'view' => 'pages.dashboard.rewards-system.create',
-    //   ]
-    // );
+    /**
+     * The single backend-driven form shell (Phase 3): the reward system
+     * create form renders from `RewardSystemCrud::form()` — the coupon
+     * options travel inside the CRUD's own form config.
+     */
+    return RewardSystemCrud::form();
   }
 
   public function edit(RewardSystem $reward)
   {
-    $coupons = Coupon::get(['id', 'name']);
-    $reward->rules;
-    return Inertia::render('dashboard/customers/rewards-system/edit', [
-      'title' => __('Rewards System'),
-      'coupons' => $coupons,
-      'reward' => $reward,
-    ]);
-
-    // return RewardSystemCrud::form(
-    //   entry: $reward,
-    //   config: [
-    //     'view' => 'pages.dashboard.rewards-system.create',
-    //   ]
-    // );
+    /**
+     * Same generic form shell, pre-filled from the route-bound reward
+     * system. The root-level `rules`/`ruleForm` passthrough (driving the
+     * rules editor) travels inside `initialConfig.form` — same payload the
+     * API fetch used to deliver, now inline.
+     */
+    return RewardSystemCrud::form(entry: $reward);
   }
 }

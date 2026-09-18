@@ -9,7 +9,6 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Classes\Hook;
-use App\Classes\Output;
 use App\Crud\CustomerCrud;
 use App\Crud\OrderCrud;
 use App\Crud\OrderInstalmentCrud;
@@ -19,14 +18,12 @@ use App\Exceptions\NotAllowedException;
 use App\Fields\OrderPaymentFields;
 use App\Http\Controllers\DashboardController;
 use App\Http\Requests\OrderPaymentRequest;
-use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderInstalment;
 use App\Models\OrderPayment;
 use App\Models\OrderRefund;
 use App\Models\PaymentType;
 use App\Models\ProductCategory;
-use App\Models\Register;
 use App\Models\User;
 use App\Services\DateService;
 use App\Services\Options;
@@ -88,40 +85,37 @@ class OrdersController extends DashboardController
     $order->load('user');
 
     $orderPayment->load('order');
+    $orderPayment->label = $orderPayment->payment_label ?? (collect($this->paymentTypes)->firstWhere('identifier', $orderPayment->identifier)?->label ?? __('Unknown Payment'));
 
-    return View::make('pages.dashboard.orders.templates.payment-receipt', [
+    return Inertia::render('dashboard/orders/templates/payment-receipt/page', [
       'payment' => $orderPayment,
       'order' => $order,
       'paymentTypes' => collect($this->paymentTypes)->mapWithKeys(function ($payment) {
         return [$payment['identifier'] => $payment['label']];
       }),
-      'ordersService' => app()->make(OrdersService::class),
       'billing' => (new CustomerCrud)->getForm()['tabs']['billing']['fields'],
       'shipping' => (new CustomerCrud)->getForm()['tabs']['shipping']['fields'],
       'title' => sprintf(__('Payment Receipt &mdash; %s'), $order->code),
+      'options' => [
+        'sb_invoice_receipt_logo' => $this->optionsService->get('sb_invoice_receipt_logo'),
+        'sb_invoice_receipt_footer' => $this->optionsService->get('sb_invoice_receipt_footer'),
+      ],
     ]);
   }
 
   public function listOrders()
   {
-    Hook::addAction(
-      'sb-crud-footer',
-      fn(Output $output) => $output
-        ->addView('pages.dashboard.orders.footer')
-    );
-
-    $customers = Customer::get(['id', 'first_name', 'last_name',]);
-    $users = User::get(['id', 'username',]);
-    $registers = Register::get(['id', 'name',]);
-    return Inertia::render('dashboard/orders/page', [
-      'title' => __('Orders List'),
-      'description' => __('List of orders'),
-      'customers' => $customers,
-      'users' => $users,
-      'registers' => $registers,
-    ]);
-
-    // return OrderCrud::table();
+    /**
+     * The single backend-driven list shell (T4.8): the orders table renders
+     * from `OrderCrud::table()` — the POPUP Options / conditional Refund
+     * Receipt actions, the row `$cssClass` payment-status colors, the
+     * Invoice/Receipt GOTOs and the full queryFilters set (daterangepicker,
+     * selects, customer phone) all travel with the config. The bespoke
+     * filter dialog options and the Blade `sb-crud-footer` hook are gone
+     * with the hand page (the SPA shell never rendered the footer).
+     * `table()` enforces `allowedTo('read')` internally.
+     */
+    return OrderCrud::table();
   }
 
   public function getPOSOrder($order_id)
@@ -301,12 +295,15 @@ class OrdersController extends DashboardController
 
     $refund->refunded_products = Hook::filter('sb-refund-receipt-products', $refund->refunded_products);
 
-    return View::make('pages.dashboard.orders.templates.refund-receipt', [
+    return Inertia::render('dashboard/orders/templates/refund-receipt/page', [
       'refund' => $refund,
-      'ordersService' => app()->make(OrdersService::class),
       'billing' => (new CustomerCrud)->getForm()['tabs']['billing']['fields'],
       'shipping' => (new CustomerCrud)->getForm()['tabs']['shipping']['fields'],
       'title' => sprintf(__('Order Refund Receipt &mdash; %s'), $refund->order->code),
+      'options' => [
+        'sb_invoice_receipt_logo' => $this->optionsService->get('sb_invoice_receipt_logo'),
+        'sb_invoice_receipt_footer' => $this->optionsService->get('sb_invoice_receipt_footer'),
+      ],
     ]);
   }
 
@@ -323,8 +320,10 @@ class OrdersController extends DashboardController
     return Inertia::render('dashboard/orders/receipt/page', [
       'order' => $order,
       'title' => sprintf(__('Order Receipt &mdash; %s'), $order->code),
-      'optionsService' => $this->optionsService,
-      'ordersService' => $this->ordersService,
+      'options' => [
+        'sb_invoice_receipt_logo' => $this->optionsService->get('sb_invoice_receipt_logo'),
+        'sb_invoice_receipt_footer' => $this->optionsService->get('sb_invoice_receipt_footer'),
+      ],
       'paymentTypes' => collect($this->paymentTypes)->mapWithKeys(function ($payment) {
         return [$payment['identifier'] => $payment['label']];
       }),
@@ -378,7 +377,14 @@ class OrdersController extends DashboardController
 
   public function listInstalments()
   {
-    return Inertia::render('dashboard/orders/instalments/page', [
+    /**
+     * The single backend-driven list shell (T5.4): the instalments
+     * table renders from `OrderInstalmentCrud::table()` — no row
+     * actions exist (the former Edit GOTO targeted a route that does
+     * not exist, and deletes are refused). `table()` enforces the
+     * resource `read` permission internally.
+     */
+    return OrderInstalmentCrud::table([
       'title' => __('Order Instalments'),
       'description' => __('List of all scheduled instalments across orders.'),
     ]);
@@ -450,29 +456,37 @@ class OrdersController extends DashboardController
     return $this->ordersService->changeDeliveryStatus($order, $request->input('delivery_status'));
   }
 
+  /**
+   * List payment types
+   *
+   * @return \Inertia\Response
+   */
   public function listPaymentsTypes()
   {
-    $payments = PaymentType::all();
-    return Inertia::render('dashboard/orders/payments-types/page', [
-      'paymentTypes' => $payments,
-    ]);
-
-    // return PaymentTypeCrud::table();
+    /**
+     * The single backend-driven list shell (T3.7): the payment types
+     * table renders from `PaymentTypeCrud::table()` — the readonly
+     * Yes/No formatting and the per-entry Delete omission for system
+     * types come from `PaymentTypeCrud::setActions()`.
+     */
+    return PaymentTypeCrud::table();
   }
 
   public function createPaymentType()
   {
-
-    return Inertia::render('dashboard/orders/payments-types/create');
-    // return PaymentTypeCrud::form();
+    /**
+     * The single backend-driven form shell (Phase 3): the payment type
+     * create form renders from `PaymentTypeCrud::form()`.
+     */
+    return PaymentTypeCrud::form();
   }
 
   public function updatePaymentType(PaymentType $paymentType)
   {
-    return inertia::render('dashboard/orders/payments-types/edit', [
-      'paymentType' => $paymentType,
-    ]);
-    // return PaymentTypeCrud::form($paymentType);
+    /**
+     * Same generic form shell, pre-filled from the route-bound payment type.
+     */
+    return PaymentTypeCrud::form($paymentType);
   }
 
   public function getOrderProductsRefunded(Request $request, Order $order)

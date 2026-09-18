@@ -32,7 +32,10 @@ export function CodeGeneratorField({ field, value, onChange, disabled, error, id
   );
 }
 
-// Register under field names and component identifiers
-registerCustomComponent('code', CodeGeneratorField);
+// Register under explicit component identifiers only — never field
+// names (audit #13: a generic key like 'code' would silently grow a
+// Generate button with a Math.random() code on any future field named
+// `code` in any Crud; the coupon code field declares 'codeGenerator'
+// explicitly from the backend instead).
 registerCustomComponent('couponCodeGenerator', CodeGeneratorField);
 registerCustomComponent('codeGenerator', CodeGeneratorField);

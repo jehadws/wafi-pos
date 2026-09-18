@@ -36,9 +36,9 @@ class TransactionsHistoryCrud extends CrudService
     /**
      * default slug
      *
-     * @param string
+     * @param  string
      */
-    protected $slug = 'accounting/transactions/histories';
+    protected $slug = 'accounting/transactions/history';
 
     /**
      * Define namespace
@@ -356,7 +356,7 @@ class TransactionsHistoryCrud extends CrudService
          */
         if ( ! $hasReflection && $hasTransaction && (bool) $entry->is_reflection === false ) {
             $entry->action(
-                label: '<i class="mr-2 las la-eye"></i> ' . __( 'Create Reflection' ),
+                label: __( 'Create Reflection' ),
                 url: sb()->url( 'api/transactions/history/' . $entry->id . '/create-reflection' ),
                 type: 'GET',
                 identifier: 'create_reflection',
@@ -367,11 +367,12 @@ class TransactionsHistoryCrud extends CrudService
         }
 
         $entry->action(
-            label: '<i class="mr-2 las la-trash"></i> ' . __( 'Delete' ),
+            label: __( 'Delete' ),
             identifier: 'delete',
             url: sb()->url( 'api/crud/' . self::IDENTIFIER . '/' . $entry->id ),
             type: 'DELETE',
             confirm: [
+                'title' => __( 'Confirm Your Action' ),
                 'message' => __( 'Are you sure you want to delete this transaction history?' ),
             ]
         );
@@ -425,16 +426,22 @@ class TransactionsHistoryCrud extends CrudService
     /**
      * get Links
      *
+     * The list page is `/dashboard/accounting/transactions/history`
+     * (the former `dashboard/history` target pointed at a route that
+     * does not exist). No create/edit targets — create/update
+     * permissions are `false`; the DELETE API stays available
+     * (`delete => subul.delete.transactions-history`).
+     *
      * @return array of links
      */
     public function getLinks(): array
     {
         return [
-            'list' => sb()->url( 'dashboard/' . 'history' ),
-            'create' => sb()->url( 'dashboard/' . 'history/create' ),
-            'edit' => sb()->url( 'dashboard/' . 'history/edit/' ),
+            'list' => sb()->url( 'dashboard/' . 'accounting/transactions/history' ),
+            'create' => false,
+            'edit' => false,
             'post' => sb()->url( 'api/crud/' . 'sb.transactions-history' ),
-            'put' => sb()->url( 'api/crud/' . 'sb.transactions-history/{id}' . '' ),
+            'put' => sb()->url( 'api/crud/' . 'sb.transactions-history/{id}' ),
         ];
     }
 

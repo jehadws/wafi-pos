@@ -11,17 +11,13 @@ namespace App\Http\Controllers\Dashboard;
 use App\Crud\TransactionCrud;
 use App\Crud\TransactionsHistoryCrud;
 use App\Http\Controllers\DashboardController;
-use App\Models\Role;
 use App\Models\Transaction;
 use App\Models\TransactionAccount;
 use App\Models\TransactionHistory;
 use App\Services\DateService;
-use App\Services\Helper;
 use App\Services\Options;
 use App\Services\TransactionService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\View;
-use Inertia\Inertia;
 
 class TransactionController extends DashboardController
 {
@@ -56,9 +52,13 @@ class TransactionController extends DashboardController
 
   public function listTransactions()
   {
-
-    return Inertia::render('dashboard/accounting/transactions/page');
-    // return TransactionCrud::table();
+    /**
+     * The single backend-driven list shell (T4.2): the transactions table
+     * renders from `TransactionCrud::table()` — the Trigger GET (with its
+     * confirm) and History GOTO actions render from `$actions`. `table()`
+     * enforces `allowedTo('read')` (`subul.read.transactions`) internally.
+     */
+    return TransactionCrud::table();
   }
 
   public function createTransaction()
@@ -75,16 +75,14 @@ class TransactionController extends DashboardController
       return redirect()->route('sb.dashboard.settings', ['settings' => 'accounting']);
     }
 
-    // return View::make('pages.dashboard.transactions.create');
-    return Inertia::render(
-      'dashboard/accounting/transactions/create',
-      [
-        'title' => __('Create New Transaction'),
-        'description' => __('Set direct, scheduled transactions.'),
-        'infoMessage' => $infoMessage,
-        'roles' => Helper::toJsOptions(Role::get(), ['id', 'name']),
-      ]
-    );
+    /**
+     * The single backend-driven form shell (Phase 3): the transaction
+     * create form renders from `TransactionCrud::form()`. The queue
+     * warning (and any flashed message) travels through the config
+     * overlay as `infoMessage`, which the generic shell renders as its
+     * top notice banner.
+     */
+    return TransactionCrud::form(config: ['infoMessage' => $infoMessage]);
   }
 
   public function editTransaction(Transaction $transaction)
@@ -95,13 +93,10 @@ class TransactionController extends DashboardController
       $infoMessage = __('Unable to use Scheduled, Recurring and Entity Transactions as Queues aren\'t configured correctly.');
     }
 
-    return Inertia::render('dashboard/accounting/transactions/edit', [
-      'title' => __('Update Transaction'),
-      'description' => __('Set direct, scheduled transactions.'),
-      'transaction' => $transaction->load('account'),
-      'infoMessage' => $infoMessage,
-      'roles' => Helper::toJsOptions(Role::get(), ['id', 'name']),
-    ]);
+    /**
+     * Same generic form shell, pre-filled from the route-bound transaction.
+     */
+    return TransactionCrud::form(entry: $transaction, config: ['infoMessage' => $infoMessage]);
   }
 
   public function getConfigurations(Transaction $transaction)
@@ -253,12 +248,20 @@ class TransactionController extends DashboardController
 
   public function transactionsHistory()
   {
-    return Inertia::render('dashboard/accounting/transactions/history');
-    // return TransactionsHistoryCrud::table();
+    /**
+     * The single backend-driven list shell (T5.4): the history table
+     * renders from `TransactionsHistoryCrud::table()` — the
+     * Create-Reflection GET and Delete actions render from `$actions`
+     * (both real permissions). `table()` enforces
+     * `subul.read.transactions-history` internally.
+     */
+    return TransactionsHistoryCrud::table();
   }
 
   public function triggerTransaction(Transaction $transaction)
   {
+    sb()->restrict(['subul.update.transactions']);
+
     return $this->transactionService->triggerTransaction($transaction);
   }
 
@@ -277,6 +280,8 @@ class TransactionController extends DashboardController
 
   public function createReflection(TransactionHistory $history)
   {
+    sb()->restrict(['subul.create.transactions']);
+
     return $this->transactionService->reflectTransactionFromRule($history, null);
   }
 }

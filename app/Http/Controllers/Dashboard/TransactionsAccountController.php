@@ -19,12 +19,16 @@ class TransactionsAccountController extends DashboardController
   /**
    * List transactions accounts
    *
-   * @return view
+   * @return \Inertia\Response
    */
   public function listTransactionsAccounts()
   {
-    return Inertia::render('dashboard/accounting/accounts/page');
-    // return TransactionAccountCrud::table();
+    /**
+     * The single backend-driven list shell (T3.6): the transaction
+     * accounts table renders from `TransactionAccountCrud::table()` —
+     * columns, actions and links come from the CRUD config.
+     */
+    return TransactionAccountCrud::table();
   }
 
   /**
@@ -34,27 +38,22 @@ class TransactionsAccountController extends DashboardController
    */
   public function createTransactionsAccounts()
   {
-    $options = collect(config('accounting.accounts'))->map(fn($account, $key) => [
-      'label' => $account['label'],
-      'value' => $key,
-    ])->values();
-    return Inertia::render('dashboard/accounting/accounts/create', [
-      'category_identifiers' => $options,
-    ]);
+    /**
+     * The single backend-driven form shell (Phase 3): the account create
+     * form renders from `TransactionAccountCrud::form()` — the main-account
+     * options are built inside `TransactionAccountCrud::getForm()`, so the
+     * hand-built `category_identifiers` prop is gone.
+     */
     return TransactionAccountCrud::form();
   }
 
   public function editTransactionsAccounts(TransactionAccount $account)
   {
-    $options = collect(config('accounting.accounts'))->map(fn($accountType, $key) => [
-      'label' => $accountType['label'],
-      'value' => $key,
-    ])->values();
-
-    return Inertia::render('dashboard/accounting/accounts/edit', [
-      'category_identifiers' => $options,
-      'transaction_account' => $account->toArray(),
-    ]);
+    /**
+     * Same generic form shell, pre-filled from the route-bound account
+     * (sub-account options hydrate through the CRUD's refresh config).
+     */
+    return TransactionAccountCrud::form($account);
   }
 
   public function listTransactionsRules()

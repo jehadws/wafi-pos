@@ -29,6 +29,8 @@ export interface Order {
   change: number;
   total_products: number;
   customer: Customer | undefined;
+  /** Cashier relation, loaded by `OrdersController::orderReceipt/orderInvoice`. */
+  user?: { id?: number; username?: string };
   coupons: {
     code?: string;
     type?: 'percentage_discount' | 'flat_discount';

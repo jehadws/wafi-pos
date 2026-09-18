@@ -476,8 +476,8 @@ class CashRegistersService
             ->get();
 
         $payments = OrderPayment::whereIn( 'order_id', $orders->pluck( 'id' ) )
-            ->select( 'subul_payments_types.identifier', DB::raw( 'SUM(value) as total_amount' ), 'label' )
-            ->groupBy( [ 'identifier', 'label' ] )
+            ->select( 'subul_payments_types.identifier', DB::raw( 'SUM(subul_orders_payments.value) as total_amount' ), 'subul_payments_types.label' )
+            ->groupBy( [ 'subul_payments_types.identifier', 'subul_payments_types.label' ] )
             ->join( 'subul_payments_types', 'subul_payments_types.identifier', '=', 'subul_orders_payments.identifier' )
             ->get();
 

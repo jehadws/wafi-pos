@@ -425,6 +425,7 @@ class ProviderProcurementsCrud extends CrudService
             type: 'DELETE',
             url: sb()->url( '/api/crud/sb.procurements/' . $entry->id ),
             confirm: [
+                'title' => __( 'Confirm Your Action' ),
                 'message' => __( 'Would you like to delete this ?' ),
             ]
         );
@@ -483,7 +484,7 @@ class ProviderProcurementsCrud extends CrudService
     public function getLinks(): array
     {
         return [
-            'list' => sb()->url( 'dashboard/' . '/providers/procurements' ),
+            'list' => sb()->url( 'dashboard/providers' ),
             'create' => false,
             'edit' => false,
             'post' => false,

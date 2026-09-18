@@ -62,7 +62,7 @@ class UsersService
             throw new NotFoundException(__('The system role "Users" can be retrieved.'));
         }
 
-        if (! $assignedRole instanceof Role) {
+        if (! $roleToUse instanceof Role) {
             throw new NotFoundException(__('The default role that must be assigned to new users cannot be retrieved.'));
         }
 
@@ -129,7 +129,7 @@ class UsersService
          * if the role are defined we'll use them. Otherwise, we'll use
          * the role defined by default.
          */
-        $this->setUserRole($user, $attributes['roles'] ?? sb()->option->get('sb_registration_role'));
+        $this->setUserRole($user, $attributes['roles'] ?? $roleToUse->id);
 
         /**
          * Every new user comes with attributes that

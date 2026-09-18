@@ -1,10 +1,12 @@
-import { del, get, post, put } from './http';
+import { get, post, put } from './http';
 
 /**
  * Customers API — `/api/customers/*`, `/api/customers-groups`
  *
  * `Customer` / `CustomerOrder` refer to the ambient global declarations
- * in types/module.d.ts.
+ * in types/module.d.ts. Row deletes/bulk-deletes are backend-driven (crud
+ * table engine); these helpers serve the POS dialogs, the customer form
+ * pages and the reports.
  */
 export const customersApi = {
   /** Fetch a single customer. */
@@ -12,16 +14,6 @@ export const customersApi = {
 
   /** Fetch a customer's order history. */
   getOrders: (id: number | string) => get<CustomerOrder[]>(`/customers/${id}/orders`),
-
-  /** Fetch the coupons claimed by a customer (with the parent coupon). */
-  getCustomerCoupons: (id: number | string) => get<CustomerCouponRef[]>(`/customers/${id}/coupons`),
-
-  /** Fetch the paginated list of rewards earned by a customer. */
-  getCustomerRewards: (id: number | string, page = 1) => get<CustomPaginationData<CustomerReward>>(`/customers/${id}/rewards?page=${page}`),
-
-  /** Fetch the paginated wallet / account history of a customer. */
-  getAccountHistory: (id: number | string, page = 1) =>
-    get<CustomPaginationData<CustomerAccountHistory>>(`/customers/${id}/account-history?page=${page}`),
 
   /** Fetch the group a customer belongs to. */
   getGroup: (id: number | string) => get(`/customers/${id}/group`),
@@ -45,24 +37,4 @@ export const customersApi = {
 
   /** Update an existing customer. */
   update: (id: number | string, data: unknown) => put(`/crud/sb.customers/${id}`, data),
-
-  /** Delete a single customer. */
-  remove: (id: number | string) => del(`/crud/sb.customers/${id}`),
-
-  /** Bulk-delete customers by ID. */
-  bulkDelete: (ids: Array<number | string>) => post('/crud/sb.customers/bulk-actions', { action: 'delete_selected', entries: ids }),
-
-  // ── CRUD — sb.customers-groups ──────────────────────────────────────────
-
-  /** Create a new customer group. */
-  createGroup: (data: unknown) => post('/crud/sb.customers-groups', data),
-
-  /** Update an existing customer group. */
-  updateGroup: (id: number | string, data: unknown) => put(`/crud/sb.customers-groups/${id}`, data),
-
-  /** Delete a single customer group. */
-  removeGroup: (id: number | string) => del(`/crud/sb.customers-groups/${id}`),
-
-  /** Bulk-delete customer groups by ID. */
-  bulkDeleteGroups: (ids: Array<number | string>) => post('/crud/sb.customers-groups/bulk-actions', { action: 'delete_selected', entries: ids }),
 };

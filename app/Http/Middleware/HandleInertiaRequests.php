@@ -39,13 +39,20 @@ class HandleInertiaRequests extends Middleware
         return parent::handle($request, function ($request) use ($next) {
             $response = $next($request);
 
+            $requestPath = '/'.ltrim($request->getPathInfo(), '/');
+
             // Detect a redirect to the login page on an Inertia XHR request
-            // (session expired or unauthenticated)
+            // (session expired or unauthenticated). Never convert while the
+            // request is already ON the login page — e.g. a failed login POST
+            // redirects back to /login with validation errors, and swallowing
+            // that into a 409 would drop the error feedback (covered by
+            // tests/Feature/Auth/LoginInactiveFeedbackTest.php).
             if (
                 $request->header('X-Inertia') &&
                 $response->isRedirect() &&
                 in_array($response->getStatusCode(), [301, 302, 303, 307, 308]) &&
-                str_contains($response->headers->get('Location', ''), '/login')
+                str_contains($response->headers->get('Location', ''), '/login') &&
+                ! str_contains($requestPath, '/login')
             ) {
                 return response('', 409)->header('X-Inertia-Location', $response->headers->get('Location'));
             }

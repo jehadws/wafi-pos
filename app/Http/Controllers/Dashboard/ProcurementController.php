@@ -19,10 +19,7 @@ use App\Jobs\ProcurementRefreshJob;
 use App\Models\Procurement;
 use App\Models\ProcurementProduct;
 use App\Models\Product;
-use App\Models\Provider;
-use App\Models\TaxGroup;
 use App\Models\Unit;
-use App\Models\User;
 use App\Services\DateService;
 use App\Services\Options;
 use App\Services\ProcurementService;
@@ -265,27 +262,15 @@ class ProcurementController extends DashboardController
    */
   public function listProcurements()
   {
-
-    $procurements = Procurement::with(['provider'])
-      ->addSelect([
-        'author_name' => User::select('username')
-          ->whereColumn('subul_users.id', 'author')
-          ->limit(1),
-      ])
-      ->get()
-      ->map(function ($procurement) {
-        return [
-          ...$procurement->toArray(),
-          'provider_name' => $procurement->provider->name ?? null, // uses accessor
-        ];
-      });
-
-    return Inertia::render('dashboard/procurements/page', [
-      'title' => __('Procurements'),
-      'description' => __('List of all procurements.'),
-      'procurements' => $procurements
-    ]);
-    // return ProcurementCrud::table();
+    /**
+     * The single backend-driven list shell (T4.1): the procurements table
+     * renders from `ProcurementCrud::table()` — the provider/author columns
+     * hydrate through the CRUD's relations (the hand subqueries are gone),
+     * and the conditional Set Paid + Refresh GET actions (with their
+     * confirms) render from `$actions`. `table()` enforces
+     * `allowedTo('read')` (`subul.read.procurements`) internally.
+     */
+    return ProcurementCrud::table();
   }
 
   /**
@@ -295,61 +280,42 @@ class ProcurementController extends DashboardController
   {
     sb()->restrict(['subul.create.procurements']);
 
-    $tax_groups = TaxGroup::with('taxes:id,tax_group_id,rate')->get(['id', 'name']);
-    $providers = Provider::get(['id', 'first_name', 'last_name']);
-    $providers = $providers->map(function ($provider) {
-      return [
-        'id' => $provider->id,
-        'name' => $provider->name, // uses accessor
-      ];
-    });
-    return Inertia::render('dashboard/procurements/create', [
-      'title' => __('New Procurement'),
-      'description' => __('Make a new procurement.'),
-      'providers' => $providers,
-      'tax_groups' => $tax_groups
-    ]);
-    // return View::make( 'pages.dashboard.procurements.create', Hook::filter( 'sb-create-procurement-labels', [
-    //     'title' => __( 'New Procurement' ),
-    //     'description' => __( 'Make a new procurement.' ),
-    // ] ) );
+    /**
+     * The single backend-driven form shell (P3.1): the create form renders
+     * from `ProcurementCrud::form()` — the main name field, the general tab
+     * (provider with inline-create, delivery/payment status, invoice
+     * date/reference, delivery time, approval) and the root products
+     * section all come from `getForm()`, which carries the tax groups and
+     * provider options. `form()` re-checks a permission via getFormConfig
+     * (read on create), hence the explicit create guard kept above.
+     */
+    return ProcurementCrud::form();
   }
 
   public function updateProcurement(Procurement $procurement)
   {
-    sb()->restrict(['subul.update.procurements']);
-
-    if ($procurement->delivery_status === Procurement::STOCKED) {
-      throw new NotAllowedException(__('Unable to edit a procurement that is stocked. Consider performing an adjustment or either delete the procurement.'));
-    }
-
-    $tax_groups = TaxGroup::with('taxes:id,tax_group_id,rate')->get(['id', 'name']);
-    $providers = Provider::get(['id', 'first_name', 'last_name']);
-    $providers = $providers->map(function ($provider) {
-      return [
-        'id' => $provider->id,
-        'name' => $provider->name,
-      ];
-    });
-
-    return Inertia::render('dashboard/procurements/edit', [
-      'title' => __('Edit Procurement'),
-      'description' => __('Perform adjustment on existing procurement.'),
-      'procurement' => $procurement->load('products'),
-      'providers' => $providers,
-      'tax_groups' => $tax_groups,
-    ]);
+    /**
+     * The single backend-driven form shell (P3.1): `getFormConfig(entry)`
+     * enforces `subul.update.procurements`, the rows and header fields are
+     * seeded from `getForm($entry)` (products hydrate from the relation),
+     * and the stocked-edit guard now lives in `ProcurementCrud::beforePut`
+     * and `ProcurementService::edit` (422 on general.delivery_status
+     * instead of the former exception page).
+     */
+    return ProcurementCrud::form($procurement);
   }
 
   public function procurementInvoice(Procurement $procurement)
   {
     sb()->restrict(['subul.read.procurements']);
 
-    return View::make('pages.dashboard.procurements.invoice', [
+    $procurement->load('products', 'products.product', 'products.unit', 'provider');
+
+    return Inertia::render('dashboard/procurements/invoice/page', [
       'title' => sprintf(__('%s - Invoice'), $procurement->name),
       'description' => __('list of product procured.'),
       'procurement' => $procurement,
-      'options' => $this->options,
+      'options' => $this->options->get(),
     ]);
   }
 
@@ -400,35 +366,14 @@ class ProcurementController extends DashboardController
 
   public function getProcurementProducts()
   {
-
-    // public $relations = [
-    //     [ 'subul_procurements as procurement', 'procurement.id', '=', 'subul_procurements_products.procurement_id' ],
-    //     [ 'subul_units as unit', 'unit.id', '=', 'subul_procurements_products.unit_id' ],
-    //     [ 'subul_users as user', 'user.id', '=', 'subul_procurements_products.author' ],
-    // ];
-
-    // $products = ProcurementProduct::get();
-
-    $products = ProcurementProduct::addSelect([
-      'author_name' => User::select('username')
-        ->whereColumn('subul_users.id', 'author')
-        ->limit(1),
-      'procurement_name' => Procurement::select('name')
-        ->whereColumn('subul_procurements.id', 'procurement_id')
-        ->limit(1),
-      'unit_name' => Unit::select('name')
-        ->whereColumn('subul_units.id', 'unit_id')
-        ->limit(1),
-    ])
-      ->get();
-
-    return Inertia::render('dashboard/procurements/products/page', [
-      'title' => __('Procurement Products List'),
-      'description' => __('Display all procurement products.'),
-      'products' => $products
-    ]);
-
-    // return ProcurementProductCrud::table();
+    /**
+     * The single backend-driven list shell (T5.4 item 4): the procurement
+     * products table renders from `ProcurementProductCrud::table()` —
+     * procurement/unit/author hydrate through the CRUD's relations, and the
+     * per-row Edit GOTO targets the existing
+     * `/dashboard/procurements/products/edit/{id}` form.
+     */
+    return ProcurementProductCrud::table();
   }
 
   public function editProcurementProduct(ProcurementProduct $product)
@@ -438,7 +383,6 @@ class ProcurementController extends DashboardController
       'description' => __('Display all procurement products.'),
       'product' => $product
     ]);
-    return ProcurementProductCrud::form($product);
   }
 
   public function preload($uuid)

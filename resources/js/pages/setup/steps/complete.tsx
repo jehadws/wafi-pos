@@ -10,7 +10,7 @@ export function CompletePage({ storeName, adminUsername }: { storeName?: string;
     // Clear wizard progress so the setup page doesn't resume at #/complete if revisited.
     sessionStorage.removeItem('setup_wizard_step');
     // Use a full-page navigation so the server re-evaluates the now-authenticated session.
-    window.location.href = route('dashboard');
+    window.location.href = route('sb.dashboard.home');
   };
 
   return (

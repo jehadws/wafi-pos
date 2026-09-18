@@ -9,16 +9,15 @@ use App\Exceptions\NotAllowedException;
 use App\Traits\SbForms;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Contracts\View\View as ContractView;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Inertia\Response;
 use TorMorten\Eventy\Facades\Events as Hook;
 
 class CrudService
@@ -311,6 +310,16 @@ class CrudService
         $resource->getFillable()
       );
 
+      /**
+       * Fields that opt in to a tag allowlist through the
+       * "allowedTags" definition keep those tags after the
+       * sanitization. Every other field keeps the blanket
+       * strip_tags() behavior.
+       */
+      $allowedTagsMap = SettingsPage::allowedTagsMap(
+        $resource->getFormObject($entry)
+      );
+
       foreach ($inputs as $name => $value) {
         /**
          * If the field where explicitly added
@@ -330,10 +339,11 @@ class CrudService
 
             /**
              * sanitizing input to remove
-             * all script tags
+             * all script tags, unless the
+             * field declares "allowedTags".
              */
             if (! empty($entry->$name)) {
-              $entry->$name = strip_tags($entry->$name);
+              $entry->$name = SettingsPage::sanitizeValue($name, $entry->$name, $allowedTagsMap);
             }
           }
         }
@@ -367,32 +377,9 @@ class CrudService
        */
       foreach ($resource->getTabsRelations() as $tab => $relationParams) {
         $fields = request()->input($tab);
-        $class = $relationParams[0];
-        $localKey = $relationParams[1];
-        $foreignKey = $relationParams[2];
 
         if (! empty($fields)) {
-          $model = $class::where($localKey, $entry->$foreignKey)->first();
-
-          /**
-           * no relation has been found
-           * so we'll store that.
-           */
-          if (! $model instanceof $class) {
-            $model = new $relationParams[0]; // should be the class;
-          }
-
-          /**
-           * We're saving here all the fields for
-           * the related model
-           */
-          foreach ($fields as $name => $value) {
-            $model->$name = $value;
-          }
-
-          $model->$localKey = $entry->$foreignKey;
-          $model->author = Auth::id();
-          $model->save();
+          $resource->saveTabRelation($relationParams, $entry, $fields);
         }
       }
     }
@@ -440,6 +427,47 @@ class CrudService
   }
 
   /**
+   * Persist one tabs-relation payload — the exact writer the generic
+   * submit loop uses, exposed so crud hooks can delegate the same
+   * metadata persistence (Phase 6, docs/plans/backend-driven-completion/06:
+   * CustomerCrud::afterPost/afterPut write the renamed billing/shipping
+   * tabs through it; Phase 7 reuses the pattern).
+   *
+   * @param  array $relationParams [ RelatedModel::class, localKey, foreignKey ]
+   * @param  mixed $entry          the persisted crud entry
+   * @param  array $fields         raw tab payload keyed by the related model columns
+   * @return void
+   */
+  public function saveTabRelation(array $relationParams, $entry, array $fields): void
+  {
+    $class = $relationParams[0];
+    $localKey = $relationParams[1];
+    $foreignKey = $relationParams[2];
+
+    $model = $class::where($localKey, $entry->$foreignKey)->first();
+
+    /**
+     * no relation has been found
+     * so we'll store that.
+     */
+    if (! $model instanceof $class) {
+      $model = new $class;
+    }
+
+    /**
+     * We're saving here all the fields for
+     * the related model
+     */
+    foreach ($fields as $name => $value) {
+      $model->$name = $value;
+    }
+
+    $model->$localKey = $entry->$foreignKey;
+    $model->author = Auth::id();
+    $model->save();
+  }
+
+  /**
    * Is enabled
    * Return whether a feature is enabled (true) or not (false)
    *
@@ -477,7 +505,19 @@ class CrudService
    */
   public function getBulkActions(): array
   {
-    return $this->bulkActions;
+    /**
+     * The bulk actions are normalized as a list of
+     * { label, identifier } entries so the table contract
+     * stays uniform whether a resource defines a map
+     * (identifier => label) or a ready-to-use list.
+     */
+    return collect($this->bulkActions)
+      ->map(fn ($action, $identifier) => is_array($action) ? $action : [
+        'label' => $action,
+        'identifier' => $identifier,
+      ])
+      ->values()
+      ->toArray();
   }
 
   /**
@@ -502,7 +542,14 @@ class CrudService
      * @param string $key
      * @param mixed  $value
      */
-    if (isset($definition['operator'])) {
+    if (is_array($value)) {
+      /**
+       * multiselect picks travel as arrays — they are an IN clause,
+       * never a scalar operand (a plain `where` would crash on the
+       * array value).
+       */
+      $query->whereIn($key, $value);
+    } elseif (isset($definition['operator'])) {
       $query->where($key, $definition['operator'], $value);
     } else {
       $query->where($key, $value);
@@ -791,6 +838,36 @@ class CrudService
     }
 
     /**
+     * Sub-list scoping: the SPA sends scoping keys (e.g. `customer_id`,
+     * `coupon_id`) INSIDE the `queryFilters` JSON — `use-crud-table`
+     * merges its `initialQuery` into that object — while every sub-list
+     * hook() reads them through `request()->query()`. Merge every
+     * non-declared, non-empty key into the request query bag BEFORE
+     * hook() runs, so hook-based scoping (where / whereIn /
+     * explode(',', …) semantics) keeps working from the SPA. Keys that
+     * match a declared `getQueryFilters()` definition stay untouched —
+     * they are handled by the filter branch below (daterangepicker,
+     * operators, …).
+     */
+    $decodedScopes = [];
+
+    if ($request->query('queryFilters')) {
+      $decodedScopes = json_decode(urldecode($request->query('queryFilters')), true) ?? [];
+
+      if (! empty($decodedScopes)) {
+        $declaredNames = collect($this->queryFilters)->pluck('name')->all();
+
+        foreach ($decodedScopes as $scopeKey => $scopeValue) {
+          if ($scopeValue === null || $scopeValue === '' || in_array($scopeKey, $declaredNames, true)) {
+            continue;
+          }
+
+          $request->query->set($scopeKey, $scopeValue);
+        }
+      }
+    }
+
+    /**
      * if hook method is defined and only when conditional argument
      * that affect result sorting is not active.
      */
@@ -835,7 +912,21 @@ class CrudService
               case 'daterangepicker':
                 if ($value['startDate'] !== null && $value['endDate'] !== null) {
                   $query->where($key, '>=', Carbon::parse($value['startDate'])->toDateTimeString());
-                  $query->where($key, '<=', Carbon::parse($value['endDate'])->toDateTimeString());
+
+                  /**
+                   * The toolbar sends bare `Y-m-d` bounds; a bare end date
+                   * must cover the whole day, otherwise a same-day range
+                   * excludes every row created during that last day. The
+                   * orders filter dialog sends explicit datetimes, which
+                   * are honored as-is.
+                   */
+                  $endDate = Carbon::parse($value['endDate']);
+
+                  if (preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $value['endDate'])) {
+                    $endDate->endOfDay();
+                  }
+
+                  $query->where($key, '<=', $endDate->toDateTimeString());
                 }
                 break;
               default:
@@ -851,6 +942,18 @@ class CrudService
                 break;
             }
           } else {
+            /**
+             * Array-valued scopes (e.g. `procurements` on
+             * `sb.providers-products`) are hook-owned multi-value
+             * filters — the key names the scope, not a column, so the
+             * resource hook translates it (`whereIn`) and this branch
+             * must skip it (a plain `where` would crash on the array
+             * operand).
+             */
+            if (is_array($value)) {
+              continue;
+            }
+
             $query->where($key, $value);
           }
         }
@@ -1134,7 +1237,7 @@ class CrudService
     return $this->tabsRelations;
   }
 
-  public static function table(array $config = [], ?string $title = null, ?string $description = null, ?string $src = null, ?string $createUrl = null, ?array $queryParams = null): ContractView
+  public static function table(array $config = [], ?string $title = null, ?string $description = null, ?string $src = null, ?string $createUrl = null, ?array $queryParams = null): Response
   {
     $className = get_called_class();
     $instance = new $className;
@@ -1157,7 +1260,25 @@ class CrudService
 
     $labels = Hook::filter($instance::method('getLabels'), $instance->getLabels());
 
-    return View::make('pages.dashboard.crud.table', array_merge([
+    /**
+     * The list page is the single generic Inertia shell
+     * (resources/js/pages/crud/list.tsx). The table config travels as
+     * `initialConfig` so the page renders without a config round-trip
+     * (use-crud-table still fetches when the prop is absent). Sub-list
+     * scoping travels as `queryParams` (e.g. ['coupon_id' => …]).
+     */
+    return Inertia::render('crud/list', array_merge([
+      /**
+       * the CRUD namespace, driving every entries/bulk request.
+       */
+      'namespace' => $instance->getNamespace(),
+
+      /**
+       * the backend-defined table configuration (columns, queryFilters,
+       * labels, links, bulkActions, options/checkboxes flags).
+       */
+      'initialConfig' => $instance->getTableConfig($instance->getNamespace()),
+
       /**
        * that displays the title on the page.
        * It fetches the value from the labels
@@ -1171,34 +1292,61 @@ class CrudService
       'description' => $labels['list_description'],
 
       /**
-       * This create the src URL using the "namespace".
+       * The default breadcrumb trail: Dashboard → list title. The list
+       * URL is reduced to its SPA path so Inertia renders client-side.
        */
-      'src' => sb()->url('/api/crud/' . $instance->namespace),
-
-      /**
-       * This pull the creation link. That link should takes the user
-       * to the creation form.
-       */
-      'createUrl' => Hook::filter($instance::method('getFilteredLinks'), $instance->getFilteredLinks())['create'] ?? false,
+      'breadcrumbs' => [
+        ['title' => $labels['list_title'], 'href' => static::toPath($instance->getLinks()['list'] ?? '')],
+      ],
 
       /**
        * to provide custom query params
        * to every outgoing request on the table
        */
       'queryParams' => [],
-
-      /**
-       * An instance of the current called crud component.
-       */
-      'instance' => $instance,
     ], $config));
+  }
+
+  /**
+   * Reduce an absolute backend URL (`sb()->url(...)`) to its SPA path for
+   * Inertia hrefs; falls back to the dashboard root.
+   */
+  protected static function toPath(?string $url): string
+  {
+    $path = empty($url) ? false : parse_url($url, PHP_URL_PATH);
+
+    return is_string($path) && $path !== '' ? $path : '/dashboard';
+  }
+
+  /**
+   * Single source of truth for the table configuration consumed by
+   * GET /api/crud/{ns}/config (CrudController@getConfig) and by the
+   * Inertia list renderers. Mirrors getFormConfig() for the forms.
+   */
+  public function getTableConfig(string $namespace): array
+  {
+    return [
+      'columns' => Hook::filter(
+        get_class($this) . '@getColumns',
+        $this->getColumns()
+      ),
+      'queryFilters' => Hook::filter(get_class($this) . '@getQueryFilters', $this->getQueryFilters()),
+      'labels' => Hook::filter(get_class($this) . '@getLabels', $this->getLabels()),
+      'links' => Hook::filter(get_class($this) . '@getFilteredLinks', $this->getFilteredLinks() ?? []),
+      'bulkActions' => Hook::filter(get_class($this) . '@getBulkActions', $this->getBulkActions()),
+      'prependOptions' => Hook::filter(get_class($this) . '@getPrependOptions', $this->getPrependOptions()),
+      'showOptions' => Hook::filter(get_class($this) . '@getShowOptions', $this->getShowOptions()),
+      'showCheckboxes' => Hook::filter(get_class($this) . '@getShowCheckboxes', $this->getShowCheckboxes()),
+      'headerButtons' => Hook::filter(get_class($this) . '@getHeaderButtons', $this->getHeaderButtons()),
+      'namespace' => $namespace,
+    ];
   }
 
   /**
    * Will render a crud form using
    * the provided settings.
    */
-  public static function form($entry = null, array $config = [], string $title = '', string $description = '', string $src = '', string $returnUrl = '', string $submitUrl = '', string $submitMethod = '', array $queryParams = []): ContractView
+  public static function form($entry = null, array $config = [], string $title = '', string $description = '', string $src = '', string $returnUrl = '', string $submitUrl = '', string $submitMethod = '', array $queryParams = []): Response
   {
     /**
      * in case the default way of proceeding is not defined
@@ -1211,13 +1359,57 @@ class CrudService
     }
 
     /**
-     * use crud form to render a valid form.
-     * "view" on the $config might be used to use a custom view file.
+     * getFormConfig() enforces the permission gate ("read" on create,
+     * "update" on edit) and resolves every default from the labels.
      */
-    return View::make($config['view'] ?? 'pages.dashboard.crud.form', self::getFormConfig(
-      config: $config,
-      entry: $entry
-    ));
+    $formConfig = self::getFormConfig(config: $config, entry: $entry);
+
+    /**
+     * The form page is the single generic Inertia shell
+     * (resources/js/pages/crud/form.tsx). The form config travels as
+     * `initialConfig` so the page renders without a config round-trip
+     * (use-crud-form still fetches when the prop is absent).
+     */
+    return Inertia::render('crud/form', array_merge([
+      /**
+       * the CRUD namespace, driving the form-config and submit requests.
+       */
+      'namespace' => $formConfig['namespace'],
+
+      /**
+       * the backend-defined form configuration (form, labels, links,
+       * submitMethod, optionAttributes, title, description).
+       */
+      'initialConfig' => $formConfig,
+
+      /**
+       * that displays the title on the page. getFormConfig() already
+       * resolves the create/edit fallbacks from the labels.
+       */
+      'title' => $formConfig['title'],
+
+      /**
+       * That displays the page description. getFormConfig() already
+       * resolves the create/edit fallbacks from the labels.
+       */
+      'description' => $formConfig['description'],
+
+      /**
+       * The default breadcrumb trail: Dashboard → list title. The list
+       * URL is reduced to its SPA path so Inertia renders client-side.
+       * The `?? ''` guards keep create-only / no-list Cruds safe.
+       */
+      'breadcrumbs' => [
+        ['title' => $formConfig['labels']['list_title'] ?? '', 'href' => static::toPath($formConfig['links']['list'] ?? '')],
+      ],
+    ],
+    /**
+     * The record id travels as a page prop on edit flows so the generic
+     * shell submits via PUT (`useCrudForm` decides POST vs PUT on `id`).
+     * Create flows stay id-less — the prop must be absent, not null.
+     */
+    $entry !== null ? ['id' => $entry->id] : [],
+    $config));
   }
 
   public static function getFormConfig($config = [], $entry = null)
@@ -1395,12 +1587,29 @@ class CrudService
   public function getFilteredLinks(): array
   {
     $links = $this->getLinks();
+    $labels = $this->getLabels();
 
     $mapping = [
       'create' => ['post', 'create'],
       'read' => ['list'],
       'update' => ['put', 'update'],
       'delete' => ['delete'],
+    ];
+
+    /**
+     * Every link exposed on the table config is normalized
+     * as a CrudLink: { type: 'link', href, label }. The labels
+     * are pulled from the resource labels so the table engine
+     * never has to guess a caption.
+     */
+    $linkLabels = [
+      'list' => $labels['list_title'] ?? __('List'),
+      'create' => $labels['create_new'] ?? __('Create'),
+      'edit' => $labels['edit_title'] ?? __('Edit'),
+      'post' => $labels['create_title'] ?? __('Create'),
+      'put' => $labels['edit_title'] ?? __('Edit'),
+      'update' => $labels['edit_title'] ?? __('Edit'),
+      'delete' => __('Delete'),
     ];
 
     return collect($links)
@@ -1411,6 +1620,11 @@ class CrudService
 
         return $this->getPermission($rightVerb->first() ?: null);
       })
+      ->map(fn ($href, $key) => new CrudLink(
+        label: (string) ($linkLabels[$key] ?? Str::ucfirst($key)),
+        href: (string) $href
+      ))
+      ->values()
       ->toArray();
   }
 

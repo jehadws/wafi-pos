@@ -1,7 +1,11 @@
-import { del, get, post, put } from './http';
+import { get, post, put } from './http';
 
 /**
  * Categories API — `/api/categories/*`, `/api/crud/sb.products-categories`
+ *
+ * Row deletes/bulk-deletes are backend-driven (crud table engine); these
+ * helpers serve the reports (getAll), the POS category panel
+ * (getPosContent) and the category form pages.
  */
 export const categoriesApi = {
   /** Fetch all categories. */
@@ -20,10 +24,4 @@ export const categoriesApi = {
 
   /** Update an existing product category. */
   update: (id: number | string, data: unknown) => put(`/crud/sb.products-categories/${id}`, data),
-
-  /** Delete a single product category. */
-  remove: (id: number | string) => del(`/crud/sb.products-categories/${id}`),
-
-  /** Bulk-delete product categories by ID. */
-  bulkDelete: (ids: Array<number | string>) => post('/crud/sb.products-categories/bulk-actions', { action: 'delete_selected', entries: ids }),
 };

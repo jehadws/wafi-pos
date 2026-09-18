@@ -338,7 +338,7 @@ class RegisterHistoryCrud extends CrudService
      */
     public function beforeDelete( $namespace, $id, $model )
     {
-        if ( $namespace == 'sb.registers-hitory' ) {
+        if ( $namespace == 'sb.cash-registers-history' ) {
             /**
              *  Perform an action before deleting an entry
              *  In case something wrong, this response can be returned
@@ -460,7 +460,7 @@ class RegisterHistoryCrud extends CrudService
         );
 
         $entry->action = $this->registerService->getActionLabel( $entry->action );
-        $entry->created_at = sb()->date->getFormatted( $entry->created_at );
+        $entry->created_at = $entry->created_at !== null ? sb()->date->getFormatted( $entry->created_at ) : '';
         $entry->value = (string) sb()->currency->define( $entry->value );
         $entry->balance_before = (string) sb()->currency->define( $entry->balance_before );
         $entry->balance_after = (string) sb()->currency->define( $entry->balance_after );
@@ -545,19 +545,16 @@ class RegisterHistoryCrud extends CrudService
     /**
      * Get Bulk actions
      *
+     * Read-only resource (`delete => false`): the generated
+     * `delete_selected` entry was always refused by `bulkAction()`, so
+     * the list stays empty. The Hook filter is preserved so modules can
+     * still register their own bulk actions.
+     *
      * @return array of actions
      **/
     public function getBulkActions(): array
     {
-        return Hook::filter( $this->namespace . '-bulk', [
-            [
-                'label' => __( 'Delete Selected Groups' ),
-                'identifier' => 'delete_selected',
-                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
-                    'namespace' => $this->namespace,
-                ] ),
-            ],
-        ] );
+        return Hook::filter( $this->namespace . '-bulk', [] );
     }
 
     /**

@@ -15,7 +15,7 @@ class TaxFactory extends Factory
 
     public function definition()
     {
-        return Hook::filter( 'ns-tax-factory', [
+        return Hook::filter( 'sb-tax-factory', [
             'name' => $this->faker->name,
             'description' => $this->faker->sentence,
             'rate' => $this->faker->numberBetween( 1, 20 ),

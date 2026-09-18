@@ -1,106 +1,51 @@
-import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler } from 'react';
+import { Head } from '@inertiajs/react';
 
 import TextLink from '@/components/common/text-link';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import InputError from '@/components/ui/input-error';
-import { Label } from '@/components/ui/label';
+import AuthFormShell from '@/components/auth/auth-form-shell';
+import type { FormFieldDef } from '@/types/forms';
 import AuthLayout from '@/layouts/auth-layout';
 import { useTranslation } from '@/lib/i18n';
-
-type LoginForm = {
-  username: string;
-  password: string;
-  remember: boolean;
-};
+import type { ReactNode } from 'react';
 
 interface LoginProps {
   status?: string;
   canResetPassword: boolean;
+  fields: FormFieldDef[];
 }
 
-export default function Login({ status, canResetPassword }: LoginProps) {
+export default function Login({ status, canResetPassword, fields }: LoginProps) {
   const { t } = useTranslation();
-  const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
-    username: '',
-    password: '',
-    remember: false,
-  });
 
-  const submit: FormEventHandler = (e) => {
-    e.preventDefault();
-    post(route('login'), {
-      onFinish: () => reset('password'),
-    });
-  };
+  const bottomLinks: ReactNode | undefined = canResetPassword ? (
+    <TextLink
+      href={route('password.request')}
+      className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+    >
+      {t('Forgot your password?')}
+    </TextLink>
+  ) : undefined;
 
   return (
     <AuthLayout title={t('Log in to your account')} description={t('Enter your username and password below to log in')}>
       <Head title={t('Log in')} />
 
-      <form className="flex flex-col gap-6" onSubmit={submit}>
-        <div className="grid gap-6">
-          <div className="grid gap-2">
-            <Label htmlFor="username">{t('Username')}</Label>
-            <Input
-              id="username"
-              type="text"
-              required
-              autoFocus
-              tabIndex={1}
-              autoComplete="username"
-              value={data.username}
-              onChange={(e) => setData('username', e.target.value)}
-              placeholder={t('johndoe')}
-            />
-            <InputError message={errors.username} />
-          </div>
-
-          <div className="grid gap-2">
-            <div className="flex items-center">
-              <Label htmlFor="password">{t('Password')}</Label>
-              {canResetPassword && (
-                <TextLink href={route('password.request')} className="ms-auto text-sm" tabIndex={5}>
-                  {t('Forgot password')}
-                </TextLink>
-              )}
-            </div>
-            <Input
-              id="password"
-              type="password"
-              required
-              tabIndex={2}
-              autoComplete="current-password"
-              value={data.password}
-              onChange={(e) => setData('password', e.target.value)}
-              placeholder={t('Password')}
-            />
-            <InputError message={errors.password} />
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Checkbox id="remember" name="remember" checked={data.remember} onClick={() => setData('remember', !data.remember)} tabIndex={3} />
-            <Label htmlFor="remember">{t('Remember me')}</Label>
-          </div>
-
-          <Button type="submit" className="mt-4 w-full" tabIndex={4} disabled={processing}>
-            {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-            {t('Log in')}
-          </Button>
-        </div>
+      <div className="space-y-6">
+        <AuthFormShell
+          fields={fields}
+          submitUrl={route('login')}
+          submitLabel={t('Log in')}
+          onSuccessRedirect={null}
+          resetFieldsOnFinish={['password']}
+          bottomLinks={bottomLinks}
+          statusBanner={status ?? null}
+          className="w-full"
+        />
 
         <div className="text-muted-foreground text-center text-sm">
           {t("Don't have an account?")}{' '}
-          <TextLink href={route('register')} tabIndex={5}>
-            {t('Sign up')}
-          </TextLink>
+          <TextLink href={route('register')}>{t('Sign up')}</TextLink>
         </div>
-      </form>
-
-      {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
+      </div>
     </AuthLayout>
   );
 }

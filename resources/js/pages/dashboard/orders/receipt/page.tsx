@@ -1,16 +1,25 @@
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n';
 import Settings from '@/lib/settings';
+import type { Order } from '@/types/models/order';
+import type { Payment } from '@/types/models/payment';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { Printer } from 'lucide-react';
 import { useEffect } from 'react';
 
-export default function OrderReceiptPage({ order, optionsService, title }: any) {
+interface OrderReceiptPageProps {
+  order: Order;
+  /** Plain option values (sb_invoice_receipt_logo, sb_invoice_receipt_footer) — previously a serialized service instance. */
+  options: Record<string, string>;
+  title: string;
+}
+
+export default function OrderReceiptPage({ order, options, title }: OrderReceiptPageProps) {
   const { t } = useTranslation();
   const generalSettings = Settings.get();
   const storeName = generalSettings?.identification?.sb_store_name || 'Subul POS';
-  const receiptLogo = optionsService?.sb_invoice_receipt_logo || generalSettings?.identification?.sb_store_square_logo || '';
-  const receiptFooter = optionsService?.sb_invoice_receipt_footer || '';
+  const receiptLogo = options?.sb_invoice_receipt_logo || generalSettings?.identification?.sb_store_square_logo || '';
+  const receiptFooter = options?.sb_invoice_receipt_footer || '';
   const storeAddress = generalSettings?.identification?.sb_store_address || '';
   const storeCity = generalSettings?.identification?.sb_store_city || '';
   const storePobox = generalSettings?.identification?.sb_store_pobox || '';
@@ -50,7 +59,7 @@ export default function OrderReceiptPage({ order, optionsService, title }: any) 
 
       {/* Print button — hidden when printing */}
       <div className="no-print mb-4 flex w-full max-w-sm items-center justify-between">
-        <h1 className="text-lg font-bold text-gray-800">{title}</h1>
+        <h1 className="text-lg font-bold text-gray-800">{title.replace('&mdash;', '—')}</h1>
         <Button onClick={handlePrint} className="gap-2">
           <Printer size={16} />
           {t('Print Receipt')}
@@ -118,7 +127,7 @@ export default function OrderReceiptPage({ order, optionsService, title }: any) 
             </tr>
           </thead>
           <tbody>
-            {order.products?.map((item: any) => (
+            {order.products?.map((item) => (
               <tr key={item.id} style={{ borderBottom: '1px dotted #ccc' }}>
                 <td style={{ paddingTop: '4px', paddingBottom: '4px', verticalAlign: 'top' }}>
                   <div style={{ fontWeight: 'bold', wordBreak: 'break-word' }}>{item.name}</div>
@@ -172,7 +181,7 @@ export default function OrderReceiptPage({ order, optionsService, title }: any) 
         {order.payments && order.payments.length > 0 && (
           <div style={{ fontSize: '11px' }}>
             <div style={{ fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '2px' }}>{t('Payment')}</div>
-            {order.payments.map((payment: any) => (
+            {order.payments.map((payment: Payment) => (
               <div key={payment.id} className="mb-1 flex justify-between">
                 <span>{payment.label || t('Payment')}</span>
                 <span>{formatCurrency(payment.value)}</span>

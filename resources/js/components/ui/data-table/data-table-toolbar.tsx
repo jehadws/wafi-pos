@@ -1,26 +1,23 @@
 "use client"
+"use no memo"
 
 import type { Table } from "@tanstack/react-table"
 import { Filter, Plus, RefreshCw, X } from "lucide-react"
+import type { DateRange } from "react-day-picker"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { DateRangePicker } from "@/components/ui/date-range-picker"
 import { DataTableViewOptions } from "./data-table-view-options"
 import { DataTableFacetedFilter } from "./data-table-faceted-filter"
+import type { FilterableColumn } from "./data-table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "@/lib/i18n"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
-  filterableColumns?: {
-    id: string
-    title: string
-    options: {
-      label: string
-      value: string
-    }[]
-  }[]
+  filterableColumns?: FilterableColumn[]
   searchKey?: string
   bulkActions?: {
     label: string
@@ -35,6 +32,63 @@ interface DataTableToolbarProps<TData> {
   onSearch?: (searchTerm: string) => void
   searchValue?: string
   isLoading?: boolean
+}
+
+/**
+ * `daterangepicker` filter control — value is a `{ from?, to? }` DateRange
+ * carried on the tanstack column-filter state; the engine serializes it to
+ * the backend `{ startDate, endDate }` query-filter shape.
+ */
+function DateRangeFilterControl<TData>({ table, id, title }: { table: Table<TData>; id: string; title: string }) {
+  const column = table.getColumn(id)
+  if (!column) return null
+
+  const value = column.getFilterValue() as DateRange | undefined
+
+  return (
+    <DateRangePicker
+      className="w-auto"
+      placeholder={title}
+      dateRange={value}
+      aria-label={title}
+      onDateRangeChange={(range) => column.setFilterValue(range ?? undefined)}
+    />
+  )
+}
+
+/**
+ * `text` filter control — debounced scalar string on the column-filter
+ * state; an empty input clears the filter.
+ */
+function TextFilterControl<TData>({ table, id, title, placeholder }: { table: Table<TData>; id: string; title: string; placeholder?: string }) {
+  const column = table.getColumn(id)
+  const filterValue = (column?.getFilterValue() as string | undefined) ?? ''
+  const [localValue, setLocalValue] = useState(filterValue)
+
+  useEffect(() => {
+    setLocalValue(filterValue)
+  }, [filterValue])
+
+  const handleChange = (value: string) => {
+    setLocalValue(value)
+    const timeout = setTimeout(() => {
+      column?.setFilterValue(value === '' ? undefined : value)
+    }, 300)
+    return () => clearTimeout(timeout)
+  }
+
+  if (!column) return null
+
+  return (
+    <Input
+      key={id}
+      aria-label={title}
+      placeholder={placeholder ?? title}
+      value={localValue}
+      onChange={(event) => handleChange(event.target.value)}
+      className="h-9 w-[150px] lg:w-[200px]"
+    />
+  )
 }
 
 export function DataTableToolbar<TData>({
@@ -56,6 +110,9 @@ export function DataTableToolbar<TData>({
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null)
 
   const isFiltered = table.getState().columnFilters.length > 0
+  // The bulk-actions bar renders whenever the table defines actions; it
+  // stays disabled until at least one row is checked (selection affordance).
+  const hasSelection = table.getFilteredSelectedRowModel().rows.length > 0
   const [selectedAction, setSelectedAction] = useState<string | null>(null)
 
   const handleApplyAction = () => {
@@ -65,6 +122,10 @@ export function DataTableToolbar<TData>({
     if (!action) return
 
     const selectedRows = table.getFilteredSelectedRowModel().rows.map((row) => row.original)
+    // Defensive: the Apply button is disabled without a selection, but a
+    // selection that clears between render and click must not fire empty.
+    if (selectedRows.length === 0) return
+
     action.action(selectedRows)
     table.resetRowSelection();
     setSelectedAction(null)
@@ -141,17 +202,28 @@ export function DataTableToolbar<TData>({
           />
         )}
         {filterableColumns.length > 0 &&
-          filterableColumns.map(
-            (column) =>
-              table.getColumn(column.id) && (
-                <DataTableFacetedFilter
-                  key={column.id}
-                  column={table.getColumn(column.id)}
-                  title={column.title}
-                  options={column.options}
-                />
-              ),
-          )}
+          filterableColumns.map((column) => {
+            if (!table.getColumn(column.id)) {
+              return null
+            }
+
+            if (column.type === 'daterangepicker') {
+              return <DateRangeFilterControl key={column.id} table={table} id={column.id} title={column.title} />
+            }
+
+            if (column.type === 'text') {
+              return <TextFilterControl key={column.id} table={table} id={column.id} title={column.title} placeholder={column.placeholder} />
+            }
+
+            return (
+              <DataTableFacetedFilter
+                key={column.id}
+                column={table.getColumn(column.id)}
+                title={column.title}
+                options={column.options}
+              />
+            )
+          })}
         {isFiltered && (
           <Button variant="ghost" onClick={() => table.resetColumnFilters()} className="h-9 px-2 lg:px-3">
             {t('Reset')}
@@ -160,10 +232,10 @@ export function DataTableToolbar<TData>({
         )}
       </div>
       <div className="flex items-center gap-2">
-        {table.getFilteredSelectedRowModel().rows.length > 0 && bulkActions.length > 0 && (
+        {bulkActions.length > 0 && (
           <div className="flex items-center gap-2">
             <Select value={selectedAction || ""} onValueChange={setSelectedAction}>
-              <SelectTrigger className="h-9 w-[150px]">
+              <SelectTrigger className="h-9 w-[150px]" disabled={!hasSelection}>
                 <SelectValue placeholder={t('Bulk Actions')} />
               </SelectTrigger>
               <SelectContent>
@@ -174,7 +246,13 @@ export function DataTableToolbar<TData>({
                 ))}
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm" onClick={handleApplyAction} disabled={!selectedAction} className="h-9">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleApplyAction}
+              disabled={!selectedAction || !hasSelection}
+              className="h-9"
+            >
               {t('Apply')}
             </Button>
           </div>

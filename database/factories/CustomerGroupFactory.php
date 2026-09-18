@@ -16,7 +16,7 @@ class CustomerGroupFactory extends Factory
 
     public function definition()
     {
-        return Hook::filter( 'ns-customer-group-factory', [
+        return Hook::filter( 'sb-customer-group-factory', [
             'name' => $this->faker->catchPhrase(),
             'minimal_credit_payment' => $this->faker->numberBetween( 0, 50 ),
             'author' => $this->faker->randomElement( User::get()->map( fn( $user ) => $user->id ) ),

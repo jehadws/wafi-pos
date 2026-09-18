@@ -23,7 +23,13 @@ class DateService extends Carbon
             $this->options = app()->make( Options::class );
 
             if ( Auth::check() ) {
-                $language = Auth::user()->attribute->language ?: $this->options->get( 'sb_store_language', 'light' );
+                /**
+             * Factory-created users (and any user created outside
+             * UsersService::setUser()) carry no UserAttribute row — read it
+             * null-safely and fall back to the store language (a valid
+             * locale key; `getLongLocaleCode()` maps unknown keys to en_US).
+             */
+            $language = Auth::user()->attribute?->language ?: $this->options->get( 'sb_store_language', 'en' );
             } else {
                 $language = $this->options->get( 'sb_store_language', 'en' );
             }

@@ -1,7 +1,10 @@
-import { del, post, put } from './http';
+import { post, put } from './http';
 
 /**
  * Coupons API — `/api/crud/sb.coupons`
+ *
+ * Row deletes/bulk-deletes are backend-driven (crud table engine); these
+ * helpers serve the coupon form pages.
  */
 export const couponsApi = {
   /** Create a new coupon. */
@@ -9,10 +12,4 @@ export const couponsApi = {
 
   /** Update an existing coupon. */
   update: (id: number | string, data: unknown) => put(`/crud/sb.coupons/${id}`, data),
-
-  /** Delete a single coupon. */
-  remove: (id: number | string) => del(`/crud/sb.coupons/${id}`),
-
-  /** Bulk-delete coupons by ID. */
-  bulkDelete: (ids: Array<number | string>) => post('/crud/sb.coupons/bulk-actions', { action: 'delete_selected', entries: ids }),
 };

@@ -194,7 +194,7 @@ class ReportsController extends DashboardController
       ComputeYearlyReportJob::dispatch($request->input('year'));
 
       return [
-        'stauts' => 'success',
+        'status' => 'success',
         'message' => __('The report will be computed for the current year.'),
       ];
     }

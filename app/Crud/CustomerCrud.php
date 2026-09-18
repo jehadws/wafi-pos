@@ -98,13 +98,14 @@ class CustomerCrud extends CrudService
   public $to_route = 'sb.dashboard.customers-list';
 
   /**
-   * all tabs mentionned on the tabs relation
-   * are ignored on the parent model.
+   * Phase 6 (docs/plans/backend-driven-completion/06): the billing/shipping
+   * tabs are no longer tabs-relations. Their fields are renamed
+   * (`billing_*`/`shipping_*` — L8.2 option 1) so every name is unique
+   * across the form, `getFlatForm` therefore flattens them into the
+   * payload, and the metadata write happens in afterPost/afterPut through
+   * `saveAddressesMetadata()` → `CrudService::saveTabRelation()` — the
+   * exact writer the removed generic loop used.
    */
-  protected $tabsRelations = [
-    'shipping' => [CustomerShippingAddress::class, 'customer_id', 'id'],
-    'billing' => [CustomerBillingAddress::class, 'customer_id', 'id'],
-  ];
 
   protected $casts = [
     'first_name' => NotDefinedCast::class,
@@ -286,15 +287,72 @@ class CustomerCrud extends CrudService
         CrudForm::tab(
           label: __('Billing Address'),
           identifier: 'billing',
-          fields: $this->customerService->getAddressFields($entry->billing ?? null)
+          fields: $this->prefixedAddressFields('billing_', $entry->billing ?? null)
         ),
         CrudForm::tab(
           label: __('Shipping Address'),
           identifier: 'shipping',
-          fields: $this->customerService->getAddressFields($entry->shipping ?? null)
+          fields: $this->prefixedAddressFields('shipping_', $entry->shipping ?? null)
         ),
       )
     );
+  }
+
+  /**
+   * Phase 6: the address fields with a unique `billing_`/`shipping_` name
+   * prefix (L8.2 option 1 — cheapest unblock for the duplicate-field-name
+   * collapse in `SbForms::getFlatForm`). Labels/descriptions come from
+   * `CustomerService::getAddressFields` byte-identical (translation keys
+   * untouched); only the `name` is prefixed. No validation strings — the
+   * address metadata carries no server-side rules anywhere today, so the
+   * form stays in parity with the dedicated endpoint it replaces.
+   */
+  private function prefixedAddressFields(string $prefix, $model = null): array
+  {
+    return collect($this->customerService->getAddressFields($model))
+      ->map(function ($field) use ($prefix) {
+        $field['name'] = $prefix . $field['name'];
+
+        return $field;
+      })
+      ->toArray();
+  }
+
+  /**
+   * Phase 6: write the billing/shipping metadata from the flattened crud
+   * payload. The backend-driven form submits `billing_first_name`,
+   * `shipping_city`, … — those are stripped of their prefix and persisted
+   * as `CustomerBillingAddress` / `CustomerShippingAddress` rows through
+   * `CrudService::saveTabRelation()`, the same code path the generic
+   * tabs-relation loop (and therefore every pre-Phase-6 payload) used.
+   * Bare `first_name`/`shipping` keys (legacy POS dialog payloads) pass
+   * through unprefixed onto the billing/shipping rows respectively,
+   * keeping those payloads working.
+   */
+  private function saveAddressesMetadata(array $inputs, Customer $customer): void
+  {
+    $crudService = app()->make(CrudService::class);
+
+    $addressFields = [
+      'first_name', 'last_name', 'phone', 'address_1', 'address_2',
+      'country', 'city', 'pobox', 'company', 'email',
+    ];
+
+    foreach ([ 'billing' => CustomerBillingAddress::class, 'shipping' => CustomerShippingAddress::class ] as $prefix => $relationClass) {
+      $fields = [];
+
+      foreach ($inputs as $name => $value) {
+        if (str_starts_with((string) $name, $prefix . '_')) {
+          $fields[substr((string) $name, strlen($prefix) + 1)] = $value;
+        } elseif (in_array((string) $name, $addressFields, true)) {
+          $fields[$name] = $value;
+        }
+      }
+
+      if (! empty($fields)) {
+        $crudService->saveTabRelation([ $relationClass, 'customer_id', 'id' ], $customer, $fields);
+      }
+    }
   }
 
   /**
@@ -306,6 +364,13 @@ class CustomerCrud extends CrudService
   public function filterPostInputs($inputs)
   {
     unset($inputs['password_confirm']);
+
+    /**
+     * Phase 6: the prefixed address fields are metadata (persisted in
+     * afterPost through saveAddressesMetadata), not users-table columns —
+     * strip them so the generic assignment loop never sees them.
+     */
+    $inputs = collect($inputs)->reject(fn($value, $key) => str_starts_with((string) $key, 'billing_') || str_starts_with((string) $key, 'shipping_'))->toArray();
 
     /**
      * if the password is not changed, no
@@ -325,15 +390,16 @@ class CustomerCrud extends CrudService
      */
     if (empty($inputs['email'])) {
       $domain = parse_url(url('/'));
+      $host = $domain['host'] ?? 'subul.com';
       $lastCustomer = User::orderBy('subul_users.id', 'desc')->first();
+      $nextId = ($lastCustomer instanceof User ? $lastCustomer->id : 0) + 1;
 
-      if ($lastCustomer instanceof User) {
-        $lastCustomerId = $lastCustomer->id + 1;
-      } else {
-        $lastCustomerId = 1;
-      }
+      do {
+        $generatedEmail = "customer-{$nextId}@{$host}";
+        $nextId++;
+      } while (User::where('email', $generatedEmail)->exists());
 
-      $inputs['email'] = 'customer-' . $lastCustomerId + 1 . '@' . ($domain['host'] ?? 'subul.com');
+      $inputs['email'] = $generatedEmail;
     }
 
     /**
@@ -368,6 +434,11 @@ class CustomerCrud extends CrudService
     unset($inputs['password_confirm']);
 
     /**
+     * Phase 6: same metadata strip as filterPostInputs.
+     */
+    $inputs = collect($inputs)->reject(fn($value, $key) => str_starts_with((string) $key, 'billing_') || str_starts_with((string) $key, 'shipping_'))->toArray();
+
+    /**
      * if the password is not changed, no
      * need to hash it
      */
@@ -398,6 +469,12 @@ class CustomerCrud extends CrudService
    */
   public function afterPost(array $inputs, Customer $customer): array
   {
+    /**
+     * Phase 6: persist the billing/shipping metadata (the $inputs here are
+     * the raw flat payload — prefixed address keys included).
+     */
+    $this->saveAddressesMetadata($inputs, $customer);
+
     CustomerAfterCreatedEvent::dispatch($customer);
 
     /**
@@ -429,6 +506,12 @@ class CustomerCrud extends CrudService
    */
   public function afterPut(array $inputs, Customer $customer): array
   {
+    /**
+     * Phase 6: persist the billing/shipping metadata (the $inputs here are
+     * the raw flat payload — prefixed address keys included).
+     */
+    $this->saveAddressesMetadata($inputs, $customer);
+
     CustomerAfterUpdatedEvent::dispatch($customer);
 
     return $inputs;
@@ -544,8 +627,8 @@ class CustomerCrud extends CrudService
       type: 'DELETE',
       url: sb()->url('/api/crud/sb.customers/' . $entry->id),
       confirm: [
+        'title' => __('Confirm Your Action'),
         'message' => __('Would you like to delete this ?'),
-        'title' => __('Delete a customers'),
       ],
     );
 

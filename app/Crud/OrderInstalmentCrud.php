@@ -369,24 +369,13 @@ class OrderInstalmentCrud extends CrudService
         $entry->{ '$cssClass' } = $entry->paid == 0 ? 'error' : 'success';
         $entry->paid = (bool) $entry->paid ? __( 'Yes' ) : __( 'No' );
         $entry->date = sb()->date->getFormatted( $entry->date );
-        // you can make changes here
-        $entry->action(
-            identifier: 'edit',
-            label: __( 'Edit' ),
-            type: 'GOTO',
-            url: sb()->url( '/dashboard/' . $this->slug . '/edit/' . $entry->id ),
-        );
 
-        $entry->action(
-            identifier: 'delete',
-            label: __( 'Delete' ),
-            type: 'DELETE',
-            url: sb()->url( '/api/crud/sb.orders-instalments/' . $entry->id ),
-            confirm: [
-                'message' => __( 'Would you like to delete this ?' ),
-            ]
-        );
-
+        /**
+         * No row actions: the former Edit GOTO pointed at
+         * `/dashboard/orders/instalments/edit/{id}`, a route that does
+         * not exist, and the Delete was always refused by
+         * `beforeDelete` (`delete => false`).
+         */
         return $entry;
     }
 
@@ -443,28 +432,25 @@ class OrderInstalmentCrud extends CrudService
         return [
             'list' => sb()->url( 'dashboard/' . 'orders/instalments' ),
             'create' => false,
-            'edit' => sb()->url( 'dashboard/' . 'orders/instalments/edit/' ),
-            'post' => sb()->url( 'api/crud/' . 'sb.orders-instalments' ),
-            'put' => sb()->url( 'api/crud/' . 'sb.orders-instalments/{id}' . '' ),
+            'edit' => false,
+            'post' => false,
+            'put' => false,
         ];
     }
 
     /**
      * Get Bulk actions
      *
+     * Read-only deletes (`delete => false`): the generated
+     * `delete_selected` entry was always refused by `bulkAction()`, so
+     * the list stays empty. The Hook filter is preserved so modules can
+     * still register their own bulk actions.
+     *
      * @return array of actions
      **/
     public function getBulkActions(): array
     {
-        return Hook::filter( $this->namespace . '-bulk', [
-            [
-                'label' => __( 'Delete Selected Groups' ),
-                'identifier' => 'delete_selected',
-                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
-                    'namespace' => $this->namespace,
-                ] ),
-            ],
-        ] );
+        return Hook::filter( $this->namespace . '-bulk', [] );
     }
 
     /**

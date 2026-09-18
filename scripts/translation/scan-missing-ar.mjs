@@ -12,45 +12,19 @@
 
 import fs from 'fs';
 import path from 'path';
+import { collectCodeKeys, walkDir } from './scan-code-keys.mjs';
 
 const ROOT = path.resolve(process.cwd());
 const LANG_DIR = path.join(ROOT, 'lang');
 const FIX_MODE = process.argv.includes('--fix');
-
-function walkDir(dir, exts) {
-  const results = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (entry.name === 'node_modules' || entry.name === 'vendor' || entry.name === '.git') continue;
-      results.push(...walkDir(full, exts));
-    } else if (exts.some(ext => entry.name.endsWith(ext))) {
-      results.push(full);
-    }
-  }
-  return results;
-}
 
 // Load translation files
 const en = JSON.parse(fs.readFileSync(path.join(LANG_DIR, 'en.json'), 'utf8'));
 const arRaw = fs.readFileSync(path.join(LANG_DIR, 'ar.json'), 'utf8');
 const ar = JSON.parse(arRaw);
 
-// Collect all t() keys from source files
-const sourceFiles = walkDir(path.join(ROOT, 'resources/js'), ['.tsx', '.ts']);
-const keyPattern = /\bt\(\s*['"`]([^'"`]+?)['"`]/g;
-const codeKeys = new Map(); // key -> Set<file>
-
-for (const abs of sourceFiles) {
-  const file = path.relative(ROOT, abs).replace(/\\/g, '/');
-  const content = fs.readFileSync(abs, 'utf8');
-  let match;
-  while ((match = keyPattern.exec(content)) !== null) {
-    const key = match[1];
-    if (!codeKeys.has(key)) codeKeys.set(key, new Set());
-    codeKeys.get(key).add(file);
-  }
-}
+// Collect all t() keys from source files (full string literals)
+const codeKeys = collectCodeKeys(ROOT); // key -> Set<file>
 
 // Find keys used in code that are missing from ar.json
 const missingInAr = [];
@@ -68,7 +42,7 @@ for (const [key, files] of codeKeys) {
 }
 
 // Report
-console.log(`\n📊 Scanned ${sourceFiles.length} source files, found ${codeKeys.size} unique t() keys\n`);
+console.log(`\n📊 Scanned ${walkDir(path.join(ROOT, 'resources/js'), ['.tsx', '.ts']).length} source files, found ${codeKeys.size} unique t() keys\n`);
 
 if (missingInAr.length === 0 && missingInBoth.length === 0) {
   console.log('✅ All t() keys exist in ar.json');
@@ -112,9 +86,10 @@ if (FIX_MODE && missingInAr.length > 0) {
     // Ensure there's a comma before the new entries
     const beforeBrace = trimmed.slice(0, insertPoint).trimEnd();
     const needsComma = beforeBrace.length > 0 && !beforeBrace.endsWith(',') && !beforeBrace.endsWith('{');
+    // JSON.stringify per entry so keys/values containing quotes stay valid JSON
     const additions = missingInAr
       .sort((a, b) => a.key.localeCompare(b.key))
-      .map(({ key, enValue }) => `    "${key}": "${enValue}"`)
+      .map(({ key, enValue }) => `    ${JSON.stringify(key)}: ${JSON.stringify(enValue)}`)
       .join(',\n');
 
     const prefix = needsComma ? ',\n' : '\n';

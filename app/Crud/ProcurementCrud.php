@@ -2,12 +2,20 @@
 
 namespace App\Crud;
 
+use App\Classes\FormInput;
 use App\Exceptions\NotAllowedException;
+use App\Http\Requests\ProcurementRequest;
 use App\Models\Procurement;
+use App\Models\Provider;
+use App\Models\TaxGroup;
 use App\Services\CrudEntry;
 use App\Services\CrudService;
+use App\Services\Helper;
+use App\Services\ProcurementService;
 use App\Services\ProviderService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use TorMorten\Eventy\Facades\Events as Hook;
 
 class ProcurementCrud extends CrudService
@@ -68,12 +76,22 @@ class ProcurementCrud extends CrudService
   public $fillable = [];
 
   /**
+   * The generic fill/save block is disabled: procurements are written
+   * exclusively by ProcurementService (single transactional writer —
+   * products + stock sync) from beforePost/beforePut. The root-level
+   * "products" section is skipped for good measure.
+   */
+  public $disablePost = true;
+  public $disablePut = true;
+  public $skippable = ['products'];
+
+  /**
    * define permission
    */
   public $permissions = [
     'create' => 'subul.create.procurements',
     'read' => 'subul.read.procurements',
-    'update' => false,
+    'update' => 'subul.update.procurements',
     'delete' => 'subul.delete.procurements',
   ];
 
@@ -141,83 +159,104 @@ class ProcurementCrud extends CrudService
    */
   public function getForm($entry = null)
   {
+    /**
+     * On edit, the products rows are seeded from the same source the
+     * dedicated edit page used (ProcurementController::updateProcurement
+     * passes `procurement.load('products')`). The client adds `_key` /
+     * `$invalid` per row; they are stripped server-side on submit.
+     */
+    $products = $entry instanceof Procurement
+      ? $entry->products->toArray()
+      : [];
+
     return [
-      'main' => [
-        'label' => __('Name'),
-        'name' => 'name',
-        'value' => $entry->name ?? '',
-        'description' => __('Provide a name to the resource.'),
+      'main' => FormInput::text(
+        label: __('Name'),
+        name: 'name',
+        value: $entry->name ?? '',
+        validation: 'nullable|string|max:255',
+        description: __('Provide a name that will help to identify the procurement.'),
+      ),
+
+      /**
+       * Root-level section consumed by the `procurementProducts` custom
+       * field (Phase 2 of docs/plans/backend-driven-completion): rows are
+       * seeded under "value", the tax groups drive the tax modals.
+       * Lives outside "tabs" so it cannot collide with a field name.
+       */
+      'products' => [
+        'component' => 'procurementProducts',
+        'taxGroups' => TaxGroup::with('taxes:id,tax_group_id,rate')->get()->toArray(),
+        'value' => $products,
       ],
+
       'tabs' => [
         'general' => [
           'label' => __('General'),
           'fields' => [
-            [
-              'type' => 'text',
-              'name' => 'author',
-              'label' => __('Author'),
-              'value' => $entry->author ?? '',
-            ],
-            [
-              'type' => 'text',
-              'name' => 'created_at',
-              'label' => __('Created At'),
-              'value' => $entry->created_at ?? '',
-            ],
-            [
-              'type' => 'text',
-              'name' => 'description',
-              'label' => __('Description'),
-              'value' => $entry->description ?? '',
-            ],
-            [
-              'type' => 'text',
-              'name' => 'id',
-              'label' => __('Id'),
-              'value' => $entry->id ?? '',
-            ],
-            [
-              'type' => 'text',
-              'name' => 'name',
-              'label' => __('Name'),
-              'value' => $entry->name ?? '',
-            ],
-            [
-              'type' => 'text',
-              'name' => 'provider_id',
-              'label' => __('Provider Id'),
-              'value' => $entry->provider_id ?? '',
-            ],
-            [
-              'type' => 'text',
-              'name' => 'status',
-              'label' => __('Status'),
-              'value' => $entry->status ?? '',
-            ],
-            [
-              'type' => 'text',
-              'name' => 'total_items',
-              'label' => __('Total Items'),
-              'value' => $entry->total_items ?? '',
-            ],
-            [
-              'type' => 'text',
-              'name' => 'updated_at',
-              'label' => __('Updated At'),
-              'value' => $entry->updated_at ?? '',
-            ],
-            [
-              'type' => 'text',
-              'name' => 'uuid',
-              'label' => __('Uuid'),
-              'value' => $entry->uuid ?? '',
-            ],
-            [
-              'type' => 'text',
-              'name' => 'value',
-              'label' => __('Value'),
-              'value' => $entry->value ?? '',
-            ],
+            FormInput::text(
+              label: __('Invoice Number'),
+              name: 'invoice_reference',
+              value: $entry->invoice_reference ?? '',
+              validation: 'nullable|string|max:255',
+              description: __('If the procurement has been issued outside of Subul, please provide a unique reference.'),
+            ),
+            FormInput::date(
+              label: __('Delivery Time'),
+              name: 'delivery_time',
+              value: $entry->delivery_time ?? sb()->date->now()->format('Y-m-d'),
+              description: __('If the procurement has to be delivered at a specific time, define the moment here.'),
+            ),
+            FormInput::date(
+              label: __('Invoice Date'),
+              name: 'invoice_date',
+              value: $entry->invoice_date ?? sb()->date->now()->format('Y-m-d'),
+              description: __('If you would like to define a custom invoice date.'),
+            ),
+            FormInput::switch(
+              label: __('Automatic Approval'),
+              name: 'automatic_approval',
+              options: Helper::kvToJsOptions([
+                0 => __('No'),
+                1 => __('Yes'),
+              ]),
+              value: $entry->automatic_approval ?? 1,
+              validation: 'nullable|boolean',
+              description: __('Determine if the procurement should be marked automatically as approved once the Delivery Time occurs.'),
+            ),
+            FormInput::select(
+              label: __('Delivery Status'),
+              name: 'delivery_status',
+              options: Helper::kvToJsOptions([
+                'pending' => __('Pending'),
+                'delivered' => __('Delivered'),
+                'draft' => __('Draft'),
+              ]),
+              value: $entry->delivery_status ?? 'delivered',
+              validation: 'required|in:delivered,pending,draft',
+              description: __('Determine what is the actual value of the procurement. Once "Delivered" the status can\'t be changed, and the stock will be updated.'),
+            ),
+            FormInput::select(
+              label: __('Payment Status'),
+              name: 'payment_status',
+              options: Helper::kvToJsOptions([
+                'unpaid' => __('Unpaid'),
+                'paid' => __('Paid'),
+              ]),
+              value: $entry->payment_status ?? 'paid',
+              validation: 'required|in:unpaid,paid',
+              description: __('Determine what is the actual payment status of the procurement.'),
+            ),
+            FormInput::searchSelect(
+              label: __('Provider'),
+              name: 'provider_id',
+              value: $entry->provider_id ?? '',
+              options: Helper::toJsOptions(Provider::get(), ['id', 'first_name']),
+              validation: 'required',
+              description: __('Determine what is the actual provider of the current procurement.'),
+              component: 'sbCrudForm',
+              props: ProviderCrud::getFormConfig(),
+            ),
           ],
         ],
       ],
@@ -255,16 +294,59 @@ class ProcurementCrud extends CrudService
   }
 
   /**
-   * Before saving a record
+   * Reshape the flat inputs produced by SbForms::getPlainData
+   * (`{ name, general.* fields, products }`) into the nested shape
+   * ProcurementService::create/edit consume:
+   * `{ name, general: {…7 whitelisted fields…}, products: [...] }`.
+   * Client-only row keys (`_key`, `$invalid`) are stripped here.
+   */
+  private function toServicePayload(array $inputs): array
+  {
+    return [
+      'name' => $inputs['name'] ?? '',
+
+      'general' => collect($inputs)->only([
+        'provider_id',
+        'delivery_status',
+        'payment_status',
+        'invoice_reference',
+        'delivery_time',
+        'invoice_date',
+        'automatic_approval',
+      ])->all(),
+
+      'products' => collect($inputs['products'] ?? [])
+        ->map(fn ($row) => collect($row)->except(['_key', '$invalid'])->all())
+        ->values()
+        ->all(),
+    ];
+  }
+
+  /**
+   * Before saving a record — delegate the whole write to
+   * ProcurementService::create (single transactional writer). The
+   * generic fill/save block is disabled (disablePost) so this is
+   * the only place a procurement is written on the crud path.
    *
-   * @param  Request $request
+   * @param  array $inputs flat inputs from SbForms::getPlainData
    * @return void
    */
-  public function beforePost($request)
+  public function beforePost($inputs, $entry = null, $filtered = [])
   {
     $this->allowedTo('create');
 
-    return $request;
+    $payload = $this->toServicePayload($inputs);
+
+    /**
+     * Double validation is intentional: CrudPostRequest already
+     * validated the general.* rules extracted from the form
+     * definition; this re-checks them (identical rules) and adds
+     * the per-row rules the form definition cannot express.
+     * ValidationException keys land as `general.{name}` / `products.{i}.{name}`.
+     */
+    Validator::make($payload, app(ProcurementRequest::class)->rules())->validate();
+
+    app(ProcurementService::class)->create($payload);
   }
 
   /**
@@ -294,17 +376,39 @@ class ProcurementCrud extends CrudService
   }
 
   /**
-   * Before updating a record
+   * Before updating a record — delegate the whole write to
+   * ProcurementService::edit (single transactional writer). The
+   * generic fill/save block is disabled (disablePut).
    *
-   * @param Request $request
-   * @param  object entry
+   * @param  array  $inputs flat inputs from SbForms::getPlainData
+   * @param  object $entry
    * @return void
    */
-  public function beforePut($request, $entry)
+  public function beforePut($inputs, $entry = null, $filtered = [])
   {
     $this->allowedTo('update');
 
-    return $request;
+    /**
+     * Same guard as ProcurementController::edit — a stocked procurement
+     * is frozen (its stock has already been synced). Surfaced as a
+     * validation error on general.delivery_status (422, not 500), so the
+     * ProcurementService internal guard never produces an unhandled 500.
+     */
+    if ($entry instanceof Procurement && $entry->delivery_status === Procurement::STOCKED) {
+      throw ValidationException::withMessages([
+        'general.delivery_status' => __('Unable to edit a procurement that is stocked. Consider performing an adjustment or either delete the procurement.'),
+      ]);
+    }
+
+    $payload = $this->toServicePayload($inputs);
+
+    /**
+     * Row rules + the general.* whitelist re-checked server-side —
+     * see beforePost for why the double validation is intentional.
+     */
+    Validator::make($payload, app(ProcurementRequest::class)->rules())->validate();
+
+    app(ProcurementService::class)->edit($entry->id, $payload);
   }
 
   /**
@@ -456,6 +560,7 @@ class ProcurementCrud extends CrudService
       type: 'DELETE',
       url: sb()->url('/api/crud/sb.procurements/' . $entry->id),
       confirm: [
+        'title' => __('Confirm Your Action'),
         'message' => __('Would you like to delete this ?'),
       ]
     );

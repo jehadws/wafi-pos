@@ -106,13 +106,13 @@ class Options
      * @param bool force set
      * @return void
      **/
-    public function set($key, $value, $expiration = null)
+    public function set($key, $value, $expiration = null, ?string $allowedTags = null)
     {
         if (isset($this->rawOptions[$key])) {
             $this->rawOptions[$key]->value = $value;
             $this->rawOptions[$key]->expire_on = $expiration;
 
-            $this->encodeOptionValue($this->rawOptions[$key], $value);
+            $this->encodeOptionValue($this->rawOptions[$key], $value, $allowedTags);
 
             $this->rawOptions[$key]->save();
         } else {
@@ -122,7 +122,7 @@ class Options
             $option->value = $value;
             $option->expire_on = $expiration;
 
-            $this->encodeOptionValue($option, $value);
+            $this->encodeOptionValue($option, $value, $allowedTags);
 
             $option->save();
             $this->rawOptions[$key] = $option;
@@ -132,7 +132,7 @@ class Options
     /**
      * Encodes the value for the option before saving.
      */
-    public function encodeOptionValue(Option $option, mixed $value): void
+    public function encodeOptionValue(Option $option, mixed $value, ?string $allowedTags = null): void
     {
         if (is_array($value)) {
             $option->array = true;
@@ -143,19 +143,22 @@ class Options
             $option->value = $value;
         }
 
-        $this->sanitizeValue($option);
+        $this->sanitizeValue($option, $allowedTags);
     }
 
     /**
      * Sanitizes values before storing on the database.
+     * Fields that opt in with an `allowedTags` allowlist
+     * keep those tags, every other value is blanket
+     * stripped (backward compatible default).
      */
-    public function sanitizeValue(Option $option)
+    public function sanitizeValue(Option $option, ?string $allowedTags = null)
     {
         /**
          * sanitizing input to remove
          * all script tags
          */
-        $option->value = strip_tags($option->value);
+        $option->value = strip_tags($option->value, $allowedTags ?? '');
     }
 
     /**

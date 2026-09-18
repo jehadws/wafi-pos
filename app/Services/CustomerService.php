@@ -125,6 +125,10 @@ class CustomerService
 
   public function precheckCustomers(array $fields, $id = null): void
   {
+    if (empty($fields['email'])) {
+      return;
+    }
+
     if ($id === null) {
       /**
        * Let's find if a similar customer exist with
@@ -140,7 +144,7 @@ class CustomerService
         ->first();
     }
 
-    if ($customer instanceof Customer && ! empty($fields['email'])) {
+    if ($customer instanceof Customer) {
       throw new NotAllowedException(sprintf(__('The email "%s" is already used for another customer.'), $fields['email']));
     }
   }
@@ -172,7 +176,7 @@ class CustomerService
      * Let's check if the customer
      * address informations has been provided
      */
-    $address = $fields['address'];
+    $address = $fields['address'] ?? null;
 
     if (is_array($address)) {
       foreach ($address as $type => $fields) {
@@ -228,7 +232,7 @@ class CustomerService
      * Let's check if the customer
      * address informations has been provided
      */
-    $address = $fields['address'];
+    $address = $fields['address'] ?? null;
 
     if (is_array($address)) {
       foreach ($address as $type => $addressFields) {

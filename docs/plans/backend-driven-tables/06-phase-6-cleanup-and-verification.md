@@ -13,9 +13,9 @@ Remove the dead per-page list code, update the architecture docs, run the full v
 
 ## Micro-Step T6.1: Dead code removal
 
-- **Files**: `resources/js/pages/dashboard/**` (list pages already migrated), `resources/js/api/*.ts`.
+- **Files**: `resources/js/pages/dashboard/**` (any list-page files not already deleted during Phases 3–5), `resources/js/api/*.ts`.
 - **Implementation Instructions**:
-  1. Delete per-page remnants: hand `ColumnDef` arrays, `DropdownMenu` blocks, per-page `deleteDialog` state + `ConfirmationDialog` usage, hardcoded `bulkActions`, `filterableColumns`, `handleAddNew`/`handleRefresh` — only on pages migrated in Phases 3–5.
+  1. Verify no per-page list code remains: since Phase 3, migrated `page.tsx` files are deleted wholesale (the generic `crud/list` page renders instead). Sweep for stragglers: hand `ColumnDef` arrays, `DropdownMenu` blocks, per-page `deleteDialog` state + `ConfirmationDialog` usage, hardcoded `bulkActions`, `filterableColumns`, `handleAddNew`/`handleRefresh` — only on pages migrated in Phases 3–5.
   2. Delete `entityApi` list/delete methods **only after** confirming zero consumers (search `resources/js/` — POS components share these modules; keep anything POS or checkout touches).
   3. Remove now-unused imports/types; run `npm run types && npm run lint` (zero warnings required).
 - **Commit**: `refactor(tables): remove superseded hand-written list page code`
@@ -26,7 +26,7 @@ Remove the dead per-page list code, update the architecture docs, run the full v
 
 - **Files**: `[MODIFY]` `docs/agents/architecture.md`.
 - **Implementation Instructions**:
-  1. **Layer map**: add `components/tables/crud-table/` row — "Render + user intent; columns/actions/config come from `GET /api/crud/{ns}/config` + `CrudEntry::$actions`; computation/state in `use-crud-table`/`use-action-executor`."
+  1. **Layer map**: add `components/tables/crud-table/` row — "Render + user intent; columns/actions/config come from `GET /api/crud/{ns}/config` + `CrudEntry::$actions`; computation/state in `use-crud-table`/`use-action-executor`." Add the `CrudService::table()` → `pages/crud/list.tsx` rendering spine: controllers render lists via `table()`; there is one generic list page, no per-page React shells.
   2. **Ripple map**: "You change a CRUD's `getColumns()`/`setActions()` → check the table contract tests (`CrudTableConfigContractTest`, `CrudEntryActionsContractTest`) and the affected page."
   3. **Known debt**: record the products bespoke exception (tables, B3.b-analog), the popup-registry fallback policy, and any Phase 5 deferrals.
   4. Payload contract: document the server query params (`page`, `per_page`, `search`, `active`+`direction`, `queryFilters` URL-encoded JSON) and the JSON-only toast rule for GET/DELETE actions.

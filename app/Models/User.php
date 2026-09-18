@@ -37,7 +37,15 @@ class User extends Authenticatable
     protected $table = 'subul_users';
 
     protected $casts = [
-        'active' => 'boolean',
+        'active'                => 'boolean',
+        'activation_expiration' => 'datetime',
+        'birth_date'            => 'datetime',
+        'total_sales_count'     => 'integer',
+        'total_sales'           => 'float',
+        'purchases_amount'      => 'float',
+        'owed_amount'           => 'float',
+        'credit_limit_amount'   => 'float',
+        'account_amount'        => 'float',
     ];
 
     /**
@@ -71,7 +79,26 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'email', 'password', 'role_id', 'active', 'username', 'author',
+        'username',
+        'active',
+        'author',
+        'email',
+        'password',
+        'group_id',
+        'first_name',
+        'last_name',
+        'gender',
+        'phone',
+        'pobox',
+        'activation_expiration',
+        'total_sales_count',
+        'total_sales',
+        'birth_date',
+        'purchases_amount',
+        'owed_amount',
+        'credit_limit_amount',
+        'account_amount',
+        'activation_token',
     ];
 
     /**
@@ -112,6 +139,31 @@ class User extends Authenticatable
     public function attribute(): HasOne
     {
         return $this->hasOne( UserAttribute::class, 'user_id', 'id' );
+    }
+
+    /**
+     * Relation with the billing/shipping metadata rows (Phase 7,
+     * docs/plans/backend-driven-completion/07): `UserCrud::getForm` seeds the
+     * renamed `billing_*`/`shipping_*` tabs from them — the same accessors
+     * the hand edit page hydrated manually (`CustomerAddress` rows typed
+     * billing/shipping). Mirrors `Customer::billing()`/`Customer::shipping()`.
+     */
+    public function billing(): HasOne
+    {
+        return $this->hasOne(
+            related: CustomerBillingAddress::class,
+            foreignKey: 'customer_id',
+            localKey: 'id'
+        );
+    }
+
+    public function shipping(): HasOne
+    {
+        return $this->hasOne(
+            related: CustomerShippingAddress::class,
+            foreignKey: 'customer_id',
+            localKey: 'id'
+        );
     }
 
     /**

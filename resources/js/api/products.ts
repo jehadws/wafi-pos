@@ -1,7 +1,12 @@
-import { del, get, post } from './http';
+import { get, post } from './http';
 
 /**
- * Products API — `/api/products/*`, `/api/crud/sb.products`
+ * Products API — `/api/products/*`
+ *
+ * Serves the POS search, the product form and the stock-adjustment page.
+ * List CRUD (single delete / bulk delete) is backend-driven — the products
+ * list renders through `ProductCrud::table()` and the crud engine posts to
+ * `/api/crud/sb.products` directly, so no per-page client methods live here.
  */
 export const productsApi = {
   /** Fetch all products. */
@@ -20,15 +25,4 @@ export const productsApi = {
 
   /** Submit a stock adjustment for a set of products. */
   createAdjustment: (products: unknown[]) => post<{ message: string }>('/products/adjustments', { products }),
-
-  /** Create a new product. */
-  create: (data: unknown) => post('/products', data),
-
-  // ── CRUD — sb.products ──────────────────────────────────────────────────
-
-  /** Delete a single product. */
-  remove: (id: number | string) => del(`/crud/sb.products/${id}`),
-
-  /** Bulk-delete products by ID. */
-  bulkDelete: (ids: Array<number | string>) => post('/crud/sb.products/bulk-actions', { action: 'delete_selected', entries: ids }),
 };

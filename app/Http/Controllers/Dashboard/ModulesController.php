@@ -14,8 +14,8 @@ use App\Services\DateService;
 use App\Services\ModulesService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class ModulesController extends DashboardController
 {
@@ -32,9 +32,15 @@ class ModulesController extends DashboardController
 
     public function listModules( $page = '' )
     {
-        return View::make( 'pages.dashboard.modules.list', [
+        $list = $this->getModules();
+
+        return Inertia::render( 'dashboard/modules/page', [
             'title' => __( 'Modules List' ),
             'description' => __( 'List all available modules.' ),
+            'modules' => $list[ 'modules' ],
+            'total_enabled' => $list[ 'total_enabled' ],
+            'total_disabled' => $list[ 'total_disabled' ],
+            'total_invalid' => $list[ 'total_invalid' ],
         ] );
     }
 
@@ -107,9 +113,18 @@ class ModulesController extends DashboardController
         return $this->modules->delete( $argument );
     }
 
+    public function migrateModule( $namespace )
+    {
+        sb()->restrict( [ 'manage.modules' ] );
+
+        $result = $this->modules->runAllMigration( $namespace );
+
+        return response()->json( $result );
+    }
+
     public function showUploadModule()
     {
-        return View::make( 'pages.dashboard.modules.upload', [
+        return Inertia::render( 'dashboard/modules/upload', [
             'title' => __( 'Upload A Module' ),
             'description' => __( 'Extends Subul features with some new modules.' ),
         ] );

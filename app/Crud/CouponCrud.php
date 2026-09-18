@@ -199,6 +199,7 @@ class CouponCrud extends CrudService
             FormInput::text(
               label: __('Coupon Code'),
               name: 'code',
+              component: 'codeGenerator',
               validation: [
                 'required',
                 Rule::unique('subul_coupons', 'code')->ignore($entry !== null ? $entry->id : 0),
@@ -695,8 +696,8 @@ class CouponCrud extends CrudService
       type: 'DELETE',
       url: sb()->url('/api/crud/sb.coupons/' . $entry->id),
       confirm: [
+        'title' => __('Confirm Your Action'),
         'message' => __('Would you like to delete this ?'),
-        'title' => __('Delete a licence'),
       ],
     );
 

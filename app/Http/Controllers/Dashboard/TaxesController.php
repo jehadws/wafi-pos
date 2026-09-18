@@ -14,13 +14,11 @@ use App\Exceptions\NotFoundException;
 use App\Http\Controllers\DashboardController;
 use App\Models\Tax;
 use App\Models\TaxGroup;
-use App\Models\User;
 use App\Services\DateService;
 use App\Services\TaxService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
-use Inertia\Inertia;
 
 class TaxesController extends DashboardController
 {
@@ -172,24 +170,17 @@ class TaxesController extends DashboardController
   /**
    * List all available taxes
    *
-   * @return view
+   * @return \Inertia\Response
    */
   public function listTaxes()
   {
-    $taxes = Tax::addSelect([
-      'author_name' => User::select('username')
-        ->whereColumn('subul_users.id', 'author')
-        ->limit(1),
-      'parent_name' => TaxGroup::select('name')
-        ->whereColumn('subul_taxes_groups.id', 'tax_group_id')
-        ->limit(1),
-    ])
-      ->get();
-    return Inertia::render('dashboard/taxes/page', [
-      'title' => __('Dashboard'),
-      'taxes' => $taxes
-    ]);
-    // return TaxCrud::table();
+    /**
+     * The single backend-driven list shell (T3.2): the taxes table renders
+     * from `TaxCrud::table()` — columns (incl. the parent group and the
+     * backend-formatted rate) come from `TaxCrud::getColumns()`, and the
+     * `%` suffix is appended by `TaxCrud::setActions()`.
+     */
+    return TaxCrud::table();
   }
 
   /**
@@ -199,12 +190,13 @@ class TaxesController extends DashboardController
    */
   public function createTax()
   {
-    $groups = TaxGroup::get(['id', 'name']);
-    return Inertia::render('dashboard/taxes/create', [
-      'title' => __('Dashboard'),
-      'groups' => $groups
-    ]);
-    // return TaxCrud::form();
+    /**
+     * The single backend-driven form shell (Phase 3): the tax create form
+     * renders from `TaxCrud::form()` — fields, submit URL and title come
+     * from the CRUD config, which travels inline as `initialConfig`
+     * (no client-side form-config round-trip).
+     */
+    return TaxCrud::form();
   }
 
   /**
@@ -214,36 +206,25 @@ class TaxesController extends DashboardController
    */
   public function editTax(Tax $tax)
   {
-
-    $groups = TaxGroup::get(['id', 'name']);
-    return Inertia::render('dashboard/taxes/edit', [
-      'title' => __('Dashboard'),
-      'tax' => $tax,
-      'groups' => $groups
-    ]);
-    // return TaxCrud::form($tax);
+    /**
+     * Same generic form shell, pre-filled from the route-bound tax.
+     */
+    return TaxCrud::form($tax);
   }
 
   /**
-   * Create tax groups
+   * List tax groups
    *
-   * @return view
+   * @return \Inertia\Response
    */
   public function taxesGroups()
   {
-    $groups = TaxGroup::with('taxes')
-      ->addSelect([
-        'author_name' => User::select('username')
-          ->whereColumn('subul_users.id', 'author')
-          ->limit(1),
-      ])
-      ->get();
-    return Inertia::render('dashboard/taxes/groups/page', [
-      'title' => __('Dashboard'),
-      'description' => __('List of all tax groups.'),
-      'groups' => $groups
-    ]);
-    // return TaxesGroupCrud::table();
+    /**
+     * The single backend-driven list shell (T3.2): the tax groups table
+     * renders from `TaxesGroupCrud::table()` — columns (incl. the author
+     * through the `user` relation) come from `TaxesGroupCrud::getColumns()`.
+     */
+    return TaxesGroupCrud::table();
   }
 
   /**
@@ -253,10 +234,11 @@ class TaxesController extends DashboardController
    */
   public function createTaxGroups()
   {
-    return Inertia::render('dashboard/taxes/groups/create', [
-      'title' => __('Dashboard'),
-    ]);
-    // return TaxesGroupCrud::form();
+    /**
+     * The single backend-driven form shell (Phase 3): the tax group create
+     * form renders from `TaxesGroupCrud::form()`.
+     */
+    return TaxesGroupCrud::form();
   }
 
   /**
@@ -266,10 +248,9 @@ class TaxesController extends DashboardController
    */
   public function editTaxGroup(TaxGroup $group)
   {
-    return Inertia::render('dashboard/taxes/groups/edit', [
-      'title' => __('Dashboard'),
-      'group' => $group
-    ]);
-    // return TaxesGroupCrud::form($group);
+    /**
+     * Same generic form shell, pre-filled from the route-bound tax group.
+     */
+    return TaxesGroupCrud::form($group);
   }
 }

@@ -8,11 +8,14 @@
 
 namespace App\Http\Controllers\Dashboard;
 
+use App\Crud\CustomerAccountCrud;
+use App\Crud\CustomerCouponCrud;
+use App\Crud\CustomerOrderCrud;
+use App\Crud\CustomerRewardCrud;
 use App\Crud\RolesCrud;
 use App\Crud\UserCrud;
 use App\Http\Controllers\DashboardController;
 use App\Models\CustomerAddress;
-use App\Models\CustomerGroup;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
@@ -37,50 +40,102 @@ class UsersController extends DashboardController
 
   public function listUsers()
   {
-    $users = User::with(['roles'])->get();
-    return Inertia::render('dashboard/users/page', [
-      'title' => __('Permission Manager'),
-      'users' => $users,
-    ]);
+    /**
+     * The single backend-driven list shell (T4.5): the users table renders
+     * from `UserCrud::table()` — Edit + Delete render from `$actions` and,
+     * since T5.3, the four sub-list GOTOs (Orders, Rewards, Coupons,
+     * Wallet History) too — their targets are the T5.3 routes below.
+     * `table()` enforces `allowedTo('read')` internally.
+     */
     return UserCrud::table();
+  }
+
+  /**
+   * Displays the orders placed by a specific user.
+   *
+   * T5.3: users are rows of `subul_users` (the same table the customer
+   * domain lists), so the sub-lists reuse the customer-domain CRUDs
+   * scoped by `customer_id = user->id` — the exact targets the
+   * `UserCrud` sub-list GOTOs point at.
+   */
+  public function getUserOrders(User $user)
+  {
+    return CustomerOrderCrud::table([
+      'title' => sprintf(__('Orders by "%s"'), $user->username),
+      'queryParams' => [
+        'customer_id' => $user->id,
+      ],
+    ]);
+  }
+
+  /**
+   * Displays the rewards earned by a specific user.
+   */
+  public function getUserRewards(User $user)
+  {
+    return CustomerRewardCrud::table([
+      'title' => sprintf(__('Rewards by "%s"'), $user->username),
+      'queryParams' => [
+        'customer_id' => $user->id,
+      ],
+    ]);
+  }
+
+  /**
+   * Displays the coupons claimed by a specific user.
+   */
+  public function getUserCoupons(User $user)
+  {
+    return CustomerCouponCrud::table([
+      'title' => sprintf(__('Coupons by "%s"'), $user->username),
+      'queryParams' => [
+        'customer_id' => $user->id,
+      ],
+    ]);
+  }
+
+  /**
+   * Displays the wallet history of a specific user.
+   */
+  public function getUserAccountHistory(User $user)
+  {
+    return CustomerAccountCrud::table([
+      'title' => sprintf(__('Account History : %s'), $user->username),
+      'queryParams' => [
+        'customer_id' => $user->id,
+      ],
+    ]);
   }
 
   public function createUser()
   {
-    sb()->restrict(['create.users']);
-    $roles = Role::get(['id', 'name']);
-    $groups = CustomerGroup::get(['id', 'name']);
-    return Inertia::render('dashboard/users/create', [
-      'title' => __('Permission Manager'),
-      'groups' => $groups,
-      'roles' => $roles
-    ]);
-
-    // return UserCrud::form();
+    /**
+     * The backend-driven form shell (Phase 7,
+     * docs/plans/backend-driven-completion/07): the user create form
+     * renders from `UserCrud::form()` — the renamed billing/shipping tabs
+     * replace the hand pages. `form()` enforces the permission internally
+     * and the crud write path re-checks `create.users` in beforePost.
+     */
+    return UserCrud::form();
   }
 
   public function editUser(User $user)
   {
-    sb()->restrict(['update.users']);
-    $roles = Role::get(['id', 'name']);
-    $groups = CustomerGroup::get(['id', 'name']);
-    $user->roles;
-    $billing = CustomerAddress::where('customer_id', $user->id)->where('type', 'billing')->first();
-    $shipping = CustomerAddress::where('customer_id', $user->id)->where('type', 'shipping')->first();
-    $user->billing = $billing;
-    $user->shipping = $shipping;
-
+    /**
+     * Editing your own account still goes to the profile page (the profile
+     * is the separate sb.user-profile form surface).
+     */
     if ($user->id === Auth::id()) {
       return redirect(sb()->route('sb.dashboard.users.profile'));
     }
 
-    return Inertia::render('dashboard/users/edit', [
-      'title' => __('Permission Manager'),
-      'groups' => $groups,
-      'roles' => $roles,
-      'user' => $user
-    ]);
-
+    /**
+     * The backend-driven form shell (Phase 7,
+     * docs/plans/backend-driven-completion/07): the user edit form renders
+     * from `UserCrud::form($user)` — the billing/shipping tabs seed from
+     * the `User::billing`/`User::shipping` metadata accessors. `form()`
+     * enforces the update permission internally.
+     */
     return UserCrud::form($user);
   }
 
@@ -194,19 +249,17 @@ class UsersController extends DashboardController
   /**
    * List all available roles
    *
-   * @return View
+   * @return \Inertia\Response
    */
   public function rolesList()
   {
-    sb()->restrict(['read.roles']);
-
-    $roles = Role::with('permissions')->get();
-    return Inertia::render('dashboard/users/roles/page', [
-      'title' => __('Roles'),
-      'description' => __('Manage all roles'),
-      'roles' => $roles
-    ]);
-    // return RolesCrud::table();
+    /**
+     * The single backend-driven list shell (T3.1): the roles table renders
+     * from `RolesCrud::table()` — columns, actions, bulk actions and links
+     * come from the CRUD config. `table()` enforces `allowedTo('read')`
+     * (`read.roles`) internally.
+     */
+    return RolesCrud::table();
   }
 
   /**
@@ -217,20 +270,23 @@ class UsersController extends DashboardController
   public function editRole(Role $role)
   {
     sb()->restrict(['update.roles']);
-    return Inertia::render('dashboard/users/roles/edit', [
-      'title' => __('Edit Role'),
-      'role' => $role
-    ]);
 
-    // return RolesCrud::form($role);
+    /**
+     * The single backend-driven form shell (Phase 3): the role edit form
+     * renders from `RolesCrud::form()`, pre-filled from the route-bound
+     * role.
+     */
+    return RolesCrud::form($role);
   }
 
-  public function createRole(Role $role)
+  public function createRole()
   {
-    return Inertia::render('dashboard/users/roles/create', [
-      'title' => __('Create Role'),
-    ]);
-    // return RolesCrud::form();
+    /**
+     * The single backend-driven form shell (Phase 3): the role create form
+     * renders from `RolesCrud::form()`. (The dead `Role $role` binding is
+     * gone — the create route carries no `{role}` segment.)
+     */
+    return RolesCrud::form();
   }
 
   public function cloneRole(Role $role)

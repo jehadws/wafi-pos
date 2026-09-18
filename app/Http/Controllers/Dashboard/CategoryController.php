@@ -14,13 +14,11 @@ use App\Exceptions\NotFoundException;
 use App\Http\Controllers\DashboardController;
 use App\Models\Product;
 use App\Models\ProductCategory;
-use App\Models\User;
 use App\Services\DateService;
 use App\Services\ProductCategoryService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
 
 class CategoryController extends DashboardController
 {
@@ -192,7 +190,7 @@ class CategoryController extends DashboardController
       throw new NotFoundException(__('Unable to find the category using the provided identifier'));
     }
 
-    return $category->products->products()
+    return $category->products()
       ->whereIn('product_type', ['variation'])
       ->onSale()
       ->get();
@@ -215,30 +213,30 @@ class CategoryController extends DashboardController
     ];
   }
 
+  /**
+   * List categories
+   *
+   * @return \Inertia\Response
+   */
   public function listCategories()
   {
-    $categories =  ProductCategory::addSelect([
-      'author_name' => User::select('username')
-        ->whereColumn('subul_users.id', 'author')
-        ->limit(1),
-    ])->get();
-
-    return Inertia::render('dashboard/categories/page', [
-      'title' => __('Dashboard'),
-      'categories' => $categories
-    ]);
-
-
-    // return ProductCategoryCrud::table();
+    /**
+     * The single backend-driven list shell (T3.8): the categories table
+     * renders from `ProductCategoryCrud::table()` — the author hydrates
+     * through the CRUD's `user` relation, and the **Compute Products**
+     * action renders from `$actions` (it was missing on the hand page).
+     */
+    return ProductCategoryCrud::table();
   }
 
   public function createCategory()
   {
-    $categories =  ProductCategory::get();
-    return Inertia::render('dashboard/categories/create', [
-      'title' => __('Dashboard'),
-      'categories' => $categories
-    ]);
+    /**
+     * The single backend-driven form shell (Phase 3): the category create
+     * form renders from `ProductCategoryCrud::form()` — the parent category
+     * options travel inside the CRUD's own form config.
+     */
+    return ProductCategoryCrud::form();
   }
 
   /**
@@ -246,14 +244,10 @@ class CategoryController extends DashboardController
    */
   public function editCategory(ProductCategory $category)
   {
-
-    $categories =  ProductCategory::get();
-    return Inertia::render('dashboard/categories/edit', [
-      'title' => __('Dashboard'),
-      'categories' => $categories,
-      'category' => $category
-    ]);
-    // return ProductCategoryCrud::form($category);
+    /**
+     * Same generic form shell, pre-filled from the route-bound category.
+     */
+    return ProductCategoryCrud::form($category);
   }
 
   public function computeCategoryProducts(ProductCategory $category)
@@ -348,11 +342,13 @@ class CategoryController extends DashboardController
   /**
    * Will display the actual stock flow history
    *
-   * @return array crud table.
+   * The single backend-driven list shell (T5.4): the stock-flow table
+   * renders from `GlobalProductHistoryCrud::table()` — no row actions
+   * exist (deletes are refused by `beforeDelete`). `table()` enforces
+   * the resource `read` permission internally.
    */
   public function showStockFlowCrud()
   {
-    return Inertia::render('dashboard/products/stock-flow-records');
-    // return GlobalProductHistoryCrud::table();
+    return GlobalProductHistoryCrud::table();
   }
 }

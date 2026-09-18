@@ -15,7 +15,7 @@ class RewardSystemRuleFactory extends Factory
 
     public function definition()
     {
-        return Hook::filter( 'ns-reward-system-rule-factory', [
+        return Hook::filter( 'sb-reward-system-rule-factory', [
             'from' => 0,
             'to' => $this->faker->numberBetween( 100, 500 ),
             'reward' => $this->faker->numberBetween( 100, 200 ),

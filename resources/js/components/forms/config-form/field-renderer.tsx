@@ -109,8 +109,7 @@ function SelectField({
   formValuesRef.current = formValues;
 
   const watchedValue = field.refresh?.watch
-    ? formValues?.[field.refresh.watch] ??
-      Object.entries(formValues ?? {}).find(([k]) => k.endsWith(`.${field.refresh!.watch}`))?.[1]
+    ? (formValues?.[field.refresh.watch] ?? Object.entries(formValues ?? {}).find(([k]) => k.endsWith(`.${field.refresh!.watch}`))?.[1])
     : undefined;
 
   useEffect(() => {
@@ -254,12 +253,7 @@ export function FieldRenderer({ field, value, onChange, error, disabled, id, for
     case 'datetimepicker':
       return (
         <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
-          <Input
-            type="datetime-local"
-            {...textProps}
-            value={formatDatetimeLocal(value)}
-            onChange={(event) => onChange(event.target.value)}
-          />
+          <Input type="datetime-local" {...textProps} value={formatDatetimeLocal(value)} onChange={(event) => onChange(event.target.value)} />
         </FormField>
       );
 
@@ -268,20 +262,21 @@ export function FieldRenderer({ field, value, onChange, error, disabled, id, for
       return <Input type="hidden" id={id} value={stringValue} onChange={(event) => onChange(event.target.value)} />;
 
     case 'textarea':
+    case 'ckeditor':
       return (
         <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
           <Textarea {...textProps} />
         </FormField>
       );
 
-    case 'ckeditor':
-      // B1.5: replaced the Plan A textarea downgrade with the lightweight
-      // contenteditable RichTextEditor (no external dep; HTML string interface).
-      return (
-        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
-          <RichTextEditor id={id} value={stringValue} onChange={onChange} disabled={isDisabled} aria-invalid={Boolean(shownError)} />
-        </FormField>
-      );
+    // case 'ckeditor':
+    //   // B1.5: replaced the Plan A textarea downgrade with the lightweight
+    //   // contenteditable RichTextEditor (no external dep; HTML string interface).
+    //   return (
+    //     <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
+    //       <RichTextEditor id={id} value={stringValue} onChange={onChange} disabled={isDisabled} aria-invalid={Boolean(shownError)} />
+    //     </FormField>
+    //   );
 
     case 'select':
     case 'search-select':
@@ -346,7 +341,7 @@ export function FieldRenderer({ field, value, onChange, error, disabled, id, for
 
     case 'checkbox':
       return (
-        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError}>
+        <FormField label={field.label ?? ''} description={field.description} required={required} error={shownError} htmlFor={id}>
           <div className="flex items-center gap-2">
             <Checkbox
               id={id}

@@ -15,12 +15,10 @@ use App\Http\Requests\UnitRequest;
 // use App\Http\Requests\UnitsGroupsRequest;
 use App\Models\Unit;
 use App\Models\UnitGroup;
-use App\Models\User;
 use App\Services\DateService;
 use App\Services\UnitService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
-use Inertia\Inertia;
 
 class UnitsController extends DashboardController
 {
@@ -128,43 +126,38 @@ class UnitsController extends DashboardController
 
   public function listUnitsGroups()
   {
-    sb()->restrict(['subul.read.products-units']);
-    $units =  UnitGroup::get();
-    return Inertia::render('dashboard/units/groups/page', [
-      'title' => __('Dashboard'),
-      'unitGroups' => $units
-    ]);
-
-    // return UnitGroupCrud::table();
+    /**
+     * The single backend-driven list shell (T3.4): the unit groups table
+     * renders from `UnitGroupCrud::table()` — columns (incl. the author
+     * through the `user` relation) come from `UnitGroupCrud::getColumns()`.
+     * `table()` enforces `allowedTo('read')` (`subul.read.products-units`)
+     * internally.
+     */
+    return UnitGroupCrud::table();
   }
 
   public function listUnits()
   {
-    sb()->restrict(['subul.read.products-units']);
-
-    $units =  Unit::addSelect([
-      'author_name' => User::select('username')
-        ->whereColumn('subul_users.id', 'author')
-        ->limit(1),
-      'group_name' => UnitGroup::select('name')
-        ->whereColumn('subul_units_groups.id', 'group_id')
-        ->limit(1),
-    ])->get();
-    return Inertia::render('dashboard/units/page', [
-      'title' => __('Dashboard'),
-      'units' => $units
-    ]);
-
-    // return UnitCrud::table();
+    /**
+     * The single backend-driven list shell (T3.3): the units table renders
+     * from `UnitCrud::table()` — `group_name`/`user_username` hydrate
+     * through the CRUD's `group`/`user` relations (the hand subqueries are
+     * gone). `table()` enforces `allowedTo('read')`
+     * (`subul.read.products-units`) internally.
+     */
+    return UnitCrud::table();
   }
 
   public function createUnitGroup()
   {
     sb()->restrict(['subul.create.products-units']);
 
-    return Inertia::render('dashboard/units/groups/create');
-
-    // return UnitGroupCrud::form();
+    /**
+     * The single backend-driven form shell (Phase 7): the unit-group create
+     * form renders from `UnitGroupCrud::form()` — the config travels inline
+     * as `initialConfig` (no client-side form-config round-trip).
+     */
+    return UnitGroupCrud::form();
   }
 
   /**
@@ -176,33 +169,31 @@ class UnitsController extends DashboardController
   {
     sb()->restrict(['subul.update.products-units']);
 
-    return Inertia::render('dashboard/units/groups/edit', [
-      'group' => $group
-    ]);
-    // return UnitGroupCrud::form($group);
+    /**
+     * Same generic form shell, pre-filled from the route-bound group.
+     */
+    return UnitGroupCrud::form($group);
   }
 
   public function createUnit()
   {
     sb()->restrict(['subul.create.products-units']);
 
-    $unitGroups = UnitGroup::get();
-
-    return Inertia::render('dashboard/units/create', [
-      'unitGroups' => $unitGroups
-    ]);
-    // return UnitCrud::form();
+    /**
+     * The single backend-driven form shell (Phase 3): the unit create form
+     * renders from `UnitCrud::form()` — the group options travel inside the
+     * CRUD's own form config, so the hand-fetched `unitGroups` prop is gone.
+     */
+    return UnitCrud::form();
   }
 
   public function editUnit(Unit $unit)
   {
     sb()->restrict(['subul.update.products-units']);
-    $unitGroups = UnitGroup::get();
 
-    return Inertia::render('dashboard/units/edit', [
-      'groups' => $unitGroups,
-      'unit' => $unit
-    ]);
-    // return UnitCrud::form($unit);
+    /**
+     * Same generic form shell, pre-filled from the route-bound unit.
+     */
+    return UnitCrud::form($unit);
   }
 }

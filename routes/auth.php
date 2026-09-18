@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Middleware\PasswordRecoveryMiddleware;
 use App\Http\Middleware\RegistrationMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -26,35 +27,24 @@ Route::middleware([
 });
 
 Route::middleware('guest')->group(function () {
-    // Route::get('register', [RegisteredUserController::class, 'create'])
-    //     ->name('register');
-    //
-    // Route::post('register', [RegisteredUserController::class, 'store']);
-
-
-
-    // Route::get('/sign-in', [AuthController::class, 'signIn'])->name(sb()->routeName('sb.login'));
-    // Route::get('/auth/activate/{user}/{token}', [AuthController::class, 'activateAccount'])->name(sb()->routeName('sb.activate-account'));
-    // Route::get('/new-password/{user}/{token}', [AuthController::class, 'newPassword'])->name(sb()->routeName('sb.new-password'));
-    // Route::get('/sign-out', [AuthController::class, 'signOut'])->name(sb()->routeName('sb.logout'));
-    // Route::post('/auth/sign-in', [AuthController::class, 'postSignIn'])->name(sb()->routeName('sb.login.post'));
-
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
-    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
-        ->name('password.request');
+    Route::middleware([PasswordRecoveryMiddleware::class])->group(function () {
+        Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
+            ->name('password.request');
 
-    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
-        ->name('password.email');
+        Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
+            ->name('password.email');
 
-    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
-        ->name('password.reset');
+        Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
+            ->name('password.reset');
 
-    Route::post('reset-password', [NewPasswordController::class, 'store'])
-        ->name('password.store');
+        Route::post('reset-password', [NewPasswordController::class, 'store'])
+            ->name('password.store');
+    });
 });
 
 Route::middleware('auth')->group(function () {

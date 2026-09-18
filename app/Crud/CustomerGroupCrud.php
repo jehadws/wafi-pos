@@ -316,8 +316,8 @@ class CustomerGroupCrud extends CrudService
       type: 'DELETE',
       url: sb()->url('/api/crud/sb.customers-groups/' . $entry->id),
       confirm: [
+        'title' => __('Confirm Your Action'),
         'message' => __('Would you like to delete this ?'),
-        'title' => __('Delete a licence'),
       ]
     );
 

@@ -14,6 +14,14 @@ Route::middleware(SbRestrictMiddleware::arguments('subul.read.customers'))->grou
   Route::get('customers/{customer}/orders', [CustomersController::class, 'getOrders']);
   Route::get('customers/{customer}/addresses', [CustomersController::class, 'getAddresses']);
   Route::get('customers/{customer}/group', [CustomersController::class, 'getGroup']);
+
+  /**
+   * No SPA consumers (the `customers.ts` methods were deleted with the
+   * hand-written customer pages) — kept for module/custom API compatibility,
+   * consistent with the `/api/fields/*` precedent (architecture.md
+   * known-debt #6). Decision recorded in
+   * docs/plans/backend-driven-leftovers/08 (L8.4).
+   */
   Route::get('customers/{customer}/coupons', [CustomersController::class, 'getCustomerCoupons']);
   Route::get('customers/{customer}/rewards', [CustomersController::class, 'getCustomerRewards']);
   Route::get('customers/{customer}/account-history', [CustomersController::class, 'getAccountHistory']);

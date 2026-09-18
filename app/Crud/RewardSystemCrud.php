@@ -414,8 +414,8 @@ class RewardSystemCrud extends CrudService
       type: 'DELETE',
       url: sb()->url('/api/crud/sb.rewards-system/' . $entry->id),
       confirm: [
+        'title' => __('Confirm Your Action'),
         'message' => __('Would you like to delete this reward system ?'),
-        'title' => __('Delete a licence'),
       ]
     );
 

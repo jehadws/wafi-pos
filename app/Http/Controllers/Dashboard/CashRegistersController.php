@@ -36,16 +36,25 @@ class CashRegistersController extends DashboardController
 
     public function listRegisters()
     {
-        return Inertia::render('dashboard/cash-registers/page', [
-            'title' => __('Cash Registers'),
-        ]);
+        /**
+         * The single backend-driven list shell (T4.7): the cash-registers
+         * table renders from `RegisterCrud::table()` — the Register History
+         * GOTO renders from `$actions` and delete is omitted per-row for
+         * opened registers (server-conditional action). `table()` enforces
+         * `allowedTo('read')` internally.
+         */
+        return RegisterCrud::table();
     }
 
     public function createRegister()
     {
-        return Inertia::render('dashboard/cash-registers/create', [
-            'title' => __('Create Cash Register'),
-        ]);
+        /**
+         * The single backend-driven form shell (Phase 7): the register create
+         * form renders from `RegisterCrud::form()` — the config travels inline
+         * as `initialConfig` (no client-side form-config round-trip). `form()`
+         * enforces `allowedTo` internally.
+         */
+        return RegisterCrud::form();
     }
 
     public function editRegister( Register $register )
@@ -54,9 +63,10 @@ class CashRegistersController extends DashboardController
             throw new NotAllowedException( __( 'Unable to edit a register that is currently in use' ) );
         }
 
-        return Inertia::render('dashboard/cash-registers/edit', [
-            'register' => $register,
-        ]);
+        /**
+         * Same generic form shell, pre-filled from the route-bound register.
+         */
+        return RegisterCrud::form($register);
     }
 
     public function getRegisters( $register_id = null )
@@ -297,22 +307,30 @@ class CashRegistersController extends DashboardController
     {
         $data = $this->registersService->getZReport( $register );
 
-        /**
-         * @var mixed register
-         * @var mixed opening
-         * @var mixed closing
-         * @var mixed histories
-         * @var mixed orders
-         * @var mixed openingBalance
-         * @var mixed closingBalance
-         * @var mixed difference
-         * @var mixed totalGrossSales
-         * @var mixed totalDiscount
-         * @var mixed total
-         * @var mixed unitProductCategories
-         * @var mixed user
-         */
-
-        return View::make( 'pages.dashboard.orders.templates.z-report', (array) $data );
+        return Inertia::render( 'dashboard/orders/templates/z-report/page', [
+            'register' => $data->register,
+            'opening' => $data->opening,
+            'closing' => $data->closing,
+            'openedOn' => $data->openedOn,
+            'closedOn' => $data->closedOn,
+            'histories' => $data->histories,
+            'orders' => $data->orders,
+            'openingBalance' => method_exists( $data->openingBalance, 'toFloat' ) ? $data->openingBalance->toFloat() : (float) $data->openingBalance,
+            'closingBalance' => method_exists( $data->closingBalance, 'toFloat' ) ? $data->closingBalance->toFloat() : (float) $data->closingBalance,
+            'difference' => $data->difference,
+            'totalGrossSales' => method_exists( $data->totalGrossSales, 'toFloat' ) ? $data->totalGrossSales->toFloat() : (float) $data->totalGrossSales,
+            'totalDiscounts' => method_exists( $data->totalDiscounts, 'toFloat' ) ? $data->totalDiscounts->toFloat() : (float) $data->totalDiscounts,
+            'totalShippings' => method_exists( $data->totalShippings, 'toFloat' ) ? $data->totalShippings->toFloat() : (float) $data->totalShippings,
+            'totalTaxes' => method_exists( $data->totalTaxes, 'toFloat' ) ? $data->totalTaxes->toFloat() : (float) $data->totalTaxes,
+            'totalSales' => method_exists( $data->totalSales, 'toFloat' ) ? $data->totalSales->toFloat() : (float) $data->totalSales,
+            'categories' => array_values( $data->categories ),
+            'cashier' => $data->cashier,
+            'sessionDuration' => $data->sessionDuration,
+            'payments' => $data->payments,
+            'cashOnHand' => $data->cashOnHand,
+            'products' => array_values( $data->products ),
+            'user' => $data->user,
+            'title' => sprintf( __( 'Z-Report &mdash; %s' ), $register->name ),
+        ] );
     }
 }

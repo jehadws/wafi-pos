@@ -14,22 +14,13 @@ Migrate the 10 simple/aligned list pages onto `CrudTablePage`, one commit per pa
 ## Shared Migration Pattern (applies to every step below)
 
 1. **Controller** (the method rendering the list route — find it via `routes/web/*.php`):
-   - Replace the hand-built query + `Inertia::render(..., ['units' => …])` payload with:
-     `Inertia::render('dashboard/<section>/page', ['title' => __('…'), 'namespace' => '<sb.ns>', 'initialConfig' => app(CrudService::class)->getTableConfig('<sb.ns>')])` (T1.3 helper).
-   - Keep `sb()->restrict([...])` guards as-is.
+   - Replace the hand-built query + `Inertia::render(..., ['units' => …])` payload with a single call to the revived `CrudService::table()` (T2.8):
+     `return UnitCrud::table();`
+     Named-arg overrides only where the defaults don't fit: `table(title: __('…'), queryParams: ['customer_id' => $id])`.
+   - Keep any `sb()->restrict([...])` guards that go *beyond* read access as-is; `table()` already enforces `allowedTo('read')` internally.
    - Delete the now-dead hand query. Careful: some controllers feed both list page and other consumers — verify before deleting.
-2. **Page file** (`page.tsx`) becomes a thin shell (mirrors `dashboard/units/edit.tsx`):
-   ```tsx
-   export default function ListPage() {
-     const { t } = useTranslation();
-     const { title, namespace, initialConfig } = usePage<Props>().props;
-     return (
-       <CrudTablePage namespace={namespace} initialConfig={initialConfig} title={title} description={…}
-         breadcrumbs={[{ title: t('Dashboard'), href: '/dashboard' }, …]} />
-     );
-   }
-   ```
-   Delete all hand-written `ColumnDef`, `DropdownMenu`, `ConfirmationDialog`, `entityApi` usage, `bulkActions`, `filterableColumns` from the page.
+2. **Page file** (`page.tsx`) is **deleted, not rewritten** — the route now renders the single generic `resources/js/pages/crud/list.tsx` (T2.8) with the config passed from `table()`. Do not create per-page React shells.
+   Delete all hand-written `ColumnDef`, `DropdownMenu`, `ConfirmationDialog`, `entityApi` usage, `bulkActions`, `filterableColumns` from the deleted page.
 3. **Column reconciliation**: the backend `getColumns()` set may differ from the page's hand-picked columns (e.g. `author_name`/`group_name` were added by the controller query). If a column is missing backend-side, **add it to the CRUD's `getColumns()` + relations** — never patch it in JS.
 
 ---

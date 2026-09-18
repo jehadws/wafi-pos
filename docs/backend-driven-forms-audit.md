@@ -14,6 +14,27 @@
 | New Pest contract tests | ✅ `CrudFormConfigContractTest`, `CrudValidationErrorsContractTest`, `SettingsFormConfigContractTest`, `ProductCrudSpikeTest` all pass |
 | `php artisan test` (full) | ❌ 13 failures — all pre-existing, see item 14 |
 
+
+## Status (updated by `docs/plans/backend-driven-leftovers/`)
+
+| # | Finding | Status | Evidence / owner |
+|---|---|---|---|
+| Addendum | Tab `identifier` missing → blank tabs | ✅ FIXED | `CrudService.php:1347-1354` normalizes `$tab['identifier'] ?? (string) $tabKey`; asserted by `CrudFormConfigContractTest.php:50-68` |
+| 1 | Reward rule `id` → 500 on edit | ✅ FIXED | `rules-editor-field.tsx:23` uses `_clientId`, no `id` |
+| 2 | `option-loader.ts` dead-wired | ✅ FIXED | imported by `field-renderer.tsx:16` |
+| 3 | Empty-value filter tautology (`SbForms`) | ✅ FIXED | `app/Traits/SbForms.php:152` = `$value !== null && $value !== ''`; pinned by `CrudValidationErrorsContractTest.php:41` |
+| 4 | `datetime` fields blank on edit | ✅ FIXED | `field-renderer.tsx:24` `formatDatetimeLocal` + vitest `config-form.test.tsx:206` |
+| 5 | Settings null-delete unguarded | ✅ FIXED | `SettingsFormConfigContractTest.php:74-104` (unique names across tabs + every field exists in payload) |
+| 6 | `initialConfig` prop is dead | ✅ FIXED | `CrudService::form()` renders `crud/form` with inline `initialConfig` (L2.2, commit `328285c`); all 11 migrated pages switched to `XCrud::form()` one-liners and their per-page shells deleted (Phase 3, commits `5c1293e`…`5a13e4a`) |
+| 7 | Settings 422 never inline | ✅ FIXED | `use-settings-form.ts:204-208` maps per-field; `settings-form-page.tsx:202` renders |
+| 8 | `lib/form-flags.ts` dead code | ✅ FIXED | `resources/js/lib/` holds only `settings.ts`, `utils.ts` |
+| 9 | Orphans missed by cleanup | ✅ FIXED | 7 orphan files deleted (L1.1, commit `551d5fd`); the unit-group hook/fields went with the Phase 7 migration (commit `babb5c9`) — no legacy form orphans remain |
+| 10 | `architecture.md` overstates coverage | ✅ FIXED | coverage claim corrected and refreshed: all dashboard CRUD resources (including products, customers, users, and procurements) render on the `crud/form` shell via `docs/plans/backend-driven-completion/` |
+| 11 | Blanket `strip_tags()` vs RichTextEditor | ✅ FIXED | per-field allowed-tags sanitization (`CrudService.php`, `Options.php`, `UserOptions.php`; commit `bf3bdc7`), categories description allowlist (commit `9688994`) |
+| 12 | FilePicker clears value on failure | ✅ FIXED | `config-form/file-picker.tsx:37-39` (no `onChange(null)`), `:18-20` (preview resync) |
+| 13 | Registry name-hijack (`'code'` key) | ✅ FIXED | `'code'` registration removed (`code-generator-field.tsx`); `CouponCrud` declares `component: 'codeGenerator'` explicitly (`CrudInput::text(..., $component)`); pinned by `field-renderer.test.tsx` |
+| 14 | 13 pre-existing Pest failures | 🟡 PARTIAL | Phase 6 fixes landed (commits `5dfa00f`, `a96771c`, `fc03539`); 2 failures remain in the working tree (`AuthenticationTest`, `PasswordConfirmationTest`) and trace to the uncommitted auth WIP on the branch — re-verify once that lands |
+
 ---
 
 ## 🔴 High — user-breaking
@@ -108,9 +129,10 @@
 - `rules`-editor is root-key-sniffed in `ConfigForm` (`(config.form as Record)['rules']`).
 - Contained today (only `CouponCrud`/`RewardSystemCrud`) but easy to trip.
 
-### 14. Pre-existing backend suite is red (not this branch)
+### 14. Pre-existing backend suite is red (not this branch) — FIXED (Phase 6)
 
-- 13 failures in `Auth/PasswordReset`, `EmailVerification`, `Registration`, `ProfileUpdate`, `PasswordUpdate` (mail/notification expectations). `git log` shows those areas untouched since early commits — but the plan's verification loop gate (`php artisan test`) cannot go green until they are fixed or quarantined.
+- ~~13 failures in `Auth/PasswordReset`, `EmailVerification`, `Registration`, `ProfileUpdate`, `PasswordUpdate` (mail/notification expectations). `git log` shows those areas untouched since early commits — but the plan's verification loop gate (`php artisan test`) cannot go green until they are fixed or quarantined.~~
+- **Resolution** (`docs/plans/backend-driven-leftovers/06-phase-6-pest-suite-green.md`): `php artisan test` is now **53 passed / 0 failed / 0 skipped**. Production bugs fixed: `DateService` null-safe user language resolution (unguarded `Auth::user()->attribute->language` crashed every timestamped save for users without a `UserAttribute` row, plus a bogus `'light'` fallback); missing `password_reset_tokens` table (the reset broker wrote to a table no migration ever created — core + update migrations added); `UsersService::setUser` ignored its own `$roleToUse` fallback and 500'd registration when `sb_registration_role` was unset; `CrudService` daterangepicker compared bare `Y-m-d` endDate against midnight (excluded the whole last day) and array filter values (multiselect) crashed instead of applying as `whereIn`; test bootstrap now mirrors a fresh install (update migrations assumed-executed, permission gates re-registered post-migration). Stale Breeze scaffolding aligned to the product: username login/registration (registration ships disabled via `sb_registration_enabled`), profile settings edit `username` (the SPA previously bound a nonexistent `name` attribute and saved nothing), and the email-verification tests were removed with the feature (no `MustVerifyEmail`, no `email_verified_at` column — routes remain as inert scaffolding).
 
 ---
 

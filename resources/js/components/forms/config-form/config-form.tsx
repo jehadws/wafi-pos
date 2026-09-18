@@ -1,12 +1,13 @@
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from '@/lib/i18n';
-import type { CrudFormConfig, FormTabDef } from '@/types/forms';
+import type { CrudFormConfig, CrudFormCustomSection, CrudFormDefinition, FormTabDef } from '@/types/forms';
 import type React from 'react';
 import { useMemo, useState } from 'react';
 import './code-generator-field';
 import { FieldRenderer } from './field-renderer';
 import { validateFieldValue } from './parse-validation';
+import './procurement-products-field';
 import { getCustomComponent } from './registry';
 import './rules-editor-field';
 import './sb-crud-form';
@@ -17,9 +18,15 @@ import './sb-crud-form';
  *
  * Values are keyed the same way server validation errors arrive
  * (`{mainFieldName}` and `{tabId}.{fieldName}` dot keys), so 422 error
- * maps plug in without reshaping. The side-effect import above
- * registers the backend custom field components (`sbCrudForm`,
- * `sbCreateCoupons`) so definitions can reference them.
+ * maps plug in without reshaping. The side-effect imports above
+ * register the backend custom field components (`sbCrudForm`,
+ * `sbCreateCoupons`, `procurementProducts`) so definitions can reference
+ * them.
+ *
+ * Root-level custom sections (`CrudFormCustomSection` — a root key of
+ * `form` whose value carries a `component` string, e.g. procurements'
+ * `products`) render after the tabs through the same registry; the legacy
+ * `rules` array (RewardSystemCrud) keeps a back-compat branch.
  */
 
 export interface ConfigFormProps {
@@ -42,6 +49,46 @@ export interface ConfigFormProps {
   idPrefix?: string;
   /** Optional id for the inner <form> (lets an external footer submit it). */
   formId?: string;
+}
+
+/**
+ * Root-level custom-section recognition: a root key of `config.form`
+ * (other than `main`/`tabs`) whose value is an object carrying a
+ * `component` string renders through the custom-component registry
+ * (`CrudFormCustomSection` — e.g. ProcurementCrud's `products`). The
+ * legacy `rules` array (RewardSystemCrud) declares no component and keeps
+ * its dedicated back-compat path.
+ */
+export function isRootCustomSection(value: unknown): value is CrudFormCustomSection {
+  return typeof value === 'object' && value !== null && !Array.isArray(value) && typeof (value as CrudFormCustomSection).component === 'string';
+}
+
+/** Root keys of a definition that render as custom sections. */
+export function getRootCustomSectionKeys(form: CrudFormDefinition): string[] {
+  return Object.entries(form)
+    .filter(([key, value]) => key !== 'main' && key !== 'tabs' && isRootCustomSection(value))
+    .map(([key]) => key);
+}
+
+/**
+ * Strip client-side bookkeeping from custom-section rows before submit:
+ * `_key`/`$invalid` (products rows), `_clientId` (rules rows) and phantom
+ * ids (`client_*` / timestamp-sized) that must never reach a PUT.
+ */
+function cleanCustomSectionRows(value: unknown): unknown {
+  if (!Array.isArray(value)) {
+    return value;
+  }
+  return value.map((row) => {
+    if (!row || typeof row !== 'object') {
+      return row;
+    }
+    const { _key, $invalid: _invalid, _clientId, ...cleanRow } = row as Record<string, unknown>;
+    if (!cleanRow.id || String(cleanRow.id).startsWith('client_') || (typeof cleanRow.id === 'number' && cleanRow.id > 1000000000000)) {
+      delete cleanRow.id;
+    }
+    return cleanRow;
+  });
 }
 
 /** Build the submit body per `SbForms::getFlatForm`: `{[main]: v, [tabId]: {…}}`. */
@@ -67,19 +114,19 @@ export function buildCrudPayload(config: CrudFormConfig, values: Record<string, 
     payload[tabId] = tabValues;
   }
 
-  // Support root-level properties (e.g. `rules` in rewards system)
-  if (values['rules'] !== undefined) {
-    if (Array.isArray(values['rules'])) {
-      payload['rules'] = (values['rules'] as Array<Record<string, unknown>>).map((rule) => {
-        const { _clientId, ...cleanRule } = rule;
-        if (!cleanRule.id || String(cleanRule.id).startsWith('client_') || (typeof cleanRule.id === 'number' && cleanRule.id > 1000000000000)) {
-          delete cleanRule.id;
-        }
-        return cleanRule;
-      });
-    } else {
-      payload['rules'] = values['rules'];
+  // Root-level custom sections (e.g. `products` in procurements): emit the
+  // section rows as-is minus client bookkeeping and phantom ids.
+  const sectionKeys = getRootCustomSectionKeys(config.form);
+  for (const key of sectionKeys) {
+    if (values[key] !== undefined) {
+      payload[key] = cleanCustomSectionRows(values[key]);
     }
+  }
+
+  // Back-compat: the legacy root `rules` array (RewardSystemCrud) predates
+  // the declarative shape — it keeps the values-driven emission.
+  if (values['rules'] !== undefined && !sectionKeys.includes('rules')) {
+    payload['rules'] = cleanCustomSectionRows(values['rules']);
   }
 
   return payload;
@@ -103,9 +150,17 @@ export function initialValuesFromConfig(config: CrudFormConfig): Record<string, 
     }
   }
 
-  // Seed root-level properties (e.g. `rules` in rewards system)
+  // Seed root-level custom sections from their declared `value` (e.g.
+  // `products` rows in procurements).
+  const sectionKeys = getRootCustomSectionKeys(config.form);
   const rawForm = config.form as Record<string, unknown>;
-  if (rawForm['rules'] !== undefined) {
+  for (const key of sectionKeys) {
+    values[key] = (rawForm[key] as CrudFormCustomSection).value ?? [];
+  }
+
+  // Back-compat: the legacy root `rules` array (RewardSystemCrud) — kv-pair
+  // rows normalized into `{id, from, to, reward}` objects.
+  if (!sectionKeys.includes('rules') && rawForm['rules'] !== undefined) {
     const rawRules = rawForm['rules'];
     if (Array.isArray(rawRules)) {
       values['rules'] = rawRules.map((r, index) => {
@@ -252,6 +307,25 @@ export function ConfigForm({
   );
   const mainName = main?.name;
 
+  /**
+   * Root-level custom sections to render after the tabs: declared
+   * `CrudFormCustomSection`s plus the legacy `rules` back-compat branch.
+   * Everything but `component`/`value`/`label` rides `field.props`.
+   */
+  const rootCustomSections = useMemo(() => {
+    const rawForm = config.form as Record<string, unknown>;
+    const sections = getRootCustomSectionKeys(config.form).map((key) => {
+      const { component, value: _value, label, ...props } = rawForm[key] as CrudFormCustomSection;
+      return { key, component, label: label as string | undefined, props };
+    });
+    // Back-compat: the legacy `rules` array (RewardSystemCrud) predates the
+    // declarative shape — map it to the registered 'rules' component.
+    if (rawForm['rules'] !== undefined && !sections.some((section) => section.key === 'rules')) {
+      sections.push({ key: 'rules', component: 'rules', label: undefined, props: {} });
+    }
+    return sections;
+  }, [config.form]);
+
   const clearLocalError = (key: string) => {
     setLocalErrors((current) => {
       if (!(key in current)) {
@@ -323,24 +397,26 @@ export function ConfigForm({
         </Tabs>
       )}
 
-      {/* Root-level custom section (e.g. rules editor in rewards system) */}
-      {(config.form as Record<string, unknown>)['rules'] !== undefined &&
-        (() => {
-          const RulesCustom = getCustomComponent('rules');
-          if (!RulesCustom) {
-            return null;
+      {/* Root-level custom sections (e.g. rewards rules, procurement products) */}
+      {rootCustomSections.map(({ key, component, label, props }) => {
+        const Custom = getCustomComponent(component);
+        if (!Custom) {
+          if (import.meta.env.DEV) {
+            console.warn(`[ConfigForm] No custom component registered for "${component}" (root section "${key}") — section hidden.`);
           }
-          return (
-            <div className="mt-6 border-t pt-4">
-              <RulesCustom
-                field={{ name: 'rules', label: t('Rules'), type: 'custom' }}
-                value={values['rules'] ?? []}
-                onChange={(next) => onFieldChange('rules', next)}
-                error={mergedErrors['rules']}
-              />
-            </div>
-          );
-        })()}
+          return null;
+        }
+        return (
+          <div key={key} className="mt-6 border-t pt-4">
+            <Custom
+              field={{ name: key, label: label ?? config.labels?.[key] ?? t(key), type: 'custom', props }}
+              value={values[key] ?? []}
+              onChange={(next) => onFieldChange(key, next)}
+              error={mergedErrors[key]}
+            />
+          </div>
+        );
+      })}
 
       {showFooter && (
         <div className="flex justify-end gap-2 pt-2">

@@ -27,10 +27,9 @@ Build the missing action-target pages discovered by T1.7 **before** the Wave-2 p
 ## Micro-Step T5.2: Coupon history page (unblocks T4.3, bug #4)
 
 - **Files**:
-  - `[NEW]` route in `routes/web/customers.php`: `GET /customers/coupons/history/{coupon}` → controller renders a generic table page.
-  - `[NEW]` `resources/js/pages/dashboard/customers/coupons/history.tsx` — thin `CrudTablePage` shell with `namespace` from the coupon-history CUD (`sb.coupons-orders-history`, corrected in T1.5; and/or `sb.customers-coupons-history` — pick per what `CouponCrud`'s History GOTO points at).
-  - `[MODIFY]` the controller method to pass `initialConfig` (scoped by `coupon_id` via the CUD's `hook()` query filter, which already reads `request()->query('coupon_id')` / route binding).
-- **Notes**: the GOTO URL carries the coupon id as a path segment — make the route/CUD accept it (query param or route-model binding; adjust `CouponCrud`'s History URL if needed to keep both sides consistent).
+  - `[NEW]` route in `routes/web/customers.php`: `GET /customers/coupons/history/{coupon}` → controller body is `return CouponOrderHistoryCrud::table(queryParams: ['coupon_id' => $coupon->id]);` (the CUD's `hook()` already reads `request()->query('coupon_id')`).
+  - `[MODIFY]` the controller method if it needs the route binding resolved first; no page file is created — the generic `crud/list` page (T2.8) renders it.
+- **Notes**: the GOTO URL carries the coupon id as a path segment — make the route/CUD accept it (query param or route-model binding; adjust `CouponCrud`'s History URL if needed to keep both sides consistent). Config arrives as `initialConfig` scoped by the `queryParams`.
 - **Commit**: `feat(coupons): add coupon history page to unblock history action`
 
 ---
@@ -44,7 +43,7 @@ Build the missing action-target pages discovered by T1.7 **before** the Wave-2 p
   - `sb.customers-coupons-history` → per-customer coupon usage
   - `sb.orders-instalments` → instalments (verify whether it belongs to the orders popup instead of a page)
   - `sb.providers-procurements` / `sb.providers-products` → provider sub-lists
-- **Implementation Instructions**: one generic `CrudTablePage` route+page per confirmed target (same pattern as T5.2, scoped by the owning entity id); skip and note any target that turns out to duplicate an existing page.
+- **Implementation Instructions**: one **route + controller line** per confirmed target — `return XCrud::table(queryParams: ['<owning_fk>' => $owner->id]);` — reusing the single generic `crud/list` page (no per-page React files; same pattern as T5.2). Skip and note any target that turns out to duplicate an existing page.
 - **Commit**: `feat(tables): add secondary sub-list pages for customers/users/providers actions`
 
 ---

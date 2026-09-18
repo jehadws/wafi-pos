@@ -13,6 +13,13 @@ class NewPasswordFields extends FieldsService
     {
         $fields = Hook::filter( 'sb-new-password-fields', [
             [
+                'label' => __( 'Email' ),
+                'description' => __( 'Your account email address.' ),
+                'validation' => 'required|email',
+                'name' => 'email',
+                'type' => 'email',
+                'disabled' => true,
+            ], [
                 'label' => __( 'New Password' ),
                 'description' => __( 'define your new password.' ),
                 'validation' => 'required|min:6',
@@ -22,8 +29,11 @@ class NewPasswordFields extends FieldsService
                 'label' => __( 'Confirm Password' ),
                 'description' => __( 'confirm your new password.' ),
                 'validation' => 'same:password',
-                'name' => 'password_confirm',
+                'name' => 'password_confirmation',
                 'type' => 'password',
+            ], [
+                'name' => 'token',
+                'type' => 'hidden',
             ],
         ] );
 

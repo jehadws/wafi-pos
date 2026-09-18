@@ -28,6 +28,35 @@ abstract class TestCase extends BaseTestCase
                 sb()->update->executeMigrationFromFileName( $file );
             } );
 
+        /**
+         * Fresh installs (SetupService::runMigration) mark the `update`
+         * migrations as assumed-executed — their changes are integrated in
+         * the `create` files. Without this, `CheckMigrationStatus` sees
+         * pending migrations and redirects every dashboard route to
+         * /database-update.
+         */
+        sb()->update
+            ->getMigrations(
+                directories: [ 'update' ],
+                ignoreMigrations: true
+            )
+            ->each( function ( $file ) {
+                sb()->update->assumeExecuted( $file );
+            } );
+
+        /**
+         * The permission gates are registered by AuthServiceProvider::boot,
+         * which runs BEFORE this schema exists — `Permission::get()` then
+         * resolves against an empty database and defines no gates. Flush the
+         * array cache (per-user permission caches would otherwise leak across
+         * tests through reused auto-increment user ids) and re-register the
+         * gates now that the schema is migrated — the same thing
+         * SetupService does right after a fresh install.
+         */
+        \Illuminate\Support\Facades\Cache::flush();
+
+        sb()->registerGatePermissions();
+
         \Illuminate\Support\Facades\Cache::forget( 'sb-core-installed' );
 
         /**

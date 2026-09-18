@@ -129,13 +129,22 @@ class UserCrud extends CrudService
     'phone',
     'gender',
     'pobox',
+    'birth_date',
     'credit_limit_amount',
   ];
 
-  protected $tabsRelations = [
-    'shipping' => [CustomerShippingAddress::class, 'customer_id', 'id'],
-    'billing' => [CustomerBillingAddress::class, 'customer_id', 'id'],
-  ];
+  /**
+   * Phase 7 (docs/plans/backend-driven-completion/07): the billing/shipping
+   * tabs are no longer tabs-relations. Their fields are renamed
+   * (`billing_*`/`shipping_*` — L8.2 option 1, same unblock as the Phase 6
+   * customers) so every name is unique across the form, `getFlatForm`
+   * therefore flattens them into the payload, and the metadata write happens
+   * in afterPost/afterPut through `saveAddressesMetadata()` →
+   * `CrudService::saveTabRelation()` — the exact writer the removed generic
+   * loop used. The `birth_date` field joins `$fillable` (the model already
+   * fillable-izes it) so the general-tab field actually round-trips instead
+   * of being silently dropped by the generic assignment loop.
+   */
 
   protected $casts = [
     'first_name' => NotDefinedCast::class,
@@ -329,156 +338,102 @@ class UserCrud extends CrudService
         ],
         'billing' => [
           'label' => __('Billing Address'),
-          'fields' => [
-            [
-              'type' => 'text',
-              'name' => 'first_name',
-              'value' => $entry->billing->first_name ?? '',
-              'label' => __('First Name'),
-              'description' => __('Provide the billing First Name.'),
-            ],
-            [
-              'type' => 'text',
-              'name' => 'last_name',
-              'value' => $entry->billing->last_name ?? '',
-              'label' => __('Last name'),
-              'description' => __('Provide the billing last name.'),
-            ],
-            [
-              'type' => 'text',
-              'name' => 'phone',
-              'value' => $entry->billing->phone ?? '',
-              'label' => __('Phone'),
-              'description' => __('Billing phone number.'),
-            ],
-            [
-              'type' => 'text',
-              'name' => 'address_1',
-              'value' => $entry->billing->address_1 ?? '',
-              'label' => __('Address 1'),
-              'description' => __('Billing First Address.'),
-            ],
-            [
-              'type' => 'text',
-              'name' => 'address_2',
-              'value' => $entry->billing->address_2 ?? '',
-              'label' => __('Address 2'),
-              'description' => __('Billing Second Address.'),
-            ],
-            [
-              'type' => 'text',
-              'name' => 'country',
-              'value' => $entry->billing->country ?? '',
-              'label' => __('Country'),
-              'description' => __('Billing Country.'),
-            ],
-            [
-              'type' => 'text',
-              'name' => 'city',
-              'value' => $entry->billing->city ?? '',
-              'label' => __('City'),
-              'description' => __('City'),
-            ],
-            [
-              'type' => 'text',
-              'name' => 'pobox',
-              'value' => $entry->billing->pobox ?? '',
-              'label' => __('PO.Box'),
-              'description' => __('Postal Address'),
-            ],
-            [
-              'type' => 'text',
-              'name' => 'company',
-              'value' => $entry->billing->company ?? '',
-              'label' => __('Company'),
-              'description' => __('Company'),
-            ],
-            [
-              'type' => 'text',
-              'name' => 'email',
-              'value' => $entry->billing->email ?? '',
-              'label' => __('Email'),
-              'description' => __('Email'),
-            ],
-          ],
+          'fields' => $this->userAddressTabFields('billing', $entry),
         ],
         'shipping' => [
           'label' => __('Shipping Address'),
-          'fields' => [
-            [
-              'type' => 'text',
-              'name' => 'first_name',
-              'value' => $entry->shipping->first_name ?? '',
-              'label' => __('First Name'),
-              'description' => __('Provide the shipping First Name.'),
-            ],
-            [
-              'type' => 'text',
-              'name' => 'last_name',
-              'value' => $entry->shipping->last_name ?? '',
-              'label' => __('Last Name'),
-              'description' => __('Provide the shipping Last Name.'),
-            ],
-            [
-              'type' => 'text',
-              'name' => 'phone',
-              'value' => $entry->shipping->phone ?? '',
-              'label' => __('Phone'),
-              'description' => __('Shipping phone number.'),
-            ],
-            [
-              'type' => 'text',
-              'name' => 'address_1',
-              'value' => $entry->shipping->address_1 ?? '',
-              'label' => __('Address 1'),
-              'description' => __('Shipping First Address.'),
-            ],
-            [
-              'type' => 'text',
-              'name' => 'address_2',
-              'value' => $entry->shipping->address_2 ?? '',
-              'label' => __('Address 2'),
-              'description' => __('Shipping Second Address.'),
-            ],
-            [
-              'type' => 'text',
-              'name' => 'country',
-              'value' => $entry->shipping->country ?? '',
-              'label' => __('Country'),
-              'description' => __('Shipping Country.'),
-            ],
-            [
-              'type' => 'text',
-              'name' => 'city',
-              'value' => $entry->shipping->city ?? '',
-              'label' => __('City'),
-              'description' => __('City'),
-            ],
-            [
-              'type' => 'text',
-              'name' => 'pobox',
-              'value' => $entry->shipping->pobox ?? '',
-              'label' => __('PO.Box'),
-              'description' => __('Postal Address'),
-            ],
-            [
-              'type' => 'text',
-              'name' => 'company',
-              'value' => $entry->shipping->company ?? '',
-              'label' => __('Company'),
-              'description' => __('Company'),
-            ],
-            [
-              'type' => 'text',
-              'name' => 'email',
-              'value' => $entry->shipping->email ?? '',
-              'label' => __('Email'),
-              'description' => __('Email'),
-            ],
-          ],
+          'fields' => $this->userAddressTabFields('shipping', $entry),
         ],
       ],
     ];
+  }
+
+  /**
+   * Phase 7: the address fields with a unique `billing_`/`shipping_` name
+   * prefix (L8.2 option 1 — cheapest unblock for the duplicate-field-name
+   * collapse in `SbForms::getFlatForm`, same as the Phase 6 customers).
+   * Labels/descriptions are byte-identical to the pre-rename tabs
+   * (translation keys untouched); only the `name` is prefixed and the value
+   * seeding goes through the nullsafe metadata accessors (`User::billing` /
+   * `User::shipping`). No validation strings — the address metadata carries
+   * no server-side rules anywhere today, so the form stays in parity with
+   * the generic tabs-relation loop it replaces.
+   */
+  private function userAddressTabFields(string $prefix, $entry): array
+  {
+    $address = $prefix === 'billing' ? $entry?->billing : $entry?->shipping;
+
+    $specs = match ($prefix) {
+      'billing' => [
+        ['first_name', __('First Name'), __('Provide the billing First Name.')],
+        ['last_name', __('Last name'), __('Provide the billing last name.')],
+        ['phone', __('Phone'), __('Billing phone number.')],
+        ['address_1', __('Address 1'), __('Billing First Address.')],
+        ['address_2', __('Address 2'), __('Billing Second Address.')],
+        ['country', __('Country'), __('Billing Country.')],
+        ['city', __('City'), __('City')],
+        ['pobox', __('PO.Box'), __('Postal Address')],
+        ['company', __('Company'), __('Company')],
+        ['email', __('Email'), __('Email')],
+      ],
+      'shipping' => [
+        ['first_name', __('First Name'), __('Provide the shipping First Name.')],
+        ['last_name', __('Last Name'), __('Provide the shipping Last Name.')],
+        ['phone', __('Phone'), __('Shipping phone number.')],
+        ['address_1', __('Address 1'), __('Shipping First Address.')],
+        ['address_2', __('Address 2'), __('Shipping Second Address.')],
+        ['country', __('Country'), __('Shipping Country.')],
+        ['city', __('City'), __('City')],
+        ['pobox', __('PO.Box'), __('Postal Address')],
+        ['company', __('Company'), __('Company')],
+        ['email', __('Email'), __('Email')],
+      ],
+    };
+
+    return collect($specs)->map(fn ($spec) => [
+      'type' => 'text',
+      'name' => $prefix . '_' . $spec[0],
+      'value' => $address?->{$spec[0]} ?? '',
+      'label' => $spec[1],
+      'description' => $spec[2],
+    ])->toArray();
+  }
+
+  /**
+   * Phase 7: write the billing/shipping metadata from the flattened crud
+   * payload. The backend-driven form submits `billing_first_name`,
+   * `shipping_city`, … — those are stripped of their prefix and persisted
+   * as `CustomerBillingAddress` / `CustomerShippingAddress` rows through
+   * `CrudService::saveTabRelation()`, the same code path the generic
+   * tabs-relation loop (and therefore the pre-Phase-7 payload) used.
+   * Bare `first_name`/`phone` keys (legacy flat payloads) pass through
+   * unprefixed onto the billing/shipping rows respectively, keeping those
+   * payloads working.
+   */
+  private function saveAddressesMetadata(array $inputs, User $user): void
+  {
+    $crudService = app()->make(CrudService::class);
+
+    $addressFields = [
+      'first_name', 'last_name', 'phone', 'address_1', 'address_2',
+      'country', 'city', 'pobox', 'company', 'email',
+    ];
+
+    foreach (['billing' => CustomerBillingAddress::class, 'shipping' => CustomerShippingAddress::class] as $prefix => $relationClass) {
+      $fields = [];
+
+      foreach ($inputs as $name => $value) {
+        if (str_starts_with((string) $name, $prefix . '_')) {
+          $fields[substr((string) $name, strlen($prefix) + 1)] = $value;
+        } elseif (in_array((string) $name, $addressFields, true)) {
+          $fields[$name] = $value;
+        }
+      }
+
+      if (! empty($fields)) {
+        $crudService->saveTabRelation([$relationClass, 'customer_id', 'id'], $user, $fields);
+      }
+    }
   }
 
   /**
@@ -490,6 +445,13 @@ class UserCrud extends CrudService
   public function filterPostInputs($inputs)
   {
     unset($inputs['password_confirm']);
+
+    /**
+     * Phase 7: the prefixed address fields are metadata (persisted in
+     * afterPost through saveAddressesMetadata), not users-table columns —
+     * strip them so the generic assignment loop never sees them.
+     */
+    $inputs = collect($inputs)->reject(fn($value, $key) => str_starts_with((string) $key, 'billing_') || str_starts_with((string) $key, 'shipping_'))->toArray();
 
     /**
      * if the password is not changed, no
@@ -526,6 +488,11 @@ class UserCrud extends CrudService
     unset($inputs['password_confirm']);
 
     /**
+     * Phase 7: same metadata strip as filterPostInputs.
+     */
+    $inputs = collect($inputs)->reject(fn($value, $key) => str_starts_with((string) $key, 'billing_') || str_starts_with((string) $key, 'shipping_'))->toArray();
+
+    /**
      * if the password is not changed, no
      * need to hash it
      */
@@ -550,6 +517,18 @@ class UserCrud extends CrudService
   }
 
   /**
+   * Before creating a record
+   *
+   * Phase 7: mirrors `beforePut`/`CustomerCrud::beforePost` — the crud
+   * `$permissions['create'] => 'create.users'` was never enforced on POST
+   * before (the route stack is auth-only).
+   */
+  public function beforePost($inputs): void
+  {
+    $this->allowedTo('create');
+  }
+
+  /**
    * After saving a record
    *
    * @param  Request $request
@@ -557,6 +536,12 @@ class UserCrud extends CrudService
    */
   public function afterPost($request, User $entry)
   {
+    /**
+     * Phase 7: persist the billing/shipping metadata (the $request here is
+     * the raw flat payload — prefixed address keys included).
+     */
+    $this->saveAddressesMetadata($request, $entry);
+
     if (isset($request['roles'])) {
       $this->userService
         ->setUserRole(
@@ -616,6 +601,12 @@ class UserCrud extends CrudService
    */
   public function afterPut($request, User $entry)
   {
+    /**
+     * Phase 7: persist the billing/shipping metadata (the $request here is
+     * the raw flat payload — prefixed address keys included).
+     */
+    $this->saveAddressesMetadata($request, $entry);
+
     if (isset($request['roles'])) {
       $this->userService
         ->setUserRole(
@@ -708,6 +699,11 @@ class UserCrud extends CrudService
       url: sb()->url('dashboard/users/edit/' . $entry->id),
     );
 
+    /**
+     * The four customer-scoped sub-list GOTOs (T5.3): their targets are
+     * the `/dashboard/users/{user}/…` routes + backend-driven sub-list
+     * pages built by T5.3 (routes/web/users.php + UsersController).
+     */
     $entry->action(
       identifier: 'customers_orders',
       label: __('Orders'),
@@ -738,8 +734,8 @@ class UserCrud extends CrudService
       type: 'DELETE',
       url: sb()->url('/api/crud/sb.users/' . $entry->id),
       confirm: [
+        'title' => __('Confirm Your Action'),
         'message' => __('Would you like to delete this ?'),
-        'title' => __('Delete a user'),
       ],
     );
 

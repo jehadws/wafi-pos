@@ -3,6 +3,7 @@
 namespace App\Crud;
 
 use App\Exceptions\NotAllowedException;
+use App\Models\Customer;
 use App\Models\OrderCoupon;
 use App\Services\CrudEntry;
 use App\Services\CrudService;
@@ -31,9 +32,14 @@ class CustomerCouponHistoryCrud extends CrudService
     /**
      * default slug
      *
+     * The resource has no standalone page — it renders as the
+     * customer-coupon usage sub-list
+     * (`/dashboard/customers/{customer}/coupons/{customerCoupon}/history`,
+     * T5.3). The slug only feeds the breadcrumb through `getLinks()`.
+     *
      * @param string
      */
-    protected $slug = '/';
+    protected $slug = 'customers/coupons';
 
     /**
      * Define namespace
@@ -324,29 +330,16 @@ class CustomerCouponHistoryCrud extends CrudService
 
     /**
      * Define row actions.
+     *
+     * The resource is read-only (create/update/delete permissions are
+     * all `false`) and no per-entry form pages exist — the generic shell
+     * renders no row actions (T5.3). The former Edit GOTO pointed at the
+     * broken `/dashboard//edit/{id}` slug and the Delete was always
+     * refused by `beforeDelete`.
      */
     public function setActions( CrudEntry $entry ): CrudEntry
     {
         $entry->value = (string) sb()->currency->define( $entry->value );
-
-        /**
-         * Declaring entry actions
-         */
-        $entry->action(
-            identifier: 'edit',
-            label: __( 'Edit' ),
-            url: sb()->url( '/dashboard/' . $this->slug . '/edit/' . $entry->id )
-        );
-
-        $entry->action(
-            identifier: 'delete',
-            label: __( 'Delete' ),
-            type: 'DELETE',
-            url: sb()->url( '/api/crud/sb.customers-coupons-history/' . $entry->id ),
-            confirm: [
-                'message' => __( 'Would you like to delete this ?' ),
-            ]
-        );
 
         return $entry;
     }
@@ -399,32 +392,37 @@ class CustomerCouponHistoryCrud extends CrudService
 
     /**
      * Defines links used on the CRUD object.
+     *
+     * The list page lives at
+     * `/dashboard/customers/{customer}/coupons/{customerCoupon}/history`
+     * (a sub-list of the owning customer's coupons page), so the
+     * breadcrumb points back at that page through the bound route
+     * `customer` (T5.3). No create/edit targets — the resource is
+     * read-only.
      */
     public function getLinks(): array
     {
+        $customer = request()->route( 'customer' );
+        $customerId = $customer instanceof Customer ? $customer->id : request()->query( 'customer_id' );
+
         return [
-            'list' => sb()->url( 'dashboard/' . '/' ),
-            'create' => sb()->url( 'dashboard/' . '//create' ),
-            'edit' => sb()->url( 'dashboard/' . '//edit/' ),
-            'post' => sb()->url( 'api/crud/' . 'sb.customers-coupons-history' ),
-            'put' => sb()->url( 'api/crud/' . 'sb.customers-coupons-history/{id}' . '' ),
+            'list' => sb()->url( 'dashboard/customers/' . $customerId . '/coupons' ),
         ];
     }
 
     /**
-     * Defines the bulk actions.
+     * Get Bulk actions
+     *
+     * Read-only resource (`delete => false`): the generated
+     * `delete_selected` entry was always refused by `bulkAction()`, so
+     * the list stays empty. The Hook filter is preserved so modules can
+     * still register their own bulk actions.
+     *
+     * @return array of actions
      **/
     public function getBulkActions(): array
     {
-        return Hook::filter( $this->namespace . '-bulk', [
-            [
-                'label' => __( 'Delete Selected Groups' ),
-                'identifier' => 'delete_selected',
-                'url' => sb()->route( 'sb.api.crud-bulk-actions', [
-                    'namespace' => $this->namespace,
-                ] ),
-            ],
-        ] );
+        return Hook::filter( $this->namespace . '-bulk', [] );
     }
 
     /**

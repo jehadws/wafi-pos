@@ -34,8 +34,8 @@ class ProductRequest extends FormRequest
     public function attributes()
     {
         return [
-            'variations.*.units.selling_group.*.convert_unit_id' => __( 'Convert Unit' ),
-            'variations.*.units.selling_group.*.unit_id' => __( 'Unit' ),
+            'units.selling_group.*.convert_unit_id' => __( 'Convert Unit' ),
+            'units.selling_group.*.unit_id' => __( 'Unit' ),
         ];
     }
 }

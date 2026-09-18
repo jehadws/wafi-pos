@@ -4,7 +4,7 @@ use App\Http\Controllers\Dashboard\ProductsController;
 use App\Http\Middleware\SbRestrictMiddleware;
 use Illuminate\Support\Facades\Route;
 
-Route::get('products', [ProductsController::class, 'getProduts']);
+Route::get('products', [ProductsController::class, 'getProducts']);
 Route::get('products/all/variations', [ProductsController::class, 'getAllVariations']);
 Route::get('products/{identifier}', [ProductsController::class, 'singleProduct']);
 Route::get('products/{identifier}/variations', [ProductsController::class, 'getProductVariations']);
