@@ -71,6 +71,7 @@ class ProductUnitQuantity extends SbModel
         'custom_price_without_tax' => FloatConvertCasting::class,
         'quantity' => 'float',
         'low_quantity' => 'float',
+        'visible' => 'boolean',
     ];
 
     /**

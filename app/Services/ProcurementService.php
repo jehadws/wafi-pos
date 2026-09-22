@@ -936,7 +936,7 @@ class ProcurementService
                     ->additionateBy( $product->quantity )
                     ->get();
 
-                $this->productService->setQuantity( $product->product_id, $product->unit_id, $newQuantity, $product->id );
+                $this->productService->setQuantity( $product->product_id, $product->unit_id, $newQuantity, $product );
 
                 /**
                  * will generate a unique barcode for the procured product
@@ -966,10 +966,12 @@ class ProcurementService
 
     public function generateBarcode( ProcurementProduct $procurementProduct )
     {
-        $this->barcodeService->generateBarcode(
-            $procurementProduct->barcode,
-            BarcodeService::TYPE_CODE128
-        );
+        if ( ! empty( $procurementProduct->barcode ) ) {
+            $this->barcodeService->generateBarcode(
+                $procurementProduct->barcode,
+                BarcodeService::TYPE_CODE128
+            );
+        }
     }
 
     /**

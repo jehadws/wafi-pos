@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ProductService
@@ -921,11 +922,14 @@ class ProductService
      * a product using a unit as a reference
      *
      * @param int product id
+     * @param int product id
      * @param int unit id
      * @param float quantity
-     * @return arrray response
+     * @param ProcurementProduct|int|null $procurementProduct
+     * @param array $options
+     * @return array response
      */
-    public function setQuantity( $product_id, $unit_id, $quantity )
+    public function setQuantity( $product_id, $unit_id, $quantity, $procurementProduct = null, array $options = [] )
     {
         $query = ProductUnitQuantity::where( 'product_id', $product_id )
             ->where( 'unit_id', $unit_id );
@@ -934,12 +938,77 @@ class ProductService
 
         if ( ! $unitQuantity instanceof ProductUnitQuantity ) {
             $unitQuantity = new ProductUnitQuantity;
+            $unitQuantity->product_id = $product_id;
+            $unitQuantity->unit_id = $unit_id;
+
+            if ( is_numeric( $procurementProduct ) ) {
+                $procurementProduct = ProcurementProduct::with( 'product' )->find( $procurementProduct );
+            }
+
+            $price = $options[ 'sale_price' ] ?? $options[ 'price' ] ?? null;
+
+            if ( $price === null && $procurementProduct instanceof ProcurementProduct ) {
+                $price = $procurementProduct->purchase_price;
+            }
+
+            $cogs = $options[ 'cogs' ] ?? null;
+            if ( $cogs === null && $procurementProduct instanceof ProcurementProduct ) {
+                $cogs = $procurementProduct->cogs ?: $procurementProduct->purchase_price;
+            }
+
+            if ( $price === null || (float) $price <= 0 ) {
+                Log::warning( sprintf(
+                    'ProductUnitQuantity created with price 0 for product %s and unit %s.',
+                    $product_id,
+                    $unit_id
+                ) );
+                $price = 0;
+            }
+
+            $unitQuantity->sale_price = (float) $price;
+            $unitQuantity->sale_price_edit = (float) $price;
+            $unitQuantity->sale_price_without_tax = (float) $price;
+            $unitQuantity->sale_price_with_tax = (float) $price;
+            $unitQuantity->sale_price_tax = 0;
+            $unitQuantity->wholesale_price = (float) ( $options[ 'wholesale_price' ] ?? 0 );
+            $unitQuantity->wholesale_price_edit = (float) ( $options[ 'wholesale_price_edit' ] ?? $options[ 'wholesale_price' ] ?? 0 );
+            $unitQuantity->wholesale_price_without_tax = (float) ( $options[ 'wholesale_price' ] ?? 0 );
+            $unitQuantity->wholesale_price_with_tax = (float) ( $options[ 'wholesale_price' ] ?? 0 );
+            $unitQuantity->wholesale_price_tax = 0;
+            $unitQuantity->cogs = (float) ( $cogs ?? 0 );
+            $unitQuantity->visible = $options[ 'visible' ] ?? true;
+
+            // quantity must be assigned before the tax block because
+            // TaxService::computeTax() calls $unitQuantity->save() internally,
+            // and the column has a NOT NULL constraint.
+            $unitQuantity->quantity = $quantity;
+
+            $product = ( $procurementProduct instanceof ProcurementProduct && $procurementProduct->product )
+                ? $procurementProduct->product
+                : Product::find( $product_id );
+
+            if ( $product instanceof Product ) {
+                $taxGroupId = ( $procurementProduct instanceof ProcurementProduct && $procurementProduct->tax_group_id )
+                    ? $procurementProduct->tax_group_id
+                    : $product->tax_group_id;
+
+                $taxType = ( $procurementProduct instanceof ProcurementProduct && $procurementProduct->tax_type )
+                    ? $procurementProduct->tax_type
+                    : ( $product->tax_type ?: 'inclusive' );
+
+                if ( $taxGroupId ) {
+                    $this->taxService->computeTax( $unitQuantity, $taxGroupId, $taxType );
+                }
+            }
         }
 
-        $unitQuantity->product_id = $product_id;
-        $unitQuantity->unit_id = $unit_id;
         $unitQuantity->quantity = $quantity;
         $unitQuantity->save();
+
+        if ( empty( $unitQuantity->barcode ) && isset( $product ) && $product instanceof Product && ! empty( $product->barcode ) ) {
+            $unitQuantity->barcode = $product->barcode . '-' . $unitQuantity->id;
+            $unitQuantity->save();
+        }
 
         return [
             'status' => 'success',
