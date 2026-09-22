@@ -32,7 +32,7 @@ jobs:
           cache: 'npm'
 
       - name: Install Dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-scripts
 
       - name: Install Node Dependencies
         run: npm ci
@@ -51,6 +51,12 @@ jobs:
 
       - name: Generate Application Key
         run: php artisan key:generate
+
+      - name: Run Migrations
+        run: php artisan migrate --force
+
+      - name: Discover Packages
+        run: php artisan package:discover --ansi
 
       - name: Tests
         run: ./vendor/bin/pest
