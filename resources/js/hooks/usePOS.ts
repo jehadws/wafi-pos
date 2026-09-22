@@ -17,6 +17,7 @@
  *   hooks/pos/use-pos-session.ts   — init / settings / permissions slice
  */
 
+import { Address } from '@/types/models/address';
 import { Customer } from '@/types/models/customer';
 import { Order } from '@/types/models/order';
 import { OrderProduct } from '@/types/models/order-product';
@@ -429,7 +430,36 @@ export const usePOS = create<POSStore>((set, get) => ({
   loadOrder: async (order_id: number) => {
     const order = await ordersApi.getForPos(order_id);
 
-    const fullOrder: Order = { ...defaultOrder(), ...order };
+    // The API can return `type` as either a plain string identifier
+    // (e.g. "takeaway") or a full object ({ identifier, label, icon }).
+    // Normalise to the identifier string first, then look up the full
+    // OrderType object from the store's loaded types or — when defineTypes
+    // hasn't run yet (e.g. loading a held order right after page load) —
+    // fall back to the static ORDER_TYPE_MAP.
+    const rawType = order.type;
+    const typeIdentifier: string | undefined =
+      typeof rawType === 'string'
+        ? rawType
+        : typeof rawType === 'object' && rawType !== null && 'identifier' in rawType && typeof rawType.identifier === 'string'
+          ? rawType.identifier
+          : undefined;
+
+    const resolvedType: OrderType | undefined =
+      Object.values(get().types).find((t) => t.identifier === typeIdentifier) ??
+      (typeIdentifier && ORDER_TYPE_MAP[typeIdentifier] ? ({ ...ORDER_TYPE_MAP[typeIdentifier], selected: true } as OrderType) : undefined);
+
+    const { shipping_address, billing_address, type: _rawType, customer, ...orderRest } = order;
+
+    const fullOrder: Order = {
+      ...defaultOrder(),
+      ...orderRest,
+      type: resolvedType ?? undefined,
+      customer: (customer ?? undefined) as Customer | undefined,
+      addresses: {
+        shipping: (shipping_address ?? undefined) as Address | Partial<Address> | undefined,
+        billing: (billing_address ?? undefined) as Address | Partial<Address> | undefined,
+      },
+    };
     const products: OrderProduct[] = [];
 
     for (let i = 0; i < fullOrder.products.length; i++) {
@@ -469,29 +499,6 @@ export const usePOS = create<POSStore>((set, get) => ({
       }
       products.push(orderProduct);
     }
-
-    // The API can return `type` as either a plain string identifier
-    // (e.g. "takeaway") or a full object ({ identifier, label, icon }).
-    // Normalise to the identifier string first, then look up the full
-    // OrderType object from the store's loaded types or — when defineTypes
-    // hasn't run yet (e.g. loading a held order right after page load) —
-    // fall back to the static ORDER_TYPE_MAP.
-    const rawType: any = (fullOrder as any).type;
-    const typeIdentifier: string | undefined =
-      typeof rawType === 'string' ? rawType : typeof rawType === 'object' && rawType !== null ? rawType.identifier : undefined;
-
-    const resolvedType =
-      Object.values(get().types).find((t: any) => t.identifier === typeIdentifier) ?? (typeIdentifier ? ORDER_TYPE_MAP[typeIdentifier] : undefined);
-
-    (fullOrder as any).type = resolvedType ?? undefined;
-
-    fullOrder.addresses = {
-      shipping: (order as any).shipping_address,
-      billing: (order as any).billing_address,
-    };
-
-    delete (fullOrder as any).shipping_address;
-    delete (fullOrder as any).billing_address;
 
     get().buildOrder(fullOrder);
     get().buildProducts(products);

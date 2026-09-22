@@ -14,6 +14,7 @@
  */
 import { ordersApi } from '@/api';
 import { usePOS } from '@/hooks/usePOS';
+import { PosOrder } from '@/types/models/order';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/api', async (importOriginal) => {
@@ -34,7 +35,7 @@ vi.mock('sonner', () => ({
   toast: { error: vi.fn(), warning: vi.fn(), info: vi.fn(), success: vi.fn() },
 }));
 
-const makeApiOrder = (typeValue: any) => ({
+const makeApiOrder = (typeValue: any): PosOrder => ({
   id: 42,
   code: 'ORD-42',
   total: 100,
@@ -64,7 +65,7 @@ describe('loadOrder — order type resolution', () => {
   });
 
   it('resolves the type when the API returns a plain string identifier', async () => {
-    vi.mocked(ordersApi.getForPos).mockResolvedValueOnce(makeApiOrder('takeaway') as any);
+    vi.mocked(ordersApi.getForPos).mockResolvedValueOnce(makeApiOrder('takeaway'));
     await usePOS.getState().loadOrder(42);
     const { type } = usePOS.getState().order as any;
     expect(type).toBeDefined();
@@ -73,9 +74,7 @@ describe('loadOrder — order type resolution', () => {
   });
 
   it('resolves the type when the API returns a full object (not just a string)', async () => {
-    vi.mocked(ordersApi.getForPos).mockResolvedValueOnce(
-      makeApiOrder({ identifier: 'delivery', label: 'Delivery', icon: '/images/delivery.png' }) as any,
-    );
+    vi.mocked(ordersApi.getForPos).mockResolvedValueOnce(makeApiOrder({ identifier: 'delivery', label: 'Delivery', icon: '/images/delivery.png' }));
     await usePOS.getState().loadOrder(42);
     const { type } = usePOS.getState().order as any;
     expect(type).toBeDefined();
@@ -85,7 +84,7 @@ describe('loadOrder — order type resolution', () => {
 
   it('falls back to ORDER_TYPE_MAP when types[] is empty (defineTypes not yet called)', async () => {
     usePOS.setState({ types: [] } as any);
-    vi.mocked(ordersApi.getForPos).mockResolvedValueOnce(makeApiOrder('takeaway') as any);
+    vi.mocked(ordersApi.getForPos).mockResolvedValueOnce(makeApiOrder('takeaway'));
     await usePOS.getState().loadOrder(42);
     const { type } = usePOS.getState().order as any;
     expect(type).toBeDefined();
@@ -93,7 +92,7 @@ describe('loadOrder — order type resolution', () => {
   });
 
   it('leaves type undefined when the API returns null', async () => {
-    vi.mocked(ordersApi.getForPos).mockResolvedValueOnce(makeApiOrder(null) as any);
+    vi.mocked(ordersApi.getForPos).mockResolvedValueOnce(makeApiOrder(null));
     await usePOS.getState().loadOrder(42);
     const { type } = usePOS.getState().order as any;
     expect(type).toBeUndefined();

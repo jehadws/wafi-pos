@@ -1,3 +1,4 @@
+import { PosOrder } from '@/types/models/order';
 import { AxiosRequestConfig } from 'axios';
 import { del, get, post, put } from './http';
 
@@ -11,14 +12,8 @@ export const ordersApi = {
   /** Fetch a single order (supports AbortController signal). */
   get: (orderId: number | string, config?: AxiosRequestConfig) => get<Order>(`/orders/${orderId}`, config),
 
-  /**
-   * Fetch an order shaped for the POS screen.
-   *
-   * Intentionally returns `any` for now: `usePOS.loadOrder` merges the
-   * result with `defaultOrder()` and relies on loose property access.
-   * TODO: type this properly when usePOS is split into focused stores.
-   */
-  getForPos: (orderId: number | string) => get(`/orders/${orderId}/pos`),
+  /** Fetch an order shaped for the POS screen. */
+  getForPos: (orderId: number | string) => get<PosOrder>(`/orders/${orderId}/pos`),
 
   /** Fetch the products attached to an order. */
   getProducts: (orderId: number | string) => get<TOrderProducts[]>(`/orders/${orderId}/products`),

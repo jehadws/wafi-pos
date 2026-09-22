@@ -1,3 +1,5 @@
+import { Address } from './address';
+
 export interface Customer {
   first_name: string;
   name?: string;
@@ -16,6 +18,7 @@ export interface Customer {
   group_name?: string;
   billing?: any;
   shipping?: any;
+  addresses?: (Address | Partial<Address>)[];
   total_spent?: number;
   total_orders?: number;
   created_at?: string;

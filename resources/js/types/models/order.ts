@@ -90,3 +90,19 @@ export interface Order {
   title: string;
   refunded_products?: OrderRefundedProduct[];
 }
+
+/**
+ * Shape of an order returned by the `/api/orders/{id}/pos` endpoint.
+ *
+ * Differs from `Order` in that:
+ * - `type` can be a raw string identifier (e.g. "takeaway"), an `OrderType` object, or null/undefined
+ * - `shipping_address` and `billing_address` are top-level relations from Eloquent before
+ *   being mapped into `addresses` by `usePOS.loadOrder`
+ * - Fields are partial because it merges with `defaultOrder()` on the POS client
+ */
+export type PosOrder = Partial<Omit<Order, 'type' | 'customer'>> & {
+  type?: string | (Partial<OrderType> & { identifier?: string }) | null;
+  customer?: Customer | Partial<Customer> | null;
+  shipping_address?: Address | Partial<Address> | null;
+  billing_address?: Address | Partial<Address> | null;
+};
