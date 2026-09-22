@@ -16,7 +16,6 @@ import { GroupRenderer } from './group-renderer';
 import { loadFieldOptions } from './option-loader';
 import { parseValidation } from './parse-validation';
 import { getCustomComponent } from './registry';
-import { RichTextEditor } from './rich-text-editor';
 
 /**
  * Format date/datetime string from DB/API to HTML5 datetime-local compatible string (YYYY-MM-DDTHH:mm).
