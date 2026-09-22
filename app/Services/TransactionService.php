@@ -300,6 +300,21 @@ class TransactionService
     }
 
     /**
+     * Delete a transaction action rule.
+     *
+     * @return array{status: string, message: string}
+     */
+    public function deleteRule( TransactionActionRule $rule ): array
+    {
+        $rule->delete();
+
+        return [
+            'status'  => 'success',
+            'message' => __( 'The transaction rule has been deleted.' ),
+        ];
+    }
+
+    /**
      * Delete specific account type
      *
      * @param  bool  $force

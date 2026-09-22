@@ -15,6 +15,7 @@ Route::post('transactions', [TransactionController::class, 'post']);
 Route::get('transactions/history/{history}/create-reflection', [TransactionController::class, 'createReflection'])->where('id', '[0-9]+');
 Route::post('transactions/rules', [TransactionController::class, 'saveRule']);
 Route::get('transactions/rules', [TransactionController::class, 'getRules']);
+Route::delete('transactions/rules/{rule}', [TransactionController::class, 'deleteRule'])->where('rule', '[0-9]+');
 Route::post('transactions-accounts', [TransactionController::class, 'postTransactionsAccount']);
 Route::put('transactions/{id}', [TransactionController::class, 'put'])->where('id', '[0-9]+');
 Route::put('transactions-accounts/{account}', [TransactionController::class, 'putTransactionAccount'])->where('id', '[0-9]+');

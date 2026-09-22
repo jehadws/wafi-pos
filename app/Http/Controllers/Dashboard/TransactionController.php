@@ -212,6 +212,14 @@ class TransactionController extends DashboardController
   }
 
   /**
+   * Delete a transaction action rule.
+   */
+  public function deleteRule(\App\Models\TransactionActionRule $rule)
+  {
+    return $this->transactionService->deleteRule($rule);
+  }
+
+  /**
    * delete a specific transaction account
    */
   public function deleteAccount(TransactionAccount $account)

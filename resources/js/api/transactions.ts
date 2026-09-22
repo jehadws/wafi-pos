@@ -15,14 +15,7 @@ export const transactionsApi = {
   /** Create a transaction rule. */
   createRule: (rule: unknown) => post<{ message: string }>('/transactions/rules', { rule }),
 
-  /**
-   * Delete a transaction rule.
-   *
-   * FIXME(backend): the original code called `axios.delete(`/transactions/rules/${id}`)`
-   * — missing the `/api` prefix — and no matching route exists in
-   * routes/api/transactions.php. This client targets the corrected URL,
-   * but the backend route still needs to be confirmed/added.
-   */
+  /** Delete a transaction rule. */
   deleteRule: (id: number | string) => del<{ message: string }>(`/transactions/rules/${id}`),
 
   /** Fetch all transaction accounts. */
