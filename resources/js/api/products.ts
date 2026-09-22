@@ -1,3 +1,4 @@
+import { ProcurementProduct } from '@/types/models/procurement';
 import { get, post } from './http';
 
 /**
@@ -22,6 +23,9 @@ export const productsApi = {
 
   /** Fetch the unit quantities available for a product. */
   getUnitQuantities: (productId: number | string) => get<UnitQuantity[]>(`/products/${productId}/units/quantities`),
+
+  /** Fetch the procurement batches available for a product. */
+  getProcuredProducts: (productId: number | string) => get<ProcurementProduct[]>(`/products/${productId}/procurements`),
 
   /** Submit a stock adjustment for a set of products. */
   createAdjustment: (products: unknown[]) => post<{ message: string }>('/products/adjustments', { products }),

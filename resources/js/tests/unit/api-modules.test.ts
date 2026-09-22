@@ -61,6 +61,12 @@ describe('API Resource Modules', () => {
       await productsApi.getUnitQuantities(7);
       expect(spy).toHaveBeenCalledWith('/products/7/units/quantities');
     });
+
+    it('getProcuredProducts fetches /products/:id/procurements', async () => {
+      const spy = vi.spyOn(http, 'get').mockResolvedValueOnce([] as any);
+      await productsApi.getProcuredProducts(7);
+      expect(spy).toHaveBeenCalledWith('/products/7/procurements');
+    });
   });
 
   describe('customersApi', () => {

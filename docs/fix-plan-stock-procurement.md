@@ -49,7 +49,7 @@ Full audit with line numbers: chat transcript of 2026-09-10.
 ## E. Unimplemented features
 
 - [x] **E29** Scheduler: `StockProcurementJob` every 30 min + `DetectLowStockProductsJob` daily in `bootstrap/app.php` (broader list tracked as issue #11).
-- [x] **E30** Batch data plumbing (via A2): adjustments update/link the batch. Interactive batch *selector* dialog remains a follow-up.
+- [x] **E30** Batch data plumbing (via A2) + interactive procurement batch selector dialog on the stock adjustment row.
 - [x] **E31** Tax computation end-to-end: controllers pass `TaxGroup::with('taxes:id,tax_group_id,rate')`; tax modal stores group + summed rate atomically; `services/procurement.ts` computes `getVatValue(price, rate, type) * qty` per `tax_type`.
 - [x] **E32** `validateForm()` — real client validation (name, provider, ≥1 product, per-row unit).
 - [x] **E33** Default dates = today.
@@ -66,10 +66,11 @@ Full audit with line numbers: chat transcript of 2026-09-10.
 - **Edit duplicates** — payload includes the procurement-product `id` for existing rows; new rows omit `id`.
 - **Numeric payload safety** — `buildProcurementPayload` coerces numeric fields through `Number(...)`.
 - **A2 batch plumbing** — adjustments resolve `ProcurementProduct` from `procurement_product_id`.
+- **E30 batch selector dialog** — interactive batch picker on adjust-stock rows with "None" fallback.
 
 ## Verification loop
 
-1. [x] `npm run types && npm run lint && npm run test` — ✓ (272/272)
+1. [x] `npm run types && npm run lint && npm run test` — ✓
 2. [x] `php artisan test` — ✓ (13 pre-existing Auth/Settings/Dashboard failures; identical with changes stashed)
 3. [x] `php artisan event:list` — ✓
 4. [ ] `npm run translation:check` — run before commit (E38 reuses existing keys).
@@ -77,5 +78,4 @@ Full audit with line numbers: chat transcript of 2026-09-10.
 ## Deferred (follow-ups)
 
 - **B19** price-less `ProductUnitQuantity` rows created by procurement stocking.
-- **E30** interactive procurement batch selector dialog (backend plumbing done).
 - Pre-existing `tests/Feature/Auth|Settings|Dashboard` failures (outside these domains).

@@ -27,4 +27,13 @@ if (typeof window !== 'undefined') {
       hash: '',
     },
   });
+
+  // Mock ResizeObserver for cmdk and radix in jsdom
+  (globalThis as any).ResizeObserver =
+    (globalThis as any).ResizeObserver ??
+    class ResizeObserverMock {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
 }

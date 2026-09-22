@@ -13,6 +13,7 @@ import { useTranslation } from '@/lib/i18n';
 import { usePage } from '@inertiajs/react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
+import { BatchSelectorDialog } from './batch-selector-dialog';
 
 interface StockAdjustmentProduct extends Product {
   selected: boolean;
@@ -26,6 +27,7 @@ interface StockAdjustmentProduct extends Product {
   procurement_history: {
     label: string;
     value: number;
+    available_quantity?: number;
   }[];
 }
 
@@ -57,6 +59,8 @@ export default function Page() {
   const [selectingUnitFor, setSelectingUnitFor] = useState<string | null>(null);
   const [selectingActionFor, setSelectingActionFor] = useState<string | null>(null);
   const [selectingQuantityFor, setSelectingQuantityFor] = useState<string | null>(null);
+  const [selectingBatchFor, setSelectingBatchFor] = useState<string | null>(null);
+  const [loadingBatchesFor, setLoadingBatchesFor] = useState<string | null>(null);
   const [reasonDialogFor, setReasonDialogFor] = useState<string | null>(null);
   const [pendingReason, setPendingReason] = useState<string>('');
 
@@ -158,12 +162,30 @@ export default function Page() {
         {
           label: `${product.procurement.name} (${product.available_quantity})`,
           value: product.id,
+          available_quantity: product.available_quantity,
         },
       ],
     };
 
     setProducts((prev) => [recalculateProduct(finalProduct), ...prev]);
     closeSearch();
+
+    // Hydrate sibling procurement batches in the background
+    productsApi
+      .getProcuredProducts(product.product_id)
+      .then((batches) => {
+        if (batches?.length > 0) {
+          const mapped = batches.map((b) => ({
+            label: `${b.procurement?.name ?? `Procurement #${b.procurement_id}`} (${b.available_quantity ?? 0})`,
+            value: b.id!,
+            available_quantity: b.available_quantity ?? 0,
+          }));
+          setProducts((prev) =>
+            prev.map((p) => (p.id === product.product_id ? { ...p, procurement_history: mapped } : p)),
+          );
+        }
+      })
+      .catch(() => {});
   };
 
   const addSuggestion = async (suggestion: Product) => {
@@ -199,6 +221,24 @@ export default function Page() {
 
       setProducts((prev) => [recalculateProduct(modified), ...prev]);
       closeSearch();
+
+      if (suggestion.accurate_tracking) {
+        productsApi
+          .getProcuredProducts(suggestion.id)
+          .then((batches) => {
+            if (batches?.length > 0) {
+              const mapped = batches.map((b) => ({
+                label: `${b.procurement?.name ?? `Procurement #${b.procurement_id}`} (${b.available_quantity ?? 0})`,
+                value: b.id!,
+                available_quantity: b.available_quantity ?? 0,
+              }));
+              setProducts((prev) =>
+                prev.map((p) => (p.id === suggestion.id ? { ...p, procurement_history: mapped } : p)),
+              );
+            }
+          })
+          .catch(() => {});
+      }
     } else {
       return toast(t("This product doesn't have any stock to adjust."));
     }
@@ -261,6 +301,53 @@ export default function Page() {
     setSelectingQuantityFor(`${product.id}-${product.adjust_unit?.unit?.id}`);
   };
 
+  const openBatchDialog = async (product: StockAdjustmentProduct) => {
+    const rowKey = `${product.id}-${product.adjust_unit?.unit?.id}`;
+    setSelectingBatchFor(rowKey);
+
+    try {
+      setLoadingBatchesFor(rowKey);
+      const batches = await productsApi.getProcuredProducts(product.id);
+      if (batches && batches.length > 0) {
+        const mapped = batches.map((b) => ({
+          label: `${b.procurement?.name ?? `Procurement #${b.procurement_id}`} (${b.available_quantity ?? 0})`,
+          value: b.id!,
+          available_quantity: b.available_quantity ?? 0,
+        }));
+        setProducts((prev) =>
+          prev.map((p) => {
+            if (`${p.id}-${p.adjust_unit?.unit?.id}` !== rowKey) return p;
+            return {
+              ...p,
+              procurement_history: mapped,
+            };
+          }),
+        );
+      }
+    } catch {
+      // Keep existing batch history if remote fetch fails
+    } finally {
+      setLoadingBatchesFor(null);
+    }
+  };
+
+  const selectProcurementBatch = (rowKey: string, batchId: number) => {
+    setProducts((prev) =>
+      prev.map((p) => {
+        if (`${p.id}-${p.adjust_unit?.unit?.id}` !== rowKey) return p;
+        const selectedBatch = p.procurement_history.find((b) => b.value === batchId);
+        return {
+          ...p,
+          procurement_product_id: batchId,
+          ...(batchId > 0 && selectedBatch?.available_quantity !== undefined && p.accurate_tracking
+            ? { available_quantity: selectedBatch.available_quantity }
+            : {}),
+        };
+      }),
+    );
+    setSelectingBatchFor(null);
+  };
+
   const openReasonDialog = (product: StockAdjustmentProduct) => {
     setReasonDialogFor(`${product.id}-${product.adjust_unit?.unit?.id}`);
     setPendingReason(product.adjust_reason);
@@ -297,7 +384,11 @@ export default function Page() {
 
     if (ok) {
       try {
-        const data = await productsApi.createAdjustment(products);
+        const payload = products.map((p) => ({
+          ...p,
+          procurement_product_id: p.procurement_product_id > 0 ? p.procurement_product_id : null,
+        }));
+        const data = await productsApi.createAdjustment(payload);
         toast(data.message);
         setProducts([]);
       } catch (error: any) {
@@ -305,6 +396,11 @@ export default function Page() {
       }
     }
   };
+
+  const activeBatchProduct = products.find(
+    (p) => `${p.id}-${p.adjust_unit?.unit?.id}` === selectingBatchFor,
+  );
+
   return (
     <AppLayout>
       <div className="space-y-6 p-6">
@@ -426,18 +522,19 @@ export default function Page() {
                             </DialogContent>
                           </Dialog>
 
-                          {/* Procurement (conditional) */}
-                          {product.accurate_tracking && (
-                            <div
-                              className="w-1/2 px-2 md:w-auto"
-                              // onClick={() => selectProcurement(product)}
-                            >
-                              <div className="border-info-secondary cursor-pointer border-b border-dashed py-1 text-xs">
-                                <span className="text-xs">{t('Procurement')}:</span>&nbsp;
-                                <span>{product.procurement_history.find((action) => action.value === product.procurement_product_id)?.label}</span>
-                              </div>
+                          {/* Procurement */}
+                          <div
+                            className="w-1/2 px-2 md:w-auto"
+                            onClick={() => openBatchDialog(product)}
+                          >
+                            <div className="border-info-secondary cursor-pointer border-b border-dashed py-1 text-xs">
+                              <span className="text-xs">{t('Procurement')}:</span>&nbsp;
+                              <span>
+                                {product.procurement_history.find((action) => action.value === product.procurement_product_id)?.label ??
+                                  (product.procurement_product_id > 0 ? `#${product.procurement_product_id}` : t('Not Selected'))}
+                              </span>
                             </div>
-                          )}
+                          </div>
 
                           {/* Reason */}
                           <div className="w-1/2 px-2 md:w-auto" onClick={() => openReasonDialog(product)}>
@@ -493,6 +590,22 @@ export default function Page() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Batch selector dialog — shared across all product rows, controlled by selectingBatchFor key */}
+        <BatchSelectorDialog
+          open={selectingBatchFor !== null}
+          onOpenChange={(isOpen) => {
+            if (!isOpen) setSelectingBatchFor(null);
+          }}
+          batches={activeBatchProduct?.procurement_history ?? []}
+          selectedBatchId={activeBatchProduct?.procurement_product_id ?? 0}
+          onSelectBatch={(batchId) => {
+            if (selectingBatchFor) {
+              selectProcurementBatch(selectingBatchFor, batchId);
+            }
+          }}
+          isLoading={loadingBatchesFor === selectingBatchFor}
+        />
       </div>
     </AppLayout>
   );

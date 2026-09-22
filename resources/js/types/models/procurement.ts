@@ -31,6 +31,10 @@ export interface ProcurementProduct {
     id?: number;
     name?: string;
   };
+  procurement?: {
+    id?: number;
+    name?: string;
+  };
 }
 
 export interface Procurement {
