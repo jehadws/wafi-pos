@@ -2083,15 +2083,29 @@ class ProductService
         }
 
         /**
-         * if the unitQuantityTo is missing, we might then
-         * create a new unit with quantity set to 0.
+         * If the destination unit row is missing we create it with pricing
+         * seeded from the source unit. Leaving all price fields at zero
+         * would produce invisible price-less rows that corrupt catalog data.
          */
         if ( ! $unitQuantityTo instanceof ProductUnitQuantity ) {
             $unitQuantityTo = new ProductUnitQuantity;
-            $unitQuantityTo->product_id = $product->id;
-            $unitQuantityTo->unit_id = $to->id;
-            $unitQuantityTo->quantity = 0;
-            $unitQuantityTo->visible = false;
+            $unitQuantityTo->product_id              = $product->id;
+            $unitQuantityTo->unit_id                 = $to->id;
+            $unitQuantityTo->quantity                = 0;
+            $unitQuantityTo->visible                 = false;
+            // Inherit catalog prices from the source unit — same product,
+            // best available approximation when no explicit price exists.
+            $unitQuantityTo->sale_price              = $unitQuantityFrom->sale_price;
+            $unitQuantityTo->sale_price_edit         = $unitQuantityFrom->sale_price_edit;
+            $unitQuantityTo->sale_price_with_tax     = $unitQuantityFrom->sale_price_with_tax;
+            $unitQuantityTo->sale_price_without_tax  = $unitQuantityFrom->sale_price_without_tax;
+            $unitQuantityTo->sale_price_tax          = $unitQuantityFrom->sale_price_tax;
+            $unitQuantityTo->wholesale_price         = $unitQuantityFrom->wholesale_price;
+            $unitQuantityTo->wholesale_price_edit    = $unitQuantityFrom->wholesale_price_edit;
+            $unitQuantityTo->wholesale_price_with_tax    = $unitQuantityFrom->wholesale_price_with_tax;
+            $unitQuantityTo->wholesale_price_without_tax = $unitQuantityFrom->wholesale_price_without_tax;
+            $unitQuantityTo->wholesale_price_tax     = $unitQuantityFrom->wholesale_price_tax;
+            $unitQuantityTo->cogs                    = $unitQuantityFrom->cogs;
             $unitQuantityTo->save();
         }
 
