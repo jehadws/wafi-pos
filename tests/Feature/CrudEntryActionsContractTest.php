@@ -278,9 +278,6 @@ it('returns a well-formed paginator whose rows carry well-formed actions across 
         $memo = [];
         $stack = [];
 
-        echo "\n[crud-contract] seeding {$className}";
-        file_put_contents(storage_path('crud-contract.log'), "[seed] {$className}\n", FILE_APPEND);
-
         $reflection = new ReflectionClass($resource);
         $table = Hook::filter('sb-model-table', (string) ($reflection->getProperty('table')->getValue($resource) ?: ($modelClass ? (new $modelClass)->getTable() : '')));
 
