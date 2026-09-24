@@ -38,6 +38,49 @@ type Registration = {
   sb_recovery_enabled: string | null;
 };
 
+/**
+ * Safe defaults returned before the first share payload arrives (e.g. during
+ * setup). Deliberate fallback, not an error: a missing-settings crash would be
+ * a full white screen, whereas defaults degrade gracefully (wrong currency
+ * symbol at worst) until `sync()` hydrates real values.
+ */
+export const DEFAULT_SETTINGS: AppSettings = {
+  identification: {
+    sb_store_name: null,
+    sb_store_address: null,
+    sb_store_city: null,
+    sb_store_phone: null,
+    sb_store_email: null,
+    sb_store_pobox: null,
+    sb_store_fax: null,
+    sb_store_additional: null,
+    sb_store_square_logo: null,
+    sb_store_rectangle_logo: null,
+    sb_store_language: null,
+    sb_default_theme: null,
+  },
+  currency: {
+    sb_currency_symbol: '$',
+    sb_currency_iso: null,
+    sb_currency_position: 'before',
+    sb_currency_prefered: null,
+    sb_currency_thousand_separator: ',',
+    sb_currency_decimal_separator: '.',
+    sb_currency_precision: 2,
+  },
+  date: {
+    sb_date_format: null,
+    sb_datetime_format: null,
+    sb_datetime_timezone: null,
+  },
+  registration: {
+    sb_registration_enabled: null,
+    sb_registration_role: null,
+    sb_registration_validated: null,
+    sb_recovery_enabled: null,
+  },
+};
+
 export type AppSettings = {
   identification: Identification;
   currency: Currency;
@@ -64,7 +107,10 @@ class Settings {
 
   public get() {
     if (!this.settings) {
-      throw new Error('Settings have not been initialized');
+      // During setup (or before the first share payload arrives) settings may
+      // be empty. Returning safe defaults instead of throwing prevents a full
+      // white screen if a component reads settings too early.
+      return DEFAULT_SETTINGS;
     }
     return this.settings;
   }

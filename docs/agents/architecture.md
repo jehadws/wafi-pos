@@ -62,7 +62,7 @@ Precision 0 is a valid setting — resolve it with `resolveCurrencyPrecision`, a
 
 - Backend: settings pages are `SettingsPage` subclasses (`app/Settings/PosSettings.php`), with tab definitions in `app/Settings/pos/*.php`. `getPayload()` whitelists which `sb_*` keys reach the frontend; `Helper::kvToJsOptions` shapes their choices.
 - Frontend: every key read in TS belongs in `POS_OPTION_KEYS` (the registry covers all backend POS keys). ESLint bans raw `'sb_…'` literals outside `constants/pos-options.ts`, `components/settings/**`, `pages/dashboard/settings/**`, `types/**`, and `tests/**` — a typo in runtime code is a lint error now.
-- `lib/settings.ts` is a process-wide singleton. `Settings.get()` throws before initialization, and the format utils fall back silently to `$` / UTC defaults — an initialization-order bug shows up as wrong currency, never as an error. Hydrate (`Settings.set` / `sync()`) before first render, and preserve that order when touching the bootstrap.
+- `lib/settings.ts` is a process-wide singleton. `Settings.get()` never throws — before initialization it returns `DEFAULT_SETTINGS` (exported from the same file), so an initialization-order bug shows up as default/placeholder currency, never as an error or white screen. Hydrate (`Settings.set` / `sync()`) before first render, and preserve that order when touching the bootstrap.
 - Form & settings payload contract: Forms submit tab-grouped dictionaries `{[main]: v, [tabId]: {field: v}}`. Server-side (`SbForms::getFlatForm`), empty strings `''` and `null` values are dropped while `0` and `'0'` are preserved.
 - Conditional fields: Defined server-side (e.g. `pos/registers.php`, `pos/vat.php`); the frontend receives the evaluated field list.
 
