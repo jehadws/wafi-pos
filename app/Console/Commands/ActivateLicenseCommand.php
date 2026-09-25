@@ -54,8 +54,34 @@ class ActivateLicenseCommand extends Command
         }
 
         $clientName = $payload['client'] ?? 'Retail Customer';
-        $maxDevices = $payload['max_devices'] ?? 1;
+        $maxDevices = (int) ($payload['max_devices'] ?? 1);
         $keyId = $payload['key_id'] ?? 'SUBUL-KEY';
+
+        // ── Enforce per-key device limit ──────────────────────────────
+        // All activations of the same key share the same signed payload,
+        // so key_id + client + max_devices identify a unique license key.
+        // Count distinct active machines already activated with it and
+        // refuse to go over the signed limit. Reactivating a machine that
+        // is already activated (same HWID) is always allowed and just
+        // refreshes the row.
+        $existing = License::where('hwid', $hwid)->first();
+
+        if (!$existing || !$existing->is_active || $existing->key_string !== $keyString) {
+            $activeDevices = License::where('is_active', true)
+                ->where('key_string', $keyString)
+                ->when($existing, function ($q) use ($existing) {
+                    // Refreshing an existing machine should not count as a new seat
+                    $q->where('hwid', '!=', $existing->hwid);
+                })
+                ->count();
+
+            if ($activeDevices >= $maxDevices) {
+                $this->error("❌ ACTIVATION FAILED: Device limit reached.");
+                $this->line("This license key allows {$maxDevices} device(s) and {$activeDevices} are already activated.");
+                $this->line("Deactivate an existing terminal first (php artisan pos:deactivate) or obtain a key with a higher device limit.");
+                return 1;
+            }
+        }
 
         // Record or update this hardware's verified activation
         $license = License::updateOrCreate(

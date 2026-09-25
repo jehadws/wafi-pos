@@ -99,7 +99,7 @@ class HandleInertiaRequests extends Middleware
             'menus' => (\App\Services\Helper::installed() && $request->user()) ?
                 app()->make(\App\Services\MenuService::class)->getMenus() :
                 [],
-            'settings' => \App\Services\Helper::installed() ? (new GeneralSettings)->getPayload() : [],
+            'settings' => \App\Services\Helper::installed() ? (new GeneralSettings)->getPayload() : (object) [],
             'license'  => function () {
                 if (!\App\Services\Helper::installed()) {
                     return ['isValid' => true, 'isRestricted' => false];

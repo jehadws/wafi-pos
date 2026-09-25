@@ -41,14 +41,28 @@ class HwidService
         $disk        = self::getDiskUuid();
         $motherboard = self::getMotherboardUuid();
 
-        // Fallback entropy if hardware commands are restricted by environment
+        // Fallback entropy if hardware commands are restricted by environment.
+        // Hostname is user-spoofable, so this fingerprint is NOT trustworthy as a
+        // permanent machine identity — it is cached only for 1 hour (see below)
+        // so that once real hardware queries succeed, the machine converges on
+        // its stable hardware-derived HWID and must be re-activated for it.
         if ($mac === 'mac-default-unknown' && $cpu === 'cpu-default-unknown' && $disk === 'disk-default-unknown') {
             $fallback = gethostname() . '|' . php_uname('n') . '|' . php_uname('m') . '|' . php_uname('s');
             $hwid = hash('sha256', $fallback);
-        } else {
-            $raw = implode('|', [$mac, $cpu, $disk, $motherboard]);
-            $hwid = hash('sha256', $raw);
+            self::$cachedHwid = $hwid;
+
+            // Short-lived cache only: do NOT pin the fallback identity forever.
+            try {
+                \Illuminate\Support\Facades\Cache::put('pos_hwid_fingerprint', $hwid, 3600);
+            } catch (\Throwable $e) {
+                // Ignore if cache driver is not yet ready
+            }
+
+            return $hwid;
         }
+
+        $raw = implode('|', [$mac, $cpu, $disk, $motherboard]);
+        $hwid = hash('sha256', $raw);
 
         self::$cachedHwid = $hwid;
 

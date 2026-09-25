@@ -30,3 +30,4 @@ yarn-error.log
 /temp
 print-agent/node_modules
 print-agent/jobs
+print-agent/dist
