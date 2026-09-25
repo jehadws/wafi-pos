@@ -16,3 +16,19 @@ test('authenticated users can visit the dashboard', function () {
 
     $this->get('/dashboard')->assertOk();
 });
+
+test('authenticated admin can fetch dashboard all data', function () {
+    $this->actingAs($user = User::factory()->create());
+    $user->assignRole('admin');
+
+    $response = $this->getJson('/api/dashboard/all');
+    $response->assertOk()
+        ->assertJsonStructure([
+            'cards',
+            'bestCustomers',
+            'recentOrders',
+            'bestCashiers',
+            'weeks',
+            'isElevated',
+        ]);
+});

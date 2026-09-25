@@ -44,6 +44,8 @@ class User extends Authenticatable
         return trim($this->first_name . ' ' . $this->last_name) ?: $this->username;
     }
 
+    protected $appends = ['name'];
+
     protected $casts = [
         'active'                => 'boolean',
         'activation_expiration' => 'datetime',

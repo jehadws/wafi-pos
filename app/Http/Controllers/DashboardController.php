@@ -223,10 +223,16 @@ class DashboardController extends Controller
           ->get([
             'subul_users.id',
             'subul_users.username',
+            'subul_users.first_name',
+            'subul_users.last_name',
             'subul_users.email',
             'subul_users.purchases_amount',
-            DB::raw("TRIM(CONCAT_WS(' ', subul_users.first_name, subul_users.last_name)) as name"),
           ])
+          ->map(function ($customer) {
+            $name = trim(($customer->first_name ?? '') . ' ' . ($customer->last_name ?? ''));
+            $customer->name = $name !== '' ? $name : $customer->username;
+            return $customer;
+          })
       : [];
 
     // --- Recent orders ---
