@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useOrder } from '@/hooks/use-order';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import printAgentService from '@/services/print-agent-service';
+import printingService from '@/services/printing-service';
 import { LoaderCircle, Printer, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -36,19 +36,14 @@ export default function OrderOptionsDialog({ open, orderId, onOpenChange }: Prop
   const handlePrint = async () => {
     if (!order || isPrinting) return;
     setIsPrinting(true);
-    try {
-      const receiptOrder = order as unknown as Parameters<typeof printAgentService.printOrderReceipt>[0];
-      const result = await printAgentService.printOrderReceipt(receiptOrder);
-      if (result.success) {
-        toast.success(t('The receipt has been sent to the printer.'));
-      } else {
-        toast.error(t('Unable to print'), { description: result.error });
-      }
-    } catch (error) {
-      toast.error(t('Unable to print'), { description: printAgentService.formatErrorMessage(error) });
-    } finally {
-      setIsPrinting(false);
+    const receiptOrder = order as unknown as Parameters<typeof printingService.printOrderReceipt>[0];
+    const result = await printingService.printOrderReceipt(receiptOrder);
+    if (result.success) {
+      toast.success(t('The receipt has been sent to the printer.'));
+    } else {
+      toast.error(t('Unable to print'), { description: result.error });
     }
+    setIsPrinting(false);
   };
 
   const handleDialogChange = (nextOpen: boolean) => {

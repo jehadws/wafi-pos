@@ -1,0 +1,63 @@
+{
+  "runtime": {
+    "php": "8.5.10",
+    "gd": true,
+    "freetype": true,
+    "sockets": true,
+    "iconv": true,
+    "mbstring": true,
+    "intl": true,
+    "ffi": false,
+    "com_dotnet": false,
+    "cp864Iconv": false
+  },
+  "textSamples": [
+    {
+      "input": "قهوة عربية",
+      "visual": "ﺔﻴﺑﺮﻋ ﺓﻮﻬﻗ",
+      "intendedCp864Hex": "c3fdbecdd920f8f5f2e3"
+    },
+    {
+      "input": "محمد سالم | Mohammed Salem",
+      "visual": "Mohammed Salem | ﱂﺎﺳ ﷴ"
+    },
+    {
+      "input": "لا إله إلا الله",
+      "visual": "ﷲ ﻻﺇ ﻪﻟﺇ ﻻ"
+    }
+  ],
+  "legacyOutputs": {
+    "receiptCp864": {
+      "length": 1185,
+      "sha256": "42db8e2b3054a49eef463744947305ca22ab92a53ca720f36e931949ae76d115",
+      "knownBrokenArabicEncoding": true
+    },
+    "receiptCp1256": {
+      "length": 1231,
+      "sha256": "87486c8176d5f7ae87693fe92710fee29113790130e51297b54142cad9593728"
+    },
+    "labelTsplArabic": {
+      "length": 910,
+      "sha256": "69c4d7cf06eeb10679849c1b14b7a5966964b20df00d326e9fcb36dc708b7601"
+    },
+    "labelTsplLatin": {
+      "length": 259,
+      "sha256": "0d7131bc645464242412ba9f8e0f99f3b6d8f4d122d67031ecdbea8267ae1d59"
+    },
+    "labelEscPosArabic": {
+      "length": 175,
+      "sha256": "6692849dd86608ba2438550df0a00af7c0ab438fd6676f4e170784c608f39914",
+      "knownBrokenArabicEncoding": true
+    },
+    "drawerPin0": {
+      "length": 10,
+      "sha256": "1d8eceba63f2d91faaefc82bb3363118ad7419504ab37d95db6815de61c5a218",
+      "hex": "1b401b74281b700019fa"
+    },
+    "drawerPin1": {
+      "length": 10,
+      "sha256": "b33f0467a35dca798cc16168f6f57b10429a1daac04cb92e2f6f94964de187b7",
+      "hex": "1b401b74281b700119fa"
+    }
+  }
+}

@@ -5,7 +5,7 @@
  * Kept in a separate file so slices can type `get()` without circular imports.
  */
 
-import type { PrintResult } from '@/services/print-agent-service';
+import type { PrintResult } from '@/services/printing-service';
 import { Customer } from '@/types/models/customer';
 import { Order } from '@/types/models/order';
 import { OrderProduct } from '@/types/models/order-product';

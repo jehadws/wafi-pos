@@ -7,11 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useTranslation } from '@/lib/i18n';
 import { Printer, Search, Settings, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { SelectedProduct } from '../page';
 
-interface SelectedProduct extends ProductSearchResult {
-  times: number;
-  selectedUnitQuantity: UnitQuantity | null;
-}
+const MAX_COPIES = 999;
 
 interface ProductSearchProps {
   selectedProducts: SelectedProduct[];
@@ -20,13 +18,14 @@ interface ProductSearchProps {
 }
 export function ProductSearch({ selectedProducts, onProductsChange, onPrint }: ProductSearchProps) {
   const { t } = useTranslation();
-  const [times, setTimes] = useState(1);
+  const [timesText, setTimesText] = useState('1');
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [searchResults, setSearchResults] = useState<ProductSearchResult[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<SelectedProduct | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<ProductSearchResult | null>(null);
   const [selectedUnitQuantity, setSelectedUnitQuantity] = useState<UnitQuantity | null>(null);
+  const [editingUnitQuantityId, setEditingUnitQuantityId] = useState<number | null>(null);
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
@@ -41,11 +40,10 @@ export function ProductSearch({ selectedProducts, onProductsChange, onPrint }: P
   };
 
   const addProduct = (product: ProductSearchResult) => {
-    setSelectedProduct({
-      ...product,
-      times: 1,
-      selectedUnitQuantity: null,
-    });
+    setSelectedProduct(product);
+    setSelectedUnitQuantity(product.unit_quantities?.[0] ?? null);
+    setTimesText('1');
+    setEditingUnitQuantityId(null);
     setIsOpen(true);
     setSearchResults([]);
     setShowResults(false);
@@ -53,37 +51,42 @@ export function ProductSearch({ selectedProducts, onProductsChange, onPrint }: P
   };
 
   const handleConfirm = () => {
-    if (selectedProduct) {
-      const product: SelectedProduct = {
-        ...selectedProduct,
-        times,
-        selectedUnitQuantity,
-      };
-      setSelectedProduct(product);
-      setIsOpen(false);
+    if (!selectedProduct || !selectedUnitQuantity) return;
 
-      const productIndex = selectedProducts.findIndex((p) => p?.selectedUnitQuantity?.id === product?.selectedUnitQuantity?.id);
+    const parsedTimes = Number.parseInt(timesText, 10);
+    const product: SelectedProduct = {
+      ...selectedProduct,
+      times: Math.min(MAX_COPIES, Math.max(1, Number.isNaN(parsedTimes) ? 1 : parsedTimes)),
+      selectedUnitQuantity,
+    };
 
-      if (productIndex !== -1) {
-        const updatedProducts = [...selectedProducts];
-        updatedProducts[productIndex] = product;
-        onProductsChange(updatedProducts);
-      } else {
-        onProductsChange([...selectedProducts, product]);
-      }
+    // When editing, replace the original entry even if its unit changed, and drop any other entry already using the new unit.
+    const targetId = editingUnitQuantityId ?? selectedUnitQuantity.id;
+    const updatedProducts = selectedProducts.filter(
+      (p) => p.selectedUnitQuantity.id !== selectedUnitQuantity.id || p.selectedUnitQuantity.id === targetId,
+    );
+    const productIndex = updatedProducts.findIndex((p) => p.selectedUnitQuantity.id === targetId);
+
+    if (productIndex !== -1) {
+      updatedProducts[productIndex] = product;
+    } else {
+      updatedProducts.push(product);
     }
+
+    onProductsChange(updatedProducts);
+    setIsOpen(false);
   };
 
   const handleRemoveProduct = (product: SelectedProduct) => {
-    const updatedProducts = selectedProducts.filter((p) => p?.selectedUnitQuantity?.id !== product?.selectedUnitQuantity?.id);
-    onProductsChange(updatedProducts);
+    onProductsChange(selectedProducts.filter((p) => p.selectedUnitQuantity.id !== product.selectedUnitQuantity.id));
   };
 
   const handleOpenSettings = (product: SelectedProduct) => {
-    setIsOpen(true);
     setSelectedProduct(product);
-    setTimes(product.times);
+    setTimesText(String(product.times));
     setSelectedUnitQuantity(product.selectedUnitQuantity);
+    setEditingUnitQuantityId(product.selectedUnitQuantity.id);
+    setIsOpen(true);
   };
 
   return (
@@ -113,13 +116,13 @@ export function ProductSearch({ selectedProducts, onProductsChange, onPrint }: P
           <h4 className="mb-2 font-medium">{t('Included Products')}</h4>
           <div className="space-y-2">
             {selectedProducts.map((product) => (
-              <div key={product.selectedUnitQuantity?.id} className="rounded border p-3">
+              <div key={product.selectedUnitQuantity.id} className="rounded border p-3">
                 <div className="mb-2 flex items-start justify-between">
                   <div>
                     <div className="text-sm font-medium">
-                      {product.name} ({product.selectedUnitQuantity?.unit.name}) x{product.times}
+                      {product.name} ({product.selectedUnitQuantity.unit.name}) x{product.times}
                     </div>
-                    <div className="text-xs text-gray-500">{product.barcode}</div>
+                    <div className="text-xs text-gray-500">{product.selectedUnitQuantity.barcode}</div>
                   </div>
                   <div className="flex items-center gap-1">
                     <Button size="sm" variant="outline" className="h-6 w-6 p-0" onClick={() => handleOpenSettings(product)}>
@@ -174,12 +177,25 @@ export function ProductSearch({ selectedProducts, onProductsChange, onPrint }: P
             </FormField>
 
             <FormField label={t('Quantity')} htmlFor="quantity" description={t('Define how many time the product will be printed')}>
-              <Input id="quantity" name="quantity" type="number" value={times} onChange={(e) => setTimes(+e.target.value)} />
+              <Input
+                id="quantity"
+                name="quantity"
+                type="number"
+                min={1}
+                max={MAX_COPIES}
+                step={1}
+                value={timesText}
+                onChange={(e) => setTimesText(e.target.value)}
+                onBlur={(e) => {
+                  const parsed = Number.parseInt(e.target.value, 10);
+                  setTimesText(String(Math.min(MAX_COPIES, Math.max(1, Number.isNaN(parsed) ? 1 : parsed))));
+                }}
+              />
             </FormField>
           </div>
 
           <DialogFooter className="flex-col gap-2 sm:flex-row">
-            <Button type="button" onClick={handleConfirm} className="flex-1">
+            <Button type="button" onClick={handleConfirm} className="flex-1" disabled={!selectedUnitQuantity}>
               {t('Save')}
             </Button>
           </DialogFooter>

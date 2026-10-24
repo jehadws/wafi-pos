@@ -7,8 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { POS_OPTION_KEYS } from '@/constants/pos-options';
+import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
-import PrintAgentService, { PrinterSettings, WindowsPrinter } from '@/services/print-agent-service';
+import printingService, { DEFAULT_PRINTER_SETTINGS, PrinterSettings, WindowsPrinter } from '@/services/printing-service';
 import { AlertCircle, CheckCircle2, Loader2, Play, Printer, RefreshCw, Tag } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -25,9 +27,9 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
   const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setIsOpen = setControlledOpen !== undefined ? setControlledOpen : setInternalOpen;
 
-  const [settings, setSettings] = useState<PrinterSettings>(PrintAgentService.getSettings());
+  const [settings, setSettings] = useState<PrinterSettings>(DEFAULT_PRINTER_SETTINGS);
   const [printers, setPrinters] = useState<WindowsPrinter[]>([]);
-  const [agentStatus, setAgentStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+  const [printingStatus, setPrintingStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isTestingReceipt, setIsTestingReceipt] = useState(false);
   const [isTestingLabel, setIsTestingLabel] = useState(false);
@@ -35,26 +37,14 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
   const checkAndFetchPrinters = async () => {
     setIsRefreshing(true);
     try {
-      const status = await PrintAgentService.checkStatus();
+      const [status] = await Promise.all([printingService.checkStatus(), printingService.loadSettings(true)]);
+      setPrintingStatus(status.status === 'online' ? 'online' : 'offline');
       if (status.status === 'online') {
-        setAgentStatus('online');
-        const list = await PrintAgentService.getPrinters();
-        setPrinters(list);
-
-        // Auto select default printer if not set
-        if (!settings.receiptPrinter && list.length > 0) {
-          const defaultP = list.find((p) => p.isDefault) || list[0];
-          handleSettingChange('receiptPrinter', defaultP.name);
-        }
-        if (!settings.labelPrinter && list.length > 0) {
-          const defaultP = list.find((p) => p.isDefault) || list[0];
-          handleSettingChange('labelPrinter', defaultP.name);
-        }
-      } else {
-        setAgentStatus('offline');
+        setSettings(printingService.getSettings());
+        setPrinters(await printingService.getPrinters(true));
       }
     } catch {
-      setAgentStatus('offline');
+      setPrintingStatus('offline');
     } finally {
       setIsRefreshing(false);
     }
@@ -64,20 +54,26 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
     if (isOpen) {
       checkAndFetchPrinters();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const handleSettingChange = <K extends keyof PrinterSettings>(key: K, value: PrinterSettings[K]) => {
-    const updated = { ...settings, [key]: value };
-    setSettings(updated);
-    PrintAgentService.saveSettings(updated);
+    setSettings((current) => ({ ...current, [key]: value }));
+    printingService.saveSettings({ [key]: value }).catch((err: any) => {
+      toast.error(err?.message || t('Failed to save printer settings.'));
+    });
+
+    // The cart reads the same option through the POS store, so keep it in sync:
+    // otherwise toggling auto-print would only take effect after a reload.
+    if (key === 'autoPrintOnSale') {
+      const { options, defineOptions } = usePOS.getState();
+      defineOptions({ ...options, [POS_OPTION_KEYS.printingAuto]: value ? 'yes' : 'no' });
+    }
   };
 
-  const handleTestReceipt = async (sample?: 'arabic' | 'english') => {
+  const handleTestReceipt = async (sample: 'arabic' | 'english') => {
     setIsTestingReceipt(true);
     try {
-      PrintAgentService.saveSettings(settings);
-      const res = await PrintAgentService.testPrinter(settings.receiptPrinter, 'receipt', sample);
+      const res = await printingService.testPrinter(settings.receiptPrinter, 'receipt', sample);
       toast.success(res.message || t('Test receipt sent to printer!'));
     } catch (err: any) {
       toast.error(err.message || t('Failed to test printer.'));
@@ -89,8 +85,7 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
   const handleTestLabel = async () => {
     setIsTestingLabel(true);
     try {
-      PrintAgentService.saveSettings(settings);
-      const res = await PrintAgentService.testPrinter(settings.labelPrinter, 'label');
+      const res = await printingService.testPrinter(settings.labelPrinter, 'label');
       toast.success(res.message || t('Test label sent to printer!'));
     } catch (err: any) {
       toast.error(err.message || t('Failed to test label printer.'));
@@ -108,39 +103,39 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
             <Printer className="text-primary h-5 w-5" />
             {t('POS Thermal Printer Settings')}
           </DialogTitle>
-          <DialogDescription>{t('Configure direct thermal receipt and barcode label printing via the local Windows Print Agent.')}</DialogDescription>
+          <DialogDescription>{t('Configure direct thermal receipt and barcode label printing for this terminal.')}</DialogDescription>
         </DialogHeader>
 
-        {/* Print Agent Connection Status Banner */}
+        {/* Printing Availability Banner */}
         <div
           className={`flex items-center justify-between rounded-lg border p-3 ${
-            agentStatus === 'online'
+            printingStatus === 'online'
               ? 'border-primary/30 bg-primary/10 text-primary'
-              : agentStatus === 'offline'
+              : printingStatus === 'offline'
                 ? 'border-destructive/30 bg-destructive/10 text-destructive'
                 : 'border-border bg-muted/40 text-muted-foreground'
           }`}
         >
           <div className="flex items-center gap-2.5">
-            {agentStatus === 'online' ? (
+            {printingStatus === 'online' ? (
               <CheckCircle2 className="text-primary h-5 w-5" />
-            ) : agentStatus === 'offline' ? (
+            ) : printingStatus === 'offline' ? (
               <AlertCircle className="text-destructive h-5 w-5" />
             ) : (
               <Loader2 className="h-5 w-5 animate-spin" />
             )}
             <div>
               <div className="text-sm font-semibold">
-                {agentStatus === 'online'
-                  ? t('Print Agent Online (http://127.0.0.1:8189)')
-                  : agentStatus === 'offline'
-                    ? t('Print Agent Offline')
-                    : t('Checking Print Agent...')}
+                {printingStatus === 'online'
+                  ? t('Printing is ready')
+                  : printingStatus === 'offline'
+                    ? t('Printing is unavailable')
+                    : t('Checking printing...')}
               </div>
               <div className="text-xs opacity-80">
-                {agentStatus === 'online'
-                  ? t('Direct ESC/POS spooler connection is ready.')
-                  : t('Run "start.bat" in the print-agent folder to start the background agent.')}
+                {printingStatus === 'online'
+                  ? t('Thermal receipts and labels print directly from the Subul backend.')
+                  : t('The POS could not reach the printing service. Check your connection and refresh.')}
               </div>
             </div>
           </div>
@@ -181,7 +176,7 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
                 <div className="flex gap-2">
                   <Input
                     id="receiptPrinter"
-                    placeholder={t('e.g. XP-80C or 127.0.0.1:9100')}
+                    placeholder={t('Empty = Windows default printer')}
                     value={settings.receiptPrinter}
                     onChange={(e) => handleSettingChange('receiptPrinter', e.target.value)}
                     className="flex-1 font-mono text-sm"
@@ -291,7 +286,7 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
                 <Button
                   variant="secondary"
                   onClick={() => handleTestReceipt('arabic')}
-                  disabled={isTestingReceipt || agentStatus !== 'online'}
+                  disabled={isTestingReceipt || printingStatus !== 'online'}
                   className="gap-2"
                 >
                   {isTestingReceipt ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
@@ -300,7 +295,7 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
                 <Button
                   variant="secondary"
                   onClick={() => handleTestReceipt('english')}
-                  disabled={isTestingReceipt || agentStatus !== 'online'}
+                  disabled={isTestingReceipt || printingStatus !== 'online'}
                   className="gap-2"
                 >
                   {isTestingReceipt ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
@@ -328,7 +323,7 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
                 <div className="flex gap-2">
                   <Input
                     id="labelPrinter"
-                    placeholder={t('e.g. XP-365B or 127.0.0.1:9100')}
+                    placeholder={t('Empty = Windows default printer')}
                     value={settings.labelPrinter}
                     onChange={(e) => handleSettingChange('labelPrinter', e.target.value)}
                     className="flex-1 font-mono text-sm"
@@ -375,11 +370,15 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
 
                 <div className="space-y-1.5">
                   <Label htmlFor="labelProtocol">{t('Printer Command Mode')}</Label>
-                  <Select value={settings.labelProtocol} onValueChange={(val: 'escpos' | 'tspl') => handleSettingChange('labelProtocol', val)}>
+                  <Select
+                    value={settings.labelProtocol}
+                    onValueChange={(val: 'auto' | 'escpos' | 'tspl') => handleSettingChange('labelProtocol', val)}
+                  >
                     <SelectTrigger id="labelProtocol">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="auto">{t('Auto-detect from printer driver')}</SelectItem>
                       <SelectItem value="escpos">ESC/POS (XP-80C / Thermal Receipt)</SelectItem>
                       <SelectItem value="tspl">TSPL / Label Mode (XP-365B / TSC)</SelectItem>
                     </SelectContent>
@@ -410,7 +409,7 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
 
               {/* Test Label Button */}
               <div className="flex justify-end pt-2">
-                <Button variant="secondary" onClick={handleTestLabel} disabled={isTestingLabel || agentStatus !== 'online'} className="gap-2">
+                <Button variant="secondary" onClick={handleTestLabel} disabled={isTestingLabel || printingStatus !== 'online'} className="gap-2">
                   {isTestingLabel ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
                   {t('Send Test Label Print')}
                 </Button>

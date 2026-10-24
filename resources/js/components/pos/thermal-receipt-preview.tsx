@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n';
-import PrintAgentService, { FormattedReceiptData } from '@/services/print-agent-service';
+import printingService, { FormattedReceiptData } from '@/services/printing-service';
 import { CheckCircle2, Loader2, Printer, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -17,14 +17,15 @@ interface ThermalReceiptPreviewProps {
 export function ThermalReceiptPreview({ data, onClose, autoPrint = false }: ThermalReceiptPreviewProps) {
   const { t } = useTranslation();
   const [isPrinting, setIsPrinting] = useState(false);
-  const [agentOnline, setAgentOnline] = useState<boolean | null>(null);
-  const settings = PrintAgentService.getSettings();
+  const [printingReady, setPrintingReady] = useState<boolean | null>(null);
+  const settings = printingService.getSettings();
 
   useEffect(() => {
-    PrintAgentService.checkStatus().then((status) => {
-      setAgentOnline(status.status === 'online');
+    printingService.loadSettings().catch(() => {});
+    printingService.checkStatus().then(async (status) => {
+      setPrintingReady(status.status === 'online');
       if (autoPrint && status.status === 'online') {
-        handleDirectPrint();
+        await handleDirectPrint();
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -32,32 +33,31 @@ export function ThermalReceiptPreview({ data, onClose, autoPrint = false }: Ther
 
   const handleDirectPrint = async () => {
     setIsPrinting(true);
-    try {
-      const res = await PrintAgentService.printReceipt(data);
+    const res = await printingService.printReceipt(data);
+    if (res.success) {
       toast.success(res.message || t('Receipt printed successfully!'));
       if (onClose) setTimeout(onClose, 1200);
-    } catch (err: any) {
-      toast.error(err.message || t('Failed to print receipt.'));
-    } finally {
-      setIsPrinting(false);
+    } else {
+      toast.error(res.error || t('Failed to print receipt.'));
     }
+    setIsPrinting(false);
   };
 
   return (
     <div className="flex flex-col items-center gap-4 p-4">
-      {/* Header controls & Agent Status */}
+      {/* Header controls & printing availability */}
       <div className="flex w-full max-w-sm items-center justify-between">
         <div className="flex items-center gap-2">
-          {agentOnline === true && (
+          {printingReady === true && (
             <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary">
               <CheckCircle2 className="text-primary me-1 h-3 w-3" />
-              {t('Print Agent Online')}
+              {t('Printing is ready')}
             </Badge>
           )}
-          {agentOnline === false && (
+          {printingReady === false && (
             <Badge variant="destructive">
               <XCircle className="me-1 h-3 w-3" />
-              {t('Print Agent Offline')}
+              {t('Printing is unavailable')}
             </Badge>
           )}
         </div>

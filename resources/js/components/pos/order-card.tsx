@@ -5,7 +5,7 @@ import { isPriceWithTax } from '@/constants/pos-options';
 import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import PrintAgentService from '@/services/print-agent-service';
+import printingService from '@/services/printing-service';
 import { Order } from '@/types/models/order';
 import { formatCurrency } from '@/utils/format';
 import { Eye, Loader2, Printer, Unlock } from 'lucide-react';
@@ -45,20 +45,20 @@ export default function OrderCard({ order, onOpenChange }: Props) {
     try {
       const productsList = (await ordersApi.getProducts(order.id)) || [];
 
-      // Canonical receipt path — Order → FormattedReceiptData mapping and
-      // printer configuration live in PrintAgentService (Subul branding).
+      // Canonical receipt path — Order → FormattedReceiptData mapping lives here,
+      // while the terminal's printer configuration is resolved by the backend.
       // Items mirror the "Show Price With Tax" option like the cart does.
       const receiptOrder = { ...order, products: productsList } as unknown as Order;
-      const result = await PrintAgentService.printOrderReceipt(receiptOrder, 'sale', {}, isPriceWithTax(options));
+      const result = await printingService.printOrderReceipt(receiptOrder, 'sale', {}, isPriceWithTax(options));
 
       if (result.success) {
         toast.success(t('Receipt sent to thermal printer.'));
       } else {
-        toast.error(result.error || t('Failed to send print job to Print Agent.'));
+        toast.error(result.error || t('Failed to send the print job.'));
       }
     } catch (error: any) {
       console.error('Direct print failed, showing browser fallback:', error);
-      toast.error(error?.message || t('Failed to send print job to Print Agent.'));
+      toast.error(error?.message || t('Failed to send the print job.'));
     } finally {
       setIsDirectPrinting(false);
     }

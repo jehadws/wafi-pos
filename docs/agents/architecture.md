@@ -33,8 +33,9 @@ The fastest way to break this app is to change one of these and miss its sibling
 
 | You change… | You must check… |
 |---|---|
-| An entity in `types/models/` | cart-engine, order services (`order-quantities`, `order-finalize`, `order-submission`, `express-checkout`), `print-agent-service`, `pos-store-types.ts`, and the tests. The same-named legacy global in `module.d.ts` does **not** update with it. |
-| How prices display | All four surfaces must agree: catalog tiles/unit pickers (`resolveUnitDisplayPrice`), cart lines (cart-engine), order totals (`sumProductsTotals` / `refreshCart`), printed receipts (`printOrderReceipt` → `print-agent-service`). |
+| An entity in `types/models/` | cart-engine, order services (`order-quantities`, `order-finalize`, `order-submission`, `express-checkout`), `printing-service`, `pos-store-types.ts`, and the tests. The same-named legacy global in `module.d.ts` does **not** update with it. |
+| How prices display | All four surfaces must agree: catalog tiles/unit pickers (`resolveUnitDisplayPrice`), cart lines (cart-engine), order totals (`sumProductsTotals` / `refreshCart`), printed receipts (`printOrderReceipt` → `printing-service`). |
+| A printer setting | `PrintingSettings::SCHEMA` (backend) + `PrinterSettings` (`services/printing-service.ts`) + the settings dialog + every read site — and the matching `app/Settings/pos/*.php` tab when the option is also an admin setting. |
 | A POS option | Backend tab (`app/Settings/pos/*.php`) + `getPayload()` in `PosSettings.php` + `POS_OPTION_KEYS` + settings UI (`components/settings/pos/`) + every read site. |
 | A store slice | `pos-store-types.ts` (shared `POSStore` type), the facade's orchestration, and that slice's test. |
 | A CRUD's `getColumns()` / `setActions()` / query filters | The table contract tests (`CrudTableConfigContractTest`, `CrudEntryActionsContractTest`) and the affected page(s) — the generic engine renders whatever the CUD serializes. |

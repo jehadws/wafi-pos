@@ -10,7 +10,7 @@
  */
 
 import { i18n } from '@/lib/i18n';
-import PrintAgentService, { type PrintResult } from '@/services/print-agent-service';
+import printingService, { type PrintResult } from '@/services/printing-service';
 import { Order } from '@/types/models/order';
 import { OrderProduct } from '@/types/models/order-product';
 import { toast } from 'sonner';
@@ -93,12 +93,14 @@ export async function submitAndFinalizeOrder({
 
     const hasCashPayment = (orderData.payments ?? []).some((p: any) => p.identifier === 'cash-payment');
 
-    const printerSettings = PrintAgentService.getSettings();
+    // Warms the terminal settings (and tells us whether to kick the drawer);
+    // a failure here must not block the sale, so fall back to the cache.
+    const printerSettings = await printingService.loadSettings().catch(() => printingService.getSettings());
 
     /**
      * Canonical auto-print path — honours the printingEnabledFor /
      * printingDocument POS options and reuses the Order → receipt mapping
-     * from PrintAgentService. A successful receipt print carries its own
+     * from PrintingService. A successful receipt print carries its own
      * cash-drawer kick (ESC p) when "Open Cash Drawer" is enabled.
      */
     let printResult: PrintResult | false = false;
@@ -109,7 +111,7 @@ export async function submitAndFinalizeOrder({
     if (printResult === false) {
       // Printing disabled by policy — still pulse the drawer for cash sales.
       if (printerSettings.openCashDrawer && hasCashPayment) {
-        await PrintAgentService.openCashDrawer();
+        await printingService.openCashDrawer();
       }
     } else if (!printResult.success) {
       toast.error(
@@ -122,7 +124,7 @@ export async function submitAndFinalizeOrder({
           action: {
             label: t('Retry Print'),
             onClick: () => {
-              PrintAgentService.printOrderReceipt(receiptOrder, 'sale', {}, priceWithTax).then((retryRes) => {
+              printingService.printOrderReceipt(receiptOrder, 'sale', {}, priceWithTax).then((retryRes) => {
                 if (retryRes.success) {
                   toast.success(t('Receipt printed successfully.'));
                 } else {
@@ -136,7 +138,7 @@ export async function submitAndFinalizeOrder({
 
       // The receipt (which carries the drawer kick) failed — pulse the drawer directly.
       if (printerSettings.openCashDrawer && hasCashPayment) {
-        PrintAgentService.openCashDrawer();
+        await printingService.openCashDrawer();
       }
     }
 

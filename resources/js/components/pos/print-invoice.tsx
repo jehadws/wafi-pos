@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import Settings from '@/lib/settings';
-import PrintAgentService, { FormattedReceiptData } from '@/services/print-agent-service';
+import printingService, { FormattedReceiptData } from '@/services/printing-service';
 import { formatCurrency } from '@/utils/format';
 import { Eye, Loader2, Printer, Settings2 } from 'lucide-react';
 import { useState } from 'react';
@@ -90,17 +90,16 @@ export function SimplePrintInvoice({ invoice }: SimplePrintInvoiceProps) {
     footer: receiptFooter || t('Thank you for your business!'),
   };
 
-  // Direct ESC/POS Print via Local Windows Print Agent
+  // Direct thermal print through the Subul printing API
   const handleDirectPrint = async () => {
     setIsPrinting(true);
-    try {
-      const res = await PrintAgentService.printReceipt(receiptData);
+    const res = await printingService.printReceipt(receiptData);
+    if (res.success) {
       toast.success(res.message || t('Receipt printed directly on thermal printer.'));
-    } catch (err: any) {
-      toast.error(err.message || t('Print Agent error. Please check printer connection.'));
-    } finally {
-      setIsPrinting(false);
+    } else {
+      toast.error(res.error || t('Printing failed. Please check the printer connection.'));
     }
+    setIsPrinting(false);
   };
 
   return (

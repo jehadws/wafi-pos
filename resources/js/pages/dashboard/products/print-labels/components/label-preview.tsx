@@ -1,29 +1,23 @@
 import { useTranslation } from '@/lib/i18n';
-import { LabelSettings } from '../page';
-
-interface SelectedProduct extends ProductSearchResult {
-  times: number;
-  selectedUnitQuantity: UnitQuantity | null;
-}
+import { buildLabelItems, getStoreName, LabelSettings, SelectedProduct } from '../page';
+import { layoutTsplLabel, PRINT_DOTS_PER_MM } from '../label-layout';
 
 interface LabelPreviewProps {
   products: SelectedProduct[];
   settings: LabelSettings;
 }
 
+// Preview scale: printer dots -> css pixels, so a 76 mm sticker renders wider than a 40 mm one.
+const PX_PER_DOT = 0.6;
+const MONOSPACE_ADVANCE = 0.6;
+const BARCODE_TEXT_DOTS = 24;
+
 export function LabelPreview({ products, settings }: LabelPreviewProps) {
   const { t } = useTranslation();
-  const generateLabels = () => {
-    const labels = [];
-    for (const product of products) {
-      for (let i = 0; i < product.times; i++) {
-        labels.push(product);
-      }
-    }
-    return labels;
-  };
+  const storeName = getStoreName();
 
-  const labels = generateLabels();
+  const items = buildLabelItems(products, settings, storeName);
+  const labels = items.flatMap((item) => Array.from({ length: item.copies }, () => item));
 
   if (labels.length === 0) {
     return (
@@ -36,68 +30,81 @@ export function LabelPreview({ products, settings }: LabelPreviewProps) {
     );
   }
 
+  const layoutOptions = {
+    widthMm: settings.widthMm,
+    heightMm: settings.heightMm,
+    barcodeHeightDots: Math.round(settings.barcodeHeightMm * PRINT_DOTS_PER_MM),
+    showStoreName: settings.showStoreName,
+    showPrice: settings.showProductPrice,
+    showSku: false,
+    showBarcodeText: settings.showBarcodeText,
+  };
+
   return (
-    <div
-      className="bg-muted flex flex-1 flex-col p-4"
-      style={{
-        padding: `${settings.verticalPadding}px ${settings.horizontalPadding}px`,
-      }}
-    >
+    <div className="bg-muted flex-1 overflow-y-auto p-4">
+      <p className="mb-3 text-sm text-gray-600">
+        {t('Preview')} — {settings.widthMm} × {settings.heightMm} mm · {labels.length} {t('labels')}
+      </p>
       <div
-        className="grid gap-2"
+        className="grid gap-3"
         style={{
-          gridTemplateColumns: `repeat(${settings.itemsPerRow}, 1fr)`,
+          gridTemplateColumns: `repeat(${settings.itemsPerRow}, ${settings.widthMm * PRINT_DOTS_PER_MM * PX_PER_DOT}px)`,
+          padding: `${settings.verticalPadding}px ${settings.horizontalPadding}px`,
         }}
       >
-        {labels.map((product, index) => (
-          <div
-            key={`${product.id}-${index}`}
-            className="border border-gray-300 bg-white p-3"
-            style={{
-              minHeight: '120px',
-            }}
-          >
-            {settings.showStoreName && <div className="mb-2 text-center text-sm font-bold text-black">ALWAFI</div>}
+        {labels.map((item, index) => {
+          const layout = layoutTsplLabel(item, layoutOptions);
 
-            <div className="space-y-1 text-xs text-black">
-              {settings.showProductName && (
-                <div className="flex justify-between">
-                  <span className="font-medium">{t('Product')}</span>
-                  <span className="text-end">{product.name}</span>
-                </div>
-              )}
-
-              <div className="flex justify-between">
-                <span className="font-medium">{t('Unit')}</span>
-                <span className="text-end">{product.selectedUnitQuantity?.unit.name}</span>
+          return (
+            <div key={`${item.barcode}-${index}`} className="flex flex-col items-center gap-1">
+              <div
+                dir="ltr"
+                className="relative overflow-hidden border border-gray-300 bg-white"
+                style={{ width: `${layout.widthDots * PX_PER_DOT}px`, height: `${layout.heightDots * PX_PER_DOT}px` }}
+              >
+                {layout.rows.map((row, rowIndex) =>
+                  row.type === 'barcode' ? (
+                    <div
+                      key={rowIndex}
+                      className="absolute flex flex-col items-center justify-center"
+                      style={{
+                        left: `${row.x * PX_PER_DOT}px`,
+                        top: `${row.y * PX_PER_DOT}px`,
+                        width: `${row.width * PX_PER_DOT}px`,
+                      }}
+                    >
+                      <img
+                        src={`/storage/products/barcodes/${row.code}.png`}
+                        alt={row.code}
+                        className="object-contain"
+                        style={{ width: `${row.width * PX_PER_DOT}px`, height: `${row.height * PX_PER_DOT}px` }}
+                      />
+                      {row.readable && (
+                        <span className="leading-none text-black" style={{ fontSize: `${BARCODE_TEXT_DOTS * PX_PER_DOT * 0.8}px` }}>
+                          {row.code}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <div
+                      key={rowIndex}
+                      className="font-mono absolute overflow-hidden text-center leading-none text-black"
+                      style={{
+                        left: `${row.x * PX_PER_DOT}px`,
+                        top: `${row.y * PX_PER_DOT}px`,
+                        width: `${row.width * PX_PER_DOT}px`,
+                        fontSize: `${Math.min(row.height * PX_PER_DOT * 0.82, (row.width * PX_PER_DOT) / (row.text.length * MONOSPACE_ADVANCE))}px`,
+                      }}
+                    >
+                      {row.text}
+                    </div>
+                  ),
+                )}
               </div>
-
-              <div className="flex justify-between">
-                <span className="font-medium">{t('Barcode')}</span>
-                <span className="text-end">{product.selectedUnitQuantity?.barcode}</span>
-              </div>
-
-              {settings.showProductPrice && (
-                <div className="flex justify-between">
-                  <span className="font-medium">{t('Price')}</span>
-                  <span className="text-end">
-                    {t('ly')}
-                    {product.selectedUnitQuantity?.sale_price.toFixed(2)}
-                  </span>
-                </div>
-              )}
+              {layout.overflow && <p className="text-xs text-red-600">{t('Content may not fit this label size')}</p>}
             </div>
-
-            <div className="mt-2 flex w-full flex-col items-center justify-center">
-              <img
-                style={{ height: settings.barcodeHeight + 'px' }}
-                src={`/storage/products/barcodes/${product.selectedUnitQuantity?.barcode}.png`}
-                alt={product.selectedUnitQuantity?.barcode}
-              />
-              <div className="mt-1 text-center text-xs text-gray-500">{product.selectedUnitQuantity?.barcode}</div>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

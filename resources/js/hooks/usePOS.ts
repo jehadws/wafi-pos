@@ -31,8 +31,8 @@ import { computeOrderTaxes, computeOrderTaxGroup, sumProductsTotals } from '@/se
 import { defineQuantities } from '@/services/order-quantities';
 import { executeOrderSubmission } from '@/services/order-submission';
 import { pickDefaultOrderType } from '@/services/pos-defaults';
-import type { PrintResult } from '@/services/print-agent-service';
-import printAgentService from '@/services/print-agent-service';
+import type { PrintResult } from '@/services/printing-service';
+import printingService from '@/services/printing-service';
 
 // Slices
 import { createCartSlice, createCustomerSlice, createPaymentsSlice, createPosDialogsSlice, createSessionSlice } from '@/hooks/pos';
@@ -557,13 +557,19 @@ export const usePOS = create<POSStore>((set, get) => ({
   },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Receipt printing (stub — wired to print-agent-service in Step 3)
+  // Receipt printing
   // ─────────────────────────────────────────────────────────────────────────
 
   printOrderReceipt: (order: Order, mode?: string): Promise<PrintResult | false> => {
     const { options } = get();
 
     if (options[POS_OPTION_KEYS.printingEnabledFor] === 'disabled') {
+      return Promise.resolve(false);
+    }
+
+    // "Automatic Printing" off skips the after-sale print; the manual print
+    // buttons call the service directly, so they keep working.
+    if (options[POS_OPTION_KEYS.printingAuto] === 'no') {
       return Promise.resolve(false);
     }
 
@@ -581,26 +587,19 @@ export const usePOS = create<POSStore>((set, get) => ({
 
     // Printing gateway — NexoPOS (libraries/print.ts:48) routes 'default'
     // to web printing and anything else to a custom, module-registered
-    // gateway. This frontend has no module gateway handlers yet: surface
-    // the mismatch and fall back to the default web printing instead of
-    // silently ignoring the option.
+    // gateway. Thermal printing is the only gateway this frontend
+    // implements, so anything else falls back to it.
     const printingGateway = (options[POS_OPTION_KEYS.printingGateway] as string) || 'default';
     if (printingGateway !== 'default') {
-      console.warn(`[print] Unsupported printing gateway "${printingGateway}" — falling back to default web printing.`);
+      console.warn(`[print] Unsupported printing gateway "${printingGateway}" — printing on the configured thermal printer.`);
     }
 
-    // Delegate to PrintAgentService — maps Order → FormattedReceiptData internally.
+    // PrintingService maps Order → FormattedReceiptData and lets the backend
+    // apply the terminal's stored printer configuration.
     // Resolves with the print result so callers can surface retry affordances;
     // never rejects (print failures resolve with { success: false }).
     // The receipt mirrors the "Show Price With Tax" option so printed items
     // match what the cashier saw in the cart.
-    return printAgentService.printOrderReceipt(
-      order,
-      resolvedMode,
-      {
-        autoPrintOnSale: options[POS_OPTION_KEYS.printingAuto] ?? true,
-      },
-      isPriceWithTax(options),
-    );
+    return printingService.printOrderReceipt(order, resolvedMode, {}, isPriceWithTax(options));
   },
 }));

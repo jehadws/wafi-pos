@@ -1,5 +1,5 @@
 import { buildReceiptOrder, submitAndFinalizeOrder } from '@/services/order-finalize';
-import PrintAgentService from '@/services/print-agent-service';
+import printingService from '@/services/printing-service';
 import { Order } from '@/types/models/order';
 import { toast } from 'sonner';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -20,9 +20,10 @@ vi.mock('@/lib/i18n', () => ({
   },
 }));
 
-vi.mock('@/services/print-agent-service', () => ({
+vi.mock('@/services/printing-service', () => ({
   default: {
     getSettings: vi.fn(() => ({ openCashDrawer: true })),
+    loadSettings: vi.fn(() => Promise.resolve({ openCashDrawer: true })),
     openCashDrawer: vi.fn(() => Promise.resolve()),
     printOrderReceipt: vi.fn(() => Promise.resolve({ success: true })),
   },
@@ -58,8 +59,9 @@ const baseParams = (overrides: Record<string, any> = {}) => ({
 describe('services/order-finalize.ts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (PrintAgentService.getSettings as any).mockReturnValue({ openCashDrawer: true });
-    (PrintAgentService.printOrderReceipt as any).mockImplementation(() => Promise.resolve({ success: true }));
+    (printingService.getSettings as any).mockReturnValue({ openCashDrawer: true });
+    (printingService.loadSettings as any).mockResolvedValue({ openCashDrawer: true });
+    (printingService.printOrderReceipt as any).mockImplementation(() => Promise.resolve({ success: true }));
   });
 
   describe('buildReceiptOrder', () => {
@@ -103,7 +105,7 @@ describe('services/order-finalize.ts', () => {
 
       expect(p.submitOrder).toHaveBeenCalledWith(p.orderData);
       expect(p.printOrderReceipt).toHaveBeenCalledTimes(1);
-      expect(PrintAgentService.openCashDrawer).not.toHaveBeenCalled();
+      expect(printingService.openCashDrawer).not.toHaveBeenCalled();
       expect(p.resetCart).toHaveBeenCalledTimes(1);
       expect(p.onSuccess).toHaveBeenCalledTimes(1);
       expect(toast.success).toHaveBeenCalledWith('The operation was successful.');
@@ -118,7 +120,7 @@ describe('services/order-finalize.ts', () => {
       await submitAndFinalizeOrder(p);
 
       expect(p.printOrderReceipt).not.toHaveBeenCalled();
-      expect(PrintAgentService.openCashDrawer).toHaveBeenCalledTimes(1);
+      expect(printingService.openCashDrawer).toHaveBeenCalledTimes(1);
       expect(p.resetCart).toHaveBeenCalledTimes(1);
     });
 
@@ -130,7 +132,7 @@ describe('services/order-finalize.ts', () => {
 
       await submitAndFinalizeOrder(p);
 
-      expect(PrintAgentService.openCashDrawer).not.toHaveBeenCalled();
+      expect(printingService.openCashDrawer).not.toHaveBeenCalled();
       expect(p.resetCart).toHaveBeenCalledTimes(1);
     });
 
@@ -141,10 +143,23 @@ describe('services/order-finalize.ts', () => {
 
       await submitAndFinalizeOrder(p);
 
-      expect(PrintAgentService.openCashDrawer).toHaveBeenCalledTimes(1);
+      expect(printingService.openCashDrawer).toHaveBeenCalledTimes(1);
       expect(toast.error).not.toHaveBeenCalled();
       expect(p.resetCart).toHaveBeenCalledTimes(1);
       expect(p.onSuccess).toHaveBeenCalledTimes(1);
+    });
+
+    it('finalizes the sale when the stored printer settings cannot be read', async () => {
+      (printingService.loadSettings as any).mockRejectedValueOnce(new Error('Network down'));
+      const p = baseParams({
+        printOrderReceipt: vi.fn(() => Promise.resolve(false)),
+      });
+
+      await submitAndFinalizeOrder(p);
+
+      expect(p.resetCart).toHaveBeenCalledTimes(1);
+      expect(p.onSuccess).toHaveBeenCalledTimes(1);
+      expect(toast.error).not.toHaveBeenCalled();
     });
 
     it('surfaces a retry toast when printing fails and still finalizes', async () => {
@@ -160,7 +175,7 @@ describe('services/order-finalize.ts', () => {
           action: expect.objectContaining({ onClick: expect.any(Function) }),
         }),
       );
-      expect(PrintAgentService.openCashDrawer).toHaveBeenCalledTimes(1);
+      expect(printingService.openCashDrawer).toHaveBeenCalledTimes(1);
       expect(p.resetCart).toHaveBeenCalledTimes(1);
       expect(p.onSuccess).toHaveBeenCalledTimes(1);
     });
@@ -176,7 +191,7 @@ describe('services/order-finalize.ts', () => {
     });
 
     it('retry action reprints the receipt and reports success', async () => {
-      (PrintAgentService.printOrderReceipt as any).mockResolvedValue({ success: true });
+      (printingService.printOrderReceipt as any).mockResolvedValue({ success: true });
       const p = baseParams({
         printOrderReceipt: vi.fn(() => Promise.resolve({ success: false, error: 'boom' })),
       });
@@ -188,7 +203,7 @@ describe('services/order-finalize.ts', () => {
 
       await errorCall[1].action.onClick();
 
-      expect(PrintAgentService.printOrderReceipt).toHaveBeenCalledTimes(1);
+      expect(printingService.printOrderReceipt).toHaveBeenCalledTimes(1);
       expect(toast.success).toHaveBeenCalledWith('Receipt printed successfully.');
     });
 

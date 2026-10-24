@@ -22,6 +22,7 @@ use App\Services\MenuService;
 use App\Services\NotificationService;
 use App\Services\Options;
 use App\Services\OrdersService;
+use App\Services\Printing\ArabicTextFormatter;
 use App\Services\ProcurementService;
 use App\Services\ProductCategoryService;
 use App\Services\ProductService;
@@ -122,6 +123,11 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton( BarcodeService::class, function () {
             return new BarcodeService;
+        } );
+
+        // Building the Arabic form table walks ~700 code points: share one formatter per request.
+        $this->app->singleton( ArabicTextFormatter::class, function () {
+            return new ArabicTextFormatter;
         } );
 
         $this->app->singleton( ResetService::class, function () {
