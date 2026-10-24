@@ -135,7 +135,10 @@ class RawPrinter {
      */
     static getPrinters() {
         return new Promise((resolve, reject) => {
-            const cmd = `powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-CimInstance Win32_Printer | Select-Object Name, PortName, DriverName, Default, PrinterStatus, WorkOffline | ConvertTo-Json -Compress"`;
+            // DataFile comes from the driver and is the only reliable hint at the printer's
+            // command language: Seagull/TSC label drivers ship "tscED_*.ini".
+            const script = `$d = @{}; Get-PrinterDriver | ForEach-Object { $d[$_.Name] = $_.DataFile }; Get-CimInstance Win32_Printer | Select-Object Name, PortName, DriverName, Default, PrinterStatus, WorkOffline, @{n='DataFile';e={$d[$_.DriverName]}} | ConvertTo-Json -Compress`;
+            const cmd = `powershell -NoProfile -ExecutionPolicy Bypass -Command "${script}"`;
             
             exec(cmd, { timeout: 8000, windowsHide: true }, (error, stdout, stderr) => {
                 if (error) {
@@ -144,7 +147,8 @@ class RawPrinter {
 
                 try {
                     const trimmed = stdout.trim();
-                    const list = trimmed ? (Array.isArray(JSON.parse(trimmed)) ? JSON.parse(trimmed) : [JSON.parse(trimmed)]) : [];
+                    const parsed = trimmed ? JSON.parse(trimmed) : [];
+                    const list = Array.isArray(parsed) ? parsed : [parsed];
                     
                     const formatted = list.map(p => ({
                         name: p.Name,
@@ -153,6 +157,7 @@ class RawPrinter {
                         isDefault: Boolean(p.Default),
                         isOffline: Boolean(p.WorkOffline),
                         status: p.PrinterStatus,
+                        labelProtocol: /^tsc/i.test(p.DataFile ? path.basename(String(p.DataFile)) : '') ? 'tspl' : 'escpos',
                         type: 'windows'
                     }));
 

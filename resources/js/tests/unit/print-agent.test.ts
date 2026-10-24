@@ -108,8 +108,28 @@ describe('PrintAgentService', () => {
   });
 
   describe('printReceipt', () => {
-    it('returns success: false when no printer is configured', async () => {
+    it('prints to the Windows default printer when no printer is configured', async () => {
       service.saveSettings({ receiptPrinter: '' });
+      mockedAxios.get.mockResolvedValueOnce({
+        data: {
+          printers: [
+            { name: 'XP-80C', isDefault: false },
+            { name: 'Xprinter XP-D365B', isDefault: true },
+          ],
+        },
+      });
+      mockedAxios.post.mockResolvedValueOnce({ data: { success: true } });
+
+      const result = await service.printReceipt({ orderCode: 'ORD-1', total: '10.00', items: [] });
+
+      expect(result.success).toBe(true);
+      expect((mockedAxios.post.mock.calls[0][1] as any).printer).toBe('Xprinter XP-D365B');
+    });
+
+    it('returns success: false when no printer is configured and Windows has no default', async () => {
+      service.saveSettings({ receiptPrinter: '' });
+      mockedAxios.get.mockResolvedValueOnce({ data: { printers: [{ name: 'XP-80C', isDefault: false }] } });
+
       const result = await service.printReceipt({
         orderCode: 'ORD-123',
         total: '100.00',
@@ -117,7 +137,18 @@ describe('PrintAgentService', () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('No receipt printer selected');
+      expect(result.error).toContain('No default printer');
+      expect(mockedAxios.post).not.toHaveBeenCalled();
+    });
+
+    it('uses the configured printer without looking up the Windows default', async () => {
+      service.saveSettings({ receiptPrinter: 'XP-80C' });
+      mockedAxios.post.mockResolvedValueOnce({ data: { success: true } });
+
+      await service.printReceipt({ orderCode: 'ORD-2', total: '10.00', items: [] });
+
+      expect(mockedAxios.get).not.toHaveBeenCalled();
+      expect((mockedAxios.post.mock.calls[0][1] as any).printer).toBe('XP-80C');
     });
 
     it('handles agent timeout gracefully without throwing', async () => {

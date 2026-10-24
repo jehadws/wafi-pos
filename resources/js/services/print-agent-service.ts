@@ -15,6 +15,7 @@ export interface WindowsPrinter {
   isDefault: boolean;
   isOffline: boolean;
   status: number;
+  labelProtocol?: 'auto' | 'escpos' | 'tspl';
 }
 
 export interface PrintAgentStatus {
@@ -38,11 +39,12 @@ export interface PrinterSettings {
   copies: number;
   labelWidthMm: number;
   labelHeightMm: number;
-  labelProtocol: 'escpos' | 'tspl';
+  labelProtocol: 'auto' | 'escpos' | 'tspl';
   barcodeHeight: number;
   showStoreNameOnLabel: boolean;
   showPriceOnLabel: boolean;
   showSkuOnLabel: boolean;
+  showBarcodeTextOnLabel?: boolean;
   lineSpacing?: number | null;
 }
 
@@ -99,11 +101,13 @@ export interface PrintResult {
 
 const SETTINGS_KEY = 'pos_direct_printer_settings';
 const DEFAULT_ENCODING = 'cp864';
+const NO_DEFAULT_PRINTER_ERROR = 'No default printer is set in Windows. Set one in Settings > Bluetooth & devices > Printers & scanners.';
 
+// An empty receiptPrinter / labelPrinter means "use the current Windows default printer".
 const DEFAULT_SETTINGS: PrinterSettings = {
   agentUrl: 'http://127.0.0.1:8189',
-  receiptPrinter: 'XP-80C',
-  labelPrinter: 'XP-80C',
+  receiptPrinter: '',
+  labelPrinter: '',
   lineWidth: 42, // Safe 76mm 203 DPI width
   encoding: DEFAULT_ENCODING,
   cutPaper: true,
@@ -113,7 +117,7 @@ const DEFAULT_SETTINGS: PrinterSettings = {
   copies: 1,
   labelWidthMm: 50,
   labelHeightMm: 30,
-  labelProtocol: 'escpos',
+  labelProtocol: 'auto',
   barcodeHeight: 45,
   showStoreNameOnLabel: true,
   showPriceOnLabel: true,
@@ -125,6 +129,9 @@ export class PrintAgentService {
   private settings: PrinterSettings;
   private cachedStatus: { status: PrintAgentStatus; timestamp: number } | null = null;
   private static STATUS_CACHE_TTL_MS = 3000;
+  private cachedDefaultPrinter: { name: string; timestamp: number } | null = null;
+  // The agent's printer lookup takes ~1s (PowerShell), so don't repeat it on every print.
+  private static DEFAULT_PRINTER_CACHE_TTL_MS = 30000;
 
   constructor() {
     this.settings = this.loadSettings();
@@ -137,7 +144,10 @@ export class PrintAgentService {
     try {
       const saved = localStorage.getItem(SETTINGS_KEY);
       if (saved) {
-        return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+        const parsed = JSON.parse(saved);
+        // Older builds persisted 'escpos' as the default, which made TSPL-only label printers print nothing.
+        if (parsed.labelProtocol === 'escpos') delete parsed.labelProtocol;
+        return { ...DEFAULT_SETTINGS, ...parsed };
       }
     } catch {
       // fallback
@@ -199,10 +209,40 @@ export class PrintAgentService {
   }
 
   /**
+   * Returns the configured printer, or the current Windows default when none is configured.
+   * Resolves to '' when Windows has no default printer.
+   */
+  public async resolvePrinter(configured?: string): Promise<string> {
+    if (configured) return configured;
+
+    const now = Date.now();
+    if (this.cachedDefaultPrinter && now - this.cachedDefaultPrinter.timestamp < PrintAgentService.DEFAULT_PRINTER_CACHE_TTL_MS) {
+      return this.cachedDefaultPrinter.name;
+    }
+
+    const res = await axios.get(`${this.settings.agentUrl}/printers`, { timeout: 5000 });
+    const printers: WindowsPrinter[] = Array.isArray(res.data?.printers) ? res.data.printers : [];
+    const defaultPrinter = printers.find((p) => p.isDefault);
+    if (!defaultPrinter) return '';
+
+    this.cachedDefaultPrinter = { name: defaultPrinter.name, timestamp: now };
+    return defaultPrinter.name;
+  }
+
+  /**
    * Send test receipt or test label
    */
   public async testPrinter(printerName?: string, type: 'receipt' | 'label' = 'receipt', sample?: 'arabic' | 'english' | 'mixed'): Promise<any> {
-    const targetPrinter = printerName || (type === 'label' ? this.settings.labelPrinter : this.settings.receiptPrinter);
+    let targetPrinter: string;
+    try {
+      targetPrinter = await this.resolvePrinter(printerName || (type === 'label' ? this.settings.labelPrinter : this.settings.receiptPrinter));
+    } catch (err: any) {
+      throw new Error(this.formatErrorMessage(err));
+    }
+    if (!targetPrinter) {
+      throw new Error(NO_DEFAULT_PRINTER_ERROR);
+    }
+
     try {
       const res = await axios.post(
         `${this.settings.agentUrl}/test`,
@@ -229,30 +269,28 @@ export class PrintAgentService {
    * Print receipt directly to thermal printer
    */
   public async printReceipt(receiptData: FormattedReceiptData, options: Partial<PrinterSettings> = {}): Promise<PrintResult> {
-    const targetPrinter = options.receiptPrinter || this.settings.receiptPrinter;
-    if (!targetPrinter) {
-      return {
-        success: false,
-        error: 'No receipt printer selected. Please configure your printer in POS Settings.',
-      };
-    }
-
     const jobId = `rcpt_${receiptData.orderCode || Date.now()}_${Date.now()}`;
-    const payload = {
-      printer: targetPrinter,
-      data: receiptData,
-      config: {
-        lineWidth: options.lineWidth || this.settings.lineWidth || 42,
-        encoding: options.encoding || this.settings.encoding || DEFAULT_ENCODING,
-        cutPaper: options.cutPaper ?? this.settings.cutPaper ?? true,
-        openCashDrawer: options.openCashDrawer ?? this.settings.openCashDrawer ?? false,
-        showTaxBreakdown: options.showTaxBreakdown ?? this.settings.showTaxBreakdown ?? true,
-        copies: options.copies || this.settings.copies || 1,
-      },
-      jobId,
-    };
 
     try {
+      const targetPrinter = await this.resolvePrinter(options.receiptPrinter || this.settings.receiptPrinter);
+      if (!targetPrinter) {
+        return { success: false, jobId, error: NO_DEFAULT_PRINTER_ERROR };
+      }
+
+      const payload = {
+        printer: targetPrinter,
+        data: receiptData,
+        config: {
+          lineWidth: options.lineWidth || this.settings.lineWidth || 42,
+          encoding: options.encoding || this.settings.encoding || DEFAULT_ENCODING,
+          cutPaper: options.cutPaper ?? this.settings.cutPaper ?? true,
+          openCashDrawer: options.openCashDrawer ?? this.settings.openCashDrawer ?? false,
+          showTaxBreakdown: options.showTaxBreakdown ?? this.settings.showTaxBreakdown ?? true,
+          copies: options.copies || this.settings.copies || 1,
+        },
+        jobId,
+      };
+
       const res = await axios.post(`${this.settings.agentUrl}/print/receipt`, payload, { timeout: 5000 });
       return {
         success: true,
@@ -276,15 +314,12 @@ export class PrintAgentService {
    * Uses the receipt printer, which is typically wired to the drawer.
    */
   public async openCashDrawer(printerName?: string): Promise<PrintResult> {
-    const targetPrinter = printerName || this.settings.receiptPrinter;
-    if (!targetPrinter) {
-      return {
-        success: false,
-        error: 'No receipt printer selected. Please configure your printer in POS Settings.',
-      };
-    }
-
     try {
+      const targetPrinter = await this.resolvePrinter(printerName || this.settings.receiptPrinter);
+      if (!targetPrinter) {
+        return { success: false, error: NO_DEFAULT_PRINTER_ERROR };
+      }
+
       const res = await axios.post(`${this.settings.agentUrl}/drawer/open`, { printer: targetPrinter }, { timeout: 4000 });
       return {
         success: true,
@@ -303,34 +338,33 @@ export class PrintAgentService {
    * Print product barcode labels directly to label printer
    */
   public async printLabels(labels: LabelItemData[], options: Partial<PrinterSettings> = {}): Promise<PrintResult> {
-    const targetPrinter = options.labelPrinter || this.settings.labelPrinter;
-    if (!targetPrinter) {
-      return {
-        success: false,
-        error: 'No label printer selected. Please configure your label printer in POS Settings.',
-      };
-    }
-
     const jobId = `lbl_${Date.now()}`;
-    const payload = {
-      printer: targetPrinter,
-      labels,
-      config: {
-        widthMm: options.labelWidthMm || this.settings.labelWidthMm || 50,
-        heightMm: options.labelHeightMm || this.settings.labelHeightMm || 30,
-        lineWidth: options.lineWidth || this.settings.lineWidth || 36,
-        encoding: options.encoding || this.settings.encoding || DEFAULT_ENCODING,
-        protocol: options.labelProtocol || this.settings.labelProtocol || 'escpos',
-        barcodeHeight: options.barcodeHeight || this.settings.barcodeHeight || 45,
-        showStoreName: options.showStoreNameOnLabel ?? this.settings.showStoreNameOnLabel ?? true,
-        showPrice: options.showPriceOnLabel ?? this.settings.showPriceOnLabel ?? true,
-        showSku: options.showSkuOnLabel ?? this.settings.showSkuOnLabel ?? false,
-        copies: options.copies || this.settings.copies || 1,
-      },
-      jobId,
-    };
 
     try {
+      const targetPrinter = await this.resolvePrinter(options.labelPrinter || this.settings.labelPrinter);
+      if (!targetPrinter) {
+        return { success: false, jobId, error: NO_DEFAULT_PRINTER_ERROR };
+      }
+
+      const payload = {
+        printer: targetPrinter,
+        labels,
+        config: {
+          widthMm: options.labelWidthMm || this.settings.labelWidthMm || 50,
+          heightMm: options.labelHeightMm || this.settings.labelHeightMm || 30,
+          lineWidth: options.lineWidth || this.settings.lineWidth || 36,
+          encoding: options.encoding || this.settings.encoding || DEFAULT_ENCODING,
+          protocol: options.labelProtocol || this.settings.labelProtocol || 'auto',
+          barcodeHeight: options.barcodeHeight || this.settings.barcodeHeight || 45,
+          showStoreName: options.showStoreNameOnLabel ?? this.settings.showStoreNameOnLabel ?? true,
+          showPrice: options.showPriceOnLabel ?? this.settings.showPriceOnLabel ?? true,
+          showSku: options.showSkuOnLabel ?? this.settings.showSkuOnLabel ?? false,
+          showBarcodeText: options.showBarcodeTextOnLabel ?? this.settings.showBarcodeTextOnLabel ?? true,
+          copies: options.copies || this.settings.copies || 1,
+        },
+        jobId,
+      };
+
       const res = await axios.post(`${this.settings.agentUrl}/print/label`, payload, { timeout: 8000 });
       return {
         success: true,

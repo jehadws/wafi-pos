@@ -12,6 +12,34 @@ const { buildReceiptEscPos, buildDrawerKick } = require('./escpos-builder');
 const LabelBuilder = require('./label-builder');
 const jobTracker = require('./job-tracker');
 
+const PROTOCOL_CACHE_TTL_MS = 5 * 60 * 1000;
+const labelProtocolCache = new Map();
+
+/**
+ * Resolve the command language for a label printer.
+ * Callers may pass 'auto' (or nothing) to let the agent pick based on the Windows driver.
+ */
+async function resolveLabelProtocol(requested, printerName) {
+    if (requested && requested !== 'auto') return requested;
+
+    if (RawPrinter.parseTcpAddress(printerName)) return 'escpos';
+
+    const cached = labelProtocolCache.get(printerName);
+    if (cached && Date.now() - cached.timestamp < PROTOCOL_CACHE_TTL_MS) return cached.protocol;
+
+    let protocol = 'escpos';
+    try {
+        const printers = await RawPrinter.getPrinters();
+        const match = printers.find((p) => p.name === printerName);
+        if (match && match.labelProtocol) protocol = match.labelProtocol;
+    } catch {
+        // Keep ESC/POS when the spooler query fails.
+    }
+
+    labelProtocolCache.set(printerName, { protocol, timestamp: Date.now() });
+    return protocol;
+}
+
 /**
  * Build a sample receipt data set for the "/test" endpoint.
  * @param {'arabic'|'english'|'mixed'} sample
@@ -200,7 +228,7 @@ const server = http.createServer(async (req, res) => {
                     unit: 'pcs'
                 }, {
                     lineWidth: body.lineWidth || 36,
-                    protocol: body.protocol || 'escpos',
+                    protocol: await resolveLabelProtocol(body.protocol, printerName),
                     encoding: body.encoding || body.codePage || 'cp864',
                     lineSpacing: body.lineSpacing
                 });
@@ -299,6 +327,7 @@ const server = http.createServer(async (req, res) => {
 
             jobTracker.register(jobId, { printer: printerName, labelCount: labels.length });
 
+            const protocol = await resolveLabelProtocol(config.protocol, printerName);
             const printResults = [];
             for (let i = 0; i < labels.length; i++) {
                 const item = labels[i];
@@ -308,7 +337,7 @@ const server = http.createServer(async (req, res) => {
                     widthMm: config.widthMm || 50,
                     heightMm: config.heightMm || 30,
                     lineWidth: config.lineWidth || 36,
-                    protocol: config.protocol || 'escpos',
+                    protocol,
                     encoding: config.encoding || config.codePage || 'cp864',
                     lineSpacing: config.lineSpacing,
                     barcodeHeight: config.barcodeHeight || 45,
