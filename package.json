@@ -4,6 +4,8 @@
     "scripts": {
         "build": "vite build",
         "build:ssr": "vite build && vite build --ssr",
+        "installer": "powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/build-installer.ps1",
+        "installer:frontend-only": "powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/build-installer.ps1 -SkipElectron",
         "dev": "vite",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",

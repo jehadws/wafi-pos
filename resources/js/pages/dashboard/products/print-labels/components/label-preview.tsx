@@ -1,6 +1,6 @@
 import { useTranslation } from '@/lib/i18n';
-import { buildLabelItems, getStoreName, LabelSettings, SelectedProduct } from '../page';
 import { layoutTsplLabel, PRINT_DOTS_PER_MM } from '../label-layout';
+import { buildLabelItems, getStoreName, LabelSettings, SelectedProduct } from '../page';
 
 interface LabelPreviewProps {
   products: SelectedProduct[];
@@ -88,7 +88,7 @@ export function LabelPreview({ products, settings }: LabelPreviewProps) {
                   ) : (
                     <div
                       key={rowIndex}
-                      className="font-mono absolute overflow-hidden text-center leading-none text-black"
+                      className="absolute overflow-hidden text-center font-mono leading-none text-black"
                       style={{
                         left: `${row.x * PX_PER_DOT}px`,
                         top: `${row.y * PX_PER_DOT}px`,

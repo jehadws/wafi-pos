@@ -1,7 +1,7 @@
-/** 203 DPI thermal heads: the agent's label geometry works in dots (print-agent/label-builder.js). */
+/** 203 DPI thermal heads: label geometry is expressed in print dots. */
 export const PRINT_DOTS_PER_MM = 8;
 
-// Mirrors layoutTsplLabel() in print-agent/label-builder.js: keep both in sync so the
+// Mirrors LabelBuilder::layout() in app/Services/Printing/LabelBuilder.php: keep both in sync so the
 // preview shows the geometry the label printer actually receives.
 const FONT_WIDTH_DOTS = { 1: 8, 2: 12, 3: 16 } as const;
 const FONT_HEIGHT_DOTS = { 1: 16, 2: 24, 3: 32 } as const;
@@ -137,11 +137,14 @@ export function layoutTsplLabel(label: LabelPayload, options: LabelLayoutOptions
     nameDraftRef ? wrapLabelLines(nameDraftRef.text, Math.floor(printableWidth / (FONT_WIDTH_DOTS[2] * scale))) : [];
   const rowCount = () => (nameDraftRef ? drafts.length - 1 + nameLinesAt(nameDraftRef.scale).length : drafts.length);
   const blockHeight = () =>
-    drafts.reduce((total, draft) => {
-      if (draft.kind === 'barcode') return total + draft.height + draft.readableHeight;
-      if (draft.kind === 'name') return total + nameLinesAt(draft.scale).length * FONT_HEIGHT_DOTS[2] * draft.scale;
-      return total + FONT_HEIGHT_DOTS[draft.font] * draft.scale;
-    }, ROW_GAP_DOTS * Math.max(0, rowCount() - 1));
+    drafts.reduce(
+      (total, draft) => {
+        if (draft.kind === 'barcode') return total + draft.height + draft.readableHeight;
+        if (draft.kind === 'name') return total + nameLinesAt(draft.scale).length * FONT_HEIGHT_DOTS[2] * draft.scale;
+        return total + FONT_HEIGHT_DOTS[draft.font] * draft.scale;
+      },
+      ROW_GAP_DOTS * Math.max(0, rowCount() - 1),
+    );
 
   const degrade = () => {
     const store = drafts.find((draft): draft is TextDraft => draft.kind === 'storeName');

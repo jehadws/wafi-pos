@@ -57,7 +57,6 @@ Electron wins on configurability and ecosystem. The bundle size is acceptable fo
 │  │                   artisan reverb:start :6001│             │
 │  │  SubulQueue     → frankenphp php-cli        │             │
 │  │                   artisan queue:work        │             │
-│  │  SubulPrint     → print-agent.exe  :8189    │             │
 │  └─────────────────────────────────────────────┘             │
 │           │                                                   │
 │           ▼                                                   │
@@ -98,8 +97,7 @@ pos/
         └── services/
             ├── SubulHTTP.xml     ← WinSW service configs
             ├── SubulReverb.xml
-            ├── SubulQueue.xml
-            └── SubulPrint.xml
+            └── SubulQueue.xml
 ```
 
 ---
@@ -112,7 +110,7 @@ App starts
     ├─▶ Show splash window ("Starting Subul POS...")
     │
     ├─▶ service-manager: check if WinSW services are running
-    │       ├── If not: sc start SubulHTTP, SubulReverb, SubulQueue, SubulPrint
+    │       ├── If not: sc start SubulHTTP, SubulReverb, SubulQueue
     │       └── Poll until http://localhost:8000/health returns 200
     │
     ├─▶ Splash shows progress:
@@ -158,7 +156,6 @@ mainWindow = new BrowserWindow({
 contextBridge.exposeInMainWorld('electronPOS', {
   getServiceStatus: ()      => ipcRenderer.invoke('service:status'),
   restartService:  (name)   => ipcRenderer.invoke('service:restart', name),
-  printTest:       ()       => ipcRenderer.invoke('print:test'),
   getVersion:      ()       => ipcRenderer.invoke('app:version'),
   openLogsFolder:  ()       => ipcRenderer.invoke('logs:open'),
 });
@@ -166,7 +163,7 @@ contextBridge.exposeInMainWorld('electronPOS', {
 
 ---
 
-## 4 Windows Services (WinSW)
+## 3 Windows Services (WinSW)
 
 ### 1. HTTP Server
 ```xml
@@ -207,28 +204,25 @@ contextBridge.exposeInMainWorld('electronPOS', {
 </service>
 ```
 
-### 4. Print Agent
-```xml
-<service>
-  <id>SubulPrint</id>
-  <name>Subul POS — Print Agent</name>
-  <executable>%BASE%\bin\print-agent.exe</executable>
-  <startmode>Automatic</startmode>
-  <log mode="roll-by-size"><sizeThreshold>5120</sizeThreshold></log>
-</service>
-```
-
 ---
 
-## Standalone Thermal Print Agent (`print-agent.exe`)
+## Printing (integrated, no agent)
 
-Instead of using deprecated tools like `pkg`, the print agent is compiled into a standalone Windows executable using Node 22 SEA (Single Executable Applications):
-1. **Bundle server code**: `esbuild server.js --bundle --platform=node --target=node18 --outfile=dist/bundle.js`
-2. **Generate SEA prep blob**: `node --experimental-sea-config sea-config.json`
-3. **Inject blob into Node runtime**: `postject dist/print-agent.exe NODE_SEA_BLOB dist/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2`
+Receipts, TSPL labels and the cash-drawer pulse are produced inside the Laravel
+application — `app/Services/Printing/` — and sent to the machine's Windows
+spooler or to a `host:port` socket. There is no print service, executable or
+open port to install or supervise.
 
-Verified running on `http://127.0.0.1:8189` with health check endpoint at `/status`.
-
+- POS calls `/api/printing/*` (`resources/js/services/printing-service.ts`); the
+  terminal's printer choice and layout knobs are stored as Subul options, not in
+  browser storage.
+- A short-lived PowerShell spooler script is materialized under
+  `storage/app/printing/` at print time; it is an internal transport detail, not
+  a component.
+- With no printer selected, the job goes to that machine's Windows default
+  printer. Because the backend builds the bytes, a job prints on whichever
+  machine runs the PHP worker — the desktop install keeps that local to each
+  terminal.
 ---
 
 ## Data Strategy
@@ -243,8 +237,7 @@ C:\ProgramData\Subul POS\
 └── logs\
     ├── http.log
     ├── reverb.log
-    ├── queue.log
-    └── print-agent.log
+    └── queue.log
 ```
 
 ### Auto-backup
@@ -273,9 +266,9 @@ VITE_REVERB_SCHEME="${REVERB_SCHEME}"
 ## Installer (Inno Setup)
 
 The production installer script lives at `pos/installer/setup.iss`:
-- Bundles Electron unpacked shell, FrankenPHP runtime, WinSW, Print Agent, and Laravel application.
+- Bundles Electron unpacked shell, FrankenPHP runtime, WinSW, and Laravel application.
 - Initializes SQLite database in `C:\ProgramData\Subul POS\` if not present.
-- Installs and registers the 4 Windows Services via `winsw.exe install`.
+- Installs and registers the 3 Windows Services via `winsw.exe install`.
 - Automatically executes database migrations with `frankenphp.exe php-cli artisan migrate --force`.
 - Schedules daily 3:00 AM automated backups via Windows Task Scheduler.
 - Clean uninstaller stops and deletes services and scheduled tasks.
@@ -307,12 +300,12 @@ files:
 | Phase | Scope | Files created/changed | Status |
 |---|---|---|---|
 | **1** | `.env.production`, SQLite path to `ProgramData`, health-check route | `routes/api.php`, `routes/web.php`, `.env.production` | ✅ **Completed** |
-| **2** | FrankenPHP integration + 4 WinSW service XMLs | `desktop/resources/services/*.xml`, `desktop/resources/bin/` | ✅ **Completed** |
-| **3** | Print agent bundled as standalone `.exe` via Node SEA | `app/print-agent/sea-config.json`, `app/print-agent/package.json` | ✅ **Completed** |
+| **2** | FrankenPHP integration + WinSW service XMLs | `desktop/resources/services/*.xml`, `desktop/resources/bin/` | ✅ **Completed** |
+| **3** | Print agent bundled as standalone `.exe` via Node SEA | `app/print-agent/` | 🔁 **Retired** — printing moved into the Laravel backend, see [Printing](#printing-integrated-no-agent) |
 | **4** | Electron project scaffold — main/preload/splash/tray | `desktop/src/`, `desktop/package.json` | ✅ **Completed** |
 | **5** | Inno Setup installer script | `installer/setup.iss` | ✅ **Completed** |
 | **6** | `electron-builder` + GitHub Release pipeline | `.github/workflows/desktop-release.yml` | ✅ **Completed** |
-| **7** | Auto-updater + settings window (kiosk toggle, printer config) | `desktop/src/main/updater.ts`, `desktop/src/main/settings-manager.ts`, `desktop/src/main/settings.ts`, `desktop/src/renderer/settings.html`, `desktop/src/renderer/settings-preload.ts` | ✅ **Completed** |
+| **7** | Auto-updater + settings window (kiosk toggle, services) | `desktop/src/main/updater.ts`, `desktop/src/main/settings-manager.ts`, `desktop/src/main/settings.ts`, `desktop/src/renderer/settings.html`, `desktop/src/renderer/settings-preload.ts` | ✅ **Completed** |
 
 ---
 
@@ -324,19 +317,13 @@ cd pos/desktop
 npm run dev
 ```
 
-### 2. Building the Standalone Print Agent
-```powershell
-cd pos/app/print-agent
-npm run build
-```
-
-### 3. Packaging the Electron Application
+### 2. Packaging the Electron Application
 ```powershell
 cd pos/desktop
 npm run pack
 ```
 
-### 4. Compiling the Windows Installer (.exe)
+### 3. Compiling the Windows Installer (.exe)
 ```powershell
 iscc pos/installer/setup.iss
 # Output: pos/dist/installer/SubulPOS-Setup-1.0.0.exe
@@ -347,5 +334,5 @@ iscc pos/installer/setup.iss
 ## Decisions Log
 
 - **Project Location**: Option A (Monorepo at `pos/desktop/`) was chosen and implemented.
-- **Binary Bundler for Print Agent**: Migrated from `pkg` to Node 22 Single Executable Application (SEA) with `esbuild` + `postject` for native reliability and long-term Node LTS support.
-- **Service Management**: Implemented through WinSW as 4 discrete, resilient Windows services ensuring zero manual terminal intervention for cashiers.
+- **Printing**: the standalone Node SEA print agent (`pkg` → Node 22 SEA) was retired in favour of `app/Services/Printing/` inside the Laravel app. One less executable, service, port and installer payload per terminal; the trade-off is that a job prints on the machine running the PHP worker, which the desktop install keeps local to each terminal.
+- **Service Management**: Implemented through WinSW as 3 discrete, resilient Windows services ensuring zero manual terminal intervention for cashiers.

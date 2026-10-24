@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
 import { layoutTsplLabel } from '@/pages/dashboard/products/print-labels/label-layout';
+import { describe, expect, it } from 'vitest';
 
-// Geometry mirrors print-agent/label-builder.js; these coordinates are the values the agent emits
-// for the same payload (verified with node -e "require('./label-builder').layoutTsplLabel(...)").
+// Geometry mirrors LabelBuilder::layout(); these coordinates are the values the backend emits
+// for the same payload, so the preview and the printer cannot drift apart.
 const label = { storeName: 'SUBUL', name: 'LATTE', price: 'SAR 12.00', barcode: '123456789012' };
 
 describe('layoutTsplLabel', () => {
@@ -47,15 +47,18 @@ describe('layoutTsplLabel', () => {
   });
 
   it('scales text up on large stickers', () => {
-    const layout = layoutTsplLabel({ name: 'LATTE' }, {
-      widthMm: 76,
-      heightMm: 50,
-      barcodeHeightDots: 48,
-      showStoreName: false,
-      showPrice: false,
-      showSku: false,
-      showBarcodeText: false,
-    });
+    const layout = layoutTsplLabel(
+      { name: 'LATTE' },
+      {
+        widthMm: 76,
+        heightMm: 50,
+        barcodeHeightDots: 48,
+        showStoreName: false,
+        showPrice: false,
+        showSku: false,
+        showBarcodeText: false,
+      },
+    );
 
     expect(layout.scale).toBeGreaterThan(1);
   });

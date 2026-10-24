@@ -149,7 +149,14 @@ export function LabelSettingsPanel({ settings, onSettingsChange }: LabelSettings
       <div>
         <h3 className="mb-4 font-semibold">{t('Basic Settings')}</h3>
         <div className="space-y-4">
-          <NumberField id="itemsPerRow" label={t('Items Per Row')} value={settings.itemsPerRow} min={1} max={10} onChange={(v) => updateSetting('itemsPerRow', v)} />
+          <NumberField
+            id="itemsPerRow"
+            label={t('Items Per Row')}
+            value={settings.itemsPerRow}
+            min={1}
+            max={10}
+            onChange={(v) => updateSetting('itemsPerRow', v)}
+          />
 
           <NumberField
             id="verticalPadding"

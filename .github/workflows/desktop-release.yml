@@ -36,12 +36,6 @@ jobs:
           npm ci
           npm run build
 
-      - name: Build Print Agent Binary
-        run: |
-          cd app/print-agent
-          npm ci
-          npm run build
-
       - name: Build Electron Shell
         run: |
           cd desktop

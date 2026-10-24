@@ -15,12 +15,9 @@
       4. Obfuscates the licensing files with YAK Pro - Php Obfuscator (free)
          - operates on STAGING COPIES ONLY; repository sources are never modified
          - files: LicenseVerifierService.php, HwidService.php, LicenseMiddleware.php
-      5. Bundles the Node.js Print Agent                (zero npm dependencies,
-                                                           ships its own auto-start
-                                                           .bat/.vbs installers)
-      6. Adds client bootstrap files                    (start-pos.bat, .env.production,
+      5. Adds client bootstrap files                    (start-pos.bat, .env.production,
                                                            README-DEPLOY.txt)
-      7. Emits a production-ready ZIP                   dist/subul-pos-client-<version>.zip
+      6. Emits a production-ready ZIP                   dist/subul-pos-client-<version>.zip
 
 .PARAMETER Version
     Package version label. Default: latest git tag (git describe), else timestamp.
@@ -371,17 +368,10 @@ if ($yakproScript) {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 5. Print Agent + client bootstrap files
+# 5. Client bootstrap files
 # ─────────────────────────────────────────────────────────────────────────────
 
-Write-Step "5/6 Print Agent bundle & client bootstrap files"
-
-$agentServer = Join-Path $Staging 'print-agent\server.js'
-if (Test-Path $agentServer) {
-    Write-Ok "Print Agent bundled (zero npm dependencies — start.bat / install-startup.bat included)."
-} else {
-    Write-Warn2 "print-agent\server.js missing from staging — verify the source folder."
-}
+Write-Step "5/6 Client bootstrap files"
 
 # start-pos.bat — one-click LAN server bootstrap for the client's local server machine.
 $bat = @'
@@ -429,8 +419,6 @@ SUBUL POS - CLIENT DEPLOYMENT GUIDE (closed network / offline)
 WHAT IS IN THIS PACKAGE
 -----------------------
 - Subul application (Laravel backend + compiled React frontend)
-- print-agent\  : local Windows Print Agent for thermal receipts, labels
-                  and cash-drawer control (runs on EACH cashier PC)
 - start-pos.bat : one-click launcher for the machine that acts as the
                   LOCAL SERVER (holds the SQLite database + web server)
 
@@ -459,21 +447,17 @@ CONNECT CASHIER TERMINALS (OTHER PCS ON THE LAN)
 2. On each cashier PC, open the browser at:
        http://<SERVER-IP>:8000
    and log in with the cashier account created during setup.
-3. (Recommended) On each cashier PC install the Print Agent:
-       - requires Node.js LTS only (no PHP needed)
-       - run  print-agent\install-startup.bat  (starts the agent
-         automatically at login on 127.0.0.1:8189)
-   Each terminal prints on its own local receipt printer and pulses its
-   own cash drawer.
+3. For per-terminal receipt and label printing on local thermal printers,
+   install the Subul desktop app on each cashier PC instead of using a browser.
 
-PRINT AGENT ENDPOINTS (for reference)
--------------------------------------
-GET  /status          health check
-GET  /printers        list Windows printers
-POST /test            test receipt/label
-POST /print/receipt   ESC/POS receipt
-POST /print/label     barcode label
-POST /drawer/open     cash-drawer pulse (ESC p) without printing
+PRINTING
+--------
+- Receipts, barcode labels and the cash-drawer pulse are sent by the Subul
+  backend straight to the Windows print spooler — no extra service, port or
+  agent to install.
+- In this browser-over-LAN layout the backend runs on the server machine, so
+  jobs go to the printer configured there. Choose the printer in the POS under
+  Settings > Printing; leaving it empty uses that machine's Windows default.
 
 DAILY OPERATION
 ---------------
