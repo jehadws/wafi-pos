@@ -195,7 +195,7 @@ export function PaymentGatewayDialog({ open, onOpenChange, useShippingAddress, u
       orderData: orderData as Order,
       products,
       submitOrder,
-      printOrderReceipt: (receiptOrder) => usePOS.getState().printOrderReceipt(receiptOrder),
+      printOrderReceipt: (receiptOrder, mode, jobId) => usePOS.getState().printOrderReceipt(receiptOrder, mode, jobId),
       priceWithTax: isPriceWithTax(options),
       resetCart,
       onSuccess: () => onOpenChange(false),

@@ -131,6 +131,10 @@ export const DEFAULT_PRINTER_SETTINGS: PrinterSettings = {
   showBarcodeTextOnLabel: true,
 };
 
+export function receiptJobId(orderCode?: string | number | null): string {
+  return `rcpt_${orderCode || 'job'}_${Date.now()}`;
+}
+
 export class PrintingService {
   private settings: PrinterSettings = { ...DEFAULT_PRINTER_SETTINGS };
   private hydration: Promise<PrinterSettings> | null = null;
@@ -236,9 +240,15 @@ export class PrintingService {
     }
   }
 
-  public async printReceipt(receiptData: FormattedReceiptData, overrides: Partial<PrinterSettings> = {}): Promise<PrintResult> {
-    const jobId = `rcpt_${receiptData.orderCode || 'job'}_${Date.now()}`;
-
+  /**
+   * A caller that may retry the same receipt passes its own jobId: the backend prints
+   * a job id once and answers a repeat with the original result.
+   */
+  public async printReceipt(
+    receiptData: FormattedReceiptData,
+    overrides: Partial<PrinterSettings> = {},
+    jobId: string = receiptJobId(receiptData.orderCode),
+  ): Promise<PrintResult> {
     try {
       const res: any = await printingApi.printReceipt({
         printer: overrides.receiptPrinter || undefined,
@@ -293,6 +303,7 @@ export class PrintingService {
     mode: string = 'sale',
     overrides: Partial<PrinterSettings> = {},
     priceWithTax: boolean = true,
+    jobId?: string,
   ): Promise<PrintResult> {
     void mode;
     const orderRecord = order as unknown as Record<string, unknown>;
@@ -329,7 +340,7 @@ export class PrintingService {
       barcode: order.code,
     };
 
-    return this.printReceipt(receiptData, overrides);
+    return this.printReceipt(receiptData, overrides, jobId);
   }
 
   /**

@@ -9,6 +9,8 @@ use App\Services\Printing\Transports\NullTransport;
 use App\Services\Printing\Transports\TcpTransport;
 use App\Services\Printing\Transports\TransportInterface;
 use App\Services\Printing\Transports\WindowsSpoolTransport;
+use Illuminate\Support\Facades\Cache;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /** Records every job instead of talking to hardware; fails on the nth send when asked. */
 function jobTransport(?int $failOnSend = null): NullTransport
@@ -69,44 +71,52 @@ $receipt = [
     'total' => '12.00',
 ];
 
-it('sends every receipt copy and reports the byte total', function () use ($receipt) {
+it('sends every receipt copy as one spool job', function () use ($receipt) {
     $transport = jobTransport();
     $result = printJobService($transport)->receipt(null, $receipt, ['copies' => 3], 'rcpt_1');
+    $single = (new ReceiptBuilder(new ArabicTextFormatter))->build($receipt, ['copies' => 3]);
 
     expect($result)->toBe([
         'success' => true,
         'jobId' => 'rcpt_1',
         'printer' => 'XP-80C',
         'copies' => 3,
-        'bytesWritten' => strlen($transport->jobs[0]['data']) * 3,
+        'bytesWritten' => strlen($single) * 3,
         'message' => 'Receipt printed successfully (3 copies).',
-    ])->and($transport->jobs[0]['documentName'])->toBe('Subul Receipt ORD-7')
+    ])->and(count($transport->jobs))->toBe(1)
+        ->and($transport->jobs[0]['data'])->toBe(str_repeat($single, 3))
+        ->and($transport->jobs[0]['documentName'])->toBe('Subul Receipt ORD-7')
         ->and($transport->jobs[0]['printer'])->toBe('XP-80C');
 });
 
 it('clamps receipt copies to the supported range', function () use ($receipt) {
-    $overLimit = jobTransport();
-    printJobService($overLimit)->receipt(null, $receipt, ['copies' => 99], 'rcpt_2');
-
+    $overLimit = printJobService(jobTransport())->receipt(null, $receipt, ['copies' => 99], 'rcpt_2');
     $underLimit = printJobService(jobTransport())->receipt(null, $receipt, ['copies' => 0], 'rcpt_3');
 
-    expect(count($overLimit->jobs))->toBe(5)
+    expect($overLimit['copies'])->toBe(5)
         ->and($underLimit['copies'])->toBe(1);
 });
 
-it('rejects a duplicate job id without touching the transport', function () use ($receipt) {
+it('replays a finished job id without touching the transport again', function () use ($receipt) {
     $transport = jobTransport();
     $service = printJobService($transport);
-    $service->receipt(null, $receipt, [], 'rcpt_4');
+    $first = $service->receipt(null, $receipt, [], 'rcpt_4');
 
-    $service->receipt(null, $receipt, [], 'rcpt_4');
-})->throws(RuntimeException::class, 'Print job rcpt_4 was already submitted.');
+    $repeat = $service->receipt(null, $receipt, [], 'rcpt_4');
 
-it('releases the job guard when a print fails so the job can be retried', function () use ($receipt) {
-    $failing = jobTransport(1);
+    expect($repeat)->toBe([...$first, 'duplicate' => true])
+        ->and(count($transport->jobs))->toBe(1);
+});
 
-    printJobService($failing)->receipt(null, $receipt, [], 'rcpt_5');
-})->throws(RuntimeException::class, 'Printed 0 of 1 receipt copies before failure: printer is offline');
+it('refuses a job id that is still printing', function () use ($receipt) {
+    Cache::add('printing:jobs:rcpt_busy', ['status' => 'processing'], now()->addMinutes(10));
+
+    printJobService(jobTransport())->receipt(null, $receipt, [], 'rcpt_busy');
+})->throws(HttpException::class, 'Print job rcpt_busy is still printing.');
+
+it('passes the printer failure through', function () use ($receipt) {
+    printJobService(jobTransport(1))->receipt(null, $receipt, [], 'rcpt_5');
+})->throws(RuntimeException::class, 'printer is offline');
 
 it('accepts the same job id again after a failure', function () use ($receipt) {
     $failing = jobTransport(1);
@@ -123,11 +133,7 @@ it('accepts the same job id again after a failure', function () use ($receipt) {
         ->and(count($retry->jobs))->toBe(1);
 });
 
-it('reports how many copies reached the printer before a failure', function () use ($receipt) {
-    printJobService(jobTransport(3))->receipt(null, $receipt, ['copies' => 5], 'rcpt_7');
-})->throws(RuntimeException::class, 'Printed 2 of 5 receipt copies before failure: printer is offline');
-
-it('prints each label with its own copy count', function () {
+it('prints every label with its own copy count in one spool job', function () {
     $transport = jobTransport();
     $result = printJobService($transport)->labels('XP-D365B', [
         ['name' => 'Coffee', 'barcode' => '123456789012', 'price' => '12.00', 'copies' => 3],
@@ -137,9 +143,11 @@ it('prints each label with its own copy count', function () {
     expect($result['printer'])->toBe('XP-D365B')
         ->and($result['totalLabelsPrinted'])->toBe(5)
         ->and($result['message'])->toBe('5 labels printed successfully.')
-        ->and(count($transport->jobs))->toBe(2)
+        ->and(count($transport->jobs))->toBe(1)
         ->and($transport->jobs[0]['data'])->toStartWith('SIZE 50 mm, 30 mm')
-        ->and($transport->jobs[0]['documentName'])->toBe('Subul Label 1');
+        ->and($transport->jobs[0]['data'])->toContain("PRINT 3\r\n")
+        ->and($transport->jobs[0]['data'])->toEndWith("PRINT 2\r\n")
+        ->and($transport->jobs[0]['documentName'])->toBe('Subul Labels');
 });
 
 it('opens the cash drawer on every call', function () {

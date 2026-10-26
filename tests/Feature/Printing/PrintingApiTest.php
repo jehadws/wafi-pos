@@ -2,6 +2,7 @@
 
 use App\Models\Option;
 use App\Models\User;
+use App\Services\Options;
 use App\Services\Printing\PrinterService;
 use App\Services\Printing\Transports\NullTransport;
 use App\Services\Printing\Transports\TcpTransport;
@@ -100,21 +101,42 @@ it('prints a receipt on every requested copy', function () {
         'message' => 'Receipt printed successfully (2 copies).',
     ]);
 
-    expect(count($this->transport->jobs))->toBe(2)
+    $copy = $this->transport->jobs[0]['data'];
+    expect(count($this->transport->jobs))->toBe(1)
         ->and($this->transport->jobs[0]['documentName'])->toBe('Subul Receipt ORD-11')
-        ->and($this->transport->jobs[0]['data'])->toContain("\x1D\x76\x30");
+        ->and(substr_count($copy, "\x1B\x40"))->toBe(2)
+        ->and($copy)->toContain("\x1B\x74\x28")
+        ->and($copy)->not->toContain("\x1D\x76\x30");
 });
 
-it('rejects a repeated print job id with 409', function () {
+it('answers a repeated job id with the original result instead of printing again', function () {
     posCashier($this);
     $payload = ['jobId' => 'rcpt_http_2', 'data' => ['total' => '5.00', 'items' => []]];
 
     $this->postJson('/api/printing/receipt', $payload)->assertStatus(200);
     $this->postJson('/api/printing/receipt', $payload)
-        ->assertStatus(409)
-        ->assertJsonPath('message', 'Print job rcpt_http_2 was already submitted.');
+        ->assertStatus(200)
+        ->assertJson(['success' => true, 'jobId' => 'rcpt_http_2', 'duplicate' => true]);
 
     expect(count($this->transport->jobs))->toBe(1);
+});
+
+it('prints the store header and footer from the store options when the client sends none', function () {
+    posCashier($this);
+    app(Options::class)->set('sb_store_name', 'Corner Cafe');
+    app(Options::class)->set('sb_store_phone', '0599 000 000');
+    app(Options::class)->set('sb_invoice_receipt_footer', 'See you soon');
+
+    $this->postJson('/api/printing/receipt', [
+        'jobId' => 'rcpt_http_store',
+        'data' => ['total' => '5.00', 'items' => []],
+        'config' => ['encoding' => 'cp864'],
+    ])->assertStatus(200);
+
+    expect($this->transport->jobs[0]['data'])->toContain('Corner Cafe')
+        ->and($this->transport->jobs[0]['data'])->toContain('Tel: 0599 000 000')
+        ->and($this->transport->jobs[0]['data'])->toContain('See you soon')
+        ->and($this->transport->jobs[0]['data'])->not->toContain('Thank you for your business!');
 });
 
 it('refuses a receipt without items or a total', function () {
@@ -154,8 +176,10 @@ it('prints product labels and counts every copy', function () {
         'message' => '4 labels printed successfully.',
     ]);
 
-    expect($this->transport->jobs[0]['data'])->toStartWith('SIZE 50 mm, 30 mm')
-        ->and($this->transport->jobs[1]['documentName'])->toBe('Subul Label 2');
+    expect(count($this->transport->jobs))->toBe(1)
+        ->and($this->transport->jobs[0]['data'])->toStartWith('SIZE 50 mm, 30 mm')
+        ->and(substr_count($this->transport->jobs[0]['data'], 'SIZE 50 mm, 30 mm'))->toBe(2)
+        ->and($this->transport->jobs[0]['documentName'])->toBe('Subul Labels');
 });
 
 it('rejects an empty label batch', function () {

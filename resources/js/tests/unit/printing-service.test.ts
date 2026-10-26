@@ -180,6 +180,15 @@ describe('PrintingService', () => {
       expect(result.success).toBe(true);
       expect(result.jobId).toMatch(/^rcpt_ORD-55_/);
     });
+
+    it('sends the caller job id so a retry is recognised by the backend', async () => {
+      api.printReceipt.mockResolvedValueOnce({ success: true });
+
+      const result = await service.printOrderReceipt(makeOrder(), 'sale', {}, true, 'rcpt_ORD-55_fixed');
+
+      expect((api.printReceipt.mock.calls[0][0] as any).jobId).toBe('rcpt_ORD-55_fixed');
+      expect(result.jobId).toBe('rcpt_ORD-55_fixed');
+    });
   });
 
   describe('printReceipt', () => {

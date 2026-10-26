@@ -16,7 +16,9 @@ export const printingApi = {
 
   saveSettings: (settings: unknown) => put('/printing/settings', settings, { timeout: 8000 }),
 
-  printReceipt: (body: unknown) => post('/printing/receipt', body, { timeout: 10000 }),
+  // Outlasts the backend's worst case (printer lookup + spool), so a slow print
+  // is never reported as failed while it is still going to paper.
+  printReceipt: (body: unknown) => post('/printing/receipt', body, { timeout: 30000 }),
 
   printLabels: (body: unknown) => post('/printing/labels', body, { timeout: 30000 }),
 

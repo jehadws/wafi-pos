@@ -2,16 +2,17 @@
 
 namespace App\Services\Printing\Transports;
 
+use App\Services\Printing\PowerShell;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use RuntimeException;
-use Symfony\Component\Process\Process;
 
 class WindowsSpoolTransport implements TransportInterface
 {
     private const SCRIPT = <<<'POWERSHELL'
 param(
     [Parameter(Mandatory=$true)][string]$PrinterName,
-    [Parameter(Mandatory=$true)][string]$Base64Data,
+    [Parameter(Mandatory=$true)][string]$DataPath,
     [Parameter(Mandatory=$true)][string]$DocName
 )
 
@@ -87,7 +88,7 @@ public static class SubulRawPrinter
 $ErrorActionPreference = 'Stop'
 
 try {
-    $bytes = [Convert]::FromBase64String($Base64Data)
+    $bytes = [System.IO.File]::ReadAllBytes($DataPath)
     $written = [SubulRawPrinter]::Send($PrinterName, $bytes, $DocName)
     Write-Output $written
 } catch {
@@ -111,18 +112,24 @@ POWERSHELL;
             File::put($scriptPath, self::SCRIPT);
         }
 
-        $process = new Process([
-            'powershell.exe',
-            '-NoProfile',
-            '-NonInteractive',
-            '-ExecutionPolicy', 'Bypass',
-            '-File', $scriptPath,
-            '-PrinterName', $printer,
-            '-Base64Data', base64_encode($data),
-            '-DocName', $documentName,
-        ]);
-        $process->setTimeout(15);
-        $process->run();
+        // The job travels as a file: Windows runs the child through cmd.exe, whose
+        // 8191-character command line cannot carry a raster receipt.
+        $dataPath = storage_path('app/printing/job-'.Str::uuid().'.bin');
+        File::put($dataPath, $data);
+
+        try {
+            $process = PowerShell::run([
+                '-NoProfile',
+                '-NonInteractive',
+                '-ExecutionPolicy', 'Bypass',
+                '-File', $scriptPath,
+                '-PrinterName', $printer,
+                '-DataPath', $dataPath,
+                '-DocName', $documentName,
+            ], 15);
+        } finally {
+            File::delete($dataPath);
+        }
 
         if (! $process->isSuccessful()) {
             $message = trim($process->getErrorOutput() ?: $process->getOutput());

@@ -10,7 +10,7 @@
  */
 
 import { i18n } from '@/lib/i18n';
-import printingService, { type PrintResult } from '@/services/printing-service';
+import printingService, { receiptJobId, type PrintResult } from '@/services/printing-service';
 import { Order } from '@/types/models/order';
 import { OrderProduct } from '@/types/models/order-product';
 import { toast } from 'sonner';
@@ -28,7 +28,7 @@ export interface SubmitAndFinalizeOrderParams {
   /** Store submitOrder action (register stamping & validation live there). */
   submitOrder: (orderFields: object) => Promise<any>;
   /** Store printOrderReceipt action (printingEnabledFor / printingDocument gating). */
-  printOrderReceipt: (order: Order, mode?: string) => Promise<PrintResult | false>;
+  printOrderReceipt: (order: Order, mode?: string, jobId?: string) => Promise<PrintResult | false>;
   /**
    * Mirrors the "Show Price With Tax" POS option for the direct-service
    * retry path (the primary print path resolves it from the store).
@@ -103,9 +103,13 @@ export async function submitAndFinalizeOrder({
      * from PrintingService. A successful receipt print carries its own
      * cash-drawer kick (ESC p) when "Open Cash Drawer" is enabled.
      */
+    // One job id for this sale's receipt: if the first attempt reached the printer
+    // but the response was lost, Retry gets the original result instead of a reprint.
+    const jobId = receiptJobId(receiptOrder.code);
+
     let printResult: PrintResult | false = false;
     if (paymentStatus === 'paid' || paymentStatus === 'partially_paid') {
-      printResult = await printOrderReceipt(receiptOrder);
+      printResult = await printOrderReceipt(receiptOrder, undefined, jobId);
     }
 
     if (printResult === false) {
@@ -124,7 +128,7 @@ export async function submitAndFinalizeOrder({
           action: {
             label: t('Retry Print'),
             onClick: () => {
-              printingService.printOrderReceipt(receiptOrder, 'sale', {}, priceWithTax).then((retryRes) => {
+              printingService.printOrderReceipt(receiptOrder, 'sale', {}, priceWithTax, jobId).then((retryRes) => {
                 if (retryRes.success) {
                   toast.success(t('Receipt printed successfully.'));
                 } else {

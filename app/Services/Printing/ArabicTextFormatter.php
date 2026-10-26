@@ -60,6 +60,12 @@ class ArabicTextFormatter
         return $text !== null && preg_match('/[\x{0600}-\x{06FF}\x{0750}-\x{077F}\x{08A0}-\x{08FF}\x{FB50}-\x{FDFF}\x{FE70}-\x{FEFF}]/u', $text) === 1;
     }
 
+    /** Whether the printer's own character table can draw Arabic, so text needs no image. */
+    public function supportsCodePage(string $encoding): bool
+    {
+        return in_array(strtolower(str_replace('-', '', $encoding)), ['cp864', 'cp1256'], true);
+    }
+
     public function visual(string $text): string
     {
         if (! $this->hasArabic($text)) {
@@ -105,17 +111,31 @@ class ArabicTextFormatter
     public function encode(string $text, string $encoding = 'cp864'): string
     {
         $normalizedEncoding = strtolower(str_replace('-', '', $encoding));
+        if ($normalizedEncoding === 'utf8' || in_array($normalizedEncoding, ['cp437', 'ascii'], true)) {
+            return $this->encodeOrdered($text, $encoding);
+        }
+
+        return $this->encodeOrdered($this->visual($text), $encoding);
+    }
+
+    /**
+     * Turns text that already sits in the order the print head will lay it down
+     * (see visual()) into bytes. Table cells go through this so padding keeps
+     * each column in place instead of mirroring the whole line.
+     */
+    public function encodeOrdered(string $visual, string $encoding = 'cp864'): string
+    {
+        $normalizedEncoding = strtolower(str_replace('-', '', $encoding));
         if ($normalizedEncoding === 'utf8') {
-            return $text;
+            return $visual;
         }
 
         if (in_array($normalizedEncoding, ['cp437', 'ascii'], true)) {
-            return iconv('UTF-8', 'CP437//TRANSLIT', $this->cleanCurrency($text)) ?: '';
+            return iconv('UTF-8', 'CP437//TRANSLIT', $this->cleanCurrency($visual)) ?: '';
         }
 
-        $visual = $this->visual($text);
         if ($normalizedEncoding === 'cp1256') {
-            $standard = normalizer_normalize($visual, \Normalizer::FORM_KC) ?: $visual;
+            $standard = normalizer_normalize($visual, Normalizer::FORM_KC) ?: $visual;
 
             return iconv('UTF-8', 'WINDOWS-1256//TRANSLIT', $standard) ?: '';
         }

@@ -78,7 +78,7 @@ class EscPosBuilder
 
     public function line(string $text = '', int $fontSize = 22): self
     {
-        if ($this->formatter->hasArabic($text)) {
+        if ($this->formatter->hasArabic($text) && ! $this->formatter->supportsCodePage($this->encoding)) {
             $bitmap = $this->formatter->rasterize($text, $this->rasterWidth, $fontSize);
             $this->raster($bitmap);
         } else {
@@ -113,7 +113,7 @@ class EscPosBuilder
             return $this->line($left)->align('right')->line($right)->align('left');
         }
 
-        return $this->line($left.str_repeat(' ', $spaceCount).$right);
+        return $this->row($this->cell($left, $this->lineWidth - mb_strlen($right)).$this->cellEnd($right, mb_strlen($right)));
     }
 
     public function productRow(string $name, string $quantity, ?string $unitPrice, string $total): self
@@ -122,17 +122,17 @@ class EscPosBuilder
         $totalWidth = 14;
         $nameWidth = $this->lineWidth - $quantityWidth - $totalWidth;
         $lines = $this->wrap($name, $nameWidth);
-        $this->line(
-            $this->padEnd(array_shift($lines) ?? '', $nameWidth)
-            .$this->padStart($quantity, $quantityWidth)
-            .$this->padStart($total, $totalWidth),
+        $this->row(
+            $this->cell(array_shift($lines) ?? '', $nameWidth)
+            .$this->cellEnd($quantity, $quantityWidth)
+            .$this->cellEnd($total, $totalWidth),
         );
 
         foreach ($lines as $line) {
             $this->line($line);
         }
         if ($unitPrice !== null && $unitPrice !== '') {
-            $this->line("  @ {$unitPrice}");
+            $this->row('  @ '.$this->shape($unitPrice));
         }
 
         return $this;
@@ -205,9 +205,49 @@ class EscPosBuilder
         }
     }
 
+    /**
+     * Writes a finished, padded line. A code page that carries Arabic keeps the
+     * columns; otherwise the whole line becomes one image.
+     */
+    private function row(string $line): self
+    {
+        if ($this->formatter->hasArabic($line) && ! $this->formatter->supportsCodePage($this->encoding)) {
+            return $this->line($line);
+        }
+
+        $this->buffer .= $this->formatter->encodeOrdered($line, $this->encoding)."\n";
+
+        return $this;
+    }
+
+    /** Shapes one cell only, so an Arabic name cannot mirror the amount columns. */
+    private function cell(string $value, int $width): string
+    {
+        return $this->padEnd($this->shape($value), $width);
+    }
+
+    private function cellEnd(string $value, int $width): string
+    {
+        return $this->padStart($this->shape($value), $width);
+    }
+
+    /**
+     * Unshaped Arabic has no code-page bytes, so it would print as "?". Shaping keeps
+     * the character count, so column widths measured on the raw text still hold.
+     */
+    private function shape(string $value): string
+    {
+        if ($value !== '' && $this->formatter->hasArabic($value) && $this->formatter->supportsCodePage($this->encoding)) {
+            return $this->formatter->visual($value);
+        }
+
+        return $value;
+    }
+
     private function wrap(string $text, int $width): array
     {
         $words = preg_split('/\s+/u', trim($text)) ?: [];
+
         $lines = [];
         $line = '';
 

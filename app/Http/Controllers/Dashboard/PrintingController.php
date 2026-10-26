@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Services\Options;
 use App\Services\Printing\LabelBuilder;
 use App\Services\Printing\PrintJobService;
 use App\Services\Printing\PrinterService;
@@ -25,6 +26,7 @@ class PrintingController extends Controller
         protected LabelBuilder $labelBuilder,
         protected TestPrintSamples $samples,
         protected PrintingSettings $settings,
+        protected Options $options,
     ) {
     }
 
@@ -112,7 +114,7 @@ class PrintingController extends Controller
 
         return $this->jobs->receipt(
             $this->target( $request->input( 'printer' ), 'receiptPrinter' ),
-            $data,
+            $this->withStoreIdentity( $data ),
             $this->receiptConfig( (array) $request->input( 'config', [] ) ),
             $this->jobId( $request, 'rcpt' ),
         );
@@ -183,6 +185,34 @@ class PrintingController extends Controller
         ] );
 
         return $this->jobs->drawer( $this->target( $request->input( 'printer' ), 'receiptPrinter' ), (int) $request->input( 'pin', 0 ) );
+    }
+
+    /**
+     * The store header and footer come from the store's own options unless the
+     * caller sent them, so a sale receipt does not print the "Subul" placeholder.
+     */
+    private function withStoreIdentity( array $data ): array
+    {
+        $options = [
+            'storeName' => 'sb_store_name',
+            'storeAddress' => 'sb_store_address',
+            'storeCity' => 'sb_store_city',
+            'storePhone' => 'sb_store_phone',
+            'storeEmail' => 'sb_store_email',
+            'storePobox' => 'sb_store_pobox',
+            'footer' => 'sb_invoice_receipt_footer',
+        ];
+
+        foreach ( $options as $field => $key ) {
+            if ( trim( (string) ( $data[ $field ] ?? '' ) ) === '' ) {
+                $value = trim( (string) $this->options->get( $key ) );
+                if ( $value !== '' ) {
+                    $data[ $field ] = $value;
+                }
+            }
+        }
+
+        return $data;
     }
 
     /**

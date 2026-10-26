@@ -68,7 +68,7 @@ export type POSStoreOrchestration = {
   applyDefaultOrderType: () => void;
   setOrderType: (type: OrderType) => void;
   updateAddress: (type: 'billing' | 'shipping', address: any) => void;
-  printOrderReceipt: (order: Order, mode?: string) => Promise<PrintResult | false>;
+  printOrderReceipt: (order: Order, mode?: string, jobId?: string) => Promise<PrintResult | false>;
 };
 
 export type POSStore = POSStoreCoreState & PosDialogsSlice & CartSlice & PaymentsSlice & CustomerSlice & SessionSlice & POSStoreOrchestration;

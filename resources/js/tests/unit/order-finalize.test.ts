@@ -27,6 +27,7 @@ vi.mock('@/services/printing-service', () => ({
     openCashDrawer: vi.fn(() => Promise.resolve()),
     printOrderReceipt: vi.fn(() => Promise.resolve({ success: true })),
   },
+  receiptJobId: (code: string) => `rcpt_${code}_test`,
 }));
 
 const makeOrder = (overrides: Partial<Order> = {}): Order =>
@@ -205,6 +206,21 @@ describe('services/order-finalize.ts', () => {
 
       expect(printingService.printOrderReceipt).toHaveBeenCalledTimes(1);
       expect(toast.success).toHaveBeenCalledWith('Receipt printed successfully.');
+    });
+
+    it('retries under the same job id so a print that did reach paper is not repeated', async () => {
+      (printingService.printOrderReceipt as any).mockResolvedValue({ success: true });
+      const p = baseParams({
+        printOrderReceipt: vi.fn(() => Promise.resolve({ success: false, error: 'timed out' })),
+      });
+
+      await submitAndFinalizeOrder(p);
+      const errorCall = (toast.error as any).mock.calls.find((c: any[]) => typeof c[0] === 'string' && c[0].includes('SRV-099'));
+      await errorCall[1].action.onClick();
+
+      const firstJobId = (p.printOrderReceipt as any).mock.calls[0][2];
+      expect(firstJobId).toBe('rcpt_SRV-099_test');
+      expect((printingService.printOrderReceipt as any).mock.calls[0][4]).toBe(firstJobId);
     });
 
     it('aborts finalization when submission fails', async () => {

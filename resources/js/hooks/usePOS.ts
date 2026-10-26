@@ -560,7 +560,7 @@ export const usePOS = create<POSStore>((set, get) => ({
   // Receipt printing
   // ─────────────────────────────────────────────────────────────────────────
 
-  printOrderReceipt: (order: Order, mode?: string): Promise<PrintResult | false> => {
+  printOrderReceipt: (order: Order, mode?: string, jobId?: string): Promise<PrintResult | false> => {
     const { options } = get();
 
     if (options[POS_OPTION_KEYS.printingEnabledFor] === 'disabled') {
@@ -600,6 +600,6 @@ export const usePOS = create<POSStore>((set, get) => ({
     // never rejects (print failures resolve with { success: false }).
     // The receipt mirrors the "Show Price With Tax" option so printed items
     // match what the cashier saw in the cart.
-    return printingService.printOrderReceipt(order, resolvedMode, {}, isPriceWithTax(options));
+    return printingService.printOrderReceipt(order, resolvedMode, {}, isPriceWithTax(options), jobId);
   },
 }));

@@ -8,7 +8,6 @@ use App\Services\Printing\Transports\WindowsSpoolTransport;
 use Illuminate\Support\Facades\Cache;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Component\Process\Process;
 
 class PrinterService
 {
@@ -26,7 +25,7 @@ class PrinterService
             $this->invalidate();
         }
 
-        return Cache::remember(self::CACHE_KEY, 10, fn () => $this->discoverWindowsPrinters());
+        return Cache::remember(self::CACHE_KEY, now()->addMinutes(10), fn () => $this->discoverWindowsPrinters());
     }
 
     public function invalidate(): void
@@ -88,15 +87,12 @@ Get-CimInstance Win32_Printer |
     ConvertTo-Json -Compress
 POWERSHELL;
 
-        $process = new Process([
-            'powershell.exe',
+        $process = PowerShell::run([
             '-NoProfile',
             '-NonInteractive',
             '-ExecutionPolicy', 'Bypass',
             '-Command', $script,
-        ]);
-        $process->setTimeout(10);
-        $process->run();
+        ], 10);
 
         if (! $process->isSuccessful()) {
             throw new RuntimeException(trim($process->getErrorOutput()) ?: 'Failed to list Windows printers.');

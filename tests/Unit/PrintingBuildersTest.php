@@ -1,6 +1,7 @@
 <?php
 
 use App\Services\Printing\ArabicTextFormatter;
+use App\Services\Printing\EscPosBuilder;
 use App\Services\Printing\LabelBuilder;
 use App\Services\Printing\ReceiptBuilder;
 
@@ -18,7 +19,7 @@ it('shapes and rasterizes Arabic text', function () {
         ->and(strlen($bitmap['data']))->toBe($bitmap['widthBytes'] * $bitmap['height']);
 });
 
-it('builds receipt commands with rasterized Arabic and native barcode commands', function () {
+it('builds receipt commands with native code-page Arabic and native barcode commands', function () {
     $receipt = (new ReceiptBuilder($this->formatter))->build([
         'storeName' => 'سبل | Subul',
         'orderCode' => 'ORD-42',
@@ -31,10 +32,39 @@ it('builds receipt commands with rasterized Arabic and native barcode commands',
     ], ['encoding' => 'cp864', 'openCashDrawer' => true]);
 
     expect($receipt)->toStartWith("\x1B\x40\x1B\x74\x28")
-        ->and($receipt)->toContain("\x1D\x76\x30")
+        ->and($receipt)->not->toContain("\x1D\x76\x30")
         ->and($receipt)->toContain("\x1D\x6B\x49\x0C".'123456789012')
         ->and($receipt)->toContain("\x1B\x70\x00\x19\xFA")
         ->and($receipt)->toEndWith("\x1D\x56\x42\x03");
+});
+
+it('draws Arabic from the printer font while the amount columns keep their place', function () {
+    $builder = new EscPosBuilder($this->formatter, 42, 'cp864');
+    $out = $builder->init()->productRow('قهوة عربية', '2', '18.00', '36.00 SAR')->toString();
+
+    $row = substr(explode("\n", $out)[0], 5); // after ESC @ + ESC t 40
+
+    expect(strlen($row))->toBe(42)
+        ->and(substr($row, 22, 6))->toBe('     2')
+        ->and(substr($row, 28))->toBe('     36.00 SAR');
+});
+
+it('prints Arabic right-hand values and amounts from the code page instead of question marks', function () {
+    $builder = new EscPosBuilder($this->formatter, 42, 'cp864');
+    $out = $builder->init()
+        ->twoColumns('Customer:', 'محمد علي')
+        ->productRow('Coffee', '2', '18.00 ر.س', '36.00 ر.س')
+        ->toString();
+
+    expect(substr($out, 5))->not->toContain('?')
+        ->and(strlen(explode("\n", substr($out, 5))[0]))->toBe(42);
+});
+
+it('falls back to an image when the selected code page has no Arabic', function () {
+    $builder = new EscPosBuilder($this->formatter, 42, 'utf8', 560);
+    $out = $builder->init()->line('قهوة عربية')->toString();
+
+    expect($out)->toContain("\x1D\x76\x30");
 });
 
 it('builds TSPL labels with Arabic bitmaps', function () {
