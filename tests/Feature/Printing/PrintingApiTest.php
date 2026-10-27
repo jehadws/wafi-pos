@@ -192,6 +192,41 @@ it('rejects an empty label batch', function () {
     expect($this->transport->jobs)->toBe([]);
 });
 
+it('prints one label per item even when the receipt prints three copies', function () {
+    posCashier($this);
+
+    $this->putJson('/api/printing/settings', ['copies' => 3, 'cutPaper' => false])->assertStatus(200);
+
+    $this->postJson('/api/printing/labels', [
+        'printer' => 'XP-D365B',
+        'jobId' => 'lbl_http_2',
+        'labels' => [['name' => 'Coffee', 'barcode' => '123456789012', 'price' => '12.00']],
+        'config' => ['protocol' => 'tspl'],
+    ])->assertStatus(200)->assertJson(['totalLabelsPrinted' => 1]);
+
+    $this->postJson('/api/printing/labels', [
+        'printer' => 'XP-80C',
+        'jobId' => 'lbl_http_3',
+        'labels' => [['name' => 'Coffee', 'price' => '12.00']],
+        'config' => ['protocol' => 'escpos'],
+    ])->assertStatus(200)->assertJson(['totalLabelsPrinted' => 1]);
+
+    expect($this->transport->jobs[0]['data'])->toContain('PRINT 1')
+        ->and($this->transport->jobs[1]['data'])->toContain("\x1D\x56");
+});
+
+it('rejects a receipt line width the builder cannot lay out', function () {
+    posCashier($this);
+
+    $this->postJson('/api/printing/receipt', [
+        'jobId' => 'rcpt_http_9',
+        'data' => ['total' => '5.00', 'items' => []],
+        'config' => ['lineWidth' => 5],
+    ])->assertStatus(422)->assertJsonValidationErrors('config.lineWidth');
+
+    expect($this->transport->jobs)->toBe([]);
+});
+
 it('pulses the cash drawer with the legacy kick sequence', function () {
     posCashier($this);
 

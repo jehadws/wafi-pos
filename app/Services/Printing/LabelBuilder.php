@@ -187,13 +187,28 @@ class LabelBuilder
                 $bitmap = $this->formatter->rasterize($row['text'], $printableWidth, max(10, $row['height'] - 6));
                 $x = max(self::MARGIN, intdiv($layout['widthDots'] - $bitmap['widthBytes'] * 8, 2));
                 $y = $row['y'] + max(0, intdiv($row['height'] - $bitmap['height'], 2));
-                $output .= "BITMAP {$x},{$y},{$bitmap['widthBytes']},{$bitmap['height']},0,".$bitmap['data']."\r\n";
+                $output .= "BITMAP {$x},{$y},{$bitmap['widthBytes']},{$bitmap['height']},0,".$this->tsplDots($bitmap['data'])."\r\n";
             } else {
                 $output .= "TEXT {$row['x']},{$row['y']},\"{$row['font']}\",0,{$row['scale']},{$row['scale']},\"{$row['text']}\"\r\n";
             }
         }
 
         return $output."PRINT {$copies}\r\n";
+    }
+
+    /**
+     * TSPL burns a dot where a bit is 0 and leaves paper where it is 1, which is the
+     * reverse of the ESC/POS raster the shared formatter builds, so flip every bit.
+     */
+    private function tsplDots(string $data): string
+    {
+        $bytes = '';
+
+        for ($index = 0; $index < strlen($data); $index++) {
+            $bytes .= chr(ord($data[$index]) ^ 0xFF);
+        }
+
+        return $bytes;
     }
 
     private function buildEscPos(array $label, array $config): string

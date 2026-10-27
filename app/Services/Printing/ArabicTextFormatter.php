@@ -72,9 +72,38 @@ class ArabicTextFormatter
             return $text;
         }
 
+        return $this->reorder($this->shapeText($this->asLatinPunctuation($text)));
+    }
+
+    /**
+     * Arabic-Indic digits and Arabic punctuation read left-to-right like their
+     * ASCII twins, and every printer font can draw the twins, so the line is
+     * laid out with those instead. Doing it before reordering keeps a number
+     * like ١٢٫٥٠ from splitting into backwards halves.
+     */
+    private function asLatinPunctuation(string $text): string
+    {
+        return strtr($text, [
+            '٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4',
+            '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9',
+            '۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4',
+            '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9',
+            '٫' => '.', '،' => ',', '؛' => ';', '؟' => '?', '٪' => '%',
+        ]);
+    }
+
+    /**
+     * Shapes every letter into the form the printer joins, then hands the line
+     * to reorder(). Shaping keeps one character per letter, except لا, which the
+     * printer draws as a single ligature.
+     */
+    private function shapeText(string $text): string
+    {
         $characters = mb_str_split($text);
         $shaped = [];
-        foreach ($characters as $index => $character) {
+
+        for ($index = 0; $index < count($characters); $index++) {
+            $character = $characters[$index];
             if (! isset($this->forms[$character])) {
                 $shaped[] = $character;
                 continue;
@@ -82,6 +111,15 @@ class ArabicTextFormatter
 
             $previous = $this->joiningCharacter($characters, $index, -1);
             $next = $this->joiningCharacter($characters, $index, 1);
+
+            if ($character === 'ل' && $next === 'ا') {
+                $shaped[] = IntlChar::chr(
+                    $previous !== null && $this->connectsForward($previous) && $this->connectsBackward($character) ? 0xFEF6 : 0xFEF5
+                );
+                $index = $this->nextJoiningPosition($characters, $index, 1);
+                continue;
+            }
+
             $joinsPrevious = $previous !== null
                 && $this->connectsForward($previous)
                 && $this->connectsBackward($character);
@@ -97,15 +135,119 @@ class ArabicTextFormatter
             $shaped[] = $this->forms[$character][$form] ?? $character;
         }
 
-        $shapedText = implode('', $shaped);
-        preg_match('/[\p{Arabic}A-Za-z]/u', $text, $firstStrong);
-        if (isset($firstStrong[0]) && preg_match('/\p{Arabic}/u', $firstStrong[0])) {
-            $visual = $this->reverse($shapedText);
+        return implode('', $shaped);
+    }
 
-            return preg_replace_callback('/[A-Za-z0-9](?:[A-Za-z0-9 .,:;@+%()\/_-]*[A-Za-z0-9])?/', fn (array $match) => $this->reverse($match[0]), $visual);
+    /**
+     * Lays out an already shaped line the way the print head will draw it.
+     *
+     * Arabic words inside one right-to-left stretch are reversed together: reversing
+     * each word on its own would leave them in logical order, which an Arabic reader
+     * sees backwards. A line that starts with Latin text keeps that prefix where it
+     * is, so only the Arabic stretch that follows it is flipped.
+     */
+    private function reorder(string $shaped): string
+    {
+        $clusters = $this->clusters($shaped);
+
+        if ($this->baseDirection($clusters) === 'right-to-left') {
+            return $this->keepLatinReadingForward($this->flip($clusters));
         }
 
-        return preg_replace_callback('/[\p{Arabic}\p{M}]+/u', fn (array $match) => $this->reverse($match[0]), $shapedText);
+        $output = [];
+        $count = count($clusters);
+
+        for ($index = 0; $index < $count; $index++) {
+            if ($this->direction($clusters[$index]) !== 'right-to-left') {
+                $output[] = $clusters[$index];
+                continue;
+            }
+
+            // The stretch runs to its last Arabic word; the punctuation and spaces
+            // around it belong to whichever side they already sit next to.
+            $lastArabic = $index;
+            for ($probe = $index + 1; $probe < $count && $this->direction($clusters[$probe]) !== 'left-to-right'; $probe++) {
+                if ($this->direction($clusters[$probe]) === 'right-to-left') {
+                    $lastArabic = $probe;
+                }
+            }
+
+            $output[] = $this->keepLatinReadingForward($this->flip(array_slice($clusters, $index, $lastArabic - $index + 1)));
+            $index = $lastArabic;
+        }
+
+        return implode('', $output);
+    }
+
+    /** A vowel mark prints on its letter, so reordering moves them as one unit. */
+    private function clusters(string $text): array
+    {
+        $clusters = [];
+
+        foreach (mb_str_split($text) as $character) {
+            if ($clusters !== [] && preg_match('/^\p{M}$/u', $character)) {
+                $clusters[count($clusters) - 1] .= $character;
+                continue;
+            }
+            $clusters[] = $character;
+        }
+
+        return $clusters;
+    }
+
+    private function baseDirection(array $clusters): string
+    {
+        foreach ($clusters as $cluster) {
+            $direction = $this->direction($cluster);
+            if ($direction !== 'neutral') {
+                return $direction;
+            }
+        }
+
+        return 'left-to-right';
+    }
+
+    private function direction(string $cluster): string
+    {
+        $character = mb_substr($cluster, 0, 1);
+
+        if (preg_match('/[A-Za-z0-9]/u', $character)) {
+            return 'left-to-right';
+        }
+
+        if (preg_match('/\p{Arabic}/u', $character)) {
+            return 'right-to-left';
+        }
+
+        return 'neutral';
+    }
+
+    private function flip(array $clusters): array
+    {
+        $flipped = [];
+        $mirrors = ['(' => ')', ')' => '(', '[' => ']', ']' => '[', '{' => '}', '}' => '{', '<' => '>', '>' => '<'];
+
+        foreach ($clusters as $cluster) {
+            $base = mb_substr($cluster, 0, 1);
+            $flipped[] = ($mirrors[$base] ?? $base).mb_substr($cluster, 1);
+        }
+
+        return array_reverse($flipped);
+    }
+
+    /**
+     * Flipping a stretch turns any Latin or number inside it backwards, so those
+     * runs are flipped once more to read forward. Amounts travel with their
+     * symbols and separators ("36.00 SAR", "25%"), so the whole phrase counts
+     * as one run.
+     */
+    private function keepLatinReadingForward(array $clusters): string
+    {
+        return preg_replace_callback(
+            '/[A-Za-z0-9%$€£](?:[A-Za-z0-9 .,:;@+%()\/_$€£-]*[A-Za-z0-9%$€£])?/u',
+            fn (array $match) => $this->reverse($match[0]),
+            implode('', $clusters),
+        );
     }
 
     public function encode(string $text, string $encoding = 'cp864'): string
@@ -145,7 +287,13 @@ class ArabicTextFormatter
         }
 
         $bytes = '';
+
         foreach (mb_str_split($visual) as $character) {
+            // A vowel mark needs the letter it sits on, which the code page cannot give.
+            if (preg_match('/^\p{M}$/u', $character)) {
+                continue;
+            }
+
             $codepoint = mb_ord($character);
             if (isset(self::CP864[$codepoint])) {
                 $bytes .= chr(self::CP864[$codepoint]);
@@ -204,15 +352,18 @@ class ArabicTextFormatter
 
     private function joiningCharacter(array $characters, int $index, int $direction): ?string
     {
-        for ($position = $index + $direction; isset($characters[$position]); $position += $direction) {
-            if (preg_match('/^\p{M}$/u', $characters[$position])) {
-                continue;
-            }
+        $position = $this->nextJoiningPosition($characters, $index, $direction);
 
-            return isset($this->forms[$characters[$position]]) ? $characters[$position] : null;
+        return isset($characters[$position]) && isset($this->forms[$characters[$position]]) ? $characters[$position] : null;
+    }
+
+    /** The next letter that can join, stepping over vowel marks. */
+    private function nextJoiningPosition(array $characters, int $index, int $direction): int
+    {
+        for ($position = $index + $direction; isset($characters[$position]) && preg_match('/^\p{M}$/u', $characters[$position]); $position += $direction) {
         }
 
-        return null;
+        return $position;
     }
 
     private function connectsForward(string $character): bool

@@ -100,6 +100,7 @@ class PrintingController extends Controller
             'config' => [ 'sometimes', 'array' ],
             'config.copies' => [ 'nullable', 'integer', 'min:1' ],
             'config.encoding' => [ 'nullable', Rule::in( self::ENCODINGS ) ],
+            'config.lineWidth' => [ 'nullable', 'integer', 'min:20', 'max:120' ],
         ] );
 
         // The receipt body travels as a free-form map: validated() would prune
@@ -135,6 +136,7 @@ class PrintingController extends Controller
             'config' => [ 'sometimes', 'array' ],
             'config.copies' => [ 'nullable', 'integer', 'min:1' ],
             'config.protocol' => [ 'nullable', Rule::in( [ 'auto', 'escpos', 'tspl' ] ) ],
+            'config.lineWidth' => [ 'nullable', 'integer', 'min:20', 'max:120' ],
         ] );
 
         return $this->jobs->labels(
@@ -263,11 +265,13 @@ class PrintingController extends Controller
             'showPrice' => $overrides[ 'showPrice' ] ?? $settings[ 'showPriceOnLabel' ],
             'showSku' => $overrides[ 'showSku' ] ?? $settings[ 'showSkuOnLabel' ],
             'showBarcodeText' => $overrides[ 'showBarcodeText' ] ?? $settings[ 'showBarcodeTextOnLabel' ],
-            'copies' => $overrides[ 'copies' ] ?? $settings[ 'copies' ],
+            // How many receipt copies to print says nothing about how many labels to
+            // print, and a label roll is not cut because the receipt printer is.
+            'copies' => $overrides[ 'copies' ] ?? 1,
+            'cut' => $overrides[ 'cut' ] ?? true,
             'encoding' => $overrides[ 'encoding' ] ?? $settings[ 'encoding' ],
             'lineWidth' => $overrides[ 'lineWidth' ] ?? $settings[ 'lineWidth' ],
             'lineSpacing' => $overrides[ 'lineSpacing' ] ?? $settings[ 'lineSpacing' ],
-            'cut' => $overrides[ 'cut' ] ?? $settings[ 'cutPaper' ],
         ];
     }
 

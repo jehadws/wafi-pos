@@ -116,11 +116,30 @@ class EscPosBuilder
         return $this->row($this->cell($left, $this->lineWidth - mb_strlen($right)).$this->cellEnd($right, mb_strlen($right)));
     }
 
-    public function productRow(string $name, string $quantity, ?string $unitPrice, string $total): self
+    /**
+     * The columns the item header and the product rows have to agree on. On a
+     * narrow receipt the amount columns give way first, so a name always has
+     * something to sit in.
+     *
+     * @return array{int, int, int} name, quantity and total widths in characters
+     */
+    public function productColumns(): array
     {
         $quantityWidth = 6;
         $totalWidth = 14;
-        $nameWidth = $this->lineWidth - $quantityWidth - $totalWidth;
+        $minimumNameWidth = 8;
+
+        if ($this->lineWidth < $quantityWidth + $totalWidth + $minimumNameWidth) {
+            $totalWidth = max(6, $this->lineWidth - $quantityWidth - $minimumNameWidth);
+            $quantityWidth = max(3, min($quantityWidth, $this->lineWidth - $totalWidth - $minimumNameWidth));
+        }
+
+        return [max(1, $this->lineWidth - $quantityWidth - $totalWidth), $quantityWidth, $totalWidth];
+    }
+
+    public function productRow(string $name, string $quantity, ?string $unitPrice, string $total): self
+    {
+        [$nameWidth, $quantityWidth, $totalWidth] = $this->productColumns();
         $lines = $this->wrap($name, $nameWidth);
         $this->row(
             $this->cell(array_shift($lines) ?? '', $nameWidth)
@@ -145,14 +164,21 @@ class EscPosBuilder
             return $this;
         }
 
+        $ascii = preg_replace('/[^\x20-\x7E]/', '', $value);
+        if ($ascii === '') {
+            return $this;
+        }
+
         $this->align('center');
         $this->bytes(0x1D, 0x68, max(20, min(255, $height)));
         $this->bytes(0x1D, 0x77, max(1, min(6, $width)));
         $this->bytes(0x1D, 0x48, $showText ? 2 : 0);
         $this->bytes(0x1D, 0x66, 0);
-        $ascii = preg_replace('/[^\x20-\x7E]/', '', $value);
-        $this->bytes(0x1D, 0x6B, 73, strlen($ascii));
-        $this->buffer .= $ascii."\n";
+        // Code 128 has three code sets, and the printer has to be told which one it is
+        // getting: the data starts with {A, {B or {C, and a real brace is written {{.
+        $data = '{B'.str_replace('{', '{{', $ascii);
+        $this->bytes(0x1D, 0x6B, 73, strlen($data));
+        $this->buffer .= $data."\n";
 
         return $this->align('left');
     }

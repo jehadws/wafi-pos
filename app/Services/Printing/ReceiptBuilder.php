@@ -41,8 +41,13 @@ class ReceiptBuilder
         $this->optionalPair($builder, 'Type:', isset($receipt['orderType']) ? strtoupper((string) $receipt['orderType']) : null);
         $builder->dashedDivider();
 
-        $nameWidth = $lineWidth - 20;
-        $builder->bold()->line(str_pad('ITEM', $nameWidth).'QTY'.str_repeat(' ', 3).'TOTAL')->resetFormat()->divider();
+        [$nameWidth, $quantityWidth, $totalWidth] = $builder->productColumns();
+        $builder->bold()->line(
+            str_pad('ITEM', $nameWidth)
+            .str_pad('QTY', $quantityWidth, ' ', STR_PAD_LEFT)
+            .str_pad('TOTAL', $totalWidth, ' ', STR_PAD_LEFT),
+        )->resetFormat()->divider();
+
         foreach ($receipt['items'] ?? [] as $item) {
             $builder->productRow(
                 (string) ($item['name'] ?? 'Item'),
@@ -56,7 +61,7 @@ class ReceiptBuilder
         if (array_key_exists('subtotal', $receipt)) {
             $builder->twoColumns('Subtotal', (string) $receipt['subtotal']);
         }
-        if (isset($receipt['discount']) && (float) $receipt['discount'] > 0) {
+        if ($this->amount($receipt['discount'] ?? null) > 0) {
             $builder->twoColumns('Discount', '-'.$receipt['discount']);
         }
         if (($config['showTaxBreakdown'] ?? false) && ! empty($receipt['taxes'])) {
@@ -66,7 +71,7 @@ class ReceiptBuilder
                     (string) ($tax['tax_value'] ?? ''),
                 );
             }
-        } elseif (isset($receipt['tax']) && (float) $receipt['tax'] > 0) {
+        } elseif ($this->amount($receipt['tax'] ?? null) > 0) {
             $builder->twoColumns('Tax', (string) $receipt['tax']);
         }
 
@@ -118,5 +123,29 @@ class ReceiptBuilder
         if ($value !== null && $value !== '') {
             $builder->twoColumns($label, (string) $value);
         }
+    }
+
+    /**
+     * Amounts arrive formatted for the currency ("$5.00", "1.234,56"), and
+     * casting that text to a float reads zero, which would drop the line from
+     * the receipt. Read the number out of the text instead.
+     */
+    private function amount(mixed $value): float
+    {
+        $digits = preg_replace('/[^\d.,-]/u', '', (string) $value) ?? '';
+
+        if (! preg_match('/\d/', $digits)) {
+            return 0.0;
+        }
+
+        if (str_contains($digits, ',') && str_contains($digits, '.')) {
+            $digits = strrpos($digits, '.') > strrpos($digits, ',')
+                ? str_replace(',', '', $digits)
+                : str_replace(['.', ','], ['', '.'], $digits);
+        } elseif (str_contains($digits, ',')) {
+            $digits = str_replace(',', '.', $digits);
+        }
+
+        return (float) $digits;
     }
 }
