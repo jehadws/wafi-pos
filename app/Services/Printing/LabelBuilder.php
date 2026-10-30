@@ -12,8 +12,16 @@ class LabelBuilder
 
     private const MARGIN = 8;
 
+    private readonly LabelRaster $raster;
+
     public function __construct(private readonly ArabicTextFormatter $formatter)
     {
+        $this->raster = new LabelRaster($formatter, $this->layout(...));
+    }
+
+    public function raster(): LabelRaster
+    {
+        return $this->raster;
     }
 
     public function build(array $label, array $config = []): string
@@ -168,37 +176,27 @@ class LabelBuilder
         ];
     }
 
+    /**
+     * Both protocols print the identical LabelRaster pixels; only the container
+     * differs. Head width caps the ESC/POS raster so a wide sticker is scaled
+     * down instead of clipped by a narrower print head.
+     */
     private function buildTspl(array $label, array $config): string
     {
         $widthMm = (float) ($config['widthMm'] ?? 50);
         $heightMm = (float) ($config['heightMm'] ?? 30);
         $gapMm = (float) ($config['gapMm'] ?? 2);
         $copies = max(1, min(100, (int) ($config['copies'] ?? 1)));
-        $layout = $this->layout($label, $config);
-        $printableWidth = $layout['widthDots'] - self::MARGIN * 2;
-        $output = "SIZE {$widthMm} mm, {$heightMm} mm\r\nGAP {$gapMm} mm, 0 mm\r\nDIRECTION 1\r\nCLS\r\n";
+        $bitmap = $this->raster->render($label, $config);
 
-        foreach ($layout['rows'] as $row) {
-            if ($row['type'] === 'barcode') {
-                $readable = $row['readableHeight'] > 0 ? 1 : 0;
-                $wide = $row['narrow'] * 2;
-                $output .= "BARCODE {$row['x']},{$row['y']},\"128\",{$row['height']},{$readable},0,{$row['narrow']},{$wide},\"{$row['code']}\"\r\n";
-            } elseif ($this->formatter->hasArabic($row['text'])) {
-                $bitmap = $this->formatter->rasterize($row['text'], $printableWidth, max(10, $row['height'] - 6));
-                $x = max(self::MARGIN, intdiv($layout['widthDots'] - $bitmap['widthBytes'] * 8, 2));
-                $y = $row['y'] + max(0, intdiv($row['height'] - $bitmap['height'], 2));
-                $output .= "BITMAP {$x},{$y},{$bitmap['widthBytes']},{$bitmap['height']},0,".$this->tsplDots($bitmap['data'])."\r\n";
-            } else {
-                $output .= "TEXT {$row['x']},{$row['y']},\"{$row['font']}\",0,{$row['scale']},{$row['scale']},\"{$row['text']}\"\r\n";
-            }
-        }
-
-        return $output."PRINT {$copies}\r\n";
+        return "SIZE {$widthMm} mm, {$heightMm} mm\r\nGAP {$gapMm} mm, 0 mm\r\nDIRECTION 1\r\nCLS\r\n"
+            .'BITMAP 0,0,'.$bitmap['widthBytes'].','.$bitmap['height'].',0,'.$this->tsplDots($bitmap['data'])."\r\n"
+            ."PRINT {$copies}\r\n";
     }
 
     /**
      * TSPL burns a dot where a bit is 0 and leaves paper where it is 1, which is the
-     * reverse of the ESC/POS raster the shared formatter builds, so flip every bit.
+     * reverse of the ESC/POS raster the shared renderer builds, so flip every bit.
      */
     private function tsplDots(string $data): string
     {
@@ -213,38 +211,16 @@ class LabelBuilder
 
     private function buildEscPos(array $label, array $config): string
     {
+        $bitmap = $this->raster->render($label, $config, (int) ($config['rasterWidth'] ?? 576));
         $builder = new EscPosBuilder(
             $this->formatter,
             (int) ($config['lineWidth'] ?? 36),
             (string) ($config['encoding'] ?? 'cp864'),
-            (int) ($config['rasterWidth'] ?? 384),
         );
-        $builder->init()->lineSpacing(array_key_exists('lineSpacing', $config) ? ($config['lineSpacing'] === null ? null : (int) $config['lineSpacing']) : null)->feed();
-
-        if (($config['showStoreName'] ?? true) && ! empty($label['storeName'])) {
-            $builder->align('center')->bold()->line((string) $label['storeName'], 24)->resetFormat();
-        }
-        if (! empty($label['name'])) {
-            $builder->align('center')->bold()->line((string) $label['name'], 26)->resetFormat();
-        }
-        if (! empty($label['unit']) || (($config['showSku'] ?? false) && ! empty($label['sku']))) {
-            $details = array_filter([
-                ! empty($label['unit']) ? 'Unit: '.$label['unit'] : null,
-                ($config['showSku'] ?? false) && ! empty($label['sku']) ? 'SKU: '.$label['sku'] : null,
-            ]);
-            $builder->align('center')->line(implode(' | ', $details));
-        }
-        if (! empty($label['barcode'])) {
-            $builder->barcode128((string) $label['barcode'], (int) ($config['barcodeHeight'] ?? 45), 2, $config['showBarcodeText'] ?? true);
-        }
-        if (($config['showPrice'] ?? true) && isset($label['price'])) {
-            $builder->align('center')->bold()->textSize(2, 2)->line((string) $label['price'], 30)->resetFormat();
-        }
+        $builder->init()->raster($bitmap)->feed(2);
 
         if ($config['cut'] ?? true) {
-            $builder->feed()->cut();
-        } else {
-            $builder->feed(2);
+            $builder->cut();
         }
 
         return $builder->toString();
