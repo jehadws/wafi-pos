@@ -690,7 +690,7 @@ class ProductCrud extends CrudService
      * @param  array $inputs the flattened ProductService payload
      * @return void
      */
-    private function validateProductPayload( array $inputs ): void
+    public function validateProductPayload( array $inputs ): void
     {
         /**
          * Phase 5: a FormRequest must NOT be resolved through the container
