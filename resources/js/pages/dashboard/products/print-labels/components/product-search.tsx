@@ -81,6 +81,8 @@ export function ProductSearch({ selectedProducts, onProductsChange, onPrint }: P
     onProductsChange(selectedProducts.filter((p) => p.selectedUnitQuantity.id !== product.selectedUnitQuantity.id));
   };
 
+  const totalLabels = selectedProducts.reduce((total, product) => total + product.times, 0);
+
   const handleOpenSettings = (product: SelectedProduct) => {
     setSelectedProduct(product);
     setTimesText(String(product.times));
@@ -91,56 +93,83 @@ export function ProductSearch({ selectedProducts, onProductsChange, onPrint }: P
 
   return (
     <>
-      <div className="w-80 space-y-4 border-r p-4">
-        <div>
-          <h3 className="mb-3 font-semibold">{t('Products')}</h3>
+      <div className="flex w-80 flex-col gap-5 border-e p-4">
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold">{t('Products')}</h3>
 
           <div className="bg-background relative">
-            <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
+            <Search className="text-muted-foreground pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
             <Input placeholder={t('Search Products...')} value={searchQuery} onChange={(e) => handleSearch(e.target.value)} className="ps-10" />
 
             {showResults && searchResults.length > 0 && (
-              <div className="bg-background absolute start-0 end-0 top-full z-10 max-h-48 overflow-y-auto rounded-md border shadow-lg">
+              <div className="bg-background absolute start-0 end-0 top-full z-10 max-h-56 overflow-y-auto rounded-lg border shadow-lg">
                 {searchResults.map((product) => (
-                  <div key={product.id} className="cursor-pointer border-b p-3 last:border-b-0" onClick={() => addProduct(product)}>
+                  <button
+                    key={product.id}
+                    type="button"
+                    onClick={() => addProduct(product)}
+                    className="hover:bg-accent/60 w-full border-b p-3 text-start last:border-b-0"
+                  >
                     <div className="text-sm font-medium">{product.name}</div>
-                    <div className="text-xs">{product.barcode}</div>
-                  </div>
+                    <div className="text-muted-foreground font-mono text-xs">{product.barcode}</div>
+                  </button>
                 ))}
               </div>
             )}
           </div>
         </div>
 
-        <div>
-          <h4 className="mb-2 font-medium">{t('Included Products')}</h4>
-          <div className="space-y-2">
-            {selectedProducts.map((product) => (
-              <div key={product.selectedUnitQuantity.id} className="rounded border p-3">
-                <div className="mb-2 flex items-start justify-between">
-                  <div>
-                    <div className="text-sm font-medium">
-                      {product.name} ({product.selectedUnitQuantity.unit.name}) x{product.times}
+        <div className="flex min-h-0 flex-1 flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-medium">{t('Included Products')}</h4>
+            {selectedProducts.length > 0 && (
+              <Button variant="ghost" size="sm" className="h-6 gap-1 text-xs" onClick={() => onProductsChange([])}>
+                <Trash2 className="h-3 w-3" />
+                {t('Clear all')}
+              </Button>
+            )}
+          </div>
+
+          {selectedProducts.length === 0 ? (
+            <p className="text-muted-foreground rounded-lg border border-dashed p-4 text-center text-xs">
+              {t('Search for a product to add it to the label batch.')}
+            </p>
+          ) : (
+            <div className="min-h-0 flex-1 space-y-2 overflow-y-auto">
+              {selectedProducts.map((product) => (
+                <div key={product.selectedUnitQuantity.id} className="hover:border-primary/40 rounded-lg border p-3 transition-colors">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-medium" dir="auto">
+                        {product.name}
+                      </div>
+                      <div className="text-muted-foreground mt-1 flex items-center gap-1.5 text-xs">
+                        <span>{product.selectedUnitQuantity.unit.name}</span>
+                        <span aria-hidden>·</span>
+                        <span>
+                          {product.times} {t('labels')}
+                        </span>
+                      </div>
+                      <div className="text-muted-foreground truncate font-mono text-xs">{product.selectedUnitQuantity.barcode}</div>
                     </div>
-                    <div className="text-xs text-gray-500">{product.selectedUnitQuantity.barcode}</div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button size="sm" variant="outline" className="h-6 w-6 p-0" onClick={() => handleOpenSettings(product)}>
-                      <Settings className="h-3 w-3" />
-                    </Button>
-                    <Button size="sm" variant="destructive" className="h-6 w-6 p-0" onClick={() => handleRemoveProduct(product)}>
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <Button size="sm" variant="outline" className="h-6 w-6 p-0" onClick={() => handleOpenSettings(product)}>
+                        <Settings className="h-3 w-3" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="text-destructive h-6 w-6 p-0" onClick={() => handleRemoveProduct(product)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        <Button onClick={onPrint} className="w-full bg-green-600 hover:bg-green-700" disabled={selectedProducts.length === 0}>
-          <Printer className="me-2 h-4 w-4" />
-          {t('Print Labels')}
+        <Button onClick={onPrint} className="w-full gap-2" disabled={selectedProducts.length === 0}>
+          <Printer className="h-4 w-4" />
+          {totalLabels > 0 ? `${t('Print Labels')} · ${totalLabels}` : t('Print Labels')}
         </Button>
       </div>
 

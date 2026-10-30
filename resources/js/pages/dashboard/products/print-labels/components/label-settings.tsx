@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslation } from '@/lib/i18n';
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { LabelSettings } from '../page';
 
 interface LabelSettingsProps {
@@ -68,6 +68,15 @@ function NumberField({ id, label, value, min, max, className, onChange }: Number
   );
 }
 
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="flex flex-col gap-4">
+      <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">{title}</h3>
+      {children}
+    </section>
+  );
+}
+
 export function LabelSettingsPanel({ settings, onSettingsChange }: LabelSettingsProps) {
   const { t } = useTranslation();
   const updateSetting = (key: keyof LabelSettings, value: any) => {
@@ -85,10 +94,16 @@ export function LabelSettingsPanel({ settings, onSettingsChange }: LabelSettings
   const preset = SIZE_PRESETS.find(([w, h]) => w === settings.widthMm && h === settings.heightMm);
   const presetKey = preset ? `${preset[0]}x${preset[1]}` : 'custom';
 
+  const visibility: Array<{ id: keyof LabelSettings; label: string }> = [
+    { id: 'showStoreName', label: t('Show Store Name') },
+    { id: 'showProductName', label: t('Show Product Name') },
+    { id: 'showProductPrice', label: t('Show Product Price') },
+    { id: 'showBarcodeText', label: t('Show Barcode Text') },
+  ];
+
   return (
-    <div className="w-80 space-y-6 border-l p-4">
-      <div>
-        <h3 className="mb-4 font-semibold">{t('Label Size')}</h3>
+    <div className="flex w-80 shrink-0 flex-col gap-6 overflow-y-auto border-s p-4">
+      <Section title={t('Label Size')}>
         <div className="space-y-4">
           <div>
             <Label htmlFor="labelSizePreset" className="text-sm font-medium">
@@ -108,12 +123,20 @@ export function LabelSettingsPanel({ settings, onSettingsChange }: LabelSettings
               <SelectContent>
                 {SIZE_PRESETS.map(([w, h]) => (
                   <SelectItem key={`${w}x${h}`} value={`${w}x${h}`}>
-                    {w} × {h} mm
+                    <span className="flex w-full items-center justify-between gap-4">
+                      <span className="font-mono">
+                        {w} × {h} mm
+                      </span>
+                      <span className="text-muted-foreground shrink-0 font-mono text-xs">
+                        {w * 8} × {h * 8}
+                      </span>
+                    </span>
                   </SelectItem>
                 ))}
                 <SelectItem value="custom">{t('Custom size')}</SelectItem>
               </SelectContent>
             </Select>
+            <p className="text-muted-foreground mt-1 text-xs">{t('Millimetres × dots at 203 dpi.')}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -144,10 +167,9 @@ export function LabelSettingsPanel({ settings, onSettingsChange }: LabelSettings
             onChange={(v) => updateSetting('barcodeHeightMm', v)}
           />
         </div>
-      </div>
+      </Section>
 
-      <div>
-        <h3 className="mb-4 font-semibold">{t('Basic Settings')}</h3>
+      <Section title={t('Preview Layout')}>
         <div className="space-y-4">
           <NumberField
             id="itemsPerRow"
@@ -158,70 +180,43 @@ export function LabelSettingsPanel({ settings, onSettingsChange }: LabelSettings
             onChange={(v) => updateSetting('itemsPerRow', v)}
           />
 
-          <NumberField
-            id="verticalPadding"
-            label={t('Vertical Padding (pixels)')}
-            value={settings.verticalPadding}
-            min={0}
-            max={200}
-            onChange={(v) => updateSetting('verticalPadding', v)}
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <NumberField
+              id="verticalPadding"
+              label={t('Vertical Padding (pixels)')}
+              value={settings.verticalPadding}
+              min={0}
+              max={200}
+              onChange={(v) => updateSetting('verticalPadding', v)}
+            />
 
-          <NumberField
-            id="horizontalPadding"
-            label={t('Horizontal Padding (pixels)')}
-            value={settings.horizontalPadding}
-            min={0}
-            max={200}
-            onChange={(v) => updateSetting('horizontalPadding', v)}
-          />
+            <NumberField
+              id="horizontalPadding"
+              label={t('Horizontal Padding (pixels)')}
+              value={settings.horizontalPadding}
+              min={0}
+              max={200}
+              onChange={(v) => updateSetting('horizontalPadding', v)}
+            />
+          </div>
+          <p className="text-muted-foreground text-xs">{t('On-screen spacing only; it does not change what prints.')}</p>
         </div>
-      </div>
+      </Section>
 
-      <div>
-        <h3 className="mb-4 font-semibold">{t('Visibility Settings')}</h3>
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Checkbox id="showStoreName" checked={settings.showStoreName} onCheckedChange={(checked) => updateSetting('showStoreName', checked)} />
-            <Label htmlFor="showStoreName" className="text-sm">
-              {t('Show Store Name')}
-            </Label>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="showBarcodeText"
-              checked={settings.showBarcodeText}
-              onCheckedChange={(checked) => updateSetting('showBarcodeText', checked)}
-            />
-            <Label htmlFor="showBarcodeText" className="text-sm">
-              {t('Show Barcode Text')}
-            </Label>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="showProductPrice"
-              checked={settings.showProductPrice}
-              onCheckedChange={(checked) => updateSetting('showProductPrice', checked)}
-            />
-            <Label htmlFor="showProductPrice" className="text-sm">
-              {t('Show Product Price')}
-            </Label>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="showProductName"
-              checked={settings.showProductName}
-              onCheckedChange={(checked) => updateSetting('showProductName', checked)}
-            />
-            <Label htmlFor="showProductName" className="text-sm">
-              {t('Show Product Name')}
-            </Label>
-          </div>
+      <Section title={t('Printed Fields')}>
+        <div className="space-y-1">
+          {visibility.map((field) => (
+            <label
+              key={field.id}
+              htmlFor={field.id}
+              className="hover:bg-accent/50 flex cursor-pointer items-center justify-between gap-2 rounded-md px-2 py-1.5 transition-colors"
+            >
+              <span className="text-sm">{field.label}</span>
+              <Checkbox id={field.id} checked={Boolean(settings[field.id])} onCheckedChange={(checked) => updateSetting(field.id, checked)} />
+            </label>
+          ))}
         </div>
-      </div>
+      </Section>
     </div>
   );
 }

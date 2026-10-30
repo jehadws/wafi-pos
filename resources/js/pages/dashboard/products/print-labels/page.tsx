@@ -2,6 +2,7 @@
 
 import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/lib/i18n';
+import { PRINT_DOTS_PER_MM } from '@/lib/label-layout';
 import Settings from '@/lib/settings';
 import printingService, { PrinterSettings } from '@/services/printing-service';
 import { formatCurrency } from '@/utils/format';
@@ -10,7 +11,6 @@ import { toast } from 'sonner';
 import { LabelPreview } from './components/label-preview';
 import { LabelSettingsPanel } from './components/label-settings';
 import { ProductSearch } from './components/product-search';
-import { PRINT_DOTS_PER_MM } from './label-layout';
 
 export interface LabelSettings {
   itemsPerRow: number;
