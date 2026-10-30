@@ -1,5 +1,10 @@
+import { LABEL_PX_PER_DOT, LabelPaper } from '@/components/pos/label-paper';
+import { Badge } from '@/components/ui/badge';
 import { useTranslation } from '@/lib/i18n';
-import { layoutTsplLabel, PRINT_DOTS_PER_MM } from '../label-layout';
+import { hashKey, labelPrintableKey, PRINT_DOTS_PER_MM } from '@/lib/label-layout';
+import printingService, { LabelPreviewImage } from '@/services/printing-service';
+import { Tag } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { buildLabelItems, getStoreName, LabelSettings, SelectedProduct } from '../page';
 
 interface LabelPreviewProps {
@@ -7,30 +12,13 @@ interface LabelPreviewProps {
   settings: LabelSettings;
 }
 
-// Preview scale: printer dots -> css pixels, so a 76 mm sticker renders wider than a 40 mm one.
-const PX_PER_DOT = 0.6;
-const MONOSPACE_ADVANCE = 0.6;
-const BARCODE_TEXT_DOTS = 24;
-
 export function LabelPreview({ products, settings }: LabelPreviewProps) {
   const { t } = useTranslation();
-  const storeName = getStoreName();
 
-  const items = buildLabelItems(products, settings, storeName);
+  const items = useMemo(() => buildLabelItems(products, settings, getStoreName()), [products, settings]);
   const labels = items.flatMap((item) => Array.from({ length: item.copies }, () => item));
 
-  if (labels.length === 0) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <div className="text-center">
-          <p className="mb-2 text-lg">{t('No products selected')}</p>
-          <p className="text-sm text-gray-400">{t('Search and add products to start creating labels')}</p>
-        </div>
-      </div>
-    );
-  }
-
-  const layoutOptions = {
+  const options = {
     widthMm: settings.widthMm,
     heightMm: settings.heightMm,
     barcodeHeightDots: Math.round(settings.barcodeHeightMm * PRINT_DOTS_PER_MM),
@@ -40,72 +28,98 @@ export function LabelPreview({ products, settings }: LabelPreviewProps) {
     showBarcodeText: settings.showBarcodeText,
   };
 
-  return (
-    <div className="bg-muted flex-1 overflow-y-auto p-4">
-      <p className="mb-3 text-sm text-gray-600">
-        {t('Preview')} — {settings.widthMm} × {settings.heightMm} mm · {labels.length} {t('labels')}
-      </p>
-      <div
-        className="grid gap-3"
-        style={{
-          gridTemplateColumns: `repeat(${settings.itemsPerRow}, ${settings.widthMm * PRINT_DOTS_PER_MM * PX_PER_DOT}px)`,
-          padding: `${settings.verticalPadding}px ${settings.horizontalPadding}px`,
-        }}
-      >
-        {labels.map((item, index) => {
-          const layout = layoutTsplLabel(item, layoutOptions);
+  // The server draws the printed pixels; re-request whenever a printable field or
+  // the sticker geometry changes, and drop responses the user has already outpaced.
+  const requestKey = useMemo(() => {
+    const configKey = JSON.stringify([
+      settings.widthMm,
+      settings.heightMm,
+      Math.round(settings.barcodeHeightMm * PRINT_DOTS_PER_MM),
+      settings.showStoreName,
+      settings.showProductPrice,
+      settings.showBarcodeText,
+    ]);
+    return hashKey(configKey + items.map((item) => labelPrintableKey(item)).join(''));
+  }, [items, settings]);
 
-          return (
-            <div key={`${item.barcode}-${index}`} className="flex flex-col items-center gap-1">
-              <div
-                dir="ltr"
-                className="relative overflow-hidden border border-gray-300 bg-white"
-                style={{ width: `${layout.widthDots * PX_PER_DOT}px`, height: `${layout.heightDots * PX_PER_DOT}px` }}
-              >
-                {layout.rows.map((row, rowIndex) =>
-                  row.type === 'barcode' ? (
-                    <div
-                      key={rowIndex}
-                      className="absolute flex flex-col items-center justify-center"
-                      style={{
-                        left: `${row.x * PX_PER_DOT}px`,
-                        top: `${row.y * PX_PER_DOT}px`,
-                        width: `${row.width * PX_PER_DOT}px`,
-                      }}
-                    >
-                      <img
-                        src={`/storage/products/barcodes/${row.code}.png`}
-                        alt={row.code}
-                        className="object-contain"
-                        style={{ width: `${row.width * PX_PER_DOT}px`, height: `${row.height * PX_PER_DOT}px` }}
-                      />
-                      {row.readable && (
-                        <span className="leading-none text-black" style={{ fontSize: `${BARCODE_TEXT_DOTS * PX_PER_DOT * 0.8}px` }}>
-                          {row.code}
-                        </span>
-                      )}
-                    </div>
-                  ) : (
-                    <div
-                      key={rowIndex}
-                      className="absolute overflow-hidden text-center font-mono leading-none text-black"
-                      style={{
-                        left: `${row.x * PX_PER_DOT}px`,
-                        top: `${row.y * PX_PER_DOT}px`,
-                        width: `${row.width * PX_PER_DOT}px`,
-                        fontSize: `${Math.min(row.height * PX_PER_DOT * 0.82, (row.width * PX_PER_DOT) / (row.text.length * MONOSPACE_ADVANCE))}px`,
-                      }}
-                    >
-                      {row.text}
-                    </div>
-                  ),
-                )}
-              </div>
-              {layout.overflow && <p className="text-xs text-red-600">{t('Content may not fit this label size')}</p>}
-            </div>
-          );
-        })}
+  const [previews, setPreviews] = useState<Record<string, LabelPreviewImage | null>>({});
+
+  useEffect(() => {
+    if (items.length === 0) {
+      setPreviews({});
+      return;
+    }
+
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      printingService
+        .previewLabels(items, {
+          labelWidthMm: settings.widthMm,
+          labelHeightMm: settings.heightMm,
+          barcodeHeight: options.barcodeHeightDots,
+          showStoreNameOnLabel: settings.showStoreName,
+          showPriceOnLabel: settings.showProductPrice,
+          showBarcodeTextOnLabel: settings.showBarcodeText,
+          // This page never prints the SKU line; pin it so the terminal's stored
+          // setting cannot make the server draw something the preview asked for.
+          showSkuOnLabel: false,
+        })
+        .then((result) => {
+          if (!cancelled) setPreviews(result);
+        });
+    }, 250);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requestKey]);
+
+  return (
+    <div className="bg-muted/40 flex min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="bg-background flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
+        <div>
+          <h2 className="text-sm font-semibold">{t('Label preview')}</h2>
+          <p className="text-muted-foreground text-xs">
+            {settings.widthMm} × {settings.heightMm} mm · {labels.length} {t('labels')}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="font-mono">
+            {settings.itemsPerRow} {t('per row')}
+          </Badge>
+          <Badge variant="outline" className="font-mono">
+            {t('Barcode')} {settings.barcodeHeightMm} mm
+          </Badge>
+        </div>
       </div>
+
+      {labels.length === 0 ? (
+        <div className="flex flex-1 items-center justify-center p-8">
+          <div className="text-muted-foreground max-w-xs text-center">
+            <div className="bg-background mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border">
+              <Tag className="h-5 w-5" />
+            </div>
+            <p className="text-sm font-medium">{t('No products selected')}</p>
+            <p className="mt-1 text-xs">{t('Search and add products to start creating labels')}</p>
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 overflow-auto p-6">
+          <div
+            className="grid w-fit gap-3"
+            style={{
+              gridTemplateColumns: `repeat(${settings.itemsPerRow}, ${settings.widthMm * PRINT_DOTS_PER_MM * LABEL_PX_PER_DOT}px)`,
+              padding: `${settings.verticalPadding}px ${settings.horizontalPadding}px`,
+            }}
+          >
+            {labels.map((item, index) => (
+              <LabelPaper key={`${item.barcode}-${index}`} label={item} options={options} image={previews[hashKey(labelPrintableKey(item))]} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

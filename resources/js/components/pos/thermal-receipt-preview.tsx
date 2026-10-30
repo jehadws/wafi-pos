@@ -1,9 +1,10 @@
 'use client';
 
+import { ReceiptPaper } from '@/components/pos/receipt-paper';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n';
-import printingService, { FormattedReceiptData } from '@/services/printing-service';
+import printingService, { DEFAULT_PRINTER_SETTINGS, FormattedReceiptData, PrinterSettings } from '@/services/printing-service';
 import { CheckCircle2, Loader2, Printer, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -18,18 +19,7 @@ export function ThermalReceiptPreview({ data, onClose, autoPrint = false }: Ther
   const { t } = useTranslation();
   const [isPrinting, setIsPrinting] = useState(false);
   const [printingReady, setPrintingReady] = useState<boolean | null>(null);
-  const settings = printingService.getSettings();
-
-  useEffect(() => {
-    printingService.loadSettings().catch(() => {});
-    printingService.checkStatus().then(async (status) => {
-      setPrintingReady(status.status === 'online');
-      if (autoPrint && status.status === 'online') {
-        await handleDirectPrint();
-      }
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const [settings, setSettings] = useState<PrinterSettings>(DEFAULT_PRINTER_SETTINGS);
 
   const handleDirectPrint = async () => {
     setIsPrinting(true);
@@ -43,181 +33,57 @@ export function ThermalReceiptPreview({ data, onClose, autoPrint = false }: Ther
     setIsPrinting(false);
   };
 
+  useEffect(() => {
+    // The terminal's settings live on the backend, so the paper redraws once they land.
+    printingService
+      .loadSettings()
+      .then(setSettings)
+      .catch(() => {});
+
+    printingService.checkStatus().then(async (status) => {
+      setPrintingReady(status.status === 'online');
+      if (autoPrint && status.status === 'online') {
+        await handleDirectPrint();
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <div className="flex flex-col items-center gap-4 p-4">
-      {/* Header controls & printing availability */}
-      <div className="flex w-full max-w-sm items-center justify-between">
-        <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-3">
+      <div className="bg-muted/40 flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3">
+        <div className="flex flex-wrap items-center gap-2">
           {printingReady === true && (
-            <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary">
-              <CheckCircle2 className="text-primary me-1 h-3 w-3" />
+            <Badge variant="success">
+              <CheckCircle2 className="h-3 w-3" />
               {t('Printing is ready')}
             </Badge>
           )}
           {printingReady === false && (
-            <Badge variant="destructive">
-              <XCircle className="me-1 h-3 w-3" />
+            <Badge variant="danger">
+              <XCircle className="h-3 w-3" />
               {t('Printing is unavailable')}
             </Badge>
           )}
+          <Badge variant="outline" className="font-mono">
+            {settings.lineWidth} {t('chars per line')}
+          </Badge>
+          <Badge variant="outline" className="font-mono">
+            {settings.copies} {settings.copies === 1 ? t('copy') : t('copies')}
+          </Badge>
+          <Badge variant="outline" className="font-mono uppercase">
+            {settings.encoding}
+          </Badge>
         </div>
 
-        <Button onClick={handleDirectPrint} disabled={isPrinting} className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
+        <Button onClick={handleDirectPrint} disabled={isPrinting} className="gap-2">
           {isPrinting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
           {t('Print to Thermal Printer')}
         </Button>
       </div>
 
-      {/* Simulated 76mm/80mm Thermal Receipt Preview */}
-      <div
-        className="w-full rounded-md border border-neutral-300 bg-white p-5 text-neutral-900 shadow-xl dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
-        style={{
-          maxWidth: '360px',
-          fontFamily: '"Courier New", Courier, monospace',
-          fontSize: '12px',
-          lineHeight: '1.4',
-        }}
-      >
-        {/* Store Header */}
-        <div className="text-center font-bold">
-          {data.storeLogo && (
-            <img
-              src={data.storeLogo}
-              alt={data.storeName || 'Store logo'}
-              className="mx-auto mb-1 object-contain"
-              style={{ maxHeight: '60px', maxWidth: '140px' }}
-            />
-          )}
-          <div className="text-lg tracking-wider uppercase">{data.storeName || 'Subul POS'}</div>
-          {data.storeAddress && <div className="text-xs font-normal text-neutral-600 dark:text-neutral-400">{data.storeAddress}</div>}
-          {data.storeCity && <div className="text-xs font-normal text-neutral-600 dark:text-neutral-400">{data.storeCity}</div>}
-          {data.storePobox && <div className="text-xs font-normal text-neutral-600 dark:text-neutral-400">P.O.Box: {data.storePobox}</div>}
-          {data.storePhone && <div className="text-xs font-normal text-neutral-600 dark:text-neutral-400">Tel: {data.storePhone}</div>}
-          {data.storeEmail && <div className="text-xs font-normal text-neutral-600 dark:text-neutral-400">{data.storeEmail}</div>}
-        </div>
-
-        {/* Divider */}
-        <div className="my-2 border-t border-dashed border-neutral-400 dark:border-neutral-600" />
-
-        {/* Order Meta */}
-        <div className="space-y-0.5 text-xs">
-          {data.orderCode && (
-            <div className="flex justify-between">
-              <span className="font-semibold">{t('Order')}:</span>
-              <span>{data.orderCode}</span>
-            </div>
-          )}
-          {data.date && (
-            <div className="flex justify-between">
-              <span className="font-semibold">{t('Date')}:</span>
-              <span>{data.date}</span>
-            </div>
-          )}
-          {data.cashier && (
-            <div className="flex justify-between">
-              <span className="font-semibold">{t('Cashier')}:</span>
-              <span>{data.cashier}</span>
-            </div>
-          )}
-          {data.customer && (
-            <div className="flex justify-between">
-              <span className="font-semibold">{t('Customer')}:</span>
-              <span>{data.customer}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Divider */}
-        <div className="my-2 border-t border-dashed border-neutral-400 dark:border-neutral-600" />
-
-        {/* Products Table Header */}
-        <div className="flex justify-between border-b border-neutral-300 pb-1 text-xs font-bold uppercase dark:border-neutral-700">
-          <span className="w-7/12">{t('Item')}</span>
-          <span className="w-2/12 text-center">{t('Qty')}</span>
-          <span className="w-3/12 text-end">{t('Total')}</span>
-        </div>
-
-        {/* Products List */}
-        <div className="divide-y divide-dotted divide-neutral-200 text-xs dark:divide-neutral-800">
-          {data.items?.map((item, idx) => (
-            <div key={idx} className="py-1.5">
-              <div className="flex items-start justify-between">
-                <span className="w-7/12 pe-1 font-medium break-words">{item.name}</span>
-                <span className="w-2/12 text-center">{item.quantity}x</span>
-                <span className="w-3/12 text-end font-bold">{item.total}</span>
-              </div>
-              {item.price && <div className="ps-1 text-[10px] text-neutral-500 dark:text-neutral-400">@ {item.price}</div>}
-            </div>
-          ))}
-        </div>
-
-        {/* Divider */}
-        <div className="my-2 border-t border-dashed border-neutral-400 dark:border-neutral-600" />
-
-        {/* Summary */}
-        <div className="space-y-1 text-xs">
-          {data.subtotal !== undefined && (
-            <div className="flex justify-between">
-              <span>{t('Subtotal')}</span>
-              <span>{data.subtotal}</span>
-            </div>
-          )}
-          {data.discount !== undefined && Number(data.discount) > 0 && (
-            <div className="flex justify-between text-neutral-600 dark:text-neutral-400">
-              <span>{t('Discount')}</span>
-              <span>-{data.discount}</span>
-            </div>
-          )}
-          {settings.showTaxBreakdown && data.taxes && data.taxes.length > 0
-            ? data.taxes.map((tx, idx) => (
-                <div key={idx} className="flex justify-between ps-2 text-[11px] text-neutral-600 dark:text-neutral-400">
-                  <span>
-                    {tx.name} ({tx.rate}%)
-                  </span>
-                  <span>{tx.tax_value}</span>
-                </div>
-              ))
-            : data.tax !== undefined &&
-              Number(data.tax) > 0 && (
-                <div className="flex justify-between">
-                  <span>{t('Tax')}</span>
-                  <span>{data.tax}</span>
-                </div>
-              )}
-        </div>
-
-        {/* Double Border Total */}
-        <div className="my-2 border-t-2 border-b-2 border-neutral-900 py-1.5 dark:border-neutral-100">
-          <div className="flex justify-between text-base font-black">
-            <span>{t('TOTAL')}</span>
-            <span>{data.total}</span>
-          </div>
-        </div>
-
-        {/* Payments */}
-        <div className="space-y-1 text-xs">
-          {data.tendered !== undefined && (
-            <div className="flex justify-between">
-              <span className="font-semibold">{t('Tendered')}</span>
-              <span>{data.tendered}</span>
-            </div>
-          )}
-          {data.change !== undefined && (
-            <div className="flex justify-between">
-              <span className="font-semibold">{t('Change')}</span>
-              <span>{data.change}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Divider */}
-        <div className="my-2 border-t border-dashed border-neutral-400 dark:border-neutral-600" />
-
-        {/* Footer */}
-        <div className="space-y-0.5 pt-1 text-center text-xs">
-          <div className="font-semibold">{data.footer || t('Thank you for your business!')}</div>
-          <div className="text-[10px] text-neutral-500">Powered by Subul POS</div>
-        </div>
+      <div className="bg-muted/60 dark:bg-muted/20 flex overflow-auto rounded-xl border p-5" style={{ maxHeight: '58vh' }}>
+        <ReceiptPaper data={data} settings={settings} className="m-auto" />
       </div>
     </div>
   );
