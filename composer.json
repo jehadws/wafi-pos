@@ -11,11 +11,13 @@
     "require": {
         "php": "^8.2",
         "doctrine/dbal": "^4.2",
+        "fakerphp/faker": "^1.24",
         "gumlet/php-image-resize": "^2.1",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^12.0",
         "laravel/reverb": "@beta",
         "laravel/sanctum": "^4.1",
+        "laravel/telescope": "^5.25",
         "laravel/tinker": "^2.10.1",
         "picqer/php-barcode-generator": "^3.2",
         "spatie/laravel-db-snapshots": "^2.7",
@@ -23,11 +25,9 @@
         "tormjens/eventy": "^0.8.0"
     },
     "require-dev": {
-        "fakerphp/faker": "^1.23",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.18",
         "laravel/sail": "^1.41",
-        "laravel/telescope": "^5.7",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
         "pestphp/pest": "^3.8",
