@@ -58,7 +58,7 @@ function printJobService(TransportInterface $transport): PrintJobService
     };
 
     return new PrintJobService(
-        new ReceiptBuilder($formatter),
+        app(ReceiptBuilder::class),
         new LabelBuilder($formatter),
         $printers,
     );
@@ -74,7 +74,7 @@ $receipt = [
 it('sends every receipt copy as one spool job', function () use ($receipt) {
     $transport = jobTransport();
     $result = printJobService($transport)->receipt(null, $receipt, ['copies' => 3], 'rcpt_1');
-    $single = (new ReceiptBuilder(new ArabicTextFormatter))->build($receipt, ['copies' => 3]);
+    $single = app(ReceiptBuilder::class)->build($receipt, ['copies' => 3]);
 
     expect($result)->toBe([
         'success' => true,
@@ -164,9 +164,9 @@ it('opens the cash drawer on every call', function () {
             'success' => true,
             'printer' => 'XP-80C',
             'type' => 'null',
-            'bytesWritten' => 10,
+            'bytesWritten' => 12,
         ],
-    ])->and(bin2hex($transport->jobs[0]['data']))->toBe('1b401b74281b700019fa')
+    ])->and(bin2hex($transport->jobs[0]['data']))->toBe('1b401c2e1b74281b700019fa')
         ->and($second['success'])->toBeTrue()
         ->and(count($transport->jobs))->toBe(2);
 });
