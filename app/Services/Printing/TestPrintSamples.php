@@ -10,7 +10,7 @@ class TestPrintSamples
             'arabic' => [
                 'storeName' => 'متجر الخير للتجزئة',
                 'storeAddress' => 'طريق الملك فهد، مجمع ٤٠٠، الرياض',
-                'storePhone' => 'هاتف: 0501234567',
+                'storePhone' => '0501234567',
                 'storeEmail' => 'info@subul.sa',
                 'orderCode' => 'TEST-ORDER-001',
                 'date' => now()->format('Y-m-d H:i'),

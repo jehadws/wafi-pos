@@ -273,7 +273,7 @@ class ArabicTextFormatter
         }
 
         if (in_array($normalizedEncoding, ['cp437', 'ascii'], true)) {
-            return iconv('UTF-8', 'CP437//TRANSLIT', $this->cleanCurrency($visual)) ?: '';
+            return iconv('UTF-8', 'CP437//TRANSLIT', $this->toLatinCurrency($visual)) ?: '';
         }
 
         if ($normalizedEncoding === 'cp1256') {
@@ -381,7 +381,11 @@ class ArabicTextFormatter
         return implode('', array_reverse(mb_str_split($text)));
     }
 
-    private function cleanCurrency(string $text): string
+    /**
+     * Currency names an Arabic code page cannot draw read as their Latin form.
+     * Used for a CP437 line and for an Arabic symbol on a left-to-right receipt.
+     */
+    public function toLatinCurrency(string $text): string
     {
         return str_replace(
             ['ر.س', 'ر.س', 'د.ك', 'د.إ', 'ج.م', 'د.ب', 'ر.ع', 'ر.ق', 'د.ع', 'د.أ', 'دينار', 'ريال', 'درهم'],
@@ -390,7 +394,7 @@ class ArabicTextFormatter
         );
     }
 
-    private function fontPath(): string
+    public function fontPath(): string
     {
         $windows = getenv('WINDIR') ?: 'C:\\Windows';
         $fonts = array_filter([
