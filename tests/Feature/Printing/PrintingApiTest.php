@@ -192,6 +192,30 @@ it('rejects an empty label batch', function () {
     expect($this->transport->jobs)->toBe([]);
 });
 
+it('previews labels as the printed pixels and renders identical labels once', function () {
+    posCashier($this);
+
+    $label = ['name' => 'قهوة عربية', 'barcode' => '123456789012', 'price' => '12.00', 'storeName' => 'Subul'];
+
+    $response = $this->postJson('/api/printing/labels/preview', [
+        'labels' => [$label, ['name' => 'Tea', 'barcode' => '223456789013'], $label],
+        'config' => ['widthMm' => 50, 'heightMm' => 30],
+    ])->assertStatus(200)->assertJson([
+        'success' => true,
+        'previews' => [
+            ['widthDots' => 400, 'heightDots' => 240, 'overflow' => false],
+            ['widthDots' => 400, 'heightDots' => 240],
+            ['widthDots' => 400, 'heightDots' => 240],
+        ],
+    ]);
+
+    $previews = $response->json('previews');
+    expect($previews[0]['image'])->toStartWith('data:image/png;base64,')
+        ->and($previews[2]['image'])->toBe($previews[0]['image'])
+        ->and($previews[1]['image'])->not->toBe($previews[0]['image'])
+        ->and($this->transport->jobs)->toBe([]);
+});
+
 it('prints one label per item even when the receipt prints three copies', function () {
     posCashier($this);
 
@@ -234,7 +258,7 @@ it('pulses the cash drawer with the legacy kick sequence', function () {
         ->assertStatus(200)
         ->assertJson(['success' => true, 'printer' => 'XP-80C', 'message' => 'Cash drawer opened successfully.']);
 
-    expect(bin2hex($this->transport->jobs[0]['data']))->toBe('1b401b74281b700019fa');
+    expect(bin2hex($this->transport->jobs[0]['data']))->toBe('1b401c2e1b74281b700019fa');
 });
 
 it('sends an arabic sample test receipt', function () {
@@ -306,6 +330,44 @@ it('stores printing settings as options and reads them back casted', function ()
     $this->getJson('/api/printing/settings')
         ->assertJsonPath('settings.cutPaper', false)
         ->assertJsonPath('settings.labelWidthMm', 50);
+});
+
+it('prints the receipt labels in the language the job asks for', function () {
+    posCashier($this);
+
+    $print = fn (string $jobId, ?string $lang) => $this->postJson('/api/printing/receipt', [
+        'jobId' => $jobId,
+        'lang' => $lang,
+        'data' => ['orderCode' => 'ORD-13', 'items' => [], 'total' => '36.00'],
+        'config' => ['encoding' => 'cp864'],
+    ])->assertStatus(200);
+
+    $print('rcpt_http_lang_en', null);
+    $english = $this->transport->jobs[0]['data'];
+
+    $print('rcpt_http_lang_ar', 'ar');
+    $arabic = $this->transport->jobs[1]['data'];
+
+    // Paper is read by the customer, so the job's own language decides and a job
+    // that names none falls back to the app locale. The API routes carry no
+    // language middleware, so nothing else could put Arabic on the receipt.
+    expect($english)->toContain('Total')
+        ->and($english)->toContain('Powered by')
+        ->and($arabic)->not->toContain('Total')
+        ->and($arabic)->not->toContain('Powered by')
+        ->and($arabic)->not->toBe($english);
+});
+
+it('refuses a receipt language Subul does not ship', function () {
+    posCashier($this);
+
+    $this->postJson('/api/printing/receipt', [
+        'jobId' => 'rcpt_http_lang_bad',
+        'lang' => 'zz',
+        'data' => ['total' => '5.00', 'items' => []],
+    ])->assertStatus(422)->assertJsonValidationErrors('lang');
+
+    expect($this->transport->jobs)->toBe([]);
 });
 
 it('prints on the configured receipt printer when the job names none', function () {
