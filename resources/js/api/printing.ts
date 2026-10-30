@@ -22,6 +22,10 @@ export const printingApi = {
 
   printLabels: (body: unknown) => post('/printing/labels', body, { timeout: 30000 }),
 
+  // The backend draws the same LabelRaster pixels the printer receives, so the
+  // preview is the printout rather than an HTML approximation of it.
+  previewLabels: (body: unknown) => post('/printing/labels/preview', body, { timeout: 20000 }),
+
   test: (body: unknown) => post('/printing/test', body, { timeout: 15000 }),
 
   openDrawer: (body: unknown) => post('/printing/drawer', body, { timeout: 8000 }),

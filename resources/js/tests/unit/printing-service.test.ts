@@ -13,6 +13,10 @@ vi.mock('@/api/printing', () => ({
   },
 }));
 
+// The printed language travels with the job, so the service is tested against a
+// locale other than its default.
+vi.mock('@/lib/i18n', () => ({ i18n: { getLocale: () => 'ar' } }));
+
 import { printingApi } from '@/api/printing';
 import { DEFAULT_PRINTER_SETTINGS, PrintingService } from '@/services/printing-service';
 
@@ -155,8 +159,8 @@ describe('PrintingService', () => {
       await service.printOrderReceipt(makeOrder());
 
       const payload = api.printReceipt.mock.calls[0][0] as any;
-      expect(payload.data.items[0].price).toContain('115.00');
-      expect(payload.data.items[0].total).toContain('230.00');
+      expect(payload.data.items[0].price).toBe(115);
+      expect(payload.data.items[0].total).toBe(230);
     });
 
     it('maps without-tax item prices when priceWithTax is false', async () => {
@@ -165,8 +169,21 @@ describe('PrintingService', () => {
       await service.printOrderReceipt(makeOrder(), 'sale', {}, false);
 
       const payload = api.printReceipt.mock.calls[0][0] as any;
-      expect(payload.data.items[0].price).toContain('100.00');
-      expect(payload.data.items[0].total).toContain('200.00');
+      expect(payload.data.items[0].price).toBe(100);
+      expect(payload.data.items[0].total).toBe(200);
+    });
+
+    it('sends raw amounts and the job language so the backend formats both', async () => {
+      api.printReceipt.mockResolvedValueOnce({ success: true });
+
+      await service.printOrderReceipt(makeOrder());
+
+      const payload = api.printReceipt.mock.calls[0][0] as any;
+      expect(payload.lang).toBe('ar');
+      expect(payload.data.subtotal).toBe(200);
+      expect(payload.data.total).toBe(200);
+      expect(payload.data.discount).toBeUndefined();
+      expect(payload.data.tax).toBeUndefined();
     });
 
     it('sends no config so the backend applies the stored settings', async () => {
@@ -254,7 +271,7 @@ describe('PrintingService', () => {
       api.test.mockRejectedValueOnce(httpError(500, 'Server error', { message: 'Paper out' }));
 
       await expect(service.testPrinter('XP-80C', 'receipt', 'arabic')).rejects.toThrow('Paper out');
-      expect(api.test).toHaveBeenCalledWith({ printer: 'XP-80C', type: 'receipt', sample: 'arabic' });
+      expect(api.test).toHaveBeenCalledWith({ printer: 'XP-80C', type: 'receipt', sample: 'arabic', lang: 'ar' });
     });
   });
 

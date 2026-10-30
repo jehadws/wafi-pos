@@ -8,8 +8,10 @@
  */
 
 import { printingApi } from '@/api/printing';
+import { i18n } from '@/lib/i18n';
+import { hashKey, LabelPayload, labelPrintableKey } from '@/lib/label-layout';
 import { Order } from '@/types/models/order';
-import { formatCurrency, formatDate } from '@/utils/format';
+import { formatDate } from '@/utils/format';
 
 export interface WindowsPrinter {
   name: string;
@@ -94,6 +96,14 @@ export interface LabelItemData {
   unit?: string;
   copies?: number;
   storeName?: string;
+}
+
+/** One server-rendered sticker: the exact pixels the printer burns, as a PNG. */
+export interface LabelPreviewImage {
+  widthDots: number;
+  heightDots: number;
+  overflow: boolean;
+  image: string;
 }
 
 export interface PrintResult {
@@ -234,7 +244,7 @@ export class PrintingService {
     sample: 'arabic' | 'english' | 'mixed' = 'mixed',
   ): Promise<any> {
     try {
-      return await printingApi.test({ printer: printer || undefined, type, sample });
+      return await printingApi.test({ printer: printer || undefined, type, sample, lang: i18n.getLocale() });
     } catch (err: any) {
       throw new Error(this.formatErrorMessage(err));
     }
@@ -254,6 +264,7 @@ export class PrintingService {
         printer: overrides.receiptPrinter || undefined,
         data: receiptData,
         config: this.receiptConfig(overrides),
+        lang: i18n.getLocale(),
         jobId,
       });
 
@@ -280,6 +291,43 @@ export class PrintingService {
     }
   }
 
+  /**
+   * Ask the backend to draw labels as the printer will burn them. Identical
+   * labels are requested once; the result is keyed by labelPrintableKey so each
+   * sticker on screen can find its own pixels. Null values mean the preview
+   * endpoint was unreachable and callers should keep their local fallback.
+   */
+  public async previewLabels(labels: LabelPayload[], overrides: Partial<PrinterSettings> = {}): Promise<Record<string, LabelPreviewImage | null>> {
+    const unique = new Map<string, LabelPayload>();
+    for (const label of labels) {
+      const key = this.previewKey(label);
+      if (!unique.has(key)) unique.set(key, label);
+    }
+
+    const out: Record<string, LabelPreviewImage | null> = {};
+    if (unique.size === 0) return out;
+
+    try {
+      const res: any = await printingApi.previewLabels({
+        labels: [...unique.values()],
+        config: this.labelConfig(overrides),
+      });
+      const previews: Array<LabelPreviewImage | null> = Array.isArray(res?.previews) ? res.previews : [];
+      let index = 0;
+      for (const key of unique.keys()) {
+        out[key] = previews[index++] ?? null;
+      }
+    } catch {
+      for (const key of unique.keys()) out[key] = null;
+    }
+
+    return out;
+  }
+
+  public previewKey(label: LabelPayload): string {
+    return hashKey(labelPrintableKey(label));
+  }
+
   /** Pulse the drawer (ESC p) on the receipt printer, which usually wires it. */
   public async openCashDrawer(printerName?: string): Promise<PrintResult> {
     try {
@@ -294,6 +342,10 @@ export class PrintingService {
   /**
    * Print an order receipt: maps the POS Order onto the receipt payload and
    * lets the backend apply the terminal's stored printer configuration.
+   *
+   * Amounts travel as plain numbers: the backend owns the symbol, precision and
+   * separators (`sb_currency_*`) and the language of the printed labels, so the
+   * same order prints a SAR receipt in Riyadh and a $ receipt elsewhere.
    *
    * @param priceWithTax mirrors the "Show Price With Tax" POS option so printed
    *                     items match what the cashier saw on screen.
@@ -315,12 +367,12 @@ export class PrintingService {
       items: (order.products ?? []).map((p: any) => ({
         name: p.name,
         quantity: p.quantity,
-        price: formatCurrency(priceWithTax ? (p.price_with_tax ?? p.unit_price ?? 0) : (p.price_without_tax ?? p.unit_price ?? 0)),
-        total: formatCurrency(priceWithTax ? (p.total_price_with_tax ?? p.total_price ?? 0) : (p.total_price_without_tax ?? p.total_price ?? 0)),
+        price: priceWithTax ? (p.price_with_tax ?? p.unit_price ?? 0) : (p.price_without_tax ?? p.unit_price ?? 0),
+        total: priceWithTax ? (p.total_price_with_tax ?? p.total_price ?? 0) : (p.total_price_without_tax ?? p.total_price ?? 0),
       })),
-      subtotal: formatCurrency(order.subtotal ?? 0),
-      discount: order.discount ? formatCurrency(order.discount) : undefined,
-      tax: order.tax_value ? formatCurrency(order.tax_value) : undefined,
+      subtotal: order.subtotal ?? 0,
+      discount: order.discount || undefined,
+      tax: order.tax_value || undefined,
       taxes: Array.isArray(order.taxes)
         ? order.taxes.map((tax: any) => ({
             name: tax.name ?? 'Tax',
@@ -328,13 +380,13 @@ export class PrintingService {
             tax_value: tax.tax_value ?? 0,
           }))
         : undefined,
-      total: formatCurrency(order.total ?? 0),
-      tendered: order.tendered ? formatCurrency(order.tendered) : undefined,
-      change: order.change != null ? formatCurrency(order.change) : undefined,
+      total: order.total ?? 0,
+      tendered: order.tendered || undefined,
+      change: order.change ?? undefined,
       payments: Array.isArray(order.payments)
         ? order.payments.map((payment: any) => ({
             name: payment.label ?? payment.identifier,
-            value: formatCurrency(payment.value),
+            value: payment.value,
           }))
         : undefined,
       barcode: order.code,

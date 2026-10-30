@@ -1,4 +1,4 @@
-import { layoutTsplLabel } from '@/pages/dashboard/products/print-labels/label-layout';
+import { layoutTsplLabel } from '@/lib/label-layout';
 import { describe, expect, it } from 'vitest';
 
 // Geometry mirrors LabelBuilder::layout(); these coordinates are the values the backend emits

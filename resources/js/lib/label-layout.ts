@@ -42,7 +42,7 @@ export interface LabelLayout {
   overflow: boolean;
 }
 
-interface LabelPayload {
+export interface LabelPayload {
   storeName?: string;
   name?: string;
   price?: string;
@@ -50,6 +50,19 @@ interface LabelPayload {
   sku?: string;
 }
 
+/** Only these fields reach the paper, so only these identify a rendered label. */
+export function labelPrintableKey(item: LabelPayload): string {
+  return JSON.stringify([item.storeName ?? '', item.name ?? '', item.price ?? '', item.barcode ?? '', item.sku ?? '']);
+}
+
+export function hashKey(value: string): string {
+  let hash = 5381;
+  for (let index = 0; index < value.length; index++) {
+    hash = ((hash << 5) + hash + value.charCodeAt(index)) | 0;
+  }
+
+  return (hash >>> 0).toString(36);
+}
 function code128Modules(code: string) {
   const symbolCount = /^\d+$/.test(code) ? Math.ceil(code.length / 2) + 2 : code.length + 2;
   return symbolCount * 11 + 13;

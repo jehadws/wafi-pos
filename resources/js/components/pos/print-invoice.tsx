@@ -6,7 +6,6 @@ import { usePOS } from '@/hooks/usePOS';
 import { useTranslation } from '@/lib/i18n';
 import Settings from '@/lib/settings';
 import printingService, { FormattedReceiptData } from '@/services/printing-service';
-import { formatCurrency } from '@/utils/format';
 import { Eye, Loader2, Printer, Settings2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -72,20 +71,20 @@ export function SimplePrintInvoice({ invoice }: SimplePrintInvoiceProps) {
     items: invoice.items.map((item) => ({
       name: item.name,
       quantity: item.quantity,
-      price: formatCurrency(item.price),
-      total: formatCurrency(item.total),
+      price: item.price,
+      total: item.total,
     })),
-    subtotal: formatCurrency(invoice.subtotal),
-    discount: invoice.discount > 0 ? formatCurrency(invoice.discount) : undefined,
-    tax: invoice.taxValue ? formatCurrency(invoice.taxValue) : undefined,
+    subtotal: invoice.subtotal,
+    discount: invoice.discount > 0 ? invoice.discount : undefined,
+    tax: invoice.taxValue || undefined,
     taxes: invoice.taxes?.map((tx) => ({
       name: tx.name,
       rate: tx.rate,
       tax_value: tx.tax_value,
     })),
-    total: formatCurrency(invoice.total),
-    tendered: formatCurrency(invoice.paid || invoice.cash),
-    change: formatCurrency(invoice.change),
+    total: invoice.total,
+    tendered: invoice.paid || invoice.cash,
+    change: invoice.change,
     barcode: invoice.orderReceipt,
     footer: receiptFooter || t('Thank you for your business!'),
   };
