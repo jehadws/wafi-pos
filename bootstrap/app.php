@@ -83,3 +83,9 @@ return Application::configure(basePath: dirname(__DIR__))
     });
   })->create();
 
+if ($storagePath = env('LARAVEL_STORAGE_PATH')) {
+  $app->useStoragePath($storagePath);
+}
+
+return $app;
+
