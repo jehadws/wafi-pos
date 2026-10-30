@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -186,6 +187,13 @@ class SetupService
         $this->options = app()->make( Options::class );
         $this->options->setDefault();
         $this->options->set( 'sb_store_language', $configuredLanguage );
+
+        /**
+         * Helper::installed() caches its verdict for 60 seconds. Without this
+         * forget, the freshly created admin would be logged straight back out
+         * by KillSessionIfNotInstalledMiddleware on the very next request.
+         */
+        Cache::forget( 'sb-core-installed' );
 
         return [
             'status'  => 'success',
