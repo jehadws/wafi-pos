@@ -18,13 +18,13 @@ class ReceiptBuilder
     {
         $rtl = ( $config[ 'direction' ] ?? 'ltr' ) === 'rtl';
         $lineWidth = (int) ( $config[ 'lineWidth' ] ?? 42 );
-        $builder = new EscPosBuilder(
-            $this->formatter,
-            $lineWidth,
-            (string) ( $config[ 'encoding' ] ?? $config[ 'codePage' ] ?? 'cp864' ),
-            (int) ( $config[ 'rasterWidth' ] ?? ( $lineWidth <= 36 ? 384 : 560 ) ),
-            $rtl,
-        );
+        $encoding = (string) ( $config[ 'encoding' ] ?? $config[ 'codePage' ] ?? 'cp864' );
+        $rasterWidth = (int) ( $config[ 'rasterWidth' ] ?? ( $lineWidth <= 36 ? 384 : 560 ) );
+        // Image mode draws the whole receipt as one picture so every printer prints the
+        // same thing; the other encodings keep sending text for the printer to render.
+        $builder = $encoding === 'image'
+            ? new ImageReceiptBuilder( $this->formatter, $lineWidth, $rasterWidth, $rtl )
+            : new EscPosBuilder( $this->formatter, $lineWidth, $encoding, $rasterWidth, $rtl );
         $builder->init();
         if ( array_key_exists( 'lineSpacing', $config ) ) {
             $builder->lineSpacing( $config[ 'lineSpacing' ] === null ? null : (int) $config[ 'lineSpacing' ] );
@@ -117,14 +117,14 @@ class ReceiptBuilder
         return ( new EscPosBuilder( $this->formatter ) )->init()->drawer( $pin )->toString();
     }
 
-    private function optionalLine( EscPosBuilder $builder, array $receipt, string $key ): void
+    private function optionalLine( ReceiptWriter $builder, array $receipt, string $key ): void
     {
         if ( ! empty( $receipt[ $key ] ) ) {
             $builder->line( (string) $receipt[ $key ] );
         }
     }
 
-    private function optionalPair( EscPosBuilder $builder, string $label, mixed $value ): void
+    private function optionalPair( ReceiptWriter $builder, string $label, mixed $value ): void
     {
         if ( $value !== null && $value !== '' ) {
             $builder->twoColumns( $label, (string) $value );
@@ -141,7 +141,7 @@ class ReceiptBuilder
         return $this->currency->format( $value, $rtl ) ?? $fallback;
     }
 
-    private function optionalAmount( EscPosBuilder $builder, string $label, mixed $value, bool $rtl ): void
+    private function optionalAmount( ReceiptWriter $builder, string $label, mixed $value, bool $rtl ): void
     {
         $formatted = $this->currency->format( $value, $rtl );
         if ( $formatted !== null ) {

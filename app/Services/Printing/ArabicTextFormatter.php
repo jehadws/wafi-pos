@@ -253,7 +253,7 @@ class ArabicTextFormatter
     public function encode(string $text, string $encoding = 'cp864'): string
     {
         $normalizedEncoding = strtolower(str_replace('-', '', $encoding));
-        if ($normalizedEncoding === 'utf8' || in_array($normalizedEncoding, ['cp437', 'ascii'], true)) {
+        if ($normalizedEncoding === 'utf8' || in_array($normalizedEncoding, ['cp437', 'ascii', 'image'], true)) {
             return $this->encodeOrdered($text, $encoding);
         }
 
@@ -272,7 +272,7 @@ class ArabicTextFormatter
             return $visual;
         }
 
-        if (in_array($normalizedEncoding, ['cp437', 'ascii'], true)) {
+        if (in_array($normalizedEncoding, ['cp437', 'ascii', 'image'], true)) {
             return iconv('UTF-8', 'CP437//TRANSLIT', $this->toLatinCurrency($visual)) ?: '';
         }
 
@@ -312,6 +312,11 @@ class ArabicTextFormatter
         $font = $this->fontPath();
         $visual = $this->visual($text);
         $bounds = imagettfbbox($fontSize, 0, $font, $visual);
+        // A line wider than the paper would be cut off at the edge, so it shrinks to fit.
+        while ($bounds !== false && ($bounds[2] - $bounds[0]) + 4 > $maxWidth && $fontSize > 10) {
+            $fontSize--;
+            $bounds = imagettfbbox($fontSize, 0, $font, $visual);
+        }
         if ($bounds === false) {
             throw new RuntimeException('Unable to measure Arabic print text.');
         }

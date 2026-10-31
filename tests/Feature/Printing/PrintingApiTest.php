@@ -105,8 +105,8 @@ it('prints a receipt on every requested copy', function () {
     expect(count($this->transport->jobs))->toBe(1)
         ->and($this->transport->jobs[0]['documentName'])->toBe('Subul Receipt ORD-11')
         ->and(substr_count($copy, "\x1B\x40"))->toBe(2)
-        ->and($copy)->toContain("\x1B\x74\x28")
-        ->and($copy)->not->toContain("\x1D\x76\x30");
+        ->and($copy)->not->toContain("\x1B\x74\x28")
+        ->and($copy)->toContain("\x1D\x76\x30");
 });
 
 it('answers a repeated job id with the original result instead of printing again', function () {
@@ -123,20 +123,27 @@ it('answers a repeated job id with the original result instead of printing again
 
 it('prints the store header and footer from the store options when the client sends none', function () {
     posCashier($this);
+    $print = function (string $jobId): string {
+        $this->postJson('/api/printing/receipt', [
+            'jobId' => $jobId,
+            'data' => ['total' => '5.00', 'items' => []],
+        ])->assertStatus(200);
+
+        return end($this->transport->jobs)['data'];
+    };
+
     app(Options::class)->set('sb_store_name', 'Corner Cafe');
-    app(Options::class)->set('sb_store_phone', '0599 000 000');
     app(Options::class)->set('sb_invoice_receipt_footer', 'See you soon');
+    $first = $print('rcpt_http_store_1');
 
-    $this->postJson('/api/printing/receipt', [
-        'jobId' => 'rcpt_http_store',
-        'data' => ['total' => '5.00', 'items' => []],
-        'config' => ['encoding' => 'cp864'],
-    ])->assertStatus(200);
+    app(Options::class)->set('sb_store_name', 'Other Shop');
+    app(Options::class)->set('sb_invoice_receipt_footer', 'Come back');
+    $second = $print('rcpt_http_store_2');
 
-    expect($this->transport->jobs[0]['data'])->toContain('Corner Cafe')
-        ->and($this->transport->jobs[0]['data'])->toContain('Tel: 0599 000 000')
-        ->and($this->transport->jobs[0]['data'])->toContain('See you soon')
-        ->and($this->transport->jobs[0]['data'])->not->toContain('Thank you for your business!');
+    // The receipt is a picture, so its words cannot be read from the bytes; a
+    // different store name and footer must still change what gets printed.
+    expect($first)->toContain("\x1D\x76\x30")
+        ->and($second)->not->toBe($first);
 });
 
 it('refuses a receipt without items or a total', function () {
@@ -295,7 +302,7 @@ it('serves the default printing settings to a terminal that never saved any', fu
                 'receiptPrinter' => '',
                 'labelPrinter' => '',
                 'lineWidth' => 42,
-                'encoding' => 'cp864',
+                'encoding' => 'image',
                 'cutPaper' => true,
                 'openCashDrawer' => false,
                 'copies' => 1,
@@ -351,10 +358,9 @@ it('prints the receipt labels in the language the job asks for', function () {
     // Paper is read by the customer, so the job's own language decides and a job
     // that names none falls back to the app locale. The API routes carry no
     // language middleware, so nothing else could put Arabic on the receipt.
-    expect($english)->toContain('Total')
-        ->and($english)->toContain('Powered by')
-        ->and($arabic)->not->toContain('Total')
-        ->and($arabic)->not->toContain('Powered by')
+    // Both are pictures now, so the language shows only as a different printout.
+    expect($english)->toContain("\x1D\x76\x30")
+        ->and($arabic)->toContain("\x1D\x76\x30")
         ->and($arabic)->not->toBe($english);
 });
 
@@ -404,4 +410,17 @@ it('keeps every printing endpoint behind authentication', function () {
     $this->postJson('/api/printing/receipt', ['data' => ['total' => '1.00']])->assertStatus(401);
     $this->getJson('/api/printing/settings')->assertStatus(401);
     $this->putJson('/api/printing/settings', ['lineWidth' => 42])->assertStatus(401);
+});
+
+it('ignores a code page sent by an older client and still prints Arabic as an image', function () {
+    posCashier($this);
+
+    $this->postJson('/api/printing/receipt', [
+        'jobId' => 'rcpt_http_legacy_cp',
+        'data' => ['items' => [['name' => 'قهوة عربية', 'quantity' => 1, 'price' => '10.00', 'total' => '10.00']], 'total' => '10.00'],
+        'config' => ['encoding' => 'cp864'],
+    ])->assertStatus(200);
+
+    expect($this->transport->jobs[0]['data'])->toContain("\x1D\x76\x30")
+        ->and($this->transport->jobs[0]['data'])->not->toContain("\x1B\x74\x28");
 });

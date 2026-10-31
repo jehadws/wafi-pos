@@ -133,6 +133,7 @@ describe('PrintingService', () => {
   describe('printOrderReceipt price mapping', () => {
     const lineItem = {
       name: 'Latte',
+      unit_name: 'Piece',
       quantity: 2,
       unit_price: 100,
       price_with_tax: 115,
@@ -152,6 +153,14 @@ describe('PrintingService', () => {
         total: 200,
         products: [lineItem],
       }) as any;
+
+    it('appends the unit name to the printed item name', async () => {
+      api.printReceipt.mockResolvedValueOnce({ success: true });
+
+      await service.printOrderReceipt(makeOrder());
+
+      expect((api.printReceipt.mock.calls[0][0] as any).data.items[0].name).toBe('Latte (Piece)');
+    });
 
     it('maps with-tax item prices by default', async () => {
       api.printReceipt.mockResolvedValueOnce({ success: true });

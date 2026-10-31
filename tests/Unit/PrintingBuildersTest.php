@@ -446,3 +446,54 @@ function code128Value(array $values): ?string
         default => null,
     };
 }
+
+it('prints Arabic as an image in image mode so no printer code page is needed', function () {
+    $builder = new EscPosBuilder($this->formatter, 42, 'image', 560);
+    $out = $builder->init()
+        ->productHeader('الصنف', 'الكمية', 'المجموع')
+        ->productRow('Coffee', '1x', '10.00', '10.00')
+        ->toString();
+
+    // PC437 is pinned, and the Arabic header is a GS v 0 raster, never text bytes
+    // that a printer on the wrong code page would draw as box characters.
+    expect(substr($out, 0, 6))->toBe("\x1B\x40\x1C\x2E\x1B\x74")
+        ->and($out)->toContain("\x1D\x76\x30")
+        ->and($this->formatter->supportsCodePage('image'))->toBeFalse();
+});
+
+it('draws the whole receipt as one picture in image mode and keeps the barcode native', function () {
+    $currency = new class($this->formatter) extends ReceiptCurrency {
+        public function __construct(private $formatter)
+        {
+        }
+
+        public function format(mixed $value, bool $rtl = false): ?string
+        {
+            $amount = ReceiptCurrency::parse($value);
+
+            return $amount === null ? null : number_format($amount, 2);
+        }
+    };
+
+    $receipt = [
+        'storeName' => 'Subul',
+        'items' => [
+            ['name' => 'Nanshing Avalon 8-piece Comforter Set', 'quantity' => 1, 'price' => 67.72, 'total' => 67.72],
+            ['name' => 'سيليكون طحالب اكريليم ابيض فيرم', 'quantity' => 3, 'price' => 10, 'total' => 30],
+        ],
+        'total' => 97.72,
+        'barcode' => '261031-005',
+    ];
+
+    foreach (['ltr', 'rtl'] as $direction) {
+        $out = (new ReceiptBuilder($this->formatter, $currency))
+            ->build($receipt, ['encoding' => 'image', 'direction' => $direction]);
+
+        // No receipt word travels as text: the store name and the Arabic item are in the bitmap.
+        expect($out)->toContain("\x1D\x76\x30")
+            ->and($out)->not->toContain('Subul')
+            ->and($out)->not->toContain('Total')
+            ->and($out)->toContain("\x1D\x6B\x49")
+            ->and($out)->toEndWith("\x1D\x56\x42\x03");
+    }
+});

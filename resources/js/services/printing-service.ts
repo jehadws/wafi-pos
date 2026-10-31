@@ -31,7 +31,7 @@ export interface PrintingStatus {
   timestamp?: string;
 }
 
-export type PrinterEncoding = 'cp864' | 'cp1256' | 'utf8' | 'cp437';
+export type PrinterEncoding = 'image' | 'cp864' | 'cp1256' | 'utf8' | 'cp437';
 
 export interface PrinterSettings {
   /** Empty means "print on the current Windows default printer". */
@@ -124,7 +124,7 @@ export const DEFAULT_PRINTER_SETTINGS: PrinterSettings = {
   receiptPrinter: '',
   labelPrinter: '',
   lineWidth: 42,
-  encoding: 'cp864',
+  encoding: 'image',
   cutPaper: true,
   openCashDrawer: false,
   showTaxBreakdown: true,
@@ -364,12 +364,18 @@ export class PrintingService {
       date: formatDate(order.created_at ?? new Date().toISOString()),
       customer: order.customer ? `${order.customer.first_name ?? ''} ${order.customer.last_name ?? ''}`.trim() : undefined,
       cashier: (orderRecord.user_username as string | undefined) ?? (orderRecord.cashier as string | undefined),
-      items: (order.products ?? []).map((p: any) => ({
-        name: p.name,
-        quantity: p.quantity,
-        price: priceWithTax ? (p.price_with_tax ?? p.unit_price ?? 0) : (p.price_without_tax ?? p.unit_price ?? 0),
-        total: priceWithTax ? (p.total_price_with_tax ?? p.total_price ?? 0) : (p.total_price_without_tax ?? p.total_price ?? 0),
-      })),
+      items: (order.products ?? []).map((p: any) => {
+        // Cart lines carry the unit as a flat unit_name; fetched order products
+        // may arrive with the unit relation instead. Either way the unit name
+        // travels inside the printed name, which is what the backend shows.
+        const unitName = p.unit_name || p.unit?.name || '';
+        return {
+          name: unitName ? `${p.name} (${unitName})` : p.name,
+          quantity: p.quantity,
+          price: priceWithTax ? (p.price_with_tax ?? p.unit_price ?? 0) : (p.price_without_tax ?? p.unit_price ?? 0),
+          total: priceWithTax ? (p.total_price_with_tax ?? p.total_price ?? 0) : (p.total_price_without_tax ?? p.total_price ?? 0),
+        };
+      }),
       subtotal: order.subtotal ?? 0,
       discount: order.discount || undefined,
       tax: order.tax_value || undefined,

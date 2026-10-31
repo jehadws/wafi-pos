@@ -3879,7 +3879,7 @@
     "Your database is up to date.": "Your database is up to date.",
     "Z-REPORT": "Z-REPORT",
     "Adds the internal product code line.": "Adds the internal product code line.",
-    "CP864 and CP1256 print Arabic with the printer font. UTF-8 and CP437 send it as an image instead.": "CP864 and CP1256 print Arabic with the printer font. UTF-8 and CP437 send it as an image instead.",
+    "Image prints Arabic as a picture and works on any printer. CP864 and CP1256 use the printer font, but only on printers that have that code page.": "Image prints Arabic as a picture and works on any printer. CP864 and CP1256 use the printer font, but only on printers that have that code page.",
     "Behaviour": "Behaviour",
     "Cash drawer pulse sent.": "Cash drawer pulse sent.",
     "Characters that fit on one printed line.": "Characters that fit on one printed line.",

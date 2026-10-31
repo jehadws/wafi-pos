@@ -22,7 +22,7 @@ class PrintingController extends Controller
 {
     use Locale;
 
-    private const ENCODINGS = ['cp864', 'cp1256', 'cp437', 'utf8'];
+    private const ENCODINGS = ['image', 'cp864', 'cp1256', 'cp437', 'utf8'];
 
     public function __construct(
         protected PrinterService $printers,
@@ -307,7 +307,7 @@ class PrintingController extends Controller
 
         return [
             'lineWidth' => $overrides[ 'lineWidth' ] ?? $settings[ 'lineWidth' ],
-            'encoding' => $overrides[ 'encoding' ] ?? $settings[ 'encoding' ],
+            'encoding' => PrintingSettings::ENCODING,
             'lineSpacing' => $overrides[ 'lineSpacing' ] ?? $settings[ 'lineSpacing' ],
             'cutPaper' => $overrides[ 'cutPaper' ] ?? $settings[ 'cutPaper' ],
             'openCashDrawer' => $overrides[ 'openCashDrawer' ] ?? $settings[ 'openCashDrawer' ],
@@ -337,7 +337,7 @@ class PrintingController extends Controller
             'cut' => $overrides[ 'cut' ] ?? true,
             // Widest raster the label heads in the field print: 72 mm at 203 dpi.
             'rasterWidth' => $overrides[ 'rasterWidth' ] ?? 576,
-            'encoding' => $overrides[ 'encoding' ] ?? $settings[ 'encoding' ],
+            'encoding' => PrintingSettings::ENCODING,
             'lineWidth' => $overrides[ 'lineWidth' ] ?? $settings[ 'lineWidth' ],
             'lineSpacing' => $overrides[ 'lineSpacing' ] ?? $settings[ 'lineSpacing' ],
         ];

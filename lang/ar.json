@@ -3879,7 +3879,7 @@
     "Your database is up to date.": "قاعدة البيانات لديك محدثة.",
     "Z-REPORT": "تقرير Z",
     "Adds the internal product code line.": "يضيف سطر رمز المنتج الداخلي.",
-    "CP864 and CP1256 print Arabic with the printer font. UTF-8 and CP437 send it as an image instead.": "يطبع CP864 وCP1256 النص العربي بخط الطابعة نفسه، بينما يرسل UTF-8 وCP437 النص كصورة.",
+    "Image prints Arabic as a picture and works on any printer. CP864 and CP1256 use the printer font, but only on printers that have that code page.": "تطبع «صورة» النص العربي كصورة وتعمل على أي طابعة. يستخدم CP864 وCP1256 خط الطابعة نفسه، لكن فقط في الطابعات التي تدعم صفحة الرموز هذه.",
     "Behaviour": "السلوك",
     "Cash drawer pulse sent.": "تم إرسال نبضة درج النقود.",
     "Characters that fit on one printed line.": "عدد الأحرف التي يتسع لها سطر الطباعة.",

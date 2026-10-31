@@ -10,11 +10,19 @@ use App\Services\Options;
  */
 class PrintingSettings
 {
+    /**
+     * Arabic is always drawn as an image. A printer's own code page is a per-model
+     * guess (the table number behind ESC t differs between makers, and many clones
+     * have no Arabic table), while a raster works on every ESC/POS printer. Stored
+     * or client-sent code pages from older versions are therefore ignored.
+     */
+    public const ENCODING = 'image';
+
     private const SCHEMA = [
         'receiptPrinter' => [ 'sb_subul_printing_receipt_printer', 'string', '' ],
         'labelPrinter' => [ 'sb_subul_printing_label_printer', 'string', '' ],
         'lineWidth' => [ 'sb_subul_printing_line_width', 'int', 42 ],
-        'encoding' => [ 'sb_subul_printing_encoding', 'string', 'cp864' ],
+        'encoding' => [ 'sb_subul_printing_encoding', 'string', 'image' ],
         'cutPaper' => [ 'sb_subul_printing_cut_paper', 'bool', true ],
         'openCashDrawer' => [ 'sb_subul_printing_cash_drawer', 'bool', false ],
         'showTaxBreakdown' => [ 'sb_subul_printing_tax_breakdown', 'bool', true ],
@@ -45,6 +53,8 @@ class PrintingSettings
                 ? $default
                 : $this->cast( (string) $type, (string) $stored, $default );
         }
+
+        $settings[ 'encoding' ] = self::ENCODING;
 
         return $settings;
     }

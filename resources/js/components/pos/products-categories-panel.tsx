@@ -112,7 +112,9 @@ export default function ProductsCategoriesPanel() {
     addProductToCart({
       ...product,
       unit_quantity_id: unit.id,
-      unit_name: unit.type,
+      // unit.type is the pricing kind ("product"/"weight"), not the unit's
+      // display name — the cart and receipts need the name the units table holds.
+      unit_name: unit.unit?.name ?? unit.type,
       quantities: unit,
       quantity: qty,
     });

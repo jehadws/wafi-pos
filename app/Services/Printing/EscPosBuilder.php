@@ -2,7 +2,7 @@
 
 namespace App\Services\Printing;
 
-class EscPosBuilder
+class EscPosBuilder implements ReceiptWriter
 {
     private string $buffer = '';
 
@@ -27,7 +27,7 @@ class EscPosBuilder
         $codePage = match (strtolower(str_replace('-', '', $this->encoding))) {
             'cp864' => 40,
             'cp1256' => 36,
-            'cp437', 'ascii' => 0,
+            'cp437', 'ascii', 'image' => 0,
             default => null,
         };
         if ($codePage !== null) {

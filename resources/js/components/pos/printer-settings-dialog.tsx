@@ -17,7 +17,6 @@ import { useTranslation } from '@/lib/i18n';
 import printingService, {
   DEFAULT_PRINTER_SETTINGS,
   LabelPreviewImage,
-  PrinterEncoding,
   PrinterSettings,
   WindowsPrinter,
 } from '@/services/printing-service';
@@ -34,13 +33,6 @@ interface PrinterSettingsDialogProps {
 const VIRTUAL_PRINTER = '127.0.0.1:9100';
 
 const RECEIPT_WIDTHS = [42, 46, 48, 32];
-
-const ENCODINGS: Array<{ value: PrinterEncoding; label: string; hint: string }> = [
-  { value: 'cp864', label: 'CP864', hint: 'Arabic ESC/POS' },
-  { value: 'cp1256', label: 'CP1256', hint: 'Windows Arabic' },
-  { value: 'utf8', label: 'UTF-8', hint: 'Modern POS' },
-  { value: 'cp437', label: 'CP437', hint: 'Safe ASCII' },
-];
 
 const LABEL_SIZES: Array<[number, number]> = [
   [50, 30],
@@ -381,25 +373,6 @@ export function PrinterSettingsDialog({ trigger, open: controlledOpen, onOpenCha
                       </SelectContent>
                     </Select>
                     <p className="text-muted-foreground text-xs">{t('Characters that fit on one printed line.')}</p>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="encoding">{t('Arabic / Code Page')}</Label>
-                    <Select value={settings.encoding} onValueChange={(val: PrinterEncoding) => handleSettingChange('encoding', val)}>
-                      <SelectTrigger id="encoding">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ENCODINGS.map((encoding) => (
-                          <SelectItem key={encoding.value} value={encoding.value}>
-                            <OptionRow primary={encoding.label} secondary={encoding.hint} />
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-muted-foreground text-xs">
-                      {t('CP864 and CP1256 print Arabic with the printer font. UTF-8 and CP437 send it as an image instead.')}
-                    </p>
                   </div>
 
                   <div className="space-y-1.5">
