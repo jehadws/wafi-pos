@@ -98,6 +98,7 @@ export function LabelSettingsPanel({ settings, onSettingsChange }: LabelSettings
     { id: 'showStoreName', label: t('Show Store Name') },
     { id: 'showProductName', label: t('Show Product Name') },
     { id: 'showProductPrice', label: t('Show Product Price') },
+    { id: 'showProductUnit', label: t('Show Product Unit') },
     { id: 'showBarcodeText', label: t('Show Barcode Text') },
   ];
 

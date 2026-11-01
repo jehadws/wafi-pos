@@ -11,6 +11,7 @@ use App\Services\Printing\PrintJobService;
 use App\Services\Printing\PrinterService;
 use App\Services\Printing\PrintingSettings;
 use App\Services\Printing\ReceiptBuilder;
+use App\Services\Printing\ReceiptCurrency;
 use App\Services\Printing\TestPrintSamples;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -32,6 +33,7 @@ class PrintingController extends Controller
         protected TestPrintSamples $samples,
         protected PrintingSettings $settings,
         protected Options $options,
+        protected ReceiptCurrency $currency,
     ) {
     }
 
@@ -134,6 +136,7 @@ class PrintingController extends Controller
         $request->validate( [
             'printer' => [ 'nullable', 'string', 'max:255' ],
             'jobId' => [ 'nullable', 'string', 'max:120' ],
+            'lang' => [ 'nullable', 'string', 'max:12', Rule::in( array_keys( (array) config( 'subul.languages', [ 'en' => 'English' ] ) ) ) ],
             'labels' => [ 'required', 'array', 'min:1', 'max:500' ],
             'labels.*.name' => [ 'nullable', 'string', 'max:255' ],
             'labels.*.barcode' => [ 'nullable', 'string', 'max:120' ],
@@ -147,9 +150,11 @@ class PrintingController extends Controller
             'config.lineWidth' => [ 'nullable', 'integer', 'min:20', 'max:120' ],
         ] );
 
+        $locale = $this->useLanguage( $request );
+
         return $this->jobs->labels(
             $this->target( $request->input( 'printer' ), 'labelPrinter' ),
-            (array) $request->input( 'labels', [] ),
+            $this->formatLabelPrices( (array) $request->input( 'labels', [] ), $this->isRtlLocale( $locale ) ),
             $this->labelConfig( (array) $request->input( 'config', [] ) ),
             $this->jobId( $request, 'lbl' ),
         );
@@ -163,20 +168,25 @@ class PrintingController extends Controller
     public function labelPreview( Request $request )
     {
         $request->validate( [
+            'lang' => [ 'nullable', 'string', 'max:12', Rule::in( array_keys( (array) config( 'subul.languages', [ 'en' => 'English' ] ) ) ) ],
             'labels' => [ 'required', 'array', 'min:1', 'max:500' ],
             'labels.*.name' => [ 'nullable', 'string', 'max:255' ],
             'labels.*.barcode' => [ 'nullable', 'string', 'max:120' ],
             'labels.*.price' => [ 'nullable', 'string', 'max:60' ],
             'labels.*.sku' => [ 'nullable', 'string', 'max:120' ],
+            'labels.*.unit' => [ 'nullable', 'string', 'max:60' ],
             'config' => [ 'sometimes', 'array' ],
         ] );
+
+        $locale = $this->useLanguage( $request );
+        $labels = $this->formatLabelPrices( (array) $request->input( 'labels', [] ), $this->isRtlLocale( $locale ) );
 
         $config = $this->labelConfig( (array) $request->input( 'config', [] ) );
         unset( $config[ 'protocol' ] );
 
         $previews = [];
         $rendered = [];
-        foreach ( (array) $request->input( 'labels', [] ) as $label ) {
+        foreach ( $labels as $label ) {
             $label = (array) $label;
             $key = md5( (string) json_encode( [ $label, $config ] ) );
             if ( ! isset( $rendered[ $key ] ) ) {
@@ -341,6 +351,24 @@ class PrintingController extends Controller
             'lineWidth' => $overrides[ 'lineWidth' ] ?? $settings[ 'lineWidth' ],
             'lineSpacing' => $overrides[ 'lineSpacing' ] ?? $settings[ 'lineSpacing' ],
         ];
+    }
+
+    /**
+     * Labels print money the way receipts do: the frontend sends the raw amount
+     * and the backend applies the store's currency options, so a sticker and a
+     * receipt never disagree about where the symbol sits.
+     */
+    private function formatLabelPrices( array $labels, bool $rtl ): array
+    {
+        foreach ( $labels as &$label ) {
+            $label = (array) $label;
+            if ( isset( $label[ 'price' ] ) && $label[ 'price' ] !== '' ) {
+                $label[ 'price' ] = $this->currency->format( $label[ 'price' ], $rtl ) ?? '';
+            }
+        }
+        unset( $label );
+
+        return $labels;
     }
 
     private function jobId( Request $request, string $prefix ): string

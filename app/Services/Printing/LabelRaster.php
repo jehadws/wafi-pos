@@ -2,8 +2,6 @@
 
 namespace App\Services\Printing;
 
-use RuntimeException;
-
 /**
  * Composites a whole label onto a one-bit canvas at the printer's native dots
  * (203 dpi, 8 dots per mm) using LabelBuilder::layout() geometry, so the ESC/POS
@@ -74,7 +72,7 @@ class LabelRaster
             if ($row['type'] === 'barcode') {
                 $this->drawBarcode($canvas, $black, $row, $x, $y, $scale, $width);
             } else {
-                $this->drawText($canvas, $black, $row['text'], $x, $y, (int) floor($row['width'] * $scale), (int) floor($row['height'] * $scale), $width);
+                $this->drawText($canvas, $black, (string) $row['text'], $x, $y, max(6, (int) round($row['px'] * $scale)), (bool) $row['bold'], $width);
             }
         }
 
@@ -136,44 +134,29 @@ class LabelRaster
     }
 
     /**
-     * Draws the visual (shaped, reordered) string with the shared TrueType font.
-     * The layout reserves cell heights sized to letter caps, so the font is picked
-     * so a digit's cap height fills the cell and the digits are centered on it.
+     * Draws one visual line exactly like the receipt builder: the measured text
+     * starts at x, and the baseline sits at 1.12 px into the cell so the ink is
+     * centered in the row's 1.5 px line height.
      */
-    private function drawText(\GdImage $canvas, int $color, string $text, int $x, int $y, int $cellWidth, int $cellHeight, int $canvasWidth): void
+    private function drawText(\GdImage $canvas, int $color, string $text, int $x, int $y, int $px, bool $bold, int $canvasWidth): void
     {
         $visual = $this->formatter->visual($text);
         if (trim($visual) === '') {
             return;
         }
 
-        $font = $this->formatter->fontPath();
-        $target = max(6, (int) round($cellHeight * 0.72));
-        $size = min((float) max(8, $cellHeight), $this->fitFont($visual, $font, $target, $canvasWidth - 2));
+        $font = $this->formatter->fontFor($bold);
+        $size = $this->formatter->points($px);
+        $box = $this->formatter->textWidth($visual, $px, $bold);
+        $left = max(1, min($canvasWidth - $box['width'] - 1, $x - $box['offset']));
+        $baseline = $y + (int) round($px * 1.12);
 
-        $bounds = imagettfbbox($size, 0, $font, $visual);
-        $digits = imagettfbbox($size, 0, $font, '0');
-        if ($bounds === false || $digits === false) {
-            throw new RuntimeException('Unable to measure label text.');
+        imagettftext($canvas, $size, 0, $left, $baseline, $color, $font, $visual);
+
+        // With no bold face installed, a second pass one dot over thickens the strokes.
+        if ($bold && $this->formatter->boldFontPath() === null) {
+            imagettftext($canvas, $size, 0, $left + 1, $baseline, $color, $font, $visual);
         }
-
-        $textWidth = max(1, $bounds[2] - $bounds[0]);
-        $center = $x + intdiv($cellWidth, 2);
-        $left = max(1, min($canvasWidth - $textWidth - 1, $center - intdiv($textWidth, 2)));
-        $baseline = $y + intdiv($cellHeight, 2) + intdiv($digits[1] - $digits[7], 2);
-        imagettftext($canvas, $size, 0, $left - $bounds[0], $baseline, $color, $font, $visual);
-    }
-
-    private function fitFont(string $visual, string $font, int $targetHeight, int $maxWidth): float
-    {
-        for ($size = (float) $targetHeight; $size > 6; $size -= 0.5) {
-            $bounds = imagettfbbox($size, 0, $font, $visual);
-            if ($bounds !== false && ($bounds[2] - $bounds[0]) <= $maxWidth && ($bounds[1] - $bounds[7]) <= $targetHeight) {
-                return $size;
-            }
-        }
-
-        return 6.0;
     }
 
     private function drawBarcode(\GdImage $canvas, int $color, array $row, int $x, int $y, float $scale, int $canvasWidth): void
@@ -198,15 +181,15 @@ class LabelRaster
             $cursor += $run * $narrow;
         }
 
-        if ($row['readableHeight'] > 0) {
+        if (($row['readablePx'] ?? 0) > 0) {
             $this->drawText(
                 $canvas,
                 $color,
                 $row['code'],
                 $left,
                 $y + (int) floor($row['height'] * $scale) + 2,
-                $totalWidth,
-                (int) floor($row['readableHeight'] * $scale) - 2,
+                max(6, (int) round($row['readablePx'] * $scale)),
+                false,
                 $canvasWidth,
             );
         }

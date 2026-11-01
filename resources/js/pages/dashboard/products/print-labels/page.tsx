@@ -5,7 +5,6 @@ import { useTranslation } from '@/lib/i18n';
 import { PRINT_DOTS_PER_MM } from '@/lib/label-layout';
 import Settings from '@/lib/settings';
 import printingService, { PrinterSettings } from '@/services/printing-service';
-import { formatCurrency } from '@/utils/format';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { LabelPreview } from './components/label-preview';
@@ -22,6 +21,7 @@ export interface LabelSettings {
   showStoreName: boolean;
   showBarcodeText: boolean;
   showProductPrice: boolean;
+  showProductUnit: boolean;
   showProductName: boolean;
 }
 
@@ -45,10 +45,10 @@ const labelSettingsFrom = (saved: PrinterSettings) => ({
 export function buildLabelItems(products: SelectedProduct[], settings: LabelSettings, storeName: string) {
   return products.map((product) => ({
     name: settings.showProductName ? product.name : '',
-    price: settings.showProductPrice ? formatCurrency(product.selectedUnitQuantity.sale_price) : undefined,
+    price: settings.showProductPrice ? String(product.selectedUnitQuantity.sale_price) : undefined,
     barcode: product.selectedUnitQuantity.barcode,
     sku: product.sku,
-    unit: product.selectedUnitQuantity.unit.name,
+    unit: settings.showProductUnit ? product.selectedUnitQuantity.unit.name : '',
     copies: product.times,
     storeName: settings.showStoreName ? storeName : undefined,
   }));
@@ -65,6 +65,7 @@ export default function LabelPrinter() {
     showStoreName: true,
     showBarcodeText: true,
     showProductPrice: true,
+    showProductUnit: true,
     showProductName: true,
     ...labelSettingsFrom(printingService.getSettings()),
   }));

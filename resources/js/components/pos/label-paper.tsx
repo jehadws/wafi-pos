@@ -2,19 +2,17 @@
 
 import { BarcodeStrip } from '@/components/pos/barcode-strip';
 import { useTranslation } from '@/lib/i18n';
-import { LabelLayoutOptions, LabelPayload, layoutTsplLabel } from '@/lib/label-layout';
+import { LabelLayoutOptions, LabelPayload, layoutLabel } from '@/lib/label-layout';
 import { cn } from '@/lib/utils';
 import { LabelPreviewImage } from '@/services/printing-service';
 import { useState } from 'react';
 
 /** Preview scale: printer dots -> css pixels, so a 76 mm sticker renders wider than a 40 mm one. */
 export const LABEL_PX_PER_DOT = 0.6;
-const MONOSPACE_ADVANCE = 0.6;
-const BARCODE_TEXT_DOTS = 24;
 
 /**
  * Draws one sticker. When the backend has rendered it, the printed pixels are shown
- * verbatim; until then the TSPL geometry from layoutTsplLabel() (which mirrors
+ * verbatim; until then the geometry from layoutLabel() (which mirrors
  * LabelBuilder::layout()) stands in so the shape of the label is right early.
  */
 export function LabelPaper({
@@ -31,7 +29,7 @@ export function LabelPaper({
   const { t } = useTranslation();
   // Products without a generated barcode image still show where their bars land.
   const [barcodeImageFailed, setBarcodeImageFailed] = useState(false);
-  const layout = layoutTsplLabel(label, options);
+  const layout = layoutLabel(label, options);
 
   return (
     <div className={cn('flex flex-col items-center gap-1', className)}>
@@ -61,8 +59,8 @@ export function LabelPaper({
                     onError={() => setBarcodeImageFailed(true)}
                   />
                 )}
-                {row.readable && (
-                  <span className="leading-none text-black" style={{ fontSize: `${BARCODE_TEXT_DOTS * LABEL_PX_PER_DOT * 0.8}px` }}>
+                {row.readablePx > 0 && (
+                  <span className="leading-none text-black" style={{ fontSize: `${row.readablePx * LABEL_PX_PER_DOT}px` }}>
                     {row.code}
                   </span>
                 )}
@@ -70,15 +68,14 @@ export function LabelPaper({
             ) : (
               <div
                 key={index}
-                className="absolute overflow-hidden text-center font-mono leading-none text-black"
+                className="absolute overflow-hidden text-center leading-none text-black"
                 style={{
                   left: `${row.x * LABEL_PX_PER_DOT}px`,
                   top: `${row.y * LABEL_PX_PER_DOT}px`,
                   width: `${row.width * LABEL_PX_PER_DOT}px`,
-                  fontSize: `${Math.min(
-                    row.height * LABEL_PX_PER_DOT * 0.82,
-                    (row.width * LABEL_PX_PER_DOT) / (row.text.length * MONOSPACE_ADVANCE),
-                  )}px`,
+                  fontFamily: 'Tahoma, "Segoe UI", sans-serif',
+                  fontWeight: row.bold ? 700 : 400,
+                  fontSize: `${row.px * LABEL_PX_PER_DOT}px`,
                 }}
               >
                 {row.text}

@@ -282,6 +282,7 @@ export class PrintingService {
         printer: overrides.labelPrinter || undefined,
         labels,
         config: this.labelConfig(overrides),
+        lang: i18n.getLocale(),
         jobId,
       });
 
@@ -311,6 +312,7 @@ export class PrintingService {
       const res: any = await printingApi.previewLabels({
         labels: [...unique.values()],
         config: this.labelConfig(overrides),
+        lang: i18n.getLocale(),
       });
       const previews: Array<LabelPreviewImage | null> = Array.isArray(res?.previews) ? res.previews : [];
       let index = 0;

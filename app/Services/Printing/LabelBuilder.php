@@ -6,10 +6,6 @@ class LabelBuilder
 {
     private const DOTS_PER_MM = 8;
 
-    private const FONT_WIDTH = [1 => 8, 2 => 12, 3 => 16];
-
-    private const FONT_HEIGHT = [1 => 16, 2 => 24, 3 => 32];
-
     private const MARGIN = 8;
 
     private readonly LabelRaster $raster;
@@ -31,89 +27,85 @@ class LabelBuilder
             : $this->buildEscPos($label, $config);
     }
 
+    /**
+     * Lays the sticker out with the receipt's typography: the same Tahoma faces,
+     * dot-measured text and a role ladder (price largest, then name, store, unit).
+     * Rows carry px/bold instead of the retired printer font numbers, so the
+     * raster draws exactly what the geometry measured.
+     */
     public function layout(array $label, array $config = []): array
     {
         $widthMm = (float) ($config['widthMm'] ?? 50);
         $heightMm = (float) ($config['heightMm'] ?? 30);
         $widthDots = max(1, (int) round($widthMm * self::DOTS_PER_MM));
         $heightDots = max(1, (int) round($heightMm * self::DOTS_PER_MM));
-        $printableWidth = $widthDots - self::MARGIN * 2;
-        $availableHeight = $heightDots - self::MARGIN * 2;
-        $drafts = [];
+        $printableWidth = max(40, $widthDots - self::MARGIN * 2);
+        $availableHeight = max(1, $heightDots - self::MARGIN * 2);
 
+        // The receipt's ladder: wider heads carry a bigger base, small stickers shrink.
+        $base = $widthDots >= 560 ? 24 : ($widthDots >= 400 ? 21 : 18);
+
+        $drafts = [];
         if (($config['showStoreName'] ?? true) && ! empty($label['storeName'])) {
-            $text = $this->clean($label['storeName']);
-            $drafts[] = ['kind' => 'storeName', 'font' => 1, 'text' => $text, 'scale' => $this->fitScale(1, $text, $printableWidth, 2)];
+            $drafts[] = $this->textDraft('storeName', $this->clean($label['storeName']), (int) round($base * 0.85), true, 1, $printableWidth);
         }
         if (! empty($label['name'])) {
-            $text = $this->clean($label['name']);
-            $scale = 1;
-            foreach ([3, 2, 1] as $candidate) {
-                if (mb_strlen($text) <= intdiv($printableWidth, self::FONT_WIDTH[2] * $candidate) * 2) {
-                    $scale = $candidate;
-                    break;
-                }
-            }
-            $drafts[] = ['kind' => 'name', 'font' => 2, 'text' => $text, 'scale' => $scale];
+            $drafts[] = $this->textDraft('name', $this->clean($label['name']), (int) round($base * 1.1), true, 2, $printableWidth);
         }
         if (! empty($label['barcode'])) {
             $drafts[] = [
                 'kind' => 'barcode',
                 'code' => $this->clean($label['barcode']),
                 'height' => max(8, (int) round($config['barcodeHeight'] ?? 48)),
-                'readableHeight' => ($config['showBarcodeText'] ?? true) ? self::FONT_HEIGHT[2] : 0,
+                'readablePx' => ($config['showBarcodeText'] ?? true) ? (int) round($base * 0.8) : 0,
             ];
         }
         if (($config['showPrice'] ?? true) && isset($label['price']) && $label['price'] !== '') {
-            $text = $this->clean($label['price']);
-            $drafts[] = ['kind' => 'price', 'font' => 3, 'text' => $text, 'scale' => $this->fitScale(3, $text, $printableWidth, 2)];
+            $drafts[] = $this->textDraft('price', $this->clean($label['price']), (int) round($base * 1.45), true, 1, $printableWidth);
+        }
+        if (! empty($label['unit'])) {
+            $drafts[] = $this->textDraft('unit', $this->clean($label['unit']), (int) round($base * 0.7), false, 1, $printableWidth);
         }
         if (($config['showSku'] ?? false) && ! empty($label['sku'])) {
-            $drafts[] = ['kind' => 'sku', 'font' => 1, 'text' => 'SKU: '.$this->clean($label['sku']), 'scale' => 1];
+            $drafts[] = $this->textDraft('sku', 'SKU: '.$this->clean($label['sku']), (int) round($base * 0.7), false, 1, $printableWidth);
         }
 
-        $measure = function () use (&$drafts, $printableWidth): array {
+        $measure = function () use (&$drafts, $printableWidth): int {
             $height = 0;
             $rows = 0;
             foreach ($drafts as $draft) {
                 if ($draft['kind'] === 'barcode') {
-                    $height += $draft['height'] + $draft['readableHeight'];
+                    $height += $draft['height'] + ($draft['readablePx'] > 0 ? $this->formatter->lineHeight($draft['readablePx']) : 0);
                     $rows++;
                     continue;
                 }
-                $count = 1;
-                if ($draft['kind'] === 'name') {
-                    $length = max(1, intdiv($printableWidth, self::FONT_WIDTH[$draft['font']] * $draft['scale']));
-                    $count = count($this->wrap($draft['text'], $length, 2));
-                }
-                $height += self::FONT_HEIGHT[$draft['font']] * $draft['scale'] * $count;
-                $rows += $count;
+                $lines = $this->formatter->wrapText($draft['text'], $printableWidth, $draft['px'], $draft['bold'], $draft['maxLines']);
+                $height += max(1, count($lines)) * $this->formatter->lineHeight($draft['px']);
+                $rows += count($lines);
             }
 
-            return ['height' => $height + 8 * max(0, $rows - 1), 'rows' => $rows];
+            return $height + 8 * max(0, $rows - 1);
         };
 
-        while ($measure()['height'] > $availableHeight) {
+        // A too-tall sticker shrinks every text role together, like the receipt's
+        // shrink-to-fit, so the roles keep their relative weights.
+        for ($guard = 0; $guard < 24 && $measure() > $availableHeight; $guard++) {
             $changed = false;
-            foreach (['storeName', 'name', 'price'] as $kind) {
-                foreach ($drafts as &$draft) {
-                    if ($draft['kind'] === $kind && $draft['scale'] > 1) {
-                        $draft['scale']--;
-                        $changed = true;
-                        break 2;
-                    }
+            foreach ($drafts as &$draft) {
+                if ($draft['kind'] !== 'barcode' && $draft['px'] > 10) {
+                    $draft['px'] = max(10, (int) floor($draft['px'] * 0.9));
+                    $changed = true;
                 }
-                unset($draft);
             }
+            unset($draft);
             if (! $changed) {
                 break;
             }
         }
-        unset($draft);
-        if ($measure()['height'] > $availableHeight) {
+        if ($measure() > $availableHeight) {
             foreach ($drafts as &$draft) {
                 if ($draft['kind'] === 'barcode') {
-                    $draft['height'] = max(16, $draft['height'] - ($measure()['height'] - $availableHeight));
+                    $draft['height'] = max(16, $draft['height'] - ($measure() - $availableHeight));
                     break;
                 }
             }
@@ -130,22 +122,21 @@ class LabelBuilder
                     'code' => $draft['code'],
                     'width' => $modules * $narrow,
                     'height' => $draft['height'],
-                    'readableHeight' => $draft['readableHeight'],
+                    'readableHeight' => $draft['readablePx'] > 0 ? $this->formatter->lineHeight($draft['readablePx']) : 0,
+                    'readablePx' => $draft['readablePx'],
                     'narrow' => $narrow,
                 ];
                 continue;
             }
 
-            $lineLength = max(1, intdiv($printableWidth, self::FONT_WIDTH[$draft['font']] * $draft['scale']));
-            $lines = $draft['kind'] === 'name' ? $this->wrap($draft['text'], $lineLength, 2) : [mb_substr($draft['text'], 0, $lineLength)];
-            foreach ($lines as $text) {
+            foreach ($this->formatter->wrapText($draft['text'], $printableWidth, $draft['px'], $draft['bold'], $draft['maxLines']) as $text) {
                 $rows[] = [
                     'type' => 'text',
-                    'font' => $draft['font'],
-                    'scale' => $draft['scale'],
                     'text' => $text,
-                    'width' => mb_strlen($text) * self::FONT_WIDTH[$draft['font']] * $draft['scale'],
-                    'height' => self::FONT_HEIGHT[$draft['font']] * $draft['scale'],
+                    'px' => $draft['px'],
+                    'bold' => $draft['bold'],
+                    'width' => $this->formatter->textWidth($this->formatter->visual($text), $draft['px'], $draft['bold'])['width'],
+                    'height' => $this->formatter->lineHeight($draft['px']),
                 ];
             }
         }
@@ -174,6 +165,23 @@ class LabelBuilder
             'rows' => $rows,
             'overflow' => $contentHeight > $availableHeight,
         ];
+    }
+
+    /**
+     * One text role. A single-line role (price, store, unit) never wraps, so it
+     * shrinks by dots until its own measurement fits the paper.
+     *
+     * @return array{kind: string, text: string, px: int, bold: bool, maxLines: int}
+     */
+    private function textDraft(string $kind, string $text, int $px, bool $bold, int $maxLines, int $printableWidth): array
+    {
+        if ($maxLines === 1) {
+            while ($px > 10 && $this->formatter->textWidth($this->formatter->visual($text), $px, $bold)['width'] > $printableWidth) {
+                $px--;
+            }
+        }
+
+        return ['kind' => $kind, 'text' => $text, 'px' => $px, 'bold' => $bold, 'maxLines' => $maxLines];
     }
 
     /**
@@ -226,41 +234,11 @@ class LabelBuilder
         return $builder->toString();
     }
 
-    private function fitScale(int $font, string $text, int $width, int $cap): int
-    {
-        return min($cap, max(1, intdiv($width, max(1, mb_strlen($text)) * self::FONT_WIDTH[$font])));
-    }
-
     private function code128Modules(string $code): int
     {
         $symbols = ctype_digit($code) ? (int) ceil(strlen($code) / 2) + 2 : strlen($code) + 2;
 
         return $symbols * 11 + 13;
-    }
-
-    private function wrap(string $text, int $maxLength, int $maxLines): array
-    {
-        $lines = [];
-        $line = '';
-        foreach (preg_split('/\s+/u', trim($text)) ?: [] as $word) {
-            $candidate = $line === '' ? $word : "{$line} {$word}";
-            if (mb_strlen($candidate) <= $maxLength) {
-                $line = $candidate;
-                continue;
-            }
-            if ($line !== '') {
-                $lines[] = $line;
-                if (count($lines) === $maxLines) {
-                    return $lines;
-                }
-            }
-            $line = $word;
-        }
-        if ($line !== '' && count($lines) < $maxLines) {
-            $lines[] = mb_substr($line, 0, $maxLength);
-        }
-
-        return $lines;
     }
 
     private function clean(mixed $value): string

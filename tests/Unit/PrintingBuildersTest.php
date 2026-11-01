@@ -267,6 +267,18 @@ it('mirrors the amount columns so a right-to-left receipt keeps its amounts at t
         ->and(in_array($note, $lines, true))->toBeTrue();
 });
 
+it('draws the unit name as its own line under the price', function () {
+    $layout = (new LabelBuilder($this->formatter))->layout([
+        'name' => 'قهوة',
+        'price' => '18.00 SAR',
+        'unit' => 'قطعة',
+    ], ['widthMm' => 50, 'heightMm' => 30]);
+
+    $texts = array_values(array_filter($layout['rows'], fn (array $row): bool => $row['type'] === 'text'));
+
+    expect(end($texts)['text'])->toBe('قطعة');
+});
+
 it('builds TSPL labels as one full-label bitmap', function () {
     $label = (new LabelBuilder($this->formatter))->build([
         'storeName' => 'Subul',

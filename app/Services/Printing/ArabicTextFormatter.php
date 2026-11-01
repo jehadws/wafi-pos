@@ -38,6 +38,10 @@ class ArabicTextFormatter
 
     private array $forms = [];
 
+    private ?string $boldFont = null;
+
+    private bool $boldFontResolved = false;
+
     public function __construct()
     {
         foreach ([[0xFB50, 0xFDFF], [0xFE70, 0xFEFF]] as [$start, $end]) {
@@ -417,5 +421,123 @@ class ArabicTextFormatter
         }
 
         throw new RuntimeException('Arabic printing requires Tahoma, Arial, Segoe UI, or POS_ARABIC_FONT.');
+    }
+
+    /** The bold sibling of the print font, or null when only the regular face exists. */
+    public function boldFontPath(): ?string
+    {
+        if ($this->boldFontResolved) {
+            return $this->boldFont;
+        }
+        $this->boldFontResolved = true;
+
+        $regular = $this->fontPath();
+        $faces = [
+            'tahoma.ttf' => 'tahomabd.ttf',
+            'arial.ttf' => 'arialbd.ttf',
+            'segoeui.ttf' => 'segoeuib.ttf',
+            'dejavusans.ttf' => 'DejaVuSans-Bold.ttf',
+        ];
+        $name = strtolower(basename($regular));
+        if (isset($faces[$name])) {
+            $candidate = dirname($regular).DIRECTORY_SEPARATOR.$faces[$name];
+            if (is_file($candidate)) {
+                return $this->boldFont = $candidate;
+            }
+        }
+
+        return $this->boldFont = null;
+    }
+
+    public function fontFor(bool $bold = false): string
+    {
+        return $bold ? ($this->boldFontPath() ?? $this->fontPath()) : $this->fontPath();
+    }
+
+    /** Paper measures text in dots; 0.75pt per dot is the ladder every builder shares. */
+    public function points(int $px): float
+    {
+        return $px * 0.75;
+    }
+
+    public function lineHeight(int $px): int
+    {
+        return (int) round($px * 1.5);
+    }
+
+    /**
+     * Width of already-visual text in dots, plus the left overhang imagettftext
+     * would start drawing before the requested x.
+     *
+     * @return array{width: int, offset: int}
+     */
+    public function textWidth(string $visual, int $px, bool $bold = false): array
+    {
+        if ($visual === '') {
+            return ['width' => 0, 'offset' => 0];
+        }
+
+        $bounds = imagettfbbox($this->points($px), 0, $this->fontFor($bold), $visual);
+        if ($bounds === false) {
+            throw new RuntimeException('Unable to measure print text.');
+        }
+
+        return ['width' => max(1, $bounds[2] - $bounds[0]), 'offset' => $bounds[0]];
+    }
+
+    /**
+     * Greedy word wrap of logical text into at most $maxLines lines of
+     * $maxWidth dots; a word wider than a line is hard-split by characters.
+     *
+     * @return list<string>
+     */
+    public function wrapText(string $text, int $maxWidth, int $px, bool $bold = false, int $maxLines = 2): array
+    {
+        $words = preg_split('/\s+/u', trim($text)) ?: [];
+
+        $fits = function (string $candidate) use ($maxWidth, $px, $bold): bool {
+            return $this->textWidth($this->visual($candidate), $px, $bold)['width'] <= $maxWidth;
+        };
+
+        if ($words === []) {
+            return [];
+        }
+        if ($fits(implode(' ', $words))) {
+            return [implode(' ', $words)];
+        }
+
+        $lines = [];
+        $current = '';
+        foreach ($words as $word) {
+            $candidate = $current === '' ? $word : $current.' '.$word;
+            if ($fits($candidate)) {
+                $current = $candidate;
+                continue;
+            }
+            if ($current !== '') {
+                $lines[] = $current;
+                if (count($lines) === $maxLines) {
+                    return $lines;
+                }
+            }
+            // A single word wider than a line is cut by characters, not clipped.
+            while (mb_strlen($word) > 1 && ! $fits($word)) {
+                $cut = mb_strlen($word) - 1;
+                while ($cut > 1 && ! $fits(mb_substr($word, 0, $cut))) {
+                    $cut--;
+                }
+                $lines[] = mb_substr($word, 0, $cut);
+                if (count($lines) === $maxLines) {
+                    return $lines;
+                }
+                $word = mb_substr($word, $cut);
+            }
+            $current = $word;
+        }
+        if ($current !== '' && count($lines) < $maxLines) {
+            $lines[] = $current;
+        }
+
+        return $lines;
     }
 }
