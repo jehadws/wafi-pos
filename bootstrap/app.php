@@ -13,7 +13,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 
-return Application::configure(basePath: dirname(__DIR__))
+$app = Application::configure(basePath: dirname(__DIR__))
   ->withRouting(
     web: __DIR__ . '/../routes/web.php',
     // api: __DIR__ . '/../routes/api.php',
@@ -83,6 +83,8 @@ return Application::configure(basePath: dirname(__DIR__))
     });
   })->create();
 
+// Read before .env is loaded, so only real process variables count here — the
+// shape the desktop shell injects when it spawns PHP against ProgramData.
 if ($storagePath = env('LARAVEL_STORAGE_PATH')) {
   $app->useStoragePath($storagePath);
 }

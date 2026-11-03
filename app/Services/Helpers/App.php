@@ -18,19 +18,31 @@ trait App
      */
     public static function installed()
     {
-        if ( ! Cache::has( 'sb-core-installed' ) ) {
-            Cache::set( 'sb-core-installed', (bool) self::checkDatabaseExistence(), 60 );
-        }
+        /**
+         * The cached verdict lives in the store named by CACHE_STORE, which on
+         * a fresh install is "database" — a store whose table is only created
+         * by the very migration this check gates. Reading it must therefore
+         * never be able to throw, or the setup wizard stays unreachable.
+         */
+        try {
+            if ( ! Cache::has( 'sb-core-installed' ) ) {
+                Cache::set( 'sb-core-installed', self::checkDatabaseExistence(), 60 );
+            }
 
-        return (bool) Cache::get( 'sb-core-installed' );
+            return (bool) Cache::get( 'sb-core-installed' );
+        } catch ( \Throwable $e ) {
+            return self::checkDatabaseExistence();
+        }
     }
 
-    private static function checkDatabaseExistence()
+    private static function checkDatabaseExistence(): bool
     {
         try {
             if ( DB::connection()->getPdo() ) {
                 return Schema::hasTable( 'subul_options' );
             }
+
+            return false;
         } catch ( \Exception $e ) {
             return false;
         }

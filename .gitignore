@@ -3,6 +3,7 @@
 /node_modules
 /public/build
 /public/hot
+/public/lang
 /public/storage
 /storage/*.key
 /storage/pail
@@ -13,7 +14,6 @@
 /vendor
 .env
 .env.backup
-.env.production
 .phpactor.json
 .phpunit.result.cache
 Homestead.json

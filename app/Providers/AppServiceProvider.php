@@ -263,16 +263,22 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        /**
-         * let's create a default sqlite
-         * database. This file is not tracked by Git.
-         */
-        if ( ! is_file( database_path( 'database.sqlite' ) ) ) {
-            file_put_contents( database_path( 'database.sqlite' ), '' );
-        }
+        $this->ensureSqliteDatabaseExists();
 
         if ( Helper::installed() ) {
             Schema::defaultStringLength( 191 );
+        } elseif ( ! $this->app->runningInConsole() ) {
+            /**
+             * An uninstalled app cannot serve requests through its database
+             * session & cache stores: the tables holding them are exactly what
+             * the setup wizard is about to create. Without this detour the very
+             * first visit dies on "no such table: sessions" and the wizard that
+             * would fix it stays unreachable.
+             */
+            config( [
+                'session.driver' => 'file',
+                'cache.default' => 'file',
+            ] );
         }
 
         /**
@@ -295,6 +301,37 @@ class AppServiceProvider extends ServiceProvider
         Event::listen( JobProcessing::class, function () {
             sb()->option->rebuild();
         } );
+    }
+
+    /**
+     * The SQLite connector refuses to connect when its database file is
+     * missing, and that file is not tracked by Git. Create it wherever the
+     * active connection points, since the desktop install relocates it to
+     * ProgramData instead of database/database.sqlite.
+     */
+    protected function ensureSqliteDatabaseExists()
+    {
+        if ( config( 'database.default' ) !== 'sqlite' ) {
+            return;
+        }
+
+        $database = config( 'database.connections.sqlite.database' );
+
+        if ( ! is_string( $database ) || $database === '' || str_contains( $database, ':memory:' ) ) {
+            return;
+        }
+
+        $path = realpath( $database ) ?: base_path( $database );
+
+        if ( is_file( $path ) ) {
+            return;
+        }
+
+        if ( ! is_dir( dirname( $path ) ) ) {
+            @mkdir( dirname( $path ), 0775, true );
+        }
+
+        @touch( $path );
     }
 
     /**

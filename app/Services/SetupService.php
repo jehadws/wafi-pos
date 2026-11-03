@@ -67,10 +67,19 @@ class SetupService
     public function updateAppURL()
     {
         $domain = parse_url( url()->to( '/' ) );
+        $host = $domain[ 'host' ];
+        $withPort = $host . ( isset( $domain[ 'port' ] ) ? ':' . $domain[ 'port' ] : '' );
 
         sb()->envEditor->set( 'APP_URL', url()->to( '/' ) );
-        sb()->envEditor->set( 'SESSION_DOMAIN', $domain[ 'host' ] );
-        sb()->envEditor->set( 'SANCTUM_STATEFUL_DOMAINS', $domain[ 'host' ] . ( isset( $domain[ 'port' ] ) ? ':' . $domain[ 'port' ] : '' ) );
+
+        /**
+         * SESSION_DOMAIN is deliberately left alone: pinning it to whichever
+         * host served the wizard makes the session cookie vanish as soon as the
+         * same install is opened as localhost instead of 127.0.0.1. An empty
+         * domain binds the cookie to the host actually in use. Same tolerant
+         * list ns:doctor --fix-domains writes for Sanctum.
+         */
+        sb()->envEditor->set( 'SANCTUM_STATEFUL_DOMAINS', collect( [ $withPort, 'localhost', '127.0.0.1' ] )->unique()->join( ',' ) );
 
         sb()->envEditor->set( 'REVERB_APP_ID', 'app-key-' . Str::random( 10 ) );
         sb()->envEditor->set( 'REVERB_APP_KEY', 'app-key-' . Str::random( 10 ) );
@@ -117,10 +126,6 @@ class SetupService
          */
         Artisan::call( 'migrate', [
             '--force' => true,
-        ] );
-
-        Artisan::call( 'ns:translate', [
-            '--symlink' => true,
         ] );
 
         /**

@@ -69,14 +69,24 @@ class SetupCommand extends Command
             $this->requireConfirmation = false;
         }
 
-        if (
-            env( 'DB_HOST', null ) === null ||
-            env( 'DB_DATABASE', null ) === null ||
-            env( 'DB_USERNAME', null ) === null ||
-            env( 'DB_PASSWORD', null ) === null ||
-            env( 'DB_PREFIX', null ) === null
-        ) {
-            return $this->error( __( 'Unable to proceed, looks like the database can\'t be used.' ) );
+        /**
+         * Only probe the keys the active driver actually reads. Requiring the
+         * MySQL credentials unconditionally blocked every CLI install, since
+         * SQLite — the driver .env.example and the desktop package use — has
+         * no host, user or password to supply.
+         */
+        $requiredKeys = match ( env( 'DB_CONNECTION', 'sqlite' ) ) {
+            'sqlite' => [],
+            default => [ 'DB_HOST', 'DB_DATABASE', 'DB_USERNAME' ],
+        };
+
+        $missingKeys = array_values( array_filter(
+            $requiredKeys,
+            fn ( $key ) => env( $key, null ) === null
+        ) );
+
+        if ( $missingKeys !== [] ) {
+            return $this->error( __( 'Unable to proceed, looks like the database can\'t be used.' ) . ' (' . implode( ', ', $missingKeys ) . ')' );
         }
 
         if ( Helper::installed() ) {

@@ -7,6 +7,7 @@
         "installer": "powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/build-installer.ps1",
         "installer:frontend-only": "powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/build-installer.ps1 -SkipElectron",
         "dev": "vite",
+        "setup": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/bootstrap.ps1",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",
         "lint": "eslint . --max-warnings 0",
