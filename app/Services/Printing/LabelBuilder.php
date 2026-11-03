@@ -8,6 +8,8 @@ class LabelBuilder
 
     private const MARGIN = 8;
 
+    private const QUIET_MODULES = 10;
+
     private readonly LabelRaster $raster;
 
     public function __construct(private readonly ArabicTextFormatter $formatter)
@@ -49,27 +51,34 @@ class LabelBuilder
         if (($config['showStoreName'] ?? true) && ! empty($label['storeName'])) {
             $drafts[] = $this->textDraft('storeName', $this->clean($label['storeName']), (int) round($base * 0.85), true, 1, $printableWidth);
         }
-        if (! empty($label['name'])) {
-            $drafts[] = $this->textDraft('name', $this->clean($label['name']), (int) round($base * 1.1), true, 2, $printableWidth);
-        }
-        if (! empty($label['barcode'])) {
-            $drafts[] = [
-                'kind' => 'barcode',
-                'code' => $this->clean($label['barcode']),
-                'height' => max(8, (int) round($config['barcodeHeight'] ?? 48)),
-                'readablePx' => ($config['showBarcodeText'] ?? true) ? (int) round($base * 0.8) : 0,
-            ];
+        // The unit rides at the end of the name, "Duvet (per set)", instead of taking a line of its own.
+        $title = $this->nameWithUnit($this->clean($label['name'] ?? ''), $this->clean($label['unit'] ?? ''), $printableWidth, (int) round($base * 1.1));
+        if ($title !== '') {
+            $drafts[] = $this->textDraft('name', $title, (int) round($base * 1.1), true, 2, $printableWidth);
         }
         if (($config['showPrice'] ?? true) && isset($label['price']) && $label['price'] !== '') {
             $drafts[] = $this->textDraft('price', $this->clean($label['price']), (int) round($base * 1.45), true, 1, $printableWidth);
-        }
-        if (! empty($label['unit'])) {
-            $drafts[] = $this->textDraft('unit', $this->clean($label['unit']), (int) round($base * 0.7), false, 1, $printableWidth);
         }
         if (($config['showSku'] ?? false) && ! empty($label['sku'])) {
             $drafts[] = $this->textDraft('sku', 'SKU: '.$this->clean($label['sku']), (int) round($base * 0.7), false, 1, $printableWidth);
         }
 
+        // Reading order: text first, price right under the name, and the barcode last, where
+        // only the scanner needs it and its number sits on a clear bottom edge.
+        if (! empty($label['barcode'])) {
+            $code = $this->clean($label['barcode']);
+            $readablePx = ($config['showBarcodeText'] ?? true) ? (int) round($base * 0.8) : 0;
+            // The number under the bars shrinks to the paper like any single-line text.
+            while ($readablePx > 10 && $this->formatter->textWidth($this->formatter->visual($code), $readablePx, false)['width'] > $printableWidth) {
+                $readablePx--;
+            }
+            $drafts[] = [
+                'kind' => 'barcode',
+                'code' => $code,
+                'height' => max(8, (int) round($config['barcodeHeight'] ?? 48)),
+                'readablePx' => $readablePx,
+            ];
+        }
         $measure = function () use (&$drafts, $printableWidth): int {
             $height = 0;
             $rows = 0;
@@ -115,12 +124,17 @@ class LabelBuilder
         $rows = [];
         foreach ($drafts as $draft) {
             if ($draft['kind'] === 'barcode') {
-                $modules = $this->code128Modules($draft['code']);
-                $narrow = min(6, max(1, (int) floor(($printableWidth * 0.9) / $modules)));
+                // Code 128 needs 10 empty modules on each side to be read; the widest bar
+                // that leaves them inside the printable width is the one that prints.
+                $modules = Code128::modules($draft['code']);
+                $narrow = min(6, max(1, intdiv($printableWidth, $modules + self::QUIET_MODULES * 2)));
+                $readableWidth = $draft['readablePx'] > 0
+                    ? $this->formatter->textWidth($this->formatter->visual($draft['code']), $draft['readablePx'], false)['width']
+                    : 0;
                 $rows[] = [
                     'type' => 'barcode',
                     'code' => $draft['code'],
-                    'width' => $modules * $narrow,
+                    'width' => max($modules * $narrow, $readableWidth),
                     'height' => $draft['height'],
                     'readableHeight' => $draft['readablePx'] > 0 ? $this->formatter->lineHeight($draft['readablePx']) : 0,
                     'readablePx' => $draft['readablePx'],
@@ -165,6 +179,32 @@ class LabelBuilder
             'rows' => $rows,
             'overflow' => $contentHeight > $availableHeight,
         ];
+    }
+
+    /**
+     * "Name (unit)" that still shows the unit when the name is too long for two lines:
+     * the name loses its last words and gets an ellipsis, the unit is never the part cut.
+     */
+    private function nameWithUnit(string $name, string $unit, int $width, int $px): string
+    {
+        if ($unit === '') {
+            return $name;
+        }
+        if ($name === '') {
+            return $unit;
+        }
+
+        $suffix = ' ('.$unit.')';
+        $words = preg_split('/\s+/u', trim($name)) ?: [$name];
+        for ($keep = count($words); $keep >= 1; $keep--) {
+            $candidate = implode(' ', array_slice($words, 0, $keep)).($keep < count($words) ? '…' : '').$suffix;
+            // Asking for one line more than shown reveals whether anything would be dropped.
+            if (count($this->formatter->wrapText($candidate, $width, $px, true, 3)) <= 2) {
+                return $candidate;
+            }
+        }
+
+        return trim($suffix);
     }
 
     /**
@@ -232,13 +272,6 @@ class LabelBuilder
         }
 
         return $builder->toString();
-    }
-
-    private function code128Modules(string $code): int
-    {
-        $symbols = ctype_digit($code) ? (int) ceil(strlen($code) / 2) + 2 : strlen($code) + 2;
-
-        return $symbols * 11 + 13;
     }
 
     private function clean(mixed $value): string

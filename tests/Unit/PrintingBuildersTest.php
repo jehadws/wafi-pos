@@ -2,6 +2,7 @@
 
 use App\Services\Options;
 use App\Services\Printing\ArabicTextFormatter;
+use App\Services\Printing\Code128;
 use App\Services\Printing\EscPosBuilder;
 use App\Services\Printing\LabelBuilder;
 use App\Services\Printing\ReceiptBuilder;
@@ -267,18 +268,30 @@ it('mirrors the amount columns so a right-to-left receipt keeps its amounts at t
         ->and(in_array($note, $lines, true))->toBeTrue();
 });
 
-it('draws the unit name as its own line under the price', function () {
+it('writes the unit at the end of the name instead of on its own line', function () {
     $layout = (new LabelBuilder($this->formatter))->layout([
         'name' => 'قهوة',
         'price' => '18.00 SAR',
         'unit' => 'قطعة',
     ], ['widthMm' => 50, 'heightMm' => 30]);
 
-    $texts = array_values(array_filter($layout['rows'], fn (array $row): bool => $row['type'] === 'text'));
+    $texts = array_column(array_filter($layout['rows'], fn (array $row): bool => $row['type'] === 'text'), 'text');
 
-    expect(end($texts)['text'])->toBe('قطعة');
+    expect($texts)->toBe(['قهوة (قطعة)', '18.00 SAR']);
 });
 
+it('keeps the unit when a long name has to be cut to two lines', function () {
+    $layout = (new LabelBuilder($this->formatter))->layout([
+        'name' => 'Madison Park Marcell Indigo Cotton Printed Duvet Cover Set Queen Size Extra Long Premium Edition',
+        'unit' => 'per set',
+    ], ['widthMm' => 40, 'heightMm' => 30]);
+
+    $texts = array_column(array_filter($layout['rows'], fn (array $row): bool => $row['type'] === 'text'), 'text');
+
+    expect($texts)->toHaveCount(2)
+        ->and(end($texts))->toEndWith('(per set)')
+        ->and(implode(' ', $texts))->toContain('…');
+});
 it('builds TSPL labels as one full-label bitmap', function () {
     $label = (new LabelBuilder($this->formatter))->build([
         'storeName' => 'Subul',
@@ -354,7 +367,7 @@ it('renders the identical pixels for both protocols and a decodable PNG for the 
 });
 
 it('draws barcode dots that a scanner can read back at any narrow width', function () {
-    foreach (['kBBK5kHBIF-106', 'SpM32LgT-16', '123456789012', 'A1'] as $code) {
+    foreach (['kBBK5kHBIF-106', 'SpM32LgT-16', '123456789012', 'A1', '6281001234567', '261031005', 'ABC123456789'] as $code) {
         expect(decodedBarcode($code))->toBe($code, "printed code {$code} does not decode from its dots");
     }
 });
@@ -452,11 +465,20 @@ function code128Value(array $values): ?string
         return null;
     }
 
-    return match ($start) {
-        104 => implode('', array_map(fn (int $value): string => chr($value + 32), $values)),
-        105 => implode('', array_map(fn (int $value): string => str_pad((string) $value, 2, '0', STR_PAD_LEFT), $values)),
-        default => null,
-    };
+    // Follow the code-set switches: 99 moves to Code C, 100 back to Code B.
+    $inC = $start === 105;
+    $text = '';
+    foreach ($values as $value) {
+        if ($inC && $value === 100) {
+            $inC = false;
+        } elseif (! $inC && $value === 99) {
+            $inC = true;
+        } else {
+            $text .= $inC ? str_pad((string) $value, 2, '0', STR_PAD_LEFT) : chr($value + 32);
+        }
+    }
+
+    return $text;
 }
 
 it('prints Arabic as an image in image mode so no printer code page is needed', function () {
@@ -508,4 +530,80 @@ it('draws the whole receipt as one picture in image mode and keeps the barcode n
             ->and($out)->toContain("\x1D\x6B\x49")
             ->and($out)->toEndWith("\x1D\x56\x42\x03");
     }
+});
+
+it('packs an odd-length number into Code C so each bar stays wide enough to scan', function () {
+    // 13-digit EAN: pure Code B needs 178 modules, mixed B/C needs 123.
+    expect(Code128::modules('6281001234567'))->toBe(123)
+        ->and(Code128::modules('123456'))->toBe(5 * 11 + 13)
+        ->and(implode(',', Code128::values('123456')))->toBe('105,12,34,56,44')
+        ->and(Code128::runs('فوترة'))->toBeNull();
+
+    $layout = (new LabelBuilder($this->formatter))->layout(
+        ['name' => 'Coffee', 'barcode' => '6281001234567', 'price' => '1.00'],
+        ['widthMm' => 50, 'heightMm' => 30],
+    );
+    $barcode = collect($layout['rows'])->firstWhere('type', 'barcode');
+
+    // Planned and drawn widths come from the same encoder, and 2 dots is 0.25 mm at 203 dpi.
+    expect($barcode['narrow'])->toBeGreaterThanOrEqual(2)
+        ->and($barcode['width'])->toBe(123 * $barcode['narrow']);
+});
+
+it('centers the readable number under the bars', function () {
+    $builder = new LabelBuilder($this->formatter);
+    $raster = new App\Services\Printing\LabelRaster($this->formatter, $builder->layout(...));
+    $label = ['name' => 'Coffee', 'barcode' => '6281001234567', 'price' => '1.00'];
+    $config = ['widthMm' => 50, 'heightMm' => 30];
+    $barcode = collect($builder->layout($label, $config)['rows'])->firstWhere('type', 'barcode');
+    $pixels = $raster->render($label, $config);
+
+    $inkSpan = function (int $from, int $to) use ($pixels): array {
+        $min = PHP_INT_MAX;
+        $max = -1;
+        for ($y = $from; $y < $to; $y++) {
+            for ($x = 0; $x < $pixels['widthBytes'] * 8; $x++) {
+                if (ord($pixels['data'][$y * $pixels['widthBytes'] + intdiv($x, 8)]) & (1 << (7 - $x % 8))) {
+                    $min = min($min, $x);
+                    $max = max($max, $x);
+                }
+            }
+        }
+
+        return [$min, $max];
+    };
+
+    [$barLeft, $barRight] = $inkSpan($barcode['y'], $barcode['y'] + $barcode['height']);
+    [$textLeft, $textRight] = $inkSpan($barcode['y'] + $barcode['height'] + 3, $barcode['y'] + $barcode['height'] + $barcode['readableHeight'] - 2);
+
+    expect(abs((($barLeft + $barRight) - ($textLeft + $textRight)) / 2))->toBeLessThanOrEqual(3);
+});
+
+it('reads top to bottom: store, name with its unit, price, SKU, and the barcode last', function () {
+    $layout = (new LabelBuilder($this->formatter))->layout([
+        'storeName' => 'Subul',
+        'name' => 'Coffee',
+        'price' => '18.00',
+        'unit' => 'cup',
+        'sku' => 'CF-1',
+        'barcode' => '6281001234567',
+    ], ['widthMm' => 50, 'heightMm' => 30, 'showSku' => true]);
+
+    $order = array_map(fn (array $row): string => $row['type'] === 'barcode' ? 'barcode' : $row['text'], $layout['rows']);
+
+    expect($order)->toBe(['Subul', 'Coffee (cup)', '18.00', 'SKU: CF-1', 'barcode'])
+        ->and($layout['overflow'])->toBeFalse();
+});
+
+it('never breaks the unit across two lines', function () {
+    $layout = (new LabelBuilder($this->formatter))->layout([
+        'name' => 'Nanshing Avalon 8-piece Comforter Set',
+        'unit' => 'per piece',
+    ], ['widthMm' => 50, 'heightMm' => 30]);
+
+    $texts = array_column(array_filter($layout['rows'], fn (array $row): bool => $row['type'] === 'text'), 'text');
+
+    // The unit stays whole: no line ends on "(per", and it closes the last line.
+    expect(end($texts))->toEndWith('(per piece)')
+        ->and(array_filter($texts, fn (string $line): bool => str_ends_with($line, '(per')))->toBeEmpty();
 });

@@ -92,7 +92,8 @@ const lineHeightDots = (px: number) => Math.round(px * 1.5);
 /** Greedy word wrap into at most maxLines pixel-fitted lines; over-wide words are hard-split. */
 function wrapText(text: string, maxWidth: number, px: number, bold: boolean, maxLines: number): string[] {
   const fits = (candidate: string) => textWidthDots(candidate, px, bold) <= maxWidth;
-  const words = text.trim().split(/\s+/).filter(Boolean);
+  // A parenthesized group such as "(per piece)" is one word, so a line never ends on "(per".
+  const words = text.trim().match(/\([^()]*\)|\S+/g) ?? [];
   if (words.length === 0) return [];
   if (fits(words.join(' '))) return [words.join(' ')];
 
@@ -124,7 +125,26 @@ function wrapText(text: string, maxWidth: number, px: number, bold: boolean, max
   return lines;
 }
 
-type TextDraft = { kind: 'storeName' | 'name' | 'price' | 'unit' | 'sku'; text: string; px: number; bold: boolean; maxLines: number };
+/**
+ * "Name (unit)" that still shows the unit when the name is too long for two lines: the name
+ * loses its last words and gets an ellipsis, the unit is never the part cut.
+ */
+function nameWithUnit(name: string, unit: string, width: number, px: number): string {
+  if (!unit) return name;
+  if (!name) return unit;
+
+  const suffix = ` (${unit})`;
+  const words = name.trim().split(/\s+/);
+  for (let keep = words.length; keep >= 1; keep--) {
+    const candidate = `${words.slice(0, keep).join(' ')}${keep < words.length ? '…' : ''}${suffix}`;
+    // Asking for one line more than shown reveals whether anything would be dropped.
+    if (wrapText(candidate, width, px, true, 3).length <= 2) return candidate;
+  }
+
+  return suffix.trim();
+}
+
+type TextDraft = { kind: 'storeName' | 'name' | 'price' | 'sku'; text: string; px: number; bold: boolean; maxLines: number };
 type BarcodeDraft = { kind: 'barcode'; code: string; height: number; readablePx: number };
 type Draft = TextDraft | BarcodeDraft;
 
@@ -140,10 +160,33 @@ function textDraft(kind: TextDraft['kind'], text: string, px: number, bold: bool
   return { kind, text, px, bold, maxLines };
 }
 
-function code128Modules(code: string) {
-  const symbolCount = /^\d+$/.test(code) ? Math.ceil(code.length / 2) + 2 : code.length + 2;
+const QUIET_MODULES = 10;
 
-  return symbolCount * 11 + 13;
+/**
+ * Width in modules of a Code 128 symbol, quiet zones excluded. Digit runs ride Code C (two
+ * digits per symbol) and the rest Code B with the cheapest mix of switches, exactly like
+ * Code128 on the server, so this plan matches the pixels the printer burns.
+ */
+export function code128Modules(code: string): number {
+  const text = code.replace(/[^\x20-\x7E]/g, '');
+  const length = text.length;
+  if (length === 0) return 0;
+
+  const isPair = (index: number) => index + 1 < length && /\d/.test(text[index]!) && /\d/.test(text[index + 1]!);
+  // Fewest symbols to finish text[i:] while already in Code B (b) or Code C (c).
+  const b = new Array<number>(length + 2).fill(0);
+  const c = new Array<number>(length + 2).fill(0);
+  for (let index = length - 1; index >= 0; index--) {
+    const viaChar = 1 + b[index + 1]!;
+    const viaPair = isPair(index) ? 1 + c[index + 2]! : Infinity;
+    b[index] = Math.min(viaChar, 1 + viaPair);
+    c[index] = Math.min(viaPair, 1 + viaChar);
+  }
+
+  // Start symbol, the cheapest data run, the checksum; the stop adds 13 modules.
+  const data = isPair(0) && c[0]! <= b[0]! ? c[0]! : b[0]!;
+
+  return (1 + data + 1) * 11 + 13;
 }
 
 export function layoutLabel(label: LabelPayload, options: LabelLayoutOptions): LabelLayout {
@@ -159,27 +202,32 @@ export function layoutLabel(label: LabelPayload, options: LabelLayoutOptions): L
   if (options.showStoreName && label.storeName) {
     drafts.push(textDraft('storeName', clean(label.storeName), Math.round(base * 0.85), true, 1, printableWidth));
   }
-  if (label.name) {
-    drafts.push(textDraft('name', clean(label.name), Math.round(base * 1.1), true, 2, printableWidth));
-  }
-  if (label.barcode) {
-    drafts.push({
-      kind: 'barcode',
-      code: clean(label.barcode),
-      height: Math.max(8, Math.round(options.barcodeHeightDots)),
-      readablePx: options.showBarcodeText ? Math.round(base * 0.8) : 0,
-    });
+  // The unit rides at the end of the name, "Duvet (per set)", instead of taking a line of its own.
+  const title = nameWithUnit(clean(label.name ?? ''), clean(label.unit ?? ''), printableWidth, Math.round(base * 1.1));
+  if (title) {
+    drafts.push(textDraft('name', title, Math.round(base * 1.1), true, 2, printableWidth));
   }
   if (options.showPrice && label.price) {
     drafts.push(textDraft('price', clean(label.price), Math.round(base * 1.45), true, 1, printableWidth));
-  }
-  if (label.unit) {
-    drafts.push(textDraft('unit', clean(label.unit), Math.round(base * 0.7), false, 1, printableWidth));
   }
   if (options.showSku && label.sku) {
     drafts.push(textDraft('sku', `SKU: ${clean(label.sku)}`, Math.round(base * 0.7), false, 1, printableWidth));
   }
 
+  // Reading order: text first, price right under the name, and the barcode last, where only the
+  // scanner needs it and its number sits on a clear bottom edge.
+  if (label.barcode) {
+    const code = clean(label.barcode);
+    let readablePx = options.showBarcodeText ? Math.round(base * 0.8) : 0;
+    // The number under the bars shrinks to the paper like any single-line text.
+    while (readablePx > 10 && textWidthDots(code, readablePx, false) > printableWidth) readablePx--;
+    drafts.push({
+      kind: 'barcode',
+      code,
+      height: Math.max(8, Math.round(options.barcodeHeightDots)),
+      readablePx,
+    });
+  }
   const measure = () => {
     let height = 0;
     let rows = 0;
@@ -221,14 +269,17 @@ export function layoutLabel(label: LabelPayload, options: LabelLayoutOptions): L
   const rows: LayoutRow[] = [];
   for (const draft of drafts) {
     if (draft.kind === 'barcode') {
+      // Code 128 needs 10 empty modules on each side to be read; the widest bar that leaves
+      // them inside the printable width is the one that prints.
       const modules = code128Modules(draft.code);
-      const narrow = Math.min(6, Math.max(1, Math.floor((printableWidth * 0.9) / modules)));
+      const narrow = Math.min(6, Math.max(1, Math.floor(printableWidth / (modules + QUIET_MODULES * 2))));
+      const readableWidth = draft.readablePx > 0 ? textWidthDots(draft.code, draft.readablePx, false) : 0;
       rows.push({
         type: 'barcode',
         code: draft.code,
         x: 0,
         y: 0,
-        width: modules * narrow,
+        width: Math.max(modules * narrow, readableWidth),
         height: draft.height,
         readableHeight: draft.readablePx > 0 ? lineHeightDots(draft.readablePx) : 0,
         readablePx: draft.readablePx,

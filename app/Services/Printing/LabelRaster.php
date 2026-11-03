@@ -13,29 +13,6 @@ namespace App\Services\Printing;
  */
 class LabelRaster
 {
-    /** Code 128 bar/space widths for symbol values 0..102, one digit per element, each row 11 modules. */
-    private const CODE128_PATTERNS = [
-        '212222', '222122', '222221', '121223', '121322', '131222', '122213', '122312', '132212', '221213',
-        '221312', '231212', '112232', '122132', '122231', '113222', '123122', '123221', '223211', '221132',
-        '221231', '213212', '223112', '312131', '311222', '321122', '321221', '312212', '322112', '322211',
-        '212123', '212321', '232121', '111323', '131123', '131321', '112313', '132113', '132311', '211313',
-        '231113', '231311', '112133', '112331', '132131', '113123', '113321', '133121', '313121', '211331',
-        '231131', '213113', '213311', '213131', '311123', '311321', '331121', '312113', '312311', '332111',
-        '314111', '221411', '431111', '111224', '111422', '121124', '121421', '141122', '141221', '112214',
-        '112412', '122114', '122411', '142112', '142211', '241211', '221114', '413111', '241112', '134111',
-        '111242', '121142', '121241', '114212', '124112', '124211', '411212', '421112', '421211', '212141',
-        '214121', '412121', '111143', '111341', '131141', '114113', '114311', '411113', '411311', '113141',
-        '114131', '311141', '411131',
-    ];
-
-    /** Start characters select the numbering; the stop character carries an extra module. */
-    private const CODE128_STARTS = [
-        103 => '211412',
-        104 => '211214',
-        105 => '211232',
-        106 => '2331112',
-    ];
-
     /** @var callable(array,array):array Layout geometry to draw, normally LabelBuilder::layout(). */
     private $layout;
 
@@ -161,7 +138,7 @@ class LabelRaster
 
     private function drawBarcode(\GdImage $canvas, int $color, array $row, int $x, int $y, float $scale, int $canvasWidth): void
     {
-        $bars = $this->code128Bars($row['code']);
+        $bars = Code128::runs($row['code']);
         if ($bars === null) {
             return;
         }
@@ -182,70 +159,25 @@ class LabelRaster
         }
 
         if (($row['readablePx'] ?? 0) > 0) {
+            // Centered under the bars, the way a scanner-side human reads a retail code.
+            $readablePx = max(6, (int) round($row['readablePx'] * $scale));
+            $readableWidth = $this->formatter->textWidth($this->formatter->visual($row['code']), $readablePx, false)['width'];
             $this->drawText(
                 $canvas,
                 $color,
                 $row['code'],
-                $left,
+                $center - intdiv($readableWidth, 2),
                 $y + (int) floor($row['height'] * $scale) + 2,
-                max(6, (int) round($row['readablePx'] * $scale)),
+                $readablePx,
                 false,
                 $canvasWidth,
             );
         }
     }
 
-    /**
-     * Code 128 run lengths (bar, space, bar, ...) including the stop character.
-     * Digits are encoded two per symbol, every other ASCII character one per symbol.
-     *
-     * @return list<int>|null
-     */
-    private function code128Bars(string $code): ?array
-    {
-        $ascii = preg_replace('/[^\x20-\x7E]/', '', $code) ?? '';
-        if ($ascii === '') {
-            return null;
-        }
-
-        // Code C halves the symbol count for pure digits; anything else rides
-        // Code B one character per symbol.
-        $compact = ctype_digit($ascii) && strlen($ascii) % 2 === 0;
-        $values = [$compact ? 105 : 104];
-        if ($compact) {
-            foreach (str_split($ascii, 2) as $pair) {
-                $values[] = (int) $pair;
-            }
-        } else {
-            foreach (unpack('C*', $ascii) ?: [] as $byte) {
-                $values[] = $byte - 32;
-            }
-        }
-
-        $checksum = $values[0];
-        for ($position = 1; $position < count($values); $position++) {
-            $checksum += $values[$position] * $position;
-        }
-        $values[] = $checksum % 103;
-
-        $runs = [];
-        foreach ([...$values, 106] as $value) {
-            foreach (str_split($this->pattern($value)) as $run) {
-                $runs[] = (int) $run;
-            }
-        }
-
-        return $runs;
-    }
-
-    private function pattern(int $value): string
-    {
-        return self::CODE128_STARTS[$value] ?? self::CODE128_PATTERNS[$value];
-    }
-
-    /** Symbol value to bar/space widths, start and stop characters included. */
+    /** Symbol value to bar/space widths, start characters included. */
     public static function patterns(): array
     {
-        return self::CODE128_PATTERNS + self::CODE128_STARTS;
+        return Code128::patterns();
     }
 }

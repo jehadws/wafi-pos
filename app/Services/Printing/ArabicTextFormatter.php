@@ -493,7 +493,9 @@ class ArabicTextFormatter
      */
     public function wrapText(string $text, int $maxWidth, int $px, bool $bold = false, int $maxLines = 2): array
     {
-        $words = preg_split('/\s+/u', trim($text)) ?: [];
+        // A parenthesized group such as "(per piece)" is one word, so a line never ends on "(per".
+        preg_match_all('/\([^()]*\)|\S+/u', trim($text), $matches);
+        $words = $matches[0];
 
         $fits = function (string $candidate) use ($maxWidth, $px, $bold): bool {
             return $this->textWidth($this->visual($candidate), $px, $bold)['width'] <= $maxWidth;

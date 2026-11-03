@@ -1,4 +1,4 @@
-import { layoutLabel } from '@/lib/label-layout';
+import { code128Modules, layoutLabel } from '@/lib/label-layout';
 import { describe, expect, it } from 'vitest';
 
 // Geometry mirrors LabelBuilder::layout(); the backend measures real Tahoma glyph
@@ -21,15 +21,15 @@ describe('layoutLabel', () => {
     expect(layout.widthDots).toBe(400);
     expect(layout.heightDots).toBe(240);
     expect(layout.overflow).toBe(false);
-    expect(layout.rows.map((row) => row.type)).toEqual(['text', 'text', 'barcode', 'text']);
+    expect(layout.rows.map((row) => row.type)).toEqual(['text', 'text', 'text', 'barcode']);
 
-    const [store, name, , price] = layout.rows;
+    const [store, name, price] = layout.rows;
     expect(store?.type === 'text' && store.text).toBe('SUBUL');
     expect(store?.type === 'text' && store.bold).toBe(true);
     expect(name?.type === 'text' && name.px).toBe(23);
     expect(price?.type === 'text' && price.px).toBe(30);
     expect(store?.type === 'text' && store.px).toBe(18);
-    expect(layout.rows[2]?.type === 'barcode' && layout.rows[2].readablePx).toBe(17);
+    expect(layout.rows[3]?.type === 'barcode' && layout.rows[3].readablePx).toBe(17);
 
     const ys = layout.rows.map((row) => row.y);
     expect([...ys].sort((a, b) => a - b)).toEqual(ys);
@@ -62,11 +62,45 @@ describe('layoutLabel', () => {
     expect(layout.overflow).toBe(false);
   });
 
-  it('draws the unit as its own line under the price', () => {
+  it('writes the unit at the end of the name instead of on its own line', () => {
     const layout = layoutLabel({ ...label, unit: 'قطعة' }, { ...options, widthMm: 50, heightMm: 30 });
 
-    const last = layout.rows.at(-1);
-    expect(last?.type === 'text' && last.text).toBe('قطعة');
-    expect(last?.type === 'text' && last.bold).toBe(false);
+    const texts = layout.rows.filter((row) => row.type === 'text').map((row) => (row.type === 'text' ? row.text : ''));
+    expect(texts).toEqual(['SUBUL', 'LATTE (قطعة)', 'SAR 12.00']);
+    expect(layout.rows.at(-1)?.type).toBe('barcode');
+  });
+
+  it('keeps the unit when a long name has to be cut to two lines', () => {
+    const layout = layoutLabel(
+      { name: 'Madison Park Marcell Indigo Cotton Printed Duvet Cover Set Queen Size Extra Long Premium Edition', unit: 'per set' },
+      { ...options, widthMm: 40, heightMm: 30 },
+    );
+
+    const texts = layout.rows.filter((row) => row.type === 'text').map((row) => (row.type === 'text' ? row.text : ''));
+    expect(texts).toHaveLength(2);
+    expect(texts.at(-1)?.endsWith('(per set)')).toBe(true);
+    expect(texts.join(' ')).toContain('…');
+  });
+
+  it('packs an odd-length number into Code C so each bar stays wide enough to scan', () => {
+    // 13-digit EAN: pure Code B needs 178 modules, mixed B/C needs 123 (same as Code128 on the server).
+    expect(code128Modules('6281001234567')).toBe(123);
+    expect(code128Modules('123456')).toBe(5 * 11 + 13);
+    expect(code128Modules('')).toBe(0);
+
+    const layout = layoutLabel({ ...label, barcode: '6281001234567' }, { ...options, widthMm: 50, heightMm: 30 });
+    const barcode = layout.rows.find((row) => row.type === 'barcode');
+
+    // 2 dots is 0.25 mm at 203 dpi, the narrowest bar a retail scanner reads reliably.
+    expect(barcode?.type === 'barcode' && barcode.narrow).toBeGreaterThanOrEqual(2);
+  });
+
+  it('never breaks the unit across two lines', () => {
+    const layout = layoutLabel({ name: 'Nanshing Avalon 8-piece Comforter Set', unit: 'per piece' }, { ...options, widthMm: 50, heightMm: 30 });
+
+    const texts = layout.rows.filter((row) => row.type === 'text').map((row) => (row.type === 'text' ? row.text : ''));
+    // The unit stays whole: no line ends on "(per", and it closes the last line.
+    expect(texts.at(-1)?.endsWith('(per piece)')).toBe(true);
+    expect(texts.some((line) => line.endsWith('(per'))).toBe(false);
   });
 });
