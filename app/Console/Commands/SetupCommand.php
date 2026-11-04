@@ -55,16 +55,23 @@ class SetupCommand extends Command
      */
     public function handle()
     {
+        /**
+         * The desktop shell hands the password over in the environment rather
+         * than argv, where another local account could read it from the
+         * process list while setup runs.
+         */
+        $adminPassword = $this->option( 'admin_password' ) ?: env( 'SUBUL_ADMIN_PASSWORD' );
+
         if (
             ! empty( $this->option( 'store_name' ) ) &&
             ! empty( $this->option( 'admin_email' ) ) &&
             ! empty( $this->option( 'admin_username' ) ) &&
-            ! empty( $this->option( 'admin_password' ) )
+            ! empty( $adminPassword )
         ) {
             $this->sb_store_name  = $this->option( 'store_name' );
             $this->admin_email    = $this->option( 'admin_email' );
             $this->admin_username = $this->option( 'admin_username' );
-            $this->admin_password = $this->option( 'admin_password' );
+            $this->admin_password = $adminPassword;
             $this->language       = $this->option( 'language' );
             $this->requireConfirmation = false;
         }

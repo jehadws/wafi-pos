@@ -48,6 +48,15 @@ trait App
         }
     }
 
+    /**
+     * The desktop shell injects SB_DESKTOP into every child process, so both
+     * artisan and the HTTP server agree on which surface is running.
+     */
+    public static function isDesktop(): bool
+    {
+        return filter_var( env( 'SB_DESKTOP', false ), FILTER_VALIDATE_BOOLEAN );
+    }
+
     public static function pageTitle( $string )
     {
         $storeName = sb()->option->get( 'sb_store_name' ) ?: 'Subul';

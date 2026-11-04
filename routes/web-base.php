@@ -12,6 +12,7 @@ use App\Http\Middleware\ClearRequestCacheMiddleware;
 use App\Http\Middleware\FooterOutputHookMiddleware;
 use App\Http\Middleware\HandleCommonRoutesMiddleware;
 use App\Http\Middleware\InstalledStateMiddleware;
+use App\Http\Middleware\KillSetupWizardOnDesktopMiddleware;
 use App\Http\Middleware\NotInstalledStateMiddleware;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
@@ -63,6 +64,7 @@ Route::middleware([
 });
 
 Route::middleware([
+  KillSetupWizardOnDesktopMiddleware::class,
   NotInstalledStateMiddleware::class,
   ClearRequestCacheMiddleware::class,
 ])->group(function () {

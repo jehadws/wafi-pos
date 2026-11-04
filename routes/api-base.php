@@ -3,6 +3,7 @@
 use App\Http\Controllers\SetupController;
 use App\Http\Middleware\ClearRequestCacheMiddleware;
 use App\Http\Middleware\InstalledStateMiddleware;
+use App\Http\Middleware\KillSetupWizardOnDesktopMiddleware;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +46,7 @@ include_once dirname( __FILE__ ) . '/api/update.php';
 
 Route::prefix( 'api/setup' )
     ->middleware( [
+        KillSetupWizardOnDesktopMiddleware::class,
         ClearRequestCacheMiddleware::class,
     ] )
     ->group( function () {
