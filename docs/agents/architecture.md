@@ -16,7 +16,7 @@ Laravel API + Inertia v2 / React 19 / TypeScript (strict) SPA. Zustand for state
 | `types/module.d.ts`, `types/pos.d.ts` | Legacy global ambient types | **Frozen.** Guarded by `tests/unit/module-dts.test.ts`, which runs tsc over it with `skipLibCheck` disabled — keep it compiling clean. Add nothing here; migrate a global to `types/models/` when you edit a file that uses one. |
 | `constants/pos-options.ts` | Option-key **registry** + price/tax-basis accessors | The only path to POS option values: `POS_OPTION_KEYS` for keys; `isPosOptionEnabled`, `isPriceWithTax`, `isVatDisabled`, `resolveUnitDisplayPrice`, `getPosOption` for reads. A raw `'sb_…'` literal outside this file is a bug. |
 | `services/` | Domain logic, framework-free | `cart-engine.ts` is the computation core (tax, pricing, totals, coupons). Services import no Zustand, React, or DOM. |
-| `hooks/pos/` | POS stores | `usePOS.ts` facade + five slices (`use-pos-dialogs`, `use-cart-store`, `use-payments-store`, `use-customer-store`, `use-pos-session`), typed by `pos-store-types.ts`. `use-register-store` is a separate companion store for cash-register sessions. |
+| `hooks/pos/` | POS stores | `usePOS.ts` facade + five slices (`use-pos-dialogs`, `use-cart-store`, `use-payments-store`, `use-customer-store`, `use-pos-session`), typed by `pos-store-types.ts`. `use-register-store` is a separate companion store for cash-register sessions; barcode search, cart selection, checkout and dialog coordination are companion hooks around the slices. |
 | `hooks/` | UI-level hooks | Effects, keyboard, debounce, selection. Store access through `usePOS` selectors. |
 | `api/` | Resource clients (`ordersApi`, `taxesApi`, …) exported from `index.ts` | Components and hooks call `*Api` clients; HTTP, endpoint URLs, and error shaping stay here. |
 | `components/tables/crud-table/` | Backend-driven table engine: `crud-table-page`, `columns-builder`, `row-actions-menu`, `bulk-actions`, `use-crud-table`, `use-action-executor`, popup registry | Render + user intent; columns/actions/config come from `GET /api/crud/{ns}/config` + `CrudEntry::$actions`; computation/state in `use-crud-table`/`use-action-executor`. |
@@ -35,7 +35,7 @@ The fastest way to break this app is to change one of these and miss its sibling
 |---|---|
 | An entity in `types/models/` | cart-engine, order services (`order-quantities`, `order-finalize`, `order-submission`, `express-checkout`), `printing-service`, `pos-store-types.ts`, and the tests. The same-named legacy global in `module.d.ts` does **not** update with it. |
 | How prices display | All four surfaces must agree: catalog tiles/unit pickers (`resolveUnitDisplayPrice`), cart lines (cart-engine), order totals (`sumProductsTotals` / `refreshCart`), printed receipts (`printOrderReceipt` → `printing-service`). |
-| A printer setting | `PrintingSettings::SCHEMA` (backend) + `PrinterSettings` (`services/printing-service.ts`) + the settings dialog + every read site — and the matching `app/Settings/pos/*.php` tab when the option is also an admin setting. |
+| A printer setting | `app/Services/Printing/PrintingSettings.php` (`SCHEMA` + casting) + `PrinterSettings` (`services/printing-service.ts`) + `app/Settings/pos/printing.php` + the settings dialog + every read site. |
 | A POS option | Backend tab (`app/Settings/pos/*.php`) + `getPayload()` in `PosSettings.php` + `POS_OPTION_KEYS` + settings UI (`components/settings/pos/`) + every read site. |
 | A store slice | `pos-store-types.ts` (shared `POSStore` type), the facade's orchestration, and that slice's test. |
 | A CRUD's `getColumns()` / `setActions()` / query filters | The table contract tests (`CrudTableConfigContractTest`, `CrudEntryActionsContractTest`) and the affected page(s) — the generic engine renders whatever the CUD serializes. |
@@ -76,7 +76,7 @@ Precision 0 is a valid setting — resolve it with `resolveCurrencyPrecision`, a
   - `SbCrudForm`: Dynamic inline modal for nested foreign entity creation.
 - **Source of truth**: The PHP backend defines fields, types, options, and validations. `CrudService::getFormConfig()` normalizes tabs so every tab carries a string `identifier`.
 - **Form coverage & exceptions**:
-  - Migrated to engine: all dashboard CRUD resources (including products, customers, users, and procurements) and all 8 settings resources — every form renders through the single `crud/form` Inertia shell with `initialConfig` (controller one-liner: `XCrud::form()` / `XCrud::form($entry)`).
+  - Migrated to engine: all dashboard CRUD resources (including products, customers, users, and procurements) and every autoloaded settings page that exposes a form — all render through the single `crud/form` Inertia shell with `initialConfig` (controller one-liner: `XCrud::form()` / `XCrud::form($entry)`).
   - Backend contract & write safety: `CrudFormConfigContractTest` enforces unique field names and valid tab identifiers across all 37 CRUD resources with zero allowlist exceptions. Write-sensitive resources (`ProcurementCrud`, `ProductCrud`) use `$disablePost = true; $disablePut = true;` to delegate writes to `ProcurementService` / `ProductService` in `beforePost`/`beforePut`, preserving the single transactional writer invariant.
   - Bespoke form exception retained: `procurements/products/edit.tsx` (dedicated 2-field endpoint, L8.3 recorded deferral). Print target pages (`orders/invoice`, `orders/receipt`, `procurements/invoice`) and non-CRUD surfaces (`medias`, `accounting/rules`, `stock-adjustment`, `print-labels`) remain bespoke by design.
 - **Payload contract**: Flattened submissions mirror `SbForms::getFlatForm`. Empty strings `''` and `null` are omitted on submit, while `0`, `'0'`, and `false` are preserved. Validation errors return 422 with `tabId.fieldName` or `fieldName` keys surfaced inline in both CRUD and settings pages.
@@ -99,6 +99,23 @@ Precision 0 is a valid setting — resolve it with `resolveCurrencyPrecision`, a
 - Routes: per-resource files in `routes/api/*.php`, registered from `routes/api.php` / `routes/web-base.php` equivalents.
 - Controllers in `app/Http/Controllers/**`; business logic in `app/Services/**`; settings pages in `app/Settings/**`; extension points via `App\Classes\Hook` filters.
 - Tests: Pest under root `tests/` — run `php artisan test`.
+
+## Desktop shell
+
+The packaged terminal is the Electron shell in `../electron/`; its internals are
+documented in [`../Desktop-App.md`](../Desktop-App.md). Three rules matter when
+touching application code:
+
+- The shell supplies `APP_KEY`, `DB_DATABASE`, `LARAVEL_STORAGE_PATH`,
+  `SUBUL_BACKUP_DIR` and the cache/session/queue drivers through the child
+  environment. Do not assume `.env`, `storage_path()`, a fixed port or a path
+  under the install directory.
+- Per-user data lives in Electron's userData folder, not next to the program and
+  not under `C:\ProgramData`. Never write migrations or code that depends on
+  the old location.
+- The shell starts the HTTP server and queue worker as children. Do not add
+  Windows services, a WebSocket server, a print agent or an auto-updater;
+  printing stays in `app/Services/Printing/`.
 
 ## Verification loop
 
