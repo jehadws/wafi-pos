@@ -102,7 +102,7 @@ class TransactionService
                 $counterTransaction->author = $transactionHistory->author;
                 $counterTransaction->name = $transactionHistory->name;
                 $counterTransaction->status = TransactionHistory::STATUS_ACTIVE;
-                $counterTransaction->trigger_date = sb()->date->toDateTimeString();
+                $counterTransaction->trigger_date = Carbon::now()->toDateTimeString();
                 $counterTransaction->type = $transactionHistory->type;
                 $counterTransaction->procurement_id = $transactionHistory->procurement_id;
                 $counterTransaction->order_id = $transactionHistory->order_id;
@@ -545,7 +545,7 @@ class TransactionService
         $history->author = $transaction->author;
         $history->name = $transaction->name;
         $history->status = TransactionHistory::STATUS_ACTIVE;
-        $history->trigger_date = sb()->date->toDateTimeString();
+        $history->trigger_date = Carbon::now()->toDateTimeString();
         $history->type = $transaction->type;
         $history->procurement_id = $transaction->procurement_id ?? 0; // if the cash flow is created from a procurement
         $history->order_id = $transaction->order_id ?? 0; // if the cash flow is created from a refund
@@ -577,7 +577,7 @@ class TransactionService
                     $history->transaction_id = $transaction->id;
                     $history->operation = 'debit';
                     $history->author = $transaction->author;
-                    $history->trigger_date = sb()->date->toDateTimeString();
+                    $history->trigger_date = Carbon::now()->toDateTimeString();
                     $history->type = $transaction->type;
                     $history->status = TransactionHistory::STATUS_ACTIVE;
                     $history->name = str_replace( '{user}', ucwords( $user->username ), $transaction->name );
@@ -610,74 +610,34 @@ class TransactionService
      */
     public function handleRecurringTransactions( ?Carbon $date = null )
     {
-        if ( $date === null ) {
-            $date = $this->dateService->copy();
-        }
+        $date ??= Carbon::now();
 
         $processStatus = Transaction::recurring()
             ->active()
             ->get()
-            ->map( function ( $transaction ) use ( $date ) {
-                switch ( $transaction->occurrence ) {
-                    case 'month_starts':
-                        $transactionScheduledDate = $date->copy()->startOfMonth();
-                        break;
-                    case 'month_mid':
-                        $transactionScheduledDate = $date->copy()->startOfMonth()->addDays( 14 );
-                        break;
-                    case 'month_ends':
-                        $transactionScheduledDate = $date->copy()->endOfMonth();
-                        break;
-                    case 'x_before_month_ends':
-                        $transactionScheduledDate = $date->copy()->endOfMonth()->subDays( $transaction->occurrence_value );
-                        break;
-                    case 'x_after_month_starts':
-                        $transactionScheduledDate = $date->copy()->startOfMonth()->addDays( $transaction->occurrence_value );
-                        break;
-                    case 'on_specific_day':
-                        $transactionScheduledDate = $date->copy();
-                        $transactionScheduledDate->day = $transaction->occurrence_value;
-                        break;
-                    case 'every_x_minutes':
-                        $transactionScheduledDate = $date->copy();
-                        $transactionScheduledDate->day = $transaction->occurrence_value;
-                        break;
-                    case 'every_x_hours':
-                        $transactionScheduledDate = $date->copy();
-                        $transactionScheduledDate->hour = now()->hour;
-                        break;
-                    case 'every_x_days':
-                        $transactionScheduledDate = $date->copy();
-                        $transactionScheduledDate->minute = now()->minute;
-                        break;
+            ->map( function ( Transaction $transaction ) use ( $date ) {
+                $state = $this->recurringTransactionState( $transaction, $date );
+
+                if ( $state === 'record' ) {
+                    $histories = $this->recordTransactionHistory( $transaction );
+
+                    return [
+                        'status' => 'success',
+                        'data' => compact( 'transaction', 'histories' ),
+                        'message' => sprintf( __( 'The transaction "%s" has been processed on day "%s".' ), $transaction->name, $date->toDateTimeString() ),
+                    ];
                 }
 
-                if ( isset( $transactionScheduledDate ) && $transactionScheduledDate instanceof Carbon ) {
-                    /**
-                     * Checks if the recurring transactions about to be saved has been
-                     * already issued on the occuring day.
-                     */
-                    if ( $date->isSameDay( $transactionScheduledDate ) ) {
-                        if ( ! $this->hadTransactionHistory( $transactionScheduledDate, $transaction ) ) {
-                            $histories = $this->recordTransactionHistory( $transaction );
-
-                            return [
-                                'status' => 'success',
-                                'data' => compact( 'transaction', 'histories' ),
-                                'message' => sprintf( __( 'The transaction "%s" has been processed on day "%s".' ), $transaction->name, $date->toDateTimeString() ),
-                            ];
-                        }
-
-                        return [
-                            'status' => 'error',
-                            'message' => sprintf( __( 'The transaction "%s" has already been processed.' ), $transaction->name ),
-                        ];
-                    }
+                if ( $state === 'processed' ) {
+                    return [
+                        'status' => 'error',
+                        'message' => sprintf( __( 'The transaction "%s" has already been processed.' ), $transaction->name ),
+                    ];
                 }
 
                 return [
                     'status' => 'error',
-                    'message' => sprintf( __( 'The transactions "%s" hasn\'t been proceesed, as it\'s out of date.' ), $transaction->name ),
+                    'message' => sprintf( __( 'The transaction "%s" isn\'t due yet.' ), $transaction->name ),
                 ];
             } );
 
@@ -693,6 +653,61 @@ class TransactionService
     }
 
     /**
+     * Whether a recurring transaction should be recorded now. Date-based
+     * occurrences run once on their day; interval-based occurrences run once
+     * the configured time has elapsed since the last history.
+     */
+    private function recurringTransactionState( Transaction $transaction, Carbon $date ): string
+    {
+        $occurrence = $transaction->occurrence;
+
+        if ( in_array( $occurrence, [ 'every_x_minutes', 'every_x_hours', 'every_x_days' ], true ) ) {
+            $lastHistory = TransactionHistory::where( 'transaction_id', $transaction->id )
+                ->latest( 'created_at' )
+                ->first();
+
+            $baseline = $lastHistory?->created_at ?? $transaction->created_at ?? $transaction->updated_at;
+
+            if ( $baseline === null ) {
+                return 'not_due';
+            }
+
+            $value = max( 1, (int) $transaction->occurrence_value );
+            $baseline = $baseline instanceof Carbon ? $baseline->copy() : Carbon::parse( $baseline );
+
+            $nextDue = match ( $occurrence ) {
+                'every_x_minutes' => $baseline->addMinutes( $value ),
+                'every_x_hours' => $baseline->addHours( $value ),
+                'every_x_days' => $baseline->addDays( $value ),
+            };
+
+            return $nextDue->lessThanOrEqualTo( $date ) ? 'record' : 'not_due';
+        }
+
+        $value = max( 0, (int) $transaction->occurrence_value );
+
+        $targetDate = match ( $occurrence ) {
+            'month_starts' => $date->copy()->startOfMonth(),
+            'month_mid' => $date->copy()->startOfMonth()->addDays( 14 ),
+            'month_ends' => $date->copy()->endOfMonth(),
+            'x_before_month_ends' => $date->copy()->endOfMonth()->subDays( $value ),
+            'x_after_month_starts' => $date->copy()->startOfMonth()->addDays( $value ),
+            'on_specific_day' => $date->copy()->startOfMonth()->addDays( min( max( 1, $value ), $date->daysInMonth ) - 1 ),
+            default => null,
+        };
+
+        if ( ! $targetDate instanceof Carbon ) {
+            return 'not_due';
+        }
+
+        if ( ! $date->isSameDay( $targetDate ) ) {
+            return 'not_due';
+        }
+
+        return $this->hadTransactionHistory( $date->copy(), $transaction ) ? 'processed' : 'record';
+    }
+
+    /**
      * Check if an transaction has been executed during a day.
      * To prevent many recurring transactions to trigger multiple times
      * during a day.
@@ -700,8 +715,8 @@ class TransactionService
     public function hadTransactionHistory( $date, Transaction $transaction )
     {
         $history = TransactionHistory::where( 'transaction_id', $transaction->id )
-            ->where( 'created_at', '>=', $date->startOfDay()->toDateTimeString() )
-            ->where( 'created_at', '<=', $date->endOfDay()->toDateTimeString() )
+            ->where( 'created_at', '>=', $date->copy()->startOfDay()->toDateTimeString() )
+            ->where( 'created_at', '<=', $date->copy()->endOfDay()->toDateTimeString() )
             ->get();
 
         return $history->isNotEmpty();

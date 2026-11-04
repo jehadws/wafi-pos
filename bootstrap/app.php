@@ -6,7 +6,11 @@ use App\Http\Middleware\LicenseMiddleware;
 use App\Http\Middleware\LoadLangMiddleware;
 use App\Jobs\ClearHoldOrdersJob;
 use App\Jobs\DetectLowStockProductsJob;
+use App\Jobs\DetectScheduledTransactionsJob;
+use App\Jobs\PurgeOrderStorageJob;
 use App\Jobs\StockProcurementJob;
+use App\Jobs\TrackLaidAwayOrdersJob;
+use App\Services\TransactionService;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -38,6 +42,29 @@ $app = Application::configure(basePath: dirname(__DIR__))
      * quantity went below the low quantity threshold.
      */
     $schedule->job(new DetectLowStockProductsJob)->daily();
+
+    /**
+     * Promotes scheduled transaction histories whose trigger date has
+     * arrived from pending to active.
+     */
+    $schedule->job(new DetectScheduledTransactionsJob)->everyMinute();
+
+    /**
+     * Records the recurring transactions whose occurrence is due.
+     */
+    $schedule->call(fn() => app(TransactionService::class)->handleRecurringTransactions())->everyMinute();
+
+    /**
+     * Marks layaway orders past their final payment date as due and
+     * notifies the administrators.
+     */
+    $schedule->job(new TrackLaidAwayOrdersJob)->daily();
+
+    /**
+     * Discards the stock reservations recorded while validating order
+     * availability; they are only needed during the order itself.
+     */
+    $schedule->job(new PurgeOrderStorageJob)->daily();
   })
   ->withMiddleware(function (Middleware $middleware) {
     $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);

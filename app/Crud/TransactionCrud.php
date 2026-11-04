@@ -233,7 +233,7 @@ class TransactionCrud extends CrudService
                 ],
                 [
                   'label' => __('Mid of Month'),
-                  'value' => 'month_mids',
+                  'value' => 'month_mid',
                 ],
                 [
                   'label' => __('End of Month'),
@@ -257,14 +257,14 @@ class TransactionCrud extends CrudService
                 ],
                 [
                   'label' => __('Every X Days'),
-                  'value' => 'every_x_hours',
+                  'value' => 'every_x_days',
                 ],
               ],
             ),
             FormInput::text(
               label: __('Occurrence Value'),
               name: 'occurrence_value',
-              description: __('Must be used in case of X days after month starts and X days before month ends.'),
+              description: __('Used with the X days and every X minutes/hours/days occurrences.'),
               value: $entry->occurrence_value ?? '',
             ),
             FormInput::datetime(

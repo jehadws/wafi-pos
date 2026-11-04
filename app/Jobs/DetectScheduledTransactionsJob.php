@@ -32,8 +32,11 @@ class DetectScheduledTransactionsJob implements ShouldQueue
      */
     public function handle()
     {
+        // The queue worker outlives a single request, so sb()->date (a
+        // process-wide singleton) would keep returning the worker's start
+        // time and miss everything scheduled after it.
         $query = TransactionHistory::scheduled()
-            ->triggerDate( sb()->date->toDateTimeString() );
+            ->triggerDate( now()->toDateTimeString() );
 
         /**
          * This means we have some valid transactions
