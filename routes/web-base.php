@@ -6,6 +6,7 @@ use App\Http\Controllers\Dashboard\HomeController;
 use App\Http\Controllers\SetupController;
 use App\Http\Controllers\UpdateController;
 use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\BlockDatabaseUpdateOnDesktopMiddleware;
 use App\Http\Middleware\CheckApplicationHealthMiddleware;
 use App\Http\Middleware\CheckMigrationStatus;
 use App\Http\Middleware\ClearRequestCacheMiddleware;
@@ -38,6 +39,7 @@ Route::middleware([
 
   Route::get('/database-update', [UpdateController::class, 'updateDatabase'])
     ->withoutMiddleware([CheckMigrationStatus::class])
+    ->middleware([BlockDatabaseUpdateOnDesktopMiddleware::class])
     ->name('sb.database-update');
 
   Route::middleware([

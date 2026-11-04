@@ -35,6 +35,12 @@ test('the setup API stays reachable in a browser', function () {
     $this->getJson('/api/setup/check-database')->assertOk();
 });
 
+test('the database update page is blocked when running inside the desktop shell', function () {
+    setDesktopFlag();
+
+    $this->get('/database-update')->assertForbidden();
+});
+
 function setDesktopFlag(): void
 {
     putenv('SB_DESKTOP=true');
