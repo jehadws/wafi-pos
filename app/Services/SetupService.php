@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class SetupService
 {
@@ -80,10 +79,6 @@ class SetupService
          * list ns:doctor --fix-domains writes for Sanctum.
          */
         sb()->envEditor->set( 'SANCTUM_STATEFUL_DOMAINS', collect( [ $withPort, 'localhost', '127.0.0.1' ] )->unique()->join( ',' ) );
-
-        sb()->envEditor->set( 'REVERB_APP_ID', 'app-key-' . Str::random( 10 ) );
-        sb()->envEditor->set( 'REVERB_APP_KEY', 'app-key-' . Str::random( 10 ) );
-        sb()->envEditor->set( 'REVERB_APP_SECRET', Str::uuid() );
     }
 
     public function updateAppDBConfiguration( $data )
